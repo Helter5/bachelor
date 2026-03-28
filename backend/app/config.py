@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     jwt_secret_key: str
     jwt_algorithm: str = "HS256"
     jwt_access_token_expire_minutes: int = 30
+    jwt_refresh_token_expire_days: int = 30
 
     # Email Configuration
     smtp_host: str = "smtp.gmail.com"
@@ -34,6 +35,8 @@ class Settings(BaseSettings):
     smtp_from_email: str = ""
     smtp_from_name: str = "Wrestling Federation"
     frontend_url: str = "http://localhost:5173"
+    # Comma-separated list of allowed CORS/CSRF origins, e.g. "http://localhost:5173,https://myapp.com"
+    allowed_origins: str = ""
 
     # Google OAuth2 Configuration
     google_client_id: str = ""
@@ -60,6 +63,8 @@ class Settings(BaseSettings):
             'jwt_secret_key': {'env': 'JWT_SECRET_KEY'},
             'jwt_algorithm': {'env': 'JWT_ALGORITHM'},
             'jwt_access_token_expire_minutes': {'env': 'JWT_ACCESS_TOKEN_EXPIRE_MINUTES'},
+            'jwt_refresh_token_expire_days': {'env': 'JWT_REFRESH_TOKEN_EXPIRE_DAYS'},
+            'allowed_origins': {'env': 'ALLOWED_ORIGINS'},
             'smtp_host': {'env': 'SMTP_HOST'},
             'smtp_port': {'env': 'SMTP_PORT'},
             'smtp_user': {'env': 'SMTP_USER'},

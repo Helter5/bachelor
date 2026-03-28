@@ -3,6 +3,7 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from .core.dependencies import require_user
 from .database import create_db_and_tables
+from .config import get_settings as _get_settings
 
 # Import new 3-zone API structure
 from .api.auth import router as auth_router
@@ -36,12 +37,15 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+def _cors_origins() -> list[str]:
+    s = _get_settings()
+    if s.allowed_origins:
+        return [o.strip() for o in s.allowed_origins.split(",") if o.strip()]
+    return [s.frontend_url]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",  # Frontend dev server
-        "http://localhost:3000",  # Alternative frontend port
-    ],
+    allow_origins=_cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

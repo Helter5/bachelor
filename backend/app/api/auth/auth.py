@@ -21,6 +21,7 @@ from ...core.security import (
     verify_password_reset_token,
     generate_random_password,
     ACCESS_TOKEN_EXPIRE_MINUTES,
+    REFRESH_TOKEN_EXPIRE_DAYS,
 )
 from ...core.email import email_service
 from ...core.oauth import verify_google_token, generate_username_from_email
@@ -45,13 +46,13 @@ def _set_auth_cookies(response: Response, access_token: str, refresh_token: str,
     response.set_cookie(
         key="refresh_token", value=refresh_token,
         httponly=True, secure=COOKIE_SECURE, samesite=COOKIE_SAMESITE,
-        max_age=30 * 24 * 60 * 60, path=COOKIE_PATH_AUTH,
+        max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60, path=COOKIE_PATH_AUTH,
     )
     # httponly=False so JS can read it for the X-CSRF-Token header
     response.set_cookie(
         key="csrf_token", value=csrf_token,
         httponly=False, secure=COOKIE_SECURE, samesite=COOKIE_SAMESITE,
-        max_age=30 * 24 * 60 * 60, path="/",
+        max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60, path="/",
     )
 
 

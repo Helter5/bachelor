@@ -27,48 +27,33 @@ def get_client_ip(request: Request) -> Optional[str]:
 
 ALGORITHM = settings.jwt_algorithm
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.jwt_access_token_expire_minutes
-REFRESH_TOKEN_EXPIRE_DAYS = 30
+REFRESH_TOKEN_EXPIRE_DAYS = settings.jwt_refresh_token_expire_days
 JWT_ISSUER = "wrestling-federation-api"
 JWT_AUDIENCE = "wrestling-federation-client"
 
-ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:8000",
-    settings.frontend_url,
-]
+
+def _get_allowed_origins() -> list[str]:
+    """Build allowed origins list from settings. Falls back to frontend_url."""
+    if settings.allowed_origins:
+        return [o.strip() for o in settings.allowed_origins.split(",") if o.strip()]
+    return [settings.frontend_url]
 
 
 def validate_request_origin(origin: Optional[str], referer: Optional[str]) -> bool:
-    """
-    Validate request origin/referer for additional CSRF protection
-    
-    This adds defense-in-depth beyond SameSite cookies.
-    Used for state-changing operations (POST/PUT/PATCH/DELETE).
-    
-    Security: Uses URL parsing to prevent bypass via string tricks like:
-    - http://localhost:5173.evil.com
-    - http://localhost:5173@evil.com
-    """
-    # Check Origin header first (preferred, more reliable)
+    """Validate Origin/Referer header against allowed origins (CSRF defense-in-depth)."""
+    allowed = _get_allowed_origins()
+
+    def _matches(url: str) -> bool:
+        try:
+            parsed = urlparse(url)
+            return f"{parsed.scheme}://{parsed.netloc}" in allowed
+        except Exception:
+            return False
+
     if origin:
-        try:
-            parsed = urlparse(origin)
-            origin_normalized = f"{parsed.scheme}://{parsed.netloc}"
-            return origin_normalized in ALLOWED_ORIGINS
-        except Exception:
-            return False
-    
-    # Fallback to Referer ONLY if Origin is missing
-    # (Origin is more reliable, don't check both)
+        return _matches(origin)
     if referer:
-        try:
-            parsed = urlparse(referer)
-            referer_normalized = f"{parsed.scheme}://{parsed.netloc}"
-            return referer_normalized in ALLOWED_ORIGINS
-        except Exception:
-            return False
-    
-    # No origin/referer = reject for safety (defense-in-depth)
+        return _matches(referer)
     return False
 
 
@@ -303,26 +288,6 @@ def revoke_refresh_token(token: str, session: Session) -> bool:
     
     return False
 
-
-def validate_request_origin(origin: Optional[str], referer: Optional[str]) -> bool:
-    """Validate request origin/referer for CSRF protection"""
-    allowed_origins = [
-        "http://localhost:5173",  # Vite dev
-        "http://localhost:8000",  # FastAPI dev
-        settings.frontend_url if hasattr(settings, 'frontend_url') else None,
-    ]
-    allowed_origins = [o for o in allowed_origins if o]  # Remove None
-    
-    # Check Origin header first (preferred)
-    if origin:
-        return any(origin.startswith(allowed) for allowed in allowed_origins)
-    
-    # Fallback to Referer
-    if referer:
-        return any(referer.startswith(allowed) for allowed in allowed_origins)
-    
-    # No origin/referer = reject for safety
-    return False
 
 
 def decode_access_token(token: str) -> Optional[dict]:
