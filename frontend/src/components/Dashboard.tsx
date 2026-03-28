@@ -31,10 +31,7 @@ interface DashboardProps {
 
 export function Dashboard({ onLogout, userData }: DashboardProps) {
   // Custom hooks for state management
-  const { syncState, handleSyncClick, confirmSync, cancelSync } = useSync()
-  const dismissError = () => {
-    // Clear error state - you may need to adjust this based on your useSync implementation
-  }
+  const { syncState, handleSyncClick, confirmSync, cancelSync, dismissError } = useSync()
   const { isDarkMode, toggleDarkMode } = useDarkMode()
   const {
     state: dashboardState,

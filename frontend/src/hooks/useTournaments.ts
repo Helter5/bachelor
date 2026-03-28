@@ -27,9 +27,6 @@ export function useTournaments() {
       try {
         setLoading(true)
         const data = await apiClient.get<{ items: Event[] }>(API_ENDPOINTS.SPORT_EVENT_DATABASE)
-        console.log('🔍 useTournaments - Raw API response:', data)
-        console.log('🔍 useTournaments - Items array:', data.items)
-        console.log('🔍 useTournaments - Items length:', data.items?.length)
         setEvents(data.items || [])
         setError(null)
       } catch (err) {

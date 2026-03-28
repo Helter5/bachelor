@@ -7,9 +7,7 @@ export { useDashboardState } from './useDashboardState'
 export { useSync } from './useSync'
 export { useTournaments } from './useTournaments'
 export { useTournamentFilters } from './useTournamentFilters'
-export { useTournamentDetail } from './useTournamentDetail'
 
 // Re-export types if needed
 export type { UseApiReturn } from './useApi'
-export type { UsePaginationReturn } from './usePagination'
 export type { UseFiltersReturn } from './useFilters'

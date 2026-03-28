@@ -2,6 +2,8 @@ import { useState, useMemo, useEffect, useCallback } from "react"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
 import { DuplicateAthletesModal } from "./DuplicateAthletesModal"
+
+const PERSONS_LIMIT = 5000
 import { Pagination } from "./Pagination"
 import { SearchInput } from "./SearchInput"
 import { CountryFlag } from "./CountryFlag"
@@ -32,7 +34,7 @@ export function AthletesList({ isDarkMode, onSelectPerson, isAdmin }: AthletesLi
   const fetchPersons = useCallback(async () => {
     try {
       setLoading(true)
-      const data = await apiClient.get<Person[]>(`${API_ENDPOINTS.PERSONS}?limit=5000`)
+      const data = await apiClient.get<Person[]>(`${API_ENDPOINTS.PERSONS}?limit=${PERSONS_LIMIT}`)
       setPersons(data)
       setError(null)
     } catch (err) {

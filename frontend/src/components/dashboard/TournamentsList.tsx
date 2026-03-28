@@ -3,21 +3,8 @@ import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
 import { Pagination } from "./Pagination"
 import { SearchInput } from "./SearchInput"
-
-interface Event {
-  id: number
-  uuid: string
-  name: string
-  full_name?: string
-  start_date: string
-  end_date?: string
-  address_locality?: string
-  continent?: string
-  country_iso_code?: string
-  tournament_type?: string
-  event_type?: string
-  logo?: string
-}
+import { useTournamentFilters } from "@/hooks/useTournamentFilters"
+import type { Event } from "@/hooks/useTournaments"
 
 interface PersonSuggestion {
   id: number
@@ -32,10 +19,6 @@ interface TournamentsListProps {
 
 export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsListProps) {
   const [currentPage, setCurrentPage] = useState(1)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [locationFilter, setLocationFilter] = useState("")
-  const [sortBy, setSortBy] = useState<"name" | "date">("name")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -137,63 +120,34 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
     setCurrentPage(1)
   }, [])
 
-  // Get unique locations for filter dropdown
-  const uniqueLocations = useMemo(() => {
-    const locations = events
-      .map(event => event.address_locality || event.continent)
-      .filter((location): location is string => Boolean(location))
-    return Array.from(new Set(locations)).sort()
-  }, [events])
+  const {
+    searchQuery,
+    locationFilter,
+    sortBy,
+    sortOrder,
+    uniqueLocations,
+    filteredAndSortedEvents,
+    handleFilterChange,
+    handleSort,
+    clearFilters,
+    hasActiveFilters,
+  } = useTournamentFilters(events)
 
-  // Filter and sort events
-  const filteredAndSortedEvents = useMemo(() => {
-    const filtered = events.filter(event => {
-      const matchesSearch = event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           event.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           event.address_locality?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           event.continent?.toLowerCase().includes(searchQuery.toLowerCase())
-      const matchesLocation = !locationFilter ||
-                             event.address_locality === locationFilter ||
-                             event.continent === locationFilter
-      const matchesAthlete = !selectedPerson || personEventIds.has(event.id)
-      return matchesSearch && matchesLocation && matchesAthlete
-    })
+  // Apply person filter on top of base filters
+  const displayedEvents = useMemo(
+    () => selectedPerson ? filteredAndSortedEvents.filter(e => personEventIds.has(e.id)) : filteredAndSortedEvents,
+    [filteredAndSortedEvents, selectedPerson, personEventIds]
+  )
 
-    // Sort events
-    filtered.sort((a, b) => {
-      let comparison = 0
-      if (sortBy === "name") {
-        comparison = a.name.localeCompare(b.name)
-      } else if (sortBy === "date") {
-        comparison = new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
-      }
-      return sortOrder === "asc" ? comparison : -comparison
-    })
-
-    return filtered
-  }, [events, searchQuery, locationFilter, sortBy, sortOrder, selectedPerson, personEventIds])
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, locationFilter, sortBy, sortOrder, selectedPerson])
 
   // Pagination
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
-  const currentEvents = filteredAndSortedEvents.slice(startIndex, endIndex)
-
-  // Reset to page 1 when filters change
-  const handleFilterChange = (newSearch: string, newLocation: string) => {
-    setSearchQuery(newSearch)
-    setLocationFilter(newLocation)
-    setCurrentPage(1)
-  }
-
-  const handleSort = (newSortBy: "name" | "date") => {
-    if (sortBy === newSortBy) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
-    } else {
-      setSortBy(newSortBy)
-      setSortOrder("asc")
-    }
-    setCurrentPage(1)
-  }
+  const currentEvents = displayedEvents.slice(startIndex, endIndex)
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -270,19 +224,16 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
                   Filtre a vyhľadávanie
                 </h3>
                 <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  ({filteredAndSortedEvents.length}/{events.length})
+                  ({displayedEvents.length}/{events.length})
                 </span>
               </div>
 
               {/* Clear Filters Button */}
-              {(searchQuery || locationFilter || selectedPerson || sortBy !== "name" || sortOrder !== "asc") && (
+              {(hasActiveFilters || !!selectedPerson) && (
                 <button
                   onClick={() => {
-                    setSearchQuery("")
-                    setLocationFilter("")
+                    clearFilters()
                     handleClearPerson()
-                    setSortBy("name")
-                    setSortOrder("asc")
                     setCurrentPage(1)
                   }}
                   className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all ${
@@ -628,7 +579,7 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
         <Pagination
           isDarkMode={isDarkMode}
           currentPage={currentPage}
-          totalItems={filteredAndSortedEvents.length}
+          totalItems={displayedEvents.length}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
         />

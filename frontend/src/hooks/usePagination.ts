@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect } from "react"
 interface UsePaginationProps<T> {
   items: T[]
   itemsPerPage?: number
-  resetTriggers?: any[]
+  resetTriggers?: unknown[]
 }
 
 export function usePagination<T>({ 
