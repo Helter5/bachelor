@@ -77,8 +77,8 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
       await apiClient.delete(API_ENDPOINTS.PROFILE_REVOKE_SESSION(sessionId))
       setSuccess('Relácia bola úspešne odhlásená')
       await loadSessions()
-    } catch (err: any) {
-      setError(err.detail || 'Nepodarilo sa odhlásiť reláciu')
+    } catch {
+      setError('Nepodarilo sa odhlásiť reláciu')
     }
   }
 
@@ -94,8 +94,8 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
       await apiClient.post(API_ENDPOINTS.AUTH_LOGOUT, {})
       // Redirect to login immediately
       window.location.href = '/'
-    } catch (err: any) {
-      setError(err.detail || 'Nepodarilo sa odhlásiť relácie')
+    } catch {
+      setError('Nepodarilo sa odhlásiť relácie')
     }
   }
 

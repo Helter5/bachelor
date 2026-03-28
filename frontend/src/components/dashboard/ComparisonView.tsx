@@ -7,9 +7,55 @@ import type { Person, PickerMode } from "./WrestlerPicker"
 import { usePersons } from "@/hooks/usePersons"
 import { formatDuration, pluralizeSk } from "@/utils/format"
 
+interface ComparisonPerson {
+  id: number
+  name: string
+  country: string | null
+}
+
+interface ComparisonFight {
+  fight_id: number
+  sport_event_name: string | null
+  weight_category: string | null
+  person1_name: string
+  person2_name: string
+  person1_tp: number | null
+  person2_tp: number | null
+  person1_cp: number | null
+  person2_cp: number | null
+  victory_type: string | null
+  duration: number | null
+  winner: "person1" | "person2" | null
+  winner_name: string | null
+}
+
+interface OpponentSummary {
+  wins?: number
+  losses?: number
+  avg_tp?: number
+  avg_cp?: number
+}
+
+interface CommonOpponent {
+  opponent: ComparisonPerson
+  person1_summary: OpponentSummary
+  person2_summary: OpponentSummary
+}
+
+interface ComparisonResult {
+  person1: ComparisonPerson
+  person2: ComparisonPerson
+  total_fights: number
+  person1_wins: number
+  person2_wins: number
+  fights: ComparisonFight[]
+  common_opponents?: CommonOpponent[]
+  error?: string
+}
+
 interface FightHistoryTableProps {
   isDarkMode: boolean
-  fights: any[]
+  fights: ComparisonFight[]
 }
 
 function FightHistoryTable({ isDarkMode, fights }: FightHistoryTableProps) {
@@ -32,7 +78,7 @@ function FightHistoryTable({ isDarkMode, fights }: FightHistoryTableProps) {
             </tr>
           </thead>
           <tbody>
-            {fights.map((fight: any, idx: number) => (
+            {fights.map((fight, idx) => (
               <tr
                 key={fight.fight_id || idx}
                 className={`border-b last:border-b-0 ${isDarkMode ? 'border-white/5 hover:bg-white/5' : 'border-gray-100 hover:bg-gray-50'}`}
@@ -81,7 +127,7 @@ function FightHistoryTable({ isDarkMode, fights }: FightHistoryTableProps) {
 
 interface CommonOpponentCardProps {
   isDarkMode: boolean
-  opp: any
+  opp: CommonOpponent
   person1Name: string
   person2Name: string
 }
@@ -140,7 +186,7 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
   const [selectedWrestler2, setSelectedWrestler2] = useState<Person | null>(null)
   const [mode1, setMode1] = useState<PickerMode>("idle")
   const [mode2, setMode2] = useState<PickerMode>("idle")
-  const [comparisonResult, setComparisonResult] = useState<any>(null)
+  const [comparisonResult, setComparisonResult] = useState<ComparisonResult | null>(null)
   const [comparing, setComparing] = useState(false)
   const [includeCommonOpponents, setIncludeCommonOpponents] = useState(false)
 
@@ -201,7 +247,7 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
     setComparing(true)
     setComparisonResult(null)
     try {
-      const data = await apiClient.get(API_ENDPOINTS.PERSON_COMPARE(selectedWrestler1.id, selectedWrestler2.id, includeCommonOpponents))
+      const data = await apiClient.get<ComparisonResult>(API_ENDPOINTS.PERSON_COMPARE(selectedWrestler1.id, selectedWrestler2.id, includeCommonOpponents))
       setComparisonResult(data)
     } catch {
       setComparisonResult({ error: "Nepodarilo sa načítať porovnanie" })
@@ -383,7 +429,7 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
                   Spoloční súperi ({comparisonResult.common_opponents.length})
                 </h3>
                 <div className="space-y-4">
-                  {comparisonResult.common_opponents.map((opp: any, idx: number) => (
+                  {comparisonResult.common_opponents.map((opp, idx) => (
                     <CommonOpponentCard
                       key={opp.opponent.id || idx}
                       isDarkMode={isDarkMode}

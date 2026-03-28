@@ -52,7 +52,7 @@ export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
         last_name: data.last_name,
         email: data.email
       })
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error loading profile:', err)
       setError('Nepodarilo sa načítať profil')
     } finally {
@@ -91,8 +91,8 @@ export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
       const updated = await apiClient.put<User>(API_ENDPOINTS.PROFILE_ME, profileForm)
       setUser(updated)
       setSuccess('Profil bol úspešne aktualizovaný')
-    } catch (err: any) {
-      setError(err.detail || 'Nepodarilo sa aktualizovať profil')
+    } catch {
+      setError('Nepodarilo sa aktualizovať profil')
     }
   }
 
@@ -130,8 +130,8 @@ export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
       setSuccess('Heslo bolo úspešne zmenené. Všetky ostatné relácie boli odhlásené.')
       setPasswordForm({ current_password: '', new_password: '', confirm_password: '' })
       setPasswordErrors({})
-    } catch (err: any) {
-      setError(err.detail || 'Nepodarilo sa zmeniť heslo')
+    } catch {
+      setError('Nepodarilo sa zmeniť heslo')
     }
   }
 

@@ -133,9 +133,9 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
       } else {
         alert(`❌ Neúspešné pripojenie\n\n${result.message}`)
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error testing arena source:', err)
-      alert(`❌ Chyba pripojenia\n\n${err.message || 'Neznáma chyba'}`)
+      alert(`❌ Chyba pripojenia\n\n${err instanceof Error ? err.message : 'Neznáma chyba'}`)
     }
   }
 

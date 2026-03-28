@@ -47,7 +47,7 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
       setError(null)
       const data = await apiClient.get<SyncLog[]>(`${API_ENDPOINTS.SYNC_LOGS}?limit=10`)
       setLogs(data)
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error loading sync logs:', err)
       setError('Nepodarilo sa načítať logy synchronizácií')
     } finally {
@@ -59,7 +59,7 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
     try {
       const data = await apiClient.get<SyncLog>(API_ENDPOINTS.SYNC_LOG_DETAIL(logId))
       setSelectedLog(data)
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error loading log detail:', err)
       setError('Nepodarilo sa načítať detail logu')
     }
