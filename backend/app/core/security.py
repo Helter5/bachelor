@@ -25,17 +25,16 @@ def get_client_ip(request: Request) -> Optional[str]:
     return request.client.host if request.client else None
 
 
-# Token configuration
-ACCESS_TOKEN_EXPIRE_MINUTES = 15  # Short-lived
-REFRESH_TOKEN_EXPIRE_DAYS = 30    # Long-lived
-ALGORITHM = "HS256"
+ALGORITHM = settings.jwt_algorithm
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.jwt_access_token_expire_minutes
+REFRESH_TOKEN_EXPIRE_DAYS = 30
 JWT_ISSUER = "wrestling-federation-api"
 JWT_AUDIENCE = "wrestling-federation-client"
 
-# Allowed origins for CSRF protection
 ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Vite dev
-    "http://localhost:8000",  # FastAPI dev
+    "http://localhost:5173",
+    "http://localhost:8000",
+    settings.frontend_url,
 ]
 
 
