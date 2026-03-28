@@ -26,6 +26,12 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_access_token_expire_minutes: int = 30
     jwt_refresh_token_expire_days: int = 30
+    jwt_issuer: str = "wrestling-federation-api"
+    jwt_audience: str = "wrestling-federation-client"
+
+    # Cookie / security settings
+    cookie_secure: bool = True
+    sync_log_max_entries: int = 10
 
     # Email Configuration
     smtp_host: str = "smtp.gmail.com"
@@ -64,6 +70,10 @@ class Settings(BaseSettings):
             'jwt_algorithm': {'env': 'JWT_ALGORITHM'},
             'jwt_access_token_expire_minutes': {'env': 'JWT_ACCESS_TOKEN_EXPIRE_MINUTES'},
             'jwt_refresh_token_expire_days': {'env': 'JWT_REFRESH_TOKEN_EXPIRE_DAYS'},
+            'jwt_issuer': {'env': 'JWT_ISSUER'},
+            'jwt_audience': {'env': 'JWT_AUDIENCE'},
+            'cookie_secure': {'env': 'COOKIE_SECURE'},
+            'sync_log_max_entries': {'env': 'SYNC_LOG_MAX_ENTRIES'},
             'allowed_origins': {'env': 'ALLOWED_ORIGINS'},
             'smtp_host': {'env': 'SMTP_HOST'},
             'smtp_port': {'env': 'SMTP_PORT'},

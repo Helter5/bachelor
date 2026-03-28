@@ -15,16 +15,17 @@ from ....services.sport_event_service import SportEventService
 from ....services.weight_category_service import WeightCategoryService
 from ....services.fight_service import FightService
 from ....services.victory_type_service import VictoryTypeService
+from ....config import get_settings
 
-SYNC_LOG_MAX_ENTRIES = 10
+_settings = get_settings()
 
 
 def _cleanup_old_sync_logs(session: Session) -> None:
-    """Keep only the most recent SYNC_LOG_MAX_ENTRIES sync logs, delete the rest."""
+    """Keep only the most recent sync logs, delete the rest."""
     keep_ids_stmt = (
         select(SyncLog.id)
         .order_by(col(SyncLog.started_at).desc())
-        .limit(SYNC_LOG_MAX_ENTRIES)
+        .limit(_settings.sync_log_max_entries)
     )
     keep_ids = [row for row in session.exec(keep_ids_stmt).all()]
 

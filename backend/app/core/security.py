@@ -28,8 +28,8 @@ def get_client_ip(request: Request) -> Optional[str]:
 ALGORITHM = settings.jwt_algorithm
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.jwt_access_token_expire_minutes
 REFRESH_TOKEN_EXPIRE_DAYS = settings.jwt_refresh_token_expire_days
-JWT_ISSUER = "wrestling-federation-api"
-JWT_AUDIENCE = "wrestling-federation-client"
+JWT_ISSUER = settings.jwt_issuer
+JWT_AUDIENCE = settings.jwt_audience
 
 
 def _get_allowed_origins() -> list[str]:

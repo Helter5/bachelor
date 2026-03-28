@@ -100,143 +100,28 @@ async def sync_teams(
 
 @router.get("/{sportEventId}/print")
 async def generate_teams_list_pdf(sportEventId: str):
-    """
-    Generate PDF with teams list for a specific sport event
-
-    Args:
-        sportEventId: Sport event UUID
-
-    Returns PDF file with teams list in the format:
-    - Header: Event name (left), "TEAMS LIST" (right)
-    - Table: Number, Flag, ISO, Country name, Number of athletes
-    - Footer: Total number of athletes
-    """
+    """Generate PDF with teams list for a specific sport event."""
     from fastapi.responses import Response
-    from io import BytesIO
-    from reportlab.lib import colors
-    from reportlab.lib.pagesizes import A4
-    from reportlab.lib.styles import getSampleStyleSheet
-    from reportlab.lib.units import inch
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
     from ..services.arena import fetch_arena_data
-    from ..exports.utils.font_manager import font_manager
-
-    font_name = font_manager.default_font
-    font_bold = font_manager.bold_font
+    from ..exports.documents.teams_list_export import generate_teams_list_pdf as _make_pdf
 
     try:
-        # Fetch event details to get the event name
         event_data = await fetch_arena_data(f"sport-event/get/{sportEventId}")
         if not event_data or "event" not in event_data:
             raise HTTPException(status_code=404, detail=f"Sport event {sportEventId} not found")
 
-        event = event_data["event"]
-        event_name = event.get("fullName", "Sport Event")
-
-        # Fetch teams data
         teams_data = await fetch_arena_data(f"team/{sportEventId}")
         if not teams_data or "sportEventTeams" not in teams_data:
             raise HTTPException(status_code=404, detail=f"Teams not found for event {sportEventId}")
 
-        teams_list = teams_data["sportEventTeams"].get("items", [])
-
-        # Sort teams by name
-        teams_list.sort(key=lambda x: x.get("name", ""))
-
-        # Create PDF in memory
-        buffer = BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
-        elements = []
-
-        # Styles
-        styles = getSampleStyleSheet()
-        
-        # Update default styles to use UTF-8 font
-        for style in styles.byName.values():
-            style.fontName = font_name
-
-        # Header with event name and "TEAMS LIST"
-        header_data = [[
-            Paragraph(f"<b>{event_name}</b>", styles['Normal']),
-            Paragraph("<b>TEAMS LIST</b>", styles['Normal'])
-        ]]
-        header_table = Table(header_data, colWidths=[4.5*inch, 2*inch])
-        header_table.setStyle(TableStyle([
-            ('ALIGN', (0, 0), (0, 0), 'LEFT'),
-            ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
-            ('FONTSIZE', (0, 0), (-1, -1), 12),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
-        ]))
-        elements.append(header_table)
-        elements.append(Spacer(1, 0.2*inch))
-
-        # Table header
-        table_data = [['#', 'ISO', 'Krajina', 'Počet atlétov']]
-
-        # Table rows
-        total_athletes = 0
-        for idx, team in enumerate(teams_list, 1):
-            athlete_count = team.get("athleteCount", 0)
-            total_athletes += athlete_count
-            table_data.append([
-                str(idx),
-                team.get("alternateName", ""),
-                team.get("name", ""),
-                str(athlete_count)
-            ])
-
-        # Create the table with repeatRows=1 to repeat header on each page
-        teams_table = Table(
-            table_data,
-            colWidths=[0.5*inch, 0.8*inch, 3.9*inch, 1.3*inch],
-            repeatRows=1  # Repeat header row on each page
-        )
-        teams_table.setStyle(TableStyle([
-            # Header style
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), font_bold),
-            ('FONTSIZE', (0, 0), (-1, 0), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-
-            # Body style
-            ('FONTNAME', (0, 1), (-1, -1), font_name),
-            ('FONTSIZE', (0, 1), (-1, -1), 9),
-            ('ALIGN', (0, 1), (0, -1), 'CENTER'),  # # column
-            ('ALIGN', (1, 1), (1, -1), 'CENTER'),  # ISO column
-            ('ALIGN', (2, 1), (2, -1), 'LEFT'),    # Country column
-            ('ALIGN', (3, 1), (3, -1), 'CENTER'),  # Athletes column
-
-            # Grid
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
-            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.lightgrey]),
-        ]))
-
-        elements.append(teams_table)
-        elements.append(Spacer(1, 0.3*inch))
-
-        # Total athletes footer
-        footer_data = [[Paragraph(f"<b>Celkový počet atlétov: {total_athletes}</b>", styles['Normal'])]]
-        footer_table = Table(footer_data, colWidths=[6.5*inch])
-        footer_table.setStyle(TableStyle([
-            ('ALIGN', (0, 0), (0, 0), 'CENTER'),
-            ('FONTSIZE', (0, 0), (0, 0), 12),
-        ]))
-        elements.append(footer_table)
-
-        # Build PDF
-        doc.build(elements)
-        buffer.seek(0)
+        event_name = event_data["event"].get("fullName", "Sport Event")
+        teams = sorted(teams_data["sportEventTeams"].get("items", []), key=lambda x: x.get("name", ""))
 
         return Response(
-            content=buffer.getvalue(),
+            content=_make_pdf(event_name, teams),
             media_type="application/pdf",
-            headers={
-                "Content-Disposition": f"inline; filename=teams-list-{sportEventId}.pdf"
-            }
+            headers={"Content-Disposition": f"inline; filename=teams-list-{sportEventId}.pdf"},
         )
-
     except HTTPException:
         raise
     except Exception as e:

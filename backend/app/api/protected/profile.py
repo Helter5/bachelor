@@ -192,8 +192,9 @@ async def upload_avatar(
     upload_dir = "uploads/avatars"
     os.makedirs(upload_dir, exist_ok=True)
 
-    # Generate unique filename
-    file_extension = file.filename.split(".")[-1]
+    # Derive extension from validated content_type — never trust filename
+    ext_map = {"image/jpeg": "jpg", "image/png": "png", "image/gif": "gif", "image/webp": "webp"}
+    file_extension = ext_map[file.content_type]
     unique_filename = f"{user.id}_{uuid.uuid4()}.{file_extension}"
     file_path = os.path.join(upload_dir, unique_filename)
 

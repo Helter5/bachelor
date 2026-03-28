@@ -1,9 +1,11 @@
 """OAuth2 utilities for Google Sign-In"""
 from typing import Optional
+import logging
 import httpx
-from fastapi import HTTPException, status
 
 from ..config import get_settings
+
+logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
@@ -48,7 +50,7 @@ async def verify_google_token(token: str) -> Optional[dict]:
             }
 
     except Exception as e:
-        print(f"Error verifying Google token: {e}")
+        logger.error("Error verifying Google token: %s", e)
         return None
 
 

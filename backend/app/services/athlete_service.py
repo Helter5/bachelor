@@ -329,41 +329,33 @@ class AthleteService(BaseService[Athlete]):
         return {"created": created, "updated": updated}
 
     def get_all_with_details(self) -> List[Dict[str, Any]]:
-        """
-        Get all athletes from database with related team and weight category data
-
-        Returns:
-            List of athletes with detailed information
-        """
+        """Get all athletes from database with related team and weight category data."""
         athletes = self.session.exec(select(Athlete)).all()
-        
-        result = []
-        for athlete in athletes:
-            person = self.session.get(Person, athlete.person_id) if athlete.person_id else None
-            athlete_dict = {
-                "id": athlete.id,
-                "person_full_name": person.full_name if person else None,
-                "is_competing": athlete.is_competing,
-                "country_iso_code": None,
-                "weight_category": None,
+
+        person_ids = {a.person_id for a in athletes if a.person_id}
+        team_ids = {a.team_id for a in athletes if a.team_id}
+        wc_ids = {a.weight_category_id for a in athletes if a.weight_category_id}
+
+        persons = (
+            {p.id: p for p in self.session.exec(select(Person).where(Person.id.in_(person_ids))).all()}
+            if person_ids else {}
+        )
+        teams = (
+            {t.id: t for t in self.session.exec(select(Team).where(Team.id.in_(team_ids))).all()}
+            if team_ids else {}
+        )
+        weight_cats = (
+            {w.id: w for w in self.session.exec(select(WeightCategory).where(WeightCategory.id.in_(wc_ids))).all()}
+            if wc_ids else {}
+        )
+
+        return [
+            {
+                "id": a.id,
+                "person_full_name": persons[a.person_id].full_name if a.person_id in persons else None,
+                "is_competing": a.is_competing,
+                "country_iso_code": teams[a.team_id].country_iso_code if a.team_id in teams else None,
+                "weight_category": weight_cats[a.weight_category_id].name if a.weight_category_id in weight_cats else None,
             }
-            
-            # Get team data if team_id exists
-            if athlete.team_id:
-                team = self.session.exec(
-                    select(Team).where(Team.id == athlete.team_id)
-                ).first()
-                if team:
-                    athlete_dict["country_iso_code"] = team.country_iso_code
-            
-            # Get weight category data if weight_category_id exists
-            if athlete.weight_category_id:
-                weight_cat = self.session.exec(
-                    select(WeightCategory).where(WeightCategory.id == athlete.weight_category_id)
-                ).first()
-                if weight_cat:
-                    athlete_dict["weight_category"] = weight_cat.name
-            
-            result.append(athlete_dict)
-        
-        return result
+            for a in athletes
+        ]
