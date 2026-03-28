@@ -34,7 +34,6 @@ class SportEventService(BaseService[SportEvent]):
                 "id": event.id,
                 "arena_uuid": event.arena_uuid,
                 "name": event.name,
-                "full_name": event.full_name,
                 "start_date": event.start_date,
                 "end_date": event.end_date,
                 "country_iso_code": event.country_iso_code,

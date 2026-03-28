@@ -10,6 +10,7 @@ import logging
 
 from ..domain.entities.victory_type import VictoryType
 from ..domain.entities.weight_category import WeightCategory
+from ..domain.entities.discipline import Discipline
 from .arena import fetch_arena_data
 
 logger = logging.getLogger(__name__)
@@ -74,9 +75,9 @@ class VictoryTypeService:
     async def sync_for_event(self, sport_event_id: int) -> Dict[str, Any]:
         """Sync victory types for all sports used in an event's weight categories."""
         sport_ids = self.session.exec(
-            select(WeightCategory.sport_id)
+            select(Discipline.sport_id)
+            .join(WeightCategory, WeightCategory.discipline_id == Discipline.id)
             .where(WeightCategory.sport_event_id == sport_event_id)
-            .where(WeightCategory.sport_id.is_not(None))  # type: ignore
             .distinct()
         ).all()
 

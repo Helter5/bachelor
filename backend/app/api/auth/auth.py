@@ -21,16 +21,18 @@ from ...core.security import (
     create_password_reset_token,
     verify_password_reset_token,
     generate_random_password,
+    get_client_ip,
+    validate_request_origin,
     ACCESS_TOKEN_EXPIRE_MINUTES,
     REFRESH_TOKEN_EXPIRE_DAYS,
 )
 from ...core.email import email_service
 from ...core.oauth import verify_google_token, generate_username_from_email
+from ...core.dependencies import require_user
 from ...config import get_settings
+from ...domain.entities.login_history import LoginHistory
 
 settings = get_settings()
-from ...core.dependencies import require_user
-from ...domain.entities.login_history import LoginHistory
 
 router = APIRouter(prefix="/auth")
 
@@ -108,8 +110,6 @@ async def login(
     session: Session = Depends(get_session)
 ):
     """Login with username/email + password. Returns CSRF token; sets HttpOnly cookies."""
-    from ...core.security import get_client_ip
-
     ip_address = get_client_ip(request)
     user_agent = request.headers.get("user-agent")
     mac_address = request.headers.get("X-Device-ID")
@@ -171,7 +171,6 @@ async def refresh(
     if not csrf_token_cookie or not csrf_token_header or csrf_token_cookie != csrf_token_header:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="CSRF token validation failed")
 
-    from ...core.security import validate_request_origin
     if not validate_request_origin(origin, referer):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid request origin")
 
@@ -189,7 +188,6 @@ async def refresh(
     if not user.is_verified:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Email verification was revoked.")
 
-    from ...core.security import get_client_ip
     ip_address = get_client_ip(request)
     user_agent = request.headers.get("user-agent")
     mac_address = request.headers.get("X-Device-ID")
@@ -218,7 +216,6 @@ async def logout(
     if csrf_token_cookie and csrf_token_header and csrf_token_cookie != csrf_token_header:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="CSRF token validation failed")
 
-    from ...core.security import validate_request_origin
     if not validate_request_origin(origin, referer):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid request origin")
 
@@ -331,7 +328,6 @@ async def google_login(
     if not user_info:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Google token")
 
-    from ...core.security import get_client_ip
     ip_address = get_client_ip(request)
     user_agent = request.headers.get("user-agent")
     mac_address = request.headers.get("X-Device-ID")

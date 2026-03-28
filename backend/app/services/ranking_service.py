@@ -152,12 +152,12 @@ class RankingService:
         return rankings
 
     def _get_fights_for_category(self, weight_category_name: str, date_from: Optional[str] = None) -> list[dict]:
+        """Get all fights for a weight category with person info resolved via athletes."""
         # Parse "65 kg" → 65
         try:
             max_weight = int(weight_category_name.replace(" kg", "").strip())
         except ValueError:
             return []
-        """Get all fights for a weight category with person info resolved via athletes."""
         a1 = Athlete.__table__.alias("a1")
         a2 = Athlete.__table__.alias("a2")
         p1 = Person.__table__.alias("p1")
