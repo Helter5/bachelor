@@ -4,6 +4,7 @@ from typing import Optional
 from uuid import UUID, uuid4
 from sqlmodel import Field, SQLModel
 from pydantic import EmailStr
+from ...constants import UserRole
 
 
 class UserBase(SQLModel):
@@ -23,7 +24,7 @@ class User(UserBase, table=True):
     username: str = Field(max_length=50, unique=True, index=True)
     email: EmailStr = Field(unique=True, index=True)
     password_hash: str = Field(max_length=255)
-    role: str = Field(default="user", max_length=20)  # "admin" or "user"
+    role: str = Field(default=UserRole.USER, max_length=20)
     is_active: bool = Field(default=True)
     is_verified: bool = Field(default=False)
     avatar_url: Optional[str] = Field(default=None, max_length=500)

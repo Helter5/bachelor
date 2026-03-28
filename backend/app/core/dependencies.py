@@ -2,6 +2,7 @@
 from fastapi import Depends, HTTPException, status, Cookie, Header, Request
 from typing import Optional
 from sqlmodel import Session, select
+from ..constants import UserRole
 
 from ..database import get_session
 from ..domain.entities.user import User
@@ -124,7 +125,7 @@ async def require_admin(user: User = Depends(require_user)) -> User:
     Raises:
         HTTPException: 403 if user is not admin
     """
-    if user.role != "admin":
+    if user.role != UserRole.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin privileges required",

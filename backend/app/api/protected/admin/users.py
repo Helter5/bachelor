@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 from typing import Optional
+from ....constants import UserRole
 
 from ....database import get_session
 from ....domain.entities.user import User
@@ -81,7 +82,7 @@ async def update_user_role(
     
     Requires: Admin role + Bearer token
     """
-    if role not in ["admin", "user"]:
+    if role not in UserRole.ALL:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Role must be 'admin' or 'user'"

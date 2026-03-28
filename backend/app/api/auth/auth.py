@@ -2,10 +2,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie, Header, Request
 from sqlmodel import Session, select
 from typing import Optional
+from ...constants import UserRole
 
 from ...database import get_session
 from ...domain.entities.user import User
-from ...domain.schemas.user_schema import UserCreate, UserLogin
+from ...domain.schemas.user_schema import UserCreate, UserLogin, EmailRequest, GoogleLoginRequest
 from ...domain.schemas.responses import UserOut, TokenResponse
 from ...core.security import (
     hash_password,
@@ -257,12 +258,8 @@ async def verify_email(token: str, session: Session = Depends(get_session)):
 
 
 @router.post("/resend-verification")
-async def resend_verification_email(request_data: dict, session: Session = Depends(get_session)):
-    email = request_data.get("email")
-    if not email:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email is required")
-
-    user = session.exec(select(User).where(User.email == email)).first()
+async def resend_verification_email(request_data: EmailRequest, session: Session = Depends(get_session)):
+    user = session.exec(select(User).where(User.email == request_data.email)).first()
 
     # Don't reveal whether email exists (prevent enumeration)
     if not user:
@@ -272,6 +269,7 @@ async def resend_verification_email(request_data: dict, session: Session = Depen
 
     plain_token, _, _ = create_email_verification_token(user.id, session)
     verification_link = f"{settings.frontend_url}/verify-email?token={plain_token}"
+
     email_sent = email_service.send_verification_email(
         to_email=user.email, username=user.username, verification_link=verification_link
     )
@@ -283,12 +281,8 @@ async def resend_verification_email(request_data: dict, session: Session = Depen
 
 
 @router.post("/forgot-password")
-async def forgot_password(request_data: dict, session: Session = Depends(get_session)):
-    email = request_data.get("email")
-    if not email:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email is required")
-
-    user = session.exec(select(User).where(User.email == email)).first()
+async def forgot_password(request_data: EmailRequest, session: Session = Depends(get_session)):
+    user = session.exec(select(User).where(User.email == request_data.email)).first()
 
     # Don't reveal whether email exists (prevent enumeration)
     if not user:
@@ -327,17 +321,13 @@ async def reset_password(token: str, session: Session = Depends(get_session)):
 
 @router.post("/google", response_model=TokenResponse)
 async def google_login(
-    request_data: dict,
+    request_data: GoogleLoginRequest,
     response: Response,
     request: Request,
     session: Session = Depends(get_session)
 ):
     """Login/register via Google OAuth2. Creates account if user doesn't exist."""
-    credential = request_data.get("credential")
-    if not credential:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Google credential is required")
-
-    user_info = await verify_google_token(credential)
+    user_info = await verify_google_token(request_data.credential)
     if not user_info:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Google token")
 
@@ -363,7 +353,7 @@ async def google_login(
             last_name=user_info.get("family_name", ""),
             email=user_info["email"],
             password_hash=hash_password(generate_random_password(16)),
-            role="user",
+            role=UserRole.USER,
             is_active=True,
             is_verified=True,  # Google accounts are pre-verified
             avatar_url=user_info.get("picture"),
