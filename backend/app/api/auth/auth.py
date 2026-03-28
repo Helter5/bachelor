@@ -85,7 +85,7 @@ async def register(user_data: UserCreate, session: Session = Depends(get_session
         last_name=user_data.last_name,
         email=user_data.email,
         password_hash=hash_password(user_data.password),
-        role="user",
+        role=UserRole.USER,
         is_active=True,
         is_verified=False,
     )
