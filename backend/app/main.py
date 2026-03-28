@@ -1,6 +1,8 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from .core.dependencies import require_user
+from .database import create_db_and_tables
 
 # Import new 3-zone API structure
 from .api.auth import router as auth_router
@@ -21,10 +23,17 @@ from .api import (
     athletes,
 )
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    create_db_and_tables()
+    yield
+
+
 app = FastAPI(
     title="Wrestling Federation API",
     version="2.0.0",
-    description="3-Zone API: Public (no auth) | Auth (login/refresh) | Protected (admin only)"
+    description="3-Zone API: Public (no auth) | Auth (login/refresh) | Protected (admin only)",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
