@@ -144,41 +144,11 @@ async def generate_athletes_list_pdf(sportEventId: str):
     from reportlab.lib.styles import getSampleStyleSheet
     from reportlab.lib.units import inch
     from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-    from reportlab.pdfbase import pdfmetrics
-    from reportlab.pdfbase.ttfonts import TTFont
     from ..services.arena import fetch_arena_data
-    
-    # Register UTF-8 compatible fonts
-    import os
-    font_paths = [
-        '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
-        '/usr/share/fonts/truetype/dejavu-core/DejaVuSans.ttf',
-    ]
-    font_bold_paths = [
-        '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
-        '/usr/share/fonts/truetype/dejavu-core/DejaVuSans-Bold.ttf',
-    ]
-    
-    font_name = 'Helvetica'
-    font_bold = 'Helvetica-Bold'
-    
-    for font_path in font_paths:
-        if os.path.exists(font_path):
-            try:
-                pdfmetrics.registerFont(TTFont('DejaVuSans', font_path))
-                font_name = 'DejaVuSans'
-                break
-            except:
-                pass
-    
-    for font_path in font_bold_paths:
-        if os.path.exists(font_path):
-            try:
-                pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', font_path))
-                font_bold = 'DejaVuSans-Bold'
-                break
-            except:
-                pass
+    from ..exports.utils.font_manager import font_manager
+
+    font_name = font_manager.default_font
+    font_bold = font_manager.bold_font
 
     try:
         # Fetch event details

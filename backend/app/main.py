@@ -13,16 +13,7 @@ from .api.public.results import router as results_router
 from .api.protected.admin import sync_router, users_router, arena_sources_router, sync_logs_router, persons_admin_router
 from .api.protected import profile_router
 
-# Legacy imports (will be phased out)
-from .api import (
-    config,
-    results,
-    exports,
-    exports_advanced,
-    legacy_views,
-    teams,
-    athletes,
-)
+from .api import legacy_views, teams, athletes
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -76,13 +67,9 @@ app.include_router(sync_logs_router, prefix="/api/v1")
 app.include_router(persons_admin_router, prefix="/api/v1")
 
 # Legacy routes
-app.include_router(config.router)
-app.include_router(results.router)
-app.include_router(exports.router)
-app.include_router(exports_advanced.router)
 app.include_router(legacy_views.router)
-app.include_router(teams.router)  # Legacy PDF generation
-app.include_router(athletes.router)  # Legacy PDF generation
+app.include_router(teams.router)
+app.include_router(athletes.router)
 
 @app.get("/")
 async def root():
