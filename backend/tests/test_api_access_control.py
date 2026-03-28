@@ -21,6 +21,10 @@ from sqlmodel import Session, select
 from app.main import app
 from app.database import engine
 from app.domain.entities.user import User
+from app.domain.entities.refresh_token import RefreshToken
+from app.domain.entities.email_verification_token import EmailVerificationToken
+from app.domain.entities.password_reset_token import PasswordResetToken
+from app.domain.entities.login_history import LoginHistory
 from app.core.security import hash_password
 
 # ── Testovacie prihlasovacie údaje ──────────────────────────────────────────
@@ -65,6 +69,11 @@ def create_test_users():
         for uname in [REGULAR_USERNAME, ADMIN_USERNAME]:
             u = session.exec(select(User).where(User.username == uname)).first()
             if u:
+                for model in (RefreshToken, EmailVerificationToken, PasswordResetToken, LoginHistory):
+                    rows = session.exec(select(model).where(model.user_id == u.id)).all()
+                    for row in rows:
+                        session.delete(row)
+                session.flush()
                 session.delete(u)
         session.commit()
 

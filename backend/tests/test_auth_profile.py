@@ -16,6 +16,10 @@ from sqlmodel import Session, select
 from app.main import app
 from app.database import engine
 from app.domain.entities.user import User
+from app.domain.entities.refresh_token import RefreshToken
+from app.domain.entities.email_verification_token import EmailVerificationToken
+from app.domain.entities.password_reset_token import PasswordResetToken
+from app.domain.entities.login_history import LoginHistory
 from app.core.security import (
     hash_password,
     create_email_verification_token,
@@ -80,6 +84,11 @@ def delete_user(username: str) -> None:
     with Session(engine) as session:
         user = session.exec(select(User).where(User.username == username)).first()
         if user:
+            for model in (RefreshToken, EmailVerificationToken, PasswordResetToken, LoginHistory):
+                rows = session.exec(select(model).where(model.user_id == user.id)).all()
+                for row in rows:
+                    session.delete(row)
+            session.flush()
             session.delete(user)
         session.commit()
 
