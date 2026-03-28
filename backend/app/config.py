@@ -11,18 +11,18 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables"""
 
     # Database Configuration
-    database_user: str = "user"
-    database_password: str = "password"
+    database_user: str
+    database_password: str
     database_host: str = "localhost"
     database_port: int = 5432
-    database_name: str = "arena_db"
+    database_name: str
     database_echo: bool = False
 
     # Arena API Configuration
     arena_api_format: str = "json"
 
     # JWT Configuration
-    jwt_secret_key: str = "your-secret-key-here-change-in-production"
+    jwt_secret_key: str
     jwt_algorithm: str = "HS256"
     jwt_access_token_expire_minutes: int = 30
 
