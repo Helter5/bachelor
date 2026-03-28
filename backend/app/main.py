@@ -47,12 +47,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ==================== 3-ZONE API STRUCTURE ====================
-
-# 🔐 Auth Zone (login, refresh, logout)
+# Auth
 app.include_router(auth_router, prefix="/api/v1")
 
-# 🔒 Data Zone (requires authentication)
+# Data (requires authentication)
 _auth = [Depends(require_user)]
 app.include_router(events_router, prefix="/api/v1", dependencies=_auth)
 app.include_router(athletes_router, prefix="/api/v1", dependencies=_auth)
@@ -63,17 +61,17 @@ app.include_router(persons_router, prefix="/api/v1", dependencies=_auth)
 app.include_router(rankings_router, prefix="/api/v1", dependencies=_auth)
 app.include_router(event_statistics_router, prefix="/api/v1", dependencies=_auth)
 
-# 🔒 Protected Zone (requires authentication)
-app.include_router(profile_router, prefix="/api/v1")  # User profile (any authenticated user)
+# Profile
+app.include_router(profile_router, prefix="/api/v1")
 
-# 🔒 Admin Zone (requires admin role)
+# Admin
 app.include_router(sync_router, prefix="/api/v1")
 app.include_router(users_router, prefix="/api/v1")
 app.include_router(arena_sources_router, prefix="/api/v1")
 app.include_router(sync_logs_router, prefix="/api/v1")
 app.include_router(persons_admin_router, prefix="/api/v1")
 
-# ==================== LEGACY ROUTES (Deprecated) ====================
+# Legacy routes
 app.include_router(config.router)
 app.include_router(results.router)
 app.include_router(exports.router)
