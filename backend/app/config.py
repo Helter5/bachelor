@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     # Cookie / security settings
     cookie_secure: bool = True
     sync_log_max_entries: int = 10
+    send_emails: bool = True
 
     # Email Configuration
     smtp_host: str = "smtp.gmail.com"
@@ -74,6 +75,7 @@ class Settings(BaseSettings):
             'jwt_audience': {'env': 'JWT_AUDIENCE'},
             'cookie_secure': {'env': 'COOKIE_SECURE'},
             'sync_log_max_entries': {'env': 'SYNC_LOG_MAX_ENTRIES'},
+            'send_emails': {'env': 'SEND_EMAILS'},
             'allowed_origins': {'env': 'ALLOWED_ORIGINS'},
             'smtp_host': {'env': 'SMTP_HOST'},
             'smtp_port': {'env': 'SMTP_PORT'},

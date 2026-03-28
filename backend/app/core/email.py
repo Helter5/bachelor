@@ -1,5 +1,4 @@
 """Email service for sending verification and notification emails"""
-import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -42,7 +41,7 @@ class EmailService:
         Returns:
             bool: True if email was sent successfully, False otherwise
         """
-        if os.environ.get("SEND_EMAILS", "true").lower() == "false":
+        if not settings.send_emails:
             logger.info(f"[SEND_EMAILS=false] Skipping email to {to_email}: {subject}")
             return True
 
