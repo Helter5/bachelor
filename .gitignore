@@ -1,24 +1,49 @@
-# Logs
-logs
+# python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# virtual env
+venv/
+backend/venv/
+.venv_convert/
+
+# env
+.env
+
+# pytest
+.pytest_cache/
+
+# IDE / OS
+.DS_Store
+.vscode/
+.idea/
+
+# logs / temp
 *.log
+*.tmp
+
+# python packaging
+build/
+dist/
+*.egg-info/
+
+# mypy / coverage
+.mypy_cache/
+.coverage
+htmlcov/
+
+# claude
+.claude
+
+# node
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
-CLAUDE.md
-.claude
 
-node_modules/
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-.idea
-.DS_Store
-
-venv/
-__pycache__/
-.env
+# build outputs
+dist/
+.next/
+.nuxt/

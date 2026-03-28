@@ -1,9 +1,0 @@
-{
-  "devDependencies": {
-    "@types/react": "^19.2.2"
-  },
-  "dependencies": {
-    "flag-icons": "^7.5.0",
-    "recharts": "^3.8.0"
-  }
-}
