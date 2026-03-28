@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create .env for CI
+        run: |
+          cat > .env << 'EOF'
+          DATABASE_USER=user
+          DATABASE_PASSWORD=password
+          DATABASE_NAME=arena_db
+          DATABASE_HOST=wf-db
+          DATABASE_PORT=5432
+          JWT_SECRET_KEY=ci-test-secret-key
+          SMTP_HOST=smtp.gmail.com
+          SMTP_PORT=587
+          SMTP_USER=
+          SMTP_PASSWORD=
+          SMTP_FROM_EMAIL=ci@example.com
+          SMTP_FROM_NAME=Wrestling Federation
+          GOOGLE_CLIENT_ID=
+          GOOGLE_CLIENT_SECRET=
+          FRONTEND_URL=http://localhost:5173
+          EOF
+
+      - name: Build backend image
+        run: docker compose build wf-api
+
+      - name: Start DB + API
+        run: docker compose up -d wf-db wf-api
+
+      - name: Wait for API to be healthy
+        run: |
+          echo "Waiting for services..."
+          timeout 90 bash -c \
+            'until docker compose ps wf-api | grep -q "(healthy)"; do
+              docker compose ps wf-api
+              sleep 5
+            done'
+
+      - name: Run tests
+        run: |
+          docker compose exec -T wf-api python -m pytest \
+            tests/test_api_access_control.py \
+            tests/test_auth_profile.py \
+            -v --tb=short
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose logs wf-api
+
+      - name: Stop services
+        if: always()
+        run: docker compose down

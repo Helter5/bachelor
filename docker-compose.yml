@@ -1,0 +1,176 @@
+name: wrestling-app
+
+services:
+  # PostgreSQL Database
+  wf-db:
+    image: postgres:16-alpine
+    container_name: wf-db
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db_schema/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "${DATABASE_PORT:-5433}:5432"
+    networks:
+      - wf-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  wf-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: wrestling-app-backend
+    container_name: wf-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Database connection
+      DATABASE_URL: postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@wf-db:5432/${DATABASE_NAME}
+      DATABASE_HOST: wf-db
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+
+      # Arena API configuration
+      ARENA_BASE_URL: ${ARENA_BASE_URL:-}
+      ARENA_CLIENT_ID: ${ARENA_CLIENT_ID:-}
+      ARENA_CLIENT_SECRET: ${ARENA_CLIENT_SECRET:-}
+      ARENA_API_KEY: ${ARENA_API_KEY:-}
+      ARENA_API_FORMAT: ${ARENA_API_FORMAT:-json}
+
+      # Application settings
+      APP_HOST: ${APP_HOST:-0.0.0.0}
+      APP_PORT: ${APP_PORT:-8000}
+      APP_DEBUG: ${APP_DEBUG:-False}
+
+      # Email/SMTP Configuration
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Wrestling Federation}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+
+      # Google OAuth2 Configuration
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    volumes:
+      - ./backend:/app
+      - /app/__pycache__
+    depends_on:
+      wf-db:
+        condition: service_healthy
+    networks:
+      - wf-network
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--proxy-headers", "--forwarded-allow-ips", "*"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # Frontend - Development mode with Vite dev server
+  wf-web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: wf-web
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      wf-api:
+        condition: service_healthy
+    networks:
+      - wf-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:5173 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Test runner — spustí seed + pytest a skončí
+  # Použitie: docker compose run --rm wf-tests
+  wf-tests:
+    image: wrestling-app-backend
+    profiles: [tests]
+    restart: no
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@wf-db:5432/${DATABASE_NAME}
+      DATABASE_HOST: wf-db
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      ARENA_API_FORMAT: ${ARENA_API_FORMAT:-json}
+    volumes:
+      - ./backend:/app
+      - /app/__pycache__
+    depends_on:
+      wf-db:
+        condition: service_healthy
+    networks:
+      - wf-network
+    command: ["sh", "-c", "PYTHONPATH=/app python tests/ci_seed.py && pytest tests/sync/ -v"]
+
+  # pgAdmin - Database Management GUI
+  wf-pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: wf-pgadmin
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@admin.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      wf-db:
+        condition: service_healthy
+    networks:
+      - wf-network
+    healthcheck:
+      test: ["CMD", "wget", "-O", "-", "http://localhost:80/misc/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+    name: wf-postgres-data
+  pgadmin_data:
+    name: wf-pgadmin-data
+
+networks:
+  wf-network:
+    name: wf-network
+    driver: bridge

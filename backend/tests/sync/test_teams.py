@@ -1,0 +1,196 @@
+"""
+Sync validácia: tabuľka teams
+Porovnáva všetky relevantné polia tímov v DB voči Arena API
+pre každé synchronizované podujatie.
+"""
+from sqlmodel import select
+from app.domain.entities.team import Team
+from tests.conftest import arena_fetch
+from tests.utils import check, section, result
+
+
+async def _fetch_arena_teams(event) -> dict[str, dict]:
+    data = await arena_fetch(f"team/{event.arena_uuid}")
+    items = data.get("sportEventTeams", {}).get("items", [])
+    return {item["id"]: item for item in items if item.get("id")}
+
+
+def _db_teams_by_uid(db, event) -> dict[str, Team]:
+    teams = db.exec(select(Team).where(Team.sport_event_id == event.id)).all()
+    return {str(t.uid): t for t in teams}
+
+
+# ─────────────────────────────────────────────
+# 1. Počet
+# ─────────────────────────────────────────────
+
+async def test_teams_count_matches_arena(db, synced_events):
+    """Počet tímov v DB sa zhoduje s Arena API pre každé podujatie."""
+    errors = []
+    for event in synced_events:
+        arena = await _fetch_arena_teams(event)
+        db_teams = _db_teams_by_uid(db, event)
+        section(event.name)
+        ok = check("počet tímov", len(arena), len(db_teams))
+        if not ok:
+            errors.append(f"  {event.name}: Arena={len(arena)}, DB={len(db_teams)}")
+    result(errors, "Nesúlad počtu tímov:")
+
+
+# ─────────────────────────────────────────────
+# 2. Chýbajúce / navyše
+# ─────────────────────────────────────────────
+
+async def test_no_missing_teams_in_db(db, synced_events):
+    """Každý tím z Arena API musí existovať v DB (podľa UID)."""
+    errors = []
+    for event in synced_events:
+        arena = await _fetch_arena_teams(event)
+        db_teams = _db_teams_by_uid(db, event)
+        section(event.name)
+        for uid, at in arena.items():
+            in_db = uid in db_teams
+            ok = check(f"{at.get('name', uid)[:18]}", "áno", "áno" if in_db else "CHÝBA")
+            if not ok:
+                errors.append(f"  {event.name}: chýba {at.get('name')} ({uid})")
+    result(errors, "Tímy z Arény chýbajú v DB:")
+
+
+async def test_no_extra_teams_in_db(db, synced_events):
+    """DB nesmie obsahovať tímy ktoré v Arena API neexistujú."""
+    errors = []
+    for event in synced_events:
+        arena = await _fetch_arena_teams(event)
+        db_teams = _db_teams_by_uid(db, event)
+        event_extra = [t for uid, t in db_teams.items() if uid not in arena]
+        section(event.name)
+        check("navyše tímy v DB", 0, len(event_extra))
+        errors += [f"  {event.name}: {t.name}" for t in event_extra]
+    result(errors, "DB obsahuje tímy ktoré nie sú v Aréne:")
+
+
+# ─────────────────────────────────────────────
+# 3. Polia
+# ─────────────────────────────────────────────
+
+async def test_team_names_correct(db, synced_events):
+    """`name` každého tímu zodpovedá Arena API."""
+    errors = []
+    for event in synced_events:
+        arena = await _fetch_arena_teams(event)
+        db_teams = _db_teams_by_uid(db, event)
+        section(event.name)
+        for uid, at in arena.items():
+            db_team = db_teams.get(uid)
+            if not db_team:
+                continue
+            arena_val = at.get("name") or ""
+            db_val = db_team.name or ""
+            ok = check(f"name [{at.get('alternateName','?')}]", arena_val, db_val)
+            if not ok:
+                errors.append(f"  {event.name} / {uid}: Arena={arena_val!r}, DB={db_val!r}")
+    result(errors, "Nesprávne name:")
+
+
+async def test_team_alternate_names_correct(db, synced_events):
+    """`alternate_name` každého tímu zodpovedá Arena API."""
+    errors = []
+    for event in synced_events:
+        arena = await _fetch_arena_teams(event)
+        db_teams = _db_teams_by_uid(db, event)
+        section(event.name)
+        for uid, at in arena.items():
+            db_team = db_teams.get(uid)
+            if not db_team:
+                continue
+            arena_val = at.get("alternateName") or ""
+            db_val = (db_team.alternate_name or "").strip()
+            ok = check(f"alt [{arena_val or '?'}]", arena_val, db_val)
+            if not ok:
+                errors.append(f"  {event.name} / {uid}: Arena={arena_val!r}, DB={db_val!r}")
+    result(errors, "Nesprávne alternate_name:")
+
+
+async def test_team_country_iso_codes_correct(db, synced_events):
+    """`country_iso_code` každého tímu zodpovedá Arena API."""
+    errors = []
+    for event in synced_events:
+        arena = await _fetch_arena_teams(event)
+        db_teams = _db_teams_by_uid(db, event)
+        section(event.name)
+        for uid, at in arena.items():
+            db_team = db_teams.get(uid)
+            if not db_team:
+                continue
+            arena_val = at.get("countryIsoCode") or ""
+            db_val = (db_team.country_iso_code or "").strip()
+            ok = check(f"country [{at.get('alternateName','?')}]", arena_val, db_val)
+            if arena_val and not ok:
+                errors.append(f"  {event.name} / {db_team.name}: Arena={arena_val!r}, DB={db_val!r}")
+    result(errors, "Nesprávne country_iso_code:")
+
+
+async def test_team_athlete_count_correct(db, synced_events):
+    """`athlete_count` každého tímu zodpovedá Arena API."""
+    errors = []
+    for event in synced_events:
+        arena = await _fetch_arena_teams(event)
+        db_teams = _db_teams_by_uid(db, event)
+        section(event.name)
+        for uid, at in arena.items():
+            db_team = db_teams.get(uid)
+            if not db_team:
+                continue
+            arena_val = at.get("athleteCount")
+            if arena_val is None:
+                continue
+            ok = check(f"athletes [{at.get('alternateName','?')}]", arena_val, db_team.athlete_count)
+            if not ok:
+                errors.append(f"  {event.name} / {db_team.name}: Arena={arena_val}, DB={db_team.athlete_count}")
+    result(errors, "Nesprávne athlete_count:")
+
+
+async def test_team_final_rank_correct(db, synced_events):
+    """`final_rank` každého tímu zodpovedá Arena API."""
+    errors = []
+    for event in synced_events:
+        arena = await _fetch_arena_teams(event)
+        db_teams = _db_teams_by_uid(db, event)
+        section(event.name)
+        for uid, at in arena.items():
+            db_team = db_teams.get(uid)
+            if not db_team:
+                continue
+            arena_val = at.get("finalRank")
+            if arena_val is None:
+                continue
+            ok = check(f"final_rank [{at.get('alternateName','?')}]", arena_val, db_team.final_rank)
+            if not ok:
+                errors.append(f"  {event.name} / {db_team.name}: Arena={arena_val}, DB={db_team.final_rank}")
+    result(errors, "Nesprávne final_rank:")
+
+
+# ─────────────────────────────────────────────
+# 4. Integrita DB
+# ─────────────────────────────────────────────
+
+async def test_no_teams_without_sport_event(db):
+    """Každý tím musí byť priradený k podujatiu."""
+    teams = db.exec(select(Team)).all()
+    orphans = [t for t in teams if t.sport_event_id is None]
+    section("Integrita DB")
+    check("tímy bez event", 0, len(orphans))
+    result(
+        [f"  {t.name} ({t.uid})" for t in orphans],
+        "Tímy bez sport_event_id:"
+    )
+
+
+async def test_team_uids_unique(db):
+    """UID každého tímu musí byť unikátne v celej DB."""
+    teams = db.exec(select(Team)).all()
+    uids = [str(t.uid) for t in teams]
+    duplicates = {uid for uid in uids if uids.count(uid) > 1}
+    section("Integrita DB")
+    check("duplicitné UID", 0, len(duplicates))
+    result(list(duplicates), "Duplicitné UID tímov:")
