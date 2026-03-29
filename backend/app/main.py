@@ -7,7 +7,7 @@ from .config import get_settings as _get_settings
 
 # Import new 3-zone API structure
 from .api.auth import router as auth_router
-from .api.public import events_router, athletes_router, teams_router, persons_router, rankings_router, event_statistics_router
+from .api.public import events_router, athletes_router, teams_router, persons_router, rankings_router, event_statistics_router, draw_router
 from .api.public.weight_categories import router as weight_categories_router
 from .api.public.results import router as results_router
 from .api.protected.admin import sync_router, users_router, arena_sources_router, sync_logs_router, persons_admin_router
@@ -55,6 +55,7 @@ app.include_router(results_router, prefix="/api/v1", dependencies=_auth)
 app.include_router(persons_router, prefix="/api/v1", dependencies=_auth)
 app.include_router(rankings_router, prefix="/api/v1", dependencies=_auth)
 app.include_router(event_statistics_router, prefix="/api/v1", dependencies=_auth)
+app.include_router(draw_router, prefix="/api/v1", dependencies=_auth)
 
 # Profile
 app.include_router(profile_router, prefix="/api/v1")

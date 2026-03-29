@@ -9,6 +9,7 @@ import { AthletesTab } from "./tournamentDetail/tabs/AthletesTab"
 import { ResultsTab } from "./tournamentDetail/tabs/ResultsTab"
 import { StatisticsTab } from "./tournamentDetail/tabs/StatisticsTab"
 import { ExportTab } from "./tournamentDetail/tabs/ExportTab"
+import { DrawTab } from "./tournamentDetail/tabs/DrawTab"
 
 interface TournamentDetailProps {
   isDarkMode: boolean
@@ -286,6 +287,9 @@ export function TournamentDetail({
     else if (activeTab === "athletes") loadAthletes()
     else if (activeTab === "results") loadResults()
     else if (activeTab === "statistics") loadStatistics()
+    else if (activeTab === "draw") {
+      if (weightCategories.length === 0) loadWeightCategories()
+    }
     else if (activeTab === "export") {
       if (teams.length === 0) loadTeams()
       if (athletes.length === 0) loadAthletes()
@@ -309,6 +313,7 @@ export function TournamentDetail({
     { id: "athletes", label: "Atléti" },
     { id: "results", label: "Výsledky" },
     { id: "statistics", label: "Štatistiky" },
+    { id: "draw", label: "Žreb" },
     { id: "export", label: "Exportovanie" },
   ]
 
@@ -441,6 +446,15 @@ export function TournamentDetail({
             statsLoading={statsLoading}
             statsError={statsError}
             onSelectPerson={onSelectPerson}
+          />
+        )}
+
+        {activeTab === "draw" && (
+          <DrawTab
+            isDarkMode={isDarkMode}
+            eventId={tournamentId}
+            weightCategories={weightCategories}
+            weightCategoriesLoading={weightCategoriesLoading}
           />
         )}
 

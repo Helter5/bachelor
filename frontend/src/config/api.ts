@@ -79,6 +79,10 @@ export const API_ENDPOINTS = {
   // Event Statistics endpoints (PUBLIC)
   EVENT_STATISTICS: (eventId: number) => `/api/v1/events/${eventId}/statistics`,
 
+  // Draw/seeding endpoints (PUBLIC)
+  DRAW: (eventId: number, weightCategoryId: number, lastN: number = 3) =>
+    `/api/v1/draw/${eventId}/${weightCategoryId}?last_n=${lastN}`,
+
   // Profile endpoints (AUTHENTICATED USER)
   PROFILE_ME: '/api/v1/profile/me',
   PROFILE_CHANGE_PASSWORD: '/api/v1/profile/change-password',
