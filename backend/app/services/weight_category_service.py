@@ -142,7 +142,7 @@ class WeightCategoryService(BaseService[WeightCategory]):
             return wc_data["weightCategories"]
         return []
 
-    def _sync_weight_categories_list(self, wc_list: List[Dict[str, Any]], event_db_id: int, source=None) -> Dict[str, int]:
+    def _sync_weight_categories_list(self, wc_list: List[Dict[str, Any]], event_db_id: int, source: Optional["ArenaSource"] = None) -> Dict[str, int]:
         """
         Sync a list of weight categories to the database
 

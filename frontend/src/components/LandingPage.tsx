@@ -132,7 +132,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse: any) => {
+  const handleGoogleSuccess = async (credentialResponse: { credential: string }) => {
     try {
       const data = await apiClient.post<{ csrf_token: string; token_type: string }>(
         API_ENDPOINTS.AUTH_GOOGLE,

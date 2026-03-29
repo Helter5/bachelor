@@ -1,7 +1,7 @@
 """Protected Admin API - sync management (requires admin role)"""
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Header, Request
 from sqlmodel import Session, select, col
-from typing import Literal, Optional
+from typing import Optional
 import asyncio
 from datetime import datetime
 
@@ -9,6 +9,7 @@ from ....database import get_session
 from ....domain.entities.user import User
 from ....domain.entities.sync_log import SyncLog
 from ....domain.entities.arena_source import ArenaSource
+from ....domain.entities.sport_event import SportEvent
 from ....core.dependencies import require_admin, validate_csrf_and_origin
 from ....services.athlete_service import AthleteService
 from ....services.team_service import TeamService
@@ -72,7 +73,7 @@ def _get_user_arena_source(user: User, session: Session) -> ArenaSource:
     return source
 
 
-def _get_source_event_uuid(session: Session, event, source: ArenaSource) -> str:
+def _get_source_event_uuid(session: Session, event: SportEvent, source: ArenaSource) -> str:
     """Return the Arena UUID this source uses for the given event."""
     from ....domain.entities.sport_event_source_uid import SportEventSourceUid
     mapping = session.exec(

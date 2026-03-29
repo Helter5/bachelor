@@ -229,7 +229,7 @@ class AthleteService(BaseService[Athlete]):
             return athletes_data["athletes"]["items"]
         return []
 
-    def _sync_athletes_list(self, athletes_list: List[Dict[str, Any]], event_db_id: int, source=None) -> Dict[str, int]:
+    def _sync_athletes_list(self, athletes_list: List[Dict[str, Any]], event_db_id: int, source: Optional["ArenaSource"] = None) -> Dict[str, int]:
         """
         Sync a list of athletes to the database
 

@@ -21,7 +21,7 @@ interface SyncLog {
   fights_created: number
   fights_updated: number
   error_message: string | null
-  details: any
+  details: Record<string, unknown> | null
   ip_address: string | null
   username: string | null
   arena_source_name: string | null

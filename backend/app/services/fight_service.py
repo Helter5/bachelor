@@ -169,7 +169,7 @@ class FightService(BaseService[Fight]):
                 return mapping.weight_category_id
         return None
 
-    def _sync_fights_list(self, fights_list: List[Dict[str, Any]], event_db_id: int, source=None) -> Dict[str, int]:
+    def _sync_fights_list(self, fights_list: List[Dict[str, Any]], event_db_id: int, source: Optional["ArenaSource"] = None) -> Dict[str, int]:
         """
         Sync a list of fights to the database
         """

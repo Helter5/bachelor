@@ -3,7 +3,10 @@ Sport Event Service
 Business logic for sport event operations
 """
 from sqlmodel import Session, select
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..domain.entities.arena_source import ArenaSource
 from uuid import UUID
 from datetime import datetime
 import logging
@@ -131,7 +134,7 @@ class SportEventService(BaseService[SportEvent]):
         )
         return self.session.exec(statement).first()
 
-    async def sync_event(self, event_data: SportEventBase, source=None) -> Dict[str, Any]:
+    async def sync_event(self, event_data: SportEventBase, source: Optional["ArenaSource"] = None) -> Dict[str, Any]:
         """
         Sync sport event from Arena to database using natural key matching
 
