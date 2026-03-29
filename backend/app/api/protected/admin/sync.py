@@ -209,9 +209,8 @@ async def sync_events(
             _cleanup_old_sync_logs(session)
 
             result = {
-                "message": f"Successfully synced {len(total_synced_events)} events from {len(sources)} sources",
+                "message": f"Successfully synced {len(total_synced_events)} events",
                 "count": len(total_synced_events),
-                "sources": source_results,
                 "idempotency_key": idempotency_key,
                 "sync_log_id": sync_log.id
             }
