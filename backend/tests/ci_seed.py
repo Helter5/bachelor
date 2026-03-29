@@ -17,6 +17,7 @@ from app.services.sport_event_service import SportEventService
 from app.services.weight_category_service import WeightCategoryService
 from app.services.team_service import TeamService
 from app.services.athlete_service import AthleteService
+from app.services.fight_service import FightService
 
 
 async def seed() -> None:
@@ -106,6 +107,10 @@ async def seed() -> None:
                 athlete_service = AthleteService(session)
                 r = await athlete_service.sync_athletes_for_event(str(event.arena_uuid))
                 print(f"[seed]   Atléti: {r.get('synced_count', 0)} synced")
+
+                fight_service = FightService(session)
+                r = await fight_service.sync_fights_for_event(str(event.arena_uuid))
+                print(f"[seed]   Zápasy: {r.get('synced_count', 0)} synced")
 
     print("\n[seed] Hotovo.")
 

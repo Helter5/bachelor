@@ -31,9 +31,36 @@ jobs:
           GOOGLE_CLIENT_ID=
           GOOGLE_CLIENT_SECRET=
           FRONTEND_URL=http://localhost:5173
+          ARENA_HOST=arena-host
+          ARENA_PORT=8080
+          ARENA_CLIENT_ID=${{ secrets.ARENA_CLIENT_ID }}
+          ARENA_CLIENT_SECRET=${{ secrets.ARENA_CLIENT_SECRET }}
+          ARENA_API_KEY=${{ secrets.ARENA_API_KEY }}
           EOF
           sed -i 's/^[[:space:]]*//' .env
 
+      # ── Arena stack ────────────────────────────────────────────────────────
+      - name: Start Arena services
+        working-directory: arena
+        run: docker compose up -d
+
+      - name: Wait for Arena to be ready
+        run: |
+          echo "Waiting for Arena nginx..."
+          timeout 120 bash -c \
+            'until curl -sf http://localhost:8080/ > /dev/null 2>&1; do
+              sleep 5
+            done'
+          echo "Arena is up"
+
+      - name: Import Arena seed data
+        working-directory: arena
+        run: |
+          zcat database/seed/arena_data.sql.gz | \
+            docker compose exec -T mysql mysql -u arena -parena arena
+          echo "Seed data imported"
+
+      # ── BP stack ───────────────────────────────────────────────────────────
       - name: Build backend image
         run: docker compose build wf-api
 
@@ -49,17 +76,26 @@ jobs:
               sleep 5
             done'
 
-      - name: Run tests
+      # ── Auth & access control tests ────────────────────────────────────────
+      - name: Run auth tests
         run: |
           docker compose exec -T wf-api python -m pytest \
             tests/test_api_access_control.py \
             tests/test_auth_profile.py \
             -v --tb=short
 
+      # ── Sync & statistics tests (vyžadujú Arenu) ──────────────────────────
+      - name: Run sync + statistics tests
+        run: docker compose run --rm wf-tests
+
       - name: Show logs on failure
         if: failure()
-        run: docker compose logs wf-api
+        run: |
+          docker compose logs wf-api
+          docker compose -f arena/docker-compose.yaml logs nginx php-fpm
 
       - name: Stop services
         if: always()
-        run: docker compose down
+        run: |
+          docker compose down
+          docker compose -f arena/docker-compose.yaml down

@@ -126,6 +126,13 @@ services:
       DATABASE_USER: ${DATABASE_USER}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
       ARENA_API_FORMAT: ${ARENA_API_FORMAT:-json}
+      ARENA_HOST: ${ARENA_HOST:-arena-host}
+      ARENA_PORT: ${ARENA_PORT:-8080}
+      ARENA_CLIENT_ID: ${ARENA_CLIENT_ID:-}
+      ARENA_CLIENT_SECRET: ${ARENA_CLIENT_SECRET:-}
+      ARENA_API_KEY: ${ARENA_API_KEY:-}
+    extra_hosts:
+      - "arena-host:host-gateway"
     volumes:
       - ./backend:/app
       - /app/__pycache__
@@ -134,7 +141,7 @@ services:
         condition: service_healthy
     networks:
       - wf-network
-    command: ["sh", "-c", "PYTHONPATH=/app python tests/ci_seed.py && pytest tests/sync/ -v"]
+    command: ["sh", "-c", "PYTHONPATH=/app python tests/ci_seed.py && pytest tests/sync/ tests/statistics/ -v --tb=short"]
 
   # pgAdmin - Database Management GUI
   wf-pgadmin:
