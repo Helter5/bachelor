@@ -50,8 +50,6 @@ export const API_ENDPOINTS = {
 
   // Results endpoints (PUBLIC)
   RESULTS: (eventUuid: string) => `/api/v1/results/${eventUuid}`,
-  // Export endpoints
-  EXPORT_RESULTS_SUMMARY: (eventUuid: string) => `/export/results-summary/${eventUuid}/pdf`,
 
   // Fight endpoints (ADMIN)
   FIGHT_SYNC: (eventId: number) => `/api/v1/admin/sync/fights/${eventId}`,

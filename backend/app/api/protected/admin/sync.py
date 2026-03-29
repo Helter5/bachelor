@@ -505,22 +505,3 @@ async def sync_fights(
             )
 
 
-@router.post("/full/{event_id}", dependencies=[Depends(require_admin)])
-async def sync_full_event(
-    event_id: int,
-    background_tasks: BackgroundTasks,
-    user: User = Depends(require_admin),
-    session: Session = Depends(get_session)
-):
-    """
-    Full sync for event: teams + categories + athletes (admin only)
-    
-    Runs in background. Use this for complete event synchronization.
-    
-    Requires: Admin role + Bearer token
-    """
-    return {
-        "message": f"Full sync started for event {event_id}",
-        "event_id": event_id,
-        "status": "Use individual endpoints for now - background tasks not yet implemented"
-    }
