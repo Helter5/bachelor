@@ -8,6 +8,7 @@ from datetime import datetime
 from ....database import get_session
 from ....domain.entities.user import User
 from ....domain.entities.sync_log import SyncLog
+from ....domain.entities.arena_source import ArenaSource
 from ....core.dependencies import require_admin, validate_csrf_and_origin
 from ....services.athlete_service import AthleteService
 from ....services.team_service import TeamService
@@ -53,6 +54,22 @@ router = APIRouter(prefix="/admin/sync")
 # Global locks for sync operations (prevent concurrent syncs for same resource)
 _sync_locks: dict[str, asyncio.Lock] = {}
 _sync_results: dict[str, dict] = {}  # Store results by idempotency key
+
+
+def _get_user_arena_source(user: User, session: Session) -> ArenaSource:
+    """Return the enabled ArenaSource belonging to the requesting user."""
+    source = session.exec(
+        select(ArenaSource).where(
+            ArenaSource.user_id == user.id,
+            ArenaSource.is_enabled == True,
+        )
+    ).first()
+    if not source:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Nemáte nakonfigurovanú Arena inštanciu. Pridajte ju v Nastaveniach → Arena Zdroje.",
+        )
+    return source
 
 
 @router.post("/events")
@@ -115,144 +132,69 @@ async def sync_events(
         start_time = datetime.utcnow()
 
         try:
-            # Get all enabled arena sources
-            from ....domain.entities.arena_source import ArenaSource
-            statement = select(ArenaSource).where(ArenaSource.is_enabled == True)
-            sources = session.exec(statement).all()
+            # Use the requesting user's Arena source
+            source = _get_user_arena_source(user, session)
 
-            if not sources:
-                # Update log with failure
-                sync_log.status = "failed"
-                sync_log.finished_at = datetime.utcnow()
-                sync_log.duration_seconds = int((sync_log.finished_at - start_time).total_seconds())
-                sync_log.error_message = "No enabled arena sources configured"
-                session.add(sync_log)
-                session.commit()
-                _cleanup_old_sync_logs(session)
-
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="No enabled arena sources configured. Please add at least one arena source in Settings."
-                )
+            # Fetch events from user's Arena source
+            arena_data = await service.get_all_from_arena_source(source)
+            events_data = arena_data.get("events", {})
+            events_list = events_data.get("items", [])
 
             total_synced_events = []
-            source_results = []
-
             events_created_total = 0
             events_updated_total = 0
 
-            # Sync from each enabled source
-            for source in sources:
-                try:
-                    # Fetch events from this Arena source
-                    arena_data = await service.get_all_from_arena_source(source)
+            for event_data in events_list:
+                from ....domain import SportEventBase
 
-                    # Extract events from Arena API response structure
-                    # Arena returns: {"events": {"items": [...], "totalCount": N}}
-                    events_data = arena_data.get("events", {})
-                    events_list = events_data.get("items", [])
+                # Map Arena API fields (camelCase) to database fields (snake_case)
+                if 'id' in event_data:
+                    event_data['arena_uuid'] = event_data['id']
+                if 'startDate' in event_data:
+                    event_data['start_date'] = event_data['startDate']
+                if 'endDate' in event_data:
+                    event_data['end_date'] = event_data['endDate']
+                if 'addressLocality' in event_data:
+                    event_data['address_locality'] = event_data['addressLocality']
+                if 'isIndividualEvent' in event_data:
+                    event_data['is_individual_event'] = event_data['isIndividualEvent']
+                if 'isTeamEvent' in event_data:
+                    event_data['is_team_event'] = event_data['isTeamEvent']
+                if 'isBeachWrestlingTournament' in event_data:
+                    event_data['is_beach_wrestling'] = event_data['isBeachWrestlingTournament']
+                if 'tournamentType' in event_data:
+                    event_data['tournament_type'] = event_data['tournamentType']
+                if 'eventType' in event_data:
+                    event_data['event_type'] = event_data['eventType']
+                if 'isSyncEnabled' in event_data:
+                    event_data['is_sync_enabled'] = event_data['isSyncEnabled']
+                if 'countryIsoCode' in event_data:
+                    event_data['country_iso_code'] = event_data['countryIsoCode']
 
-                    # Sync each event to database
-                    synced_count = 0
-                    source_events_created = 0
-                    source_events_updated = 0
+                event_base = SportEventBase(**event_data)
+                sync_result = await service.sync_event(event_base)
+                total_synced_events.append(sync_result)
 
-                    for event_data in events_list:
-                        from ....domain import SportEventBase
+                if sync_result.get("matched_by") == "new":
+                    events_created_total += 1
+                elif sync_result.get("matched_by") == "updated":
+                    events_updated_total += 1
 
-                        # Map Arena API fields (camelCase) to database fields (snake_case)
-                        if 'id' in event_data:
-                            event_data['arena_uuid'] = event_data['id']  # Arena UUID stored for reference
-                        if 'startDate' in event_data:
-                            event_data['start_date'] = event_data['startDate']
-                        if 'endDate' in event_data:
-                            event_data['end_date'] = event_data['endDate']
-                        if 'addressLocality' in event_data:
-                            event_data['address_locality'] = event_data['addressLocality']
-                        if 'isIndividualEvent' in event_data:
-                            event_data['is_individual_event'] = event_data['isIndividualEvent']
-                        if 'isTeamEvent' in event_data:
-                            event_data['is_team_event'] = event_data['isTeamEvent']
-                        if 'isBeachWrestlingTournament' in event_data:
-                            event_data['is_beach_wrestling'] = event_data['isBeachWrestlingTournament']
-                        if 'tournamentType' in event_data:
-                            event_data['tournament_type'] = event_data['tournamentType']
-                        if 'eventType' in event_data:
-                            event_data['event_type'] = event_data['eventType']
-                        if 'isSyncEnabled' in event_data:
-                            event_data['is_sync_enabled'] = event_data['isSyncEnabled']
-                        if 'countryIsoCode' in event_data:
-                            event_data['country_iso_code'] = event_data['countryIsoCode']
-
-                        event_base = SportEventBase(**event_data)
-                        sync_result = await service.sync_event(event_base)
-                        total_synced_events.append(sync_result)
-                        synced_count += 1
-
-                        # Track created vs updated
-                        if sync_result.get("matched_by") == "new":
-                            source_events_created += 1
-                            events_created_total += 1
-                        elif sync_result.get("matched_by") == "updated":
-                            source_events_updated += 1
-                            events_updated_total += 1
-
-                    # Update last_sync_at for this source
-                    source.last_sync_at = datetime.utcnow()
-                    session.add(source)
-                    session.commit()
-
-                    source_results.append({
-                        "source_id": source.id,
-                        "host": f"{source.host}:{source.port}",
-                        "events_synced": synced_count,
-                        "success": True
-                    })
-
-                except Exception as source_error:
-                    # Log error for this source but continue with others
-                    source_results.append({
-                        "source_id": source.id,
-                        "host": f"{source.host}:{source.port}",
-                        "events_synced": 0,
-                        "success": False,
-                        "error": str(source_error)
-                    })
-
-            # Check if any source failed
-            any_failed = any(not result.get("success", True) for result in source_results)
-            all_failed = all(not result.get("success", True) for result in source_results)
+            # Update last_sync_at for the source
+            source.last_sync_at = datetime.utcnow()
+            session.add(source)
+            session.commit()
 
             # Update sync log
-            if all_failed:
-                sync_log.status = "failed"
-                sync_log.error_message = "All sources failed"
-            elif any_failed:
-                sync_log.status = "failed"
-                failed_sources = [r for r in source_results if not r.get("success", True)]
-                sync_log.error_message = f"{len(failed_sources)} source(s) failed"
-            else:
-                sync_log.status = "success"
-
+            sync_log.status = "success"
             sync_log.finished_at = datetime.utcnow()
             sync_log.duration_seconds = int((sync_log.finished_at - start_time).total_seconds())
             sync_log.events_created = events_created_total
             sync_log.events_updated = events_updated_total
-            sync_log.details = {
-                "sources_synced": len(sources),
-                "source_results": source_results
-            }
+            sync_log.details = {"source_id": source.id, "host": f"{source.host}:{source.port}"}
             session.add(sync_log)
             session.commit()
             _cleanup_old_sync_logs(session)
-
-            # If all sources failed, raise error so frontend shows failure
-            if all_failed:
-                failed_errors = [r.get("error", "Unknown error") for r in source_results if not r.get("success")]
-                raise HTTPException(
-                    status_code=status.HTTP_502_BAD_GATEWAY,
-                    detail=f"Synchronizácia zlyhala: {'; '.join(failed_errors)}"
-                )
 
             result = {
                 "message": f"Successfully synced {len(total_synced_events)} events from {len(sources)} sources",
@@ -320,17 +262,16 @@ async def sync_teams(
         )
     
     async with lock:
-        # Get event from database to get UUID
         from ....domain import SportEvent
         event = session.exec(select(SportEvent).where(SportEvent.id == event_id)).first()
         if not event:
             raise HTTPException(status_code=404, detail=f"Event {event_id} not found")
-        
-        # Initialize service
+
+        source = _get_user_arena_source(user, session)
         service = TeamService(session)
-        
+
         try:
-            teams = await service.sync_teams_for_event(str(event.arena_uuid))
+            teams = await service.sync_teams_for_event(str(event.arena_uuid), source=source)
             result = {
                 "message": f"Successfully synced teams for event {event.name}",
                 "count": teams.get('synced_count', 0) if isinstance(teams, dict) else 0,
@@ -389,17 +330,16 @@ async def sync_athletes(
         )
     
     async with lock:
-        # Get event from database to get UUID
         from ....domain import SportEvent
         event = session.exec(select(SportEvent).where(SportEvent.id == event_id)).first()
         if not event:
             raise HTTPException(status_code=404, detail=f"Event {event_id} not found")
-        
-        # Initialize service
+
+        source = _get_user_arena_source(user, session)
         service = AthleteService(session)
-        
+
         try:
-            athletes = await service.sync_athletes_for_event(str(event.arena_uuid))
+            athletes = await service.sync_athletes_for_event(str(event.arena_uuid), source=source)
             result = {
                 "message": f"Successfully synced athletes for event {event.name}",
                 "count": athletes.get('synced_count', 0) if isinstance(athletes, dict) else 0,
@@ -458,17 +398,16 @@ async def sync_categories(
         )
     
     async with lock:
-        # Get event from database to get UUID
         from ....domain import SportEvent
         event = session.exec(select(SportEvent).where(SportEvent.id == event_id)).first()
         if not event:
             raise HTTPException(status_code=404, detail=f"Event {event_id} not found")
-        
-        # Initialize service
+
+        source = _get_user_arena_source(user, session)
         service = WeightCategoryService(session)
-        
+
         try:
-            categories = await service.sync_weight_categories_for_event(str(event.arena_uuid))
+            categories = await service.sync_weight_categories_for_event(str(event.arena_uuid), source=source)
             result = {
                 "message": f"Successfully synced categories for event {event.name}",
                 "count": categories.get('synced_count', 0) if isinstance(categories, dict) else 0,
@@ -499,8 +438,9 @@ async def sync_victory_types(
     """
     Sync victory types for a specific sport from Arena API config (admin only)
     """
+    source = _get_user_arena_source(user, session)
     service = VictoryTypeService(session)
-    result = await service.sync_for_sport(sport_id)
+    result = await service.sync_for_sport(sport_id, source=source)
     return {
         "message": f"Successfully synced victory types for sport '{sport_id}'",
         "created": result["created"],
@@ -542,10 +482,11 @@ async def sync_fights(
         if not event:
             raise HTTPException(status_code=404, detail=f"Event {event_id} not found")
 
+        source = _get_user_arena_source(user, session)
         service = FightService(session)
 
         try:
-            fights = await service.sync_fights_for_event(str(event.arena_uuid))
+            fights = await service.sync_fights_for_event(str(event.arena_uuid), source=source)
             result = {
                 "message": f"Successfully synced fights for event {event.name}",
                 "count": fights.get('synced_count', 0) if isinstance(fights, dict) else 0,

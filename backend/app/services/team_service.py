@@ -3,11 +3,14 @@ Team Service
 Business logic for team operations
 """
 from sqlmodel import Session, select
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, TYPE_CHECKING
 from uuid import UUID
 from datetime import datetime, timezone
 from fastapi import HTTPException
 import logging
+
+if TYPE_CHECKING:
+    from ..domain.entities.arena_source import ArenaSource
 
 from ..domain import Team, TeamBase, SportEvent
 from .base_service import BaseService
@@ -47,7 +50,7 @@ class TeamService(BaseService[Team]):
         statement = select(Team).where(Team.sport_event_id == sport_event_id)
         return list(self.session.exec(statement).all())
 
-    async def sync_teams_for_event(self, sport_event_uuid: str) -> Dict[str, Any]:
+    async def sync_teams_for_event(self, sport_event_uuid: str, source: Optional["ArenaSource"] = None) -> Dict[str, Any]:
         """
         Sync teams for a sport event from Arena API to database
 
@@ -76,7 +79,7 @@ class TeamService(BaseService[Team]):
 
             # Fetch teams from Arena API
             try:
-                teams_data = await fetch_arena_data(f"team/{sport_event_uuid}")
+                teams_data = await fetch_arena_data(f"team/{sport_event_uuid}", source=source)
             except HTTPException as e:
                 if e.status_code == 404:
                     logger.warning(f"No teams found for event {sport_event_uuid}")

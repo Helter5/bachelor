@@ -3,11 +3,14 @@ Fight Service
 Business logic for fight/match operations
 """
 from sqlmodel import Session, select
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional, TYPE_CHECKING
 from uuid import UUID
 from datetime import datetime, timezone
 from fastapi import HTTPException
 import logging
+
+if TYPE_CHECKING:
+    from ..domain.entities.arena_source import ArenaSource
 
 import re
 from sqlalchemy import or_, and_
@@ -26,7 +29,7 @@ class FightService(BaseService[Fight]):
     def __init__(self, session: Session):
         super().__init__(session, Fight)
 
-    async def sync_fights_for_event(self, sport_event_uuid: str) -> Dict[str, Any]:
+    async def sync_fights_for_event(self, sport_event_uuid: str, source: Optional["ArenaSource"] = None) -> Dict[str, Any]:
         """
         Sync fights for a sport event from Arena API to database
         """
@@ -46,7 +49,7 @@ class FightService(BaseService[Fight]):
 
             # Fetch fights from Arena API
             try:
-                fights_data = await fetch_arena_data(f"fight/{sport_event_uuid}")
+                fights_data = await fetch_arena_data(f"fight/{sport_event_uuid}", source=source)
             except HTTPException as e:
                 if e.status_code == 404:
                     logger.warning(f"No fights found for event {sport_event_uuid}")
@@ -78,7 +81,7 @@ class FightService(BaseService[Fight]):
             # (needed for FK constraint on fights.victory_type)
             try:
                 from .victory_type_service import VictoryTypeService
-                await VictoryTypeService(self.session).sync_for_event(event.id)
+                await VictoryTypeService(self.session).sync_for_event(event.id, source=source)
             except Exception as vt_err:
                 logger.warning(f"Victory type sync failed (non-fatal): {vt_err}")
 

@@ -3,11 +3,14 @@ Weight Category Service
 Business logic for weight category operations
 """
 from sqlmodel import Session, select
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, TYPE_CHECKING
 from uuid import UUID
 from datetime import datetime, timezone
 from fastapi import HTTPException
 import logging
+
+if TYPE_CHECKING:
+    from ..domain.entities.arena_source import ArenaSource
 
 from ..domain import WeightCategory, WeightCategoryBase, SportEvent
 from ..domain.entities.discipline import Discipline
@@ -48,7 +51,7 @@ class WeightCategoryService(BaseService[WeightCategory]):
         statement = select(WeightCategory).where(WeightCategory.sport_event_id == sport_event_id)
         return list(self.session.exec(statement).all())
 
-    async def sync_weight_categories_for_event(self, sport_event_uuid: str) -> Dict[str, Any]:
+    async def sync_weight_categories_for_event(self, sport_event_uuid: str, source: Optional["ArenaSource"] = None) -> Dict[str, Any]:
         """
         Sync weight categories for a sport event from Arena API to database
 
@@ -77,7 +80,7 @@ class WeightCategoryService(BaseService[WeightCategory]):
 
             # Fetch weight categories from Arena API
             try:
-                wc_data = await fetch_arena_data(f"weight-category/{sport_event_uuid}")
+                wc_data = await fetch_arena_data(f"weight-category/{sport_event_uuid}", source=source)
             except HTTPException as e:
                 if e.status_code == 404:
                     logger.warning(f"No weight categories found for event {sport_event_uuid}")

@@ -19,11 +19,12 @@ class ArenaSource(ArenaSourceBase, table=True):
     """
     Arena Source model - stores Arena instance connection details
 
-    Multiple Arena sources can be configured to sync from different
-    trainer instances. Each source represents one Arena Docker instance.
+    Each user (coach/admin) configures their own local Arena instance.
+    Sync operations use the requesting user's source, not a global one.
     """
     __tablename__ = "arena_sources"
 
     id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: Optional[int] = Field(default=None, foreign_key="users.id", index=True)
     last_sync_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)

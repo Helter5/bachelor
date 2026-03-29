@@ -3,10 +3,13 @@ Victory Type Service
 Business logic for syncing victory type reference data from Arena API
 """
 from sqlmodel import Session, select
-from typing import Dict, Any
+from typing import Dict, Any, Optional, TYPE_CHECKING
 from datetime import datetime, timezone
 from fastapi import HTTPException
 import logging
+
+if TYPE_CHECKING:
+    from ..domain.entities.arena_source import ArenaSource
 
 from ..domain.entities.victory_type import VictoryType
 from ..domain.entities.weight_category import WeightCategory
@@ -20,10 +23,10 @@ class VictoryTypeService:
     def __init__(self, session: Session):
         self.session = session
 
-    async def sync_for_sport(self, sport_id: str) -> Dict[str, int]:
+    async def sync_for_sport(self, sport_id: str, source: Optional["ArenaSource"] = None) -> Dict[str, int]:
         """Sync victory types for a specific sport from Arena API config."""
         try:
-            data = await fetch_arena_data(f"config/victory-types/{sport_id}")
+            data = await fetch_arena_data(f"config/victory-types/{sport_id}", source=source)
         except HTTPException as e:
             if e.status_code == 404:
                 logger.warning(f"No victory types found for sport {sport_id}")
@@ -72,7 +75,7 @@ class VictoryTypeService:
         logger.info(f"Victory types for sport '{sport_id}': {created} created, {updated} updated")
         return {"created": created, "updated": updated}
 
-    async def sync_for_event(self, sport_event_id: int) -> Dict[str, Any]:
+    async def sync_for_event(self, sport_event_id: int, source: Optional["ArenaSource"] = None) -> Dict[str, Any]:
         """Sync victory types for all sports used in an event's weight categories."""
         sport_ids = self.session.exec(
             select(Discipline.sport_id)
@@ -84,7 +87,7 @@ class VictoryTypeService:
         total_created = 0
         total_updated = 0
         for sport_id in sport_ids:
-            result = await self.sync_for_sport(sport_id)
+            result = await self.sync_for_sport(sport_id, source=source)
             total_created += result["created"]
             total_updated += result["updated"]
 

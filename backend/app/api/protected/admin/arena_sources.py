@@ -41,7 +41,7 @@ async def create_arena_source(
 
     Requires: Admin role + CSRF token + Origin validation
     """
-    source = ArenaSource(**source_data.model_dump())
+    source = ArenaSource(**source_data.model_dump(), user_id=user.id)
     session.add(source)
     session.commit()
     session.refresh(source)
