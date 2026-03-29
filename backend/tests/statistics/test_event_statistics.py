@@ -44,11 +44,10 @@ def _compute_stats(db, event) -> dict:
             if cp is not None:
                 total_cp += cp
                 cp_count += 1
-        for fighter_id in [fight.fighter_one_id, fight.fighter_two_id]:
-            if fighter_id is not None:
-                if fighter_id not in athlete_stats:
-                    athlete_stats[fighter_id] = {"wins": 0, "total": 0}
-                athlete_stats[fighter_id]["total"] += 1
+        for fighter_id in set(filter(None, [fight.fighter_one_id, fight.fighter_two_id])):
+            if fighter_id not in athlete_stats:
+                athlete_stats[fighter_id] = {"wins": 0, "total": 0}
+            athlete_stats[fighter_id]["total"] += 1
         if fight.winner_id is not None:
             if fight.winner_id not in athlete_stats:
                 athlete_stats[fight.winner_id] = {"wins": 0, "total": 0}
