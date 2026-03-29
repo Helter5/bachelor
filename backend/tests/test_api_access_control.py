@@ -381,6 +381,27 @@ def test_admin_post_blocked_without_csrf():
         do_logout(client, csrf)
 
 
+def test_sync_locked_returns_409():
+    """Ak synchronizácia práve prebieha, druhý pokus musí vrátiť 409."""
+    from app.api.protected.admin.sync import _sync_locks
+
+    class _LockedMock:
+        def locked(self):
+            return True
+
+    _sync_locks["events"] = _LockedMock()
+    client, csrf = make_authenticated_client(ADMIN_USERNAME, ADMIN_PASSWORD)
+    try:
+        resp = client.post(
+            "/api/v1/admin/sync/events",
+            headers={"X-CSRF-Token": csrf, "Origin": ORIGIN},
+        )
+        assert resp.status_code == 409
+    finally:
+        del _sync_locks["events"]
+        do_logout(client, csrf)
+
+
 # ════════════════════════════════════════════════════════════════════════════
 # 6. AUTH FLOW
 # ════════════════════════════════════════════════════════════════════════════
