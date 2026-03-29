@@ -64,7 +64,7 @@ jobs:
         working-directory: arena
         run: |
           zcat database/seed/arena_data.sql.gz | \
-            docker compose exec -T mysql mysql -u arena -parena arena
+            docker compose exec -T mysql mysql --force -u arena -parena arena
           echo "Seed data imported"
 
       # ── BP stack ───────────────────────────────────────────────────────────
