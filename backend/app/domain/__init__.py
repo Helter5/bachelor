@@ -11,6 +11,9 @@ from .entities import (
     Person,
     VictoryType,
     Discipline,
+    SportEventSourceUid,
+    AthleteSourceUid,
+    WeightCategorySourceUid,
     # Base classes
     UserBase,
     SportEventBase,
@@ -42,6 +45,9 @@ __all__ = [
     "Person",
     "VictoryType",
     "Discipline",
+    "SportEventSourceUid",
+    "AthleteSourceUid",
+    "WeightCategorySourceUid",
     # Base classes
     "UserBase",
     "SportEventBase",

@@ -166,7 +166,7 @@ class AthleteService(BaseService[Athlete]):
                 }
 
             # Sync each athlete
-            result = self._sync_athletes_list(athletes_list, event.id)
+            result = self._sync_athletes_list(athletes_list, event.id, source=source)
 
             self.session.commit()
             logger.info(f"Athletes for {event.name}: {result['created']} created, {result['updated']} updated")
@@ -229,13 +229,14 @@ class AthleteService(BaseService[Athlete]):
             return athletes_data["athletes"]["items"]
         return []
 
-    def _sync_athletes_list(self, athletes_list: List[Dict[str, Any]], event_db_id: int) -> Dict[str, int]:
+    def _sync_athletes_list(self, athletes_list: List[Dict[str, Any]], event_db_id: int, source=None) -> Dict[str, int]:
         """
         Sync a list of athletes to the database
 
         Args:
             athletes_list: List of athlete data from Arena API
             event_db_id: Sport event database ID
+            source: Optional ArenaSource — when provided, records per-source UUID mappings
 
         Returns:
             Dict with created and updated counts
@@ -306,9 +307,10 @@ class AthleteService(BaseService[Athlete]):
                 if existing_athlete:
                     new_data = athlete_create.model_dump(exclude_unset=True)
                     new_data["person_id"] = person_id
-                    if self.has_changes(existing_athlete, new_data, exclude_fields=set()):
+                    if self.has_changes(existing_athlete, new_data, exclude_fields={"uid"}):
                         for key, value in new_data.items():
-                            setattr(existing_athlete, key, value)
+                            if key != "uid":
+                                setattr(existing_athlete, key, value)
                         existing_athlete.sync_timestamp = datetime.now(timezone.utc)
                         self.session.add(existing_athlete)
                         updated += 1
@@ -317,13 +319,32 @@ class AthleteService(BaseService[Athlete]):
                         # Even if no other changes, ensure person_id is set
                         existing_athlete.person_id = person_id
                         self.session.add(existing_athlete)
+                    the_athlete = existing_athlete
                 else:
                     # Create new athlete
                     new_athlete = Athlete(**athlete_create.model_dump())
                     new_athlete.person_id = person_id
                     self.session.add(new_athlete)
+                    self.session.flush()
                     created += 1
                     logger.info(f"Created new athlete: {athlete_create.uid}")
+                    the_athlete = new_athlete
+
+                if source:
+                    from ..domain.entities.athlete_source_uid import AthleteSourceUid
+                    existing_map = self.session.exec(
+                        select(AthleteSourceUid).where(
+                            AthleteSourceUid.arena_source_id == source.id,
+                            AthleteSourceUid.arena_uuid == athlete_create.uid,
+                        )
+                    ).first()
+                    if not existing_map:
+                        self.session.add(AthleteSourceUid(
+                            athlete_id=the_athlete.id,
+                            arena_source_id=source.id,
+                            arena_uuid=athlete_create.uid,
+                        ))
+                        self.session.flush()
 
             except Exception as e:
                 logger.error(f"Failed to sync athlete {athlete_data.get('id')}: {str(e)}", exc_info=True)

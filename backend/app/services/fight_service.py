@@ -85,7 +85,7 @@ class FightService(BaseService[Fight]):
             except Exception as vt_err:
                 logger.warning(f"Victory type sync failed (non-fatal): {vt_err}")
 
-            result = self._sync_fights_list(fights_list, event.id)
+            result = self._sync_fights_list(fights_list, event.id, source=source)
 
             self.session.commit()
             logger.info(f"Fights for {event.name}: {result['created']} created, {result['updated']} updated")
@@ -106,17 +106,30 @@ class FightService(BaseService[Fight]):
             self.session.rollback()
             raise HTTPException(status_code=500, detail=f"Failed to sync fights: {str(e)}")
 
-    def _resolve_athlete_id(self, arena_fighter_id: str) -> int | None:
+    def _resolve_athlete_id(self, arena_fighter_id: str, source=None) -> int | None:
         """Look up local athlete DB id by Arena UUID"""
         if not arena_fighter_id:
             return None
         try:
-            athlete = self.session.exec(
-                select(Athlete).where(Athlete.uid == UUID(arena_fighter_id))
-            ).first()
-            return athlete.id if athlete else None
+            uuid = UUID(arena_fighter_id)
         except Exception:
             return None
+        athlete = self.session.exec(
+            select(Athlete).where(Athlete.uid == uuid)
+        ).first()
+        if athlete:
+            return athlete.id
+        if source:
+            from ..domain.entities.athlete_source_uid import AthleteSourceUid
+            mapping = self.session.exec(
+                select(AthleteSourceUid).where(
+                    AthleteSourceUid.arena_source_id == source.id,
+                    AthleteSourceUid.arena_uuid == uuid,
+                )
+            ).first()
+            if mapping:
+                return mapping.athlete_id
+        return None
 
     def _resolve_victory_type(self, code: str | None) -> str | None:
         """Return victory type code, auto-creating a minimal record if needed (FK guard)."""
@@ -131,19 +144,32 @@ class FightService(BaseService[Fight]):
             self.session.flush()
         return code
 
-    def _resolve_weight_category_id(self, arena_wc_id: str) -> int | None:
+    def _resolve_weight_category_id(self, arena_wc_id: str, source=None) -> int | None:
         """Look up local weight category DB id by Arena UUID"""
         if not arena_wc_id:
             return None
         try:
-            wc = self.session.exec(
-                select(WeightCategory).where(WeightCategory.uid == UUID(arena_wc_id))
-            ).first()
-            return wc.id if wc else None
+            uuid = UUID(arena_wc_id)
         except Exception:
             return None
+        wc = self.session.exec(
+            select(WeightCategory).where(WeightCategory.uid == uuid)
+        ).first()
+        if wc:
+            return wc.id
+        if source:
+            from ..domain.entities.weight_category_source_uid import WeightCategorySourceUid
+            mapping = self.session.exec(
+                select(WeightCategorySourceUid).where(
+                    WeightCategorySourceUid.arena_source_id == source.id,
+                    WeightCategorySourceUid.arena_uuid == uuid,
+                )
+            ).first()
+            if mapping:
+                return mapping.weight_category_id
+        return None
 
-    def _sync_fights_list(self, fights_list: List[Dict[str, Any]], event_db_id: int) -> Dict[str, int]:
+    def _sync_fights_list(self, fights_list: List[Dict[str, Any]], event_db_id: int, source=None) -> Dict[str, int]:
         """
         Sync a list of fights to the database
         """
@@ -158,8 +184,8 @@ class FightService(BaseService[Fight]):
 
                 # Resolve foreign keys from Arena UUIDs to local DB IDs
                 # Arena uses fighter*AthleteId (matches our athlete.uid), NOT fighter*Id
-                fighter_one_id = self._resolve_athlete_id(fight_data.get("fighter1AthleteId"))
-                fighter_two_id = self._resolve_athlete_id(fight_data.get("fighter2AthleteId"))
+                fighter_one_id = self._resolve_athlete_id(fight_data.get("fighter1AthleteId"), source=source)
+                fighter_two_id = self._resolve_athlete_id(fight_data.get("fighter2AthleteId"), source=source)
 
                 # Winner: winnerFighter uses fighter*Id space, so map it back
                 winner_id = None
@@ -174,7 +200,7 @@ class FightService(BaseService[Fight]):
                         winner_fighter_slot = "two"
 
                 weight_category_id = self._resolve_weight_category_id(
-                    fight_data.get("sportEventWeightCategoryId")
+                    fight_data.get("sportEventWeightCategoryId"), source=source
                 )
 
                 # Classification points from ranking points

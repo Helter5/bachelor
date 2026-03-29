@@ -107,7 +107,7 @@ class WeightCategoryService(BaseService[WeightCategory]):
                 }
 
             # Sync each weight category
-            result = self._sync_weight_categories_list(wc_list, event.id)
+            result = self._sync_weight_categories_list(wc_list, event.id, source=source)
 
             self.session.commit()
             logger.info(f"Categories for {event.name}: {result['created']} created, {result['updated']} updated")
@@ -142,13 +142,14 @@ class WeightCategoryService(BaseService[WeightCategory]):
             return wc_data["weightCategories"]
         return []
 
-    def _sync_weight_categories_list(self, wc_list: List[Dict[str, Any]], event_db_id: int) -> Dict[str, int]:
+    def _sync_weight_categories_list(self, wc_list: List[Dict[str, Any]], event_db_id: int, source=None) -> Dict[str, int]:
         """
         Sync a list of weight categories to the database
 
         Args:
             wc_list: List of weight category data from Arena API
             event_db_id: Sport event database ID
+            source: Optional ArenaSource — when provided, records per-source UUID mappings
 
         Returns:
             Dict with created and updated counts
@@ -201,19 +202,39 @@ class WeightCategoryService(BaseService[WeightCategory]):
 
                 if existing_wc:
                     new_data = wc_create.model_dump(exclude_unset=True)
-                    if self.has_changes(existing_wc, new_data, exclude_fields=set()):
+                    if self.has_changes(existing_wc, new_data, exclude_fields={"uid"}):
                         for key, value in new_data.items():
-                            setattr(existing_wc, key, value)
+                            if key != "uid":
+                                setattr(existing_wc, key, value)
                         existing_wc.sync_timestamp = datetime.now(timezone.utc)
                         self.session.add(existing_wc)
                         updated += 1
                         logger.info(f"Updated weight category: {wc_create.uid}")
+                    the_wc = existing_wc
                 else:
                     # Create new weight category
                     new_wc = WeightCategory(**wc_create.model_dump())
                     self.session.add(new_wc)
+                    self.session.flush()
                     created += 1
                     logger.info(f"Created new weight category: {wc_create.uid}")
+                    the_wc = new_wc
+
+                if source:
+                    from ..domain.entities.weight_category_source_uid import WeightCategorySourceUid
+                    existing_map = self.session.exec(
+                        select(WeightCategorySourceUid).where(
+                            WeightCategorySourceUid.arena_source_id == source.id,
+                            WeightCategorySourceUid.arena_uuid == wc_create.uid,
+                        )
+                    ).first()
+                    if not existing_map:
+                        self.session.add(WeightCategorySourceUid(
+                            weight_category_id=the_wc.id,
+                            arena_source_id=source.id,
+                            arena_uuid=wc_create.uid,
+                        ))
+                        self.session.flush()
 
             except Exception as e:
                 logger.error(f"Failed to sync weight category {wc.get('id')}: {str(e)}", exc_info=True)

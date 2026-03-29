@@ -2,10 +2,10 @@
 -- PostgreSQL database dump
 --
 
-\restrict KDcSKMR4jC3QgCdm8F68ZjAhHg5bxWbCdgTCRSEGicY7ewi5VwxEbhaYYOeM6pw
+\restrict oQu7rry9av1rInKS6OqiEr0gOZBmSp0lSxWE1upccXFWSgPU0PtTdajLWER449T
 
--- Dumped from database version 16.11
--- Dumped by pg_dump version 16.11
+-- Dumped from database version 16.13
+-- Dumped by pg_dump version 16.13
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -63,6 +63,42 @@ ALTER SEQUENCE public.arena_sources_id_seq OWNER TO "user";
 --
 
 ALTER SEQUENCE public.arena_sources_id_seq OWNED BY public.arena_sources.id;
+
+
+--
+-- Name: athlete_source_uids; Type: TABLE; Schema: public; Owner: user
+--
+
+CREATE TABLE public.athlete_source_uids (
+    id integer NOT NULL,
+    athlete_id integer NOT NULL,
+    arena_source_id integer NOT NULL,
+    arena_uuid uuid NOT NULL
+);
+
+
+ALTER TABLE public.athlete_source_uids OWNER TO "user";
+
+--
+-- Name: athlete_source_uids_id_seq; Type: SEQUENCE; Schema: public; Owner: user
+--
+
+CREATE SEQUENCE public.athlete_source_uids_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.athlete_source_uids_id_seq OWNER TO "user";
+
+--
+-- Name: athlete_source_uids_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
+--
+
+ALTER SEQUENCE public.athlete_source_uids_id_seq OWNED BY public.athlete_source_uids.id;
 
 
 --
@@ -309,6 +345,42 @@ ALTER SEQUENCE public.refresh_tokens_id_seq OWNER TO "user";
 --
 
 ALTER SEQUENCE public.refresh_tokens_id_seq OWNED BY public.refresh_tokens.id;
+
+
+--
+-- Name: sport_event_source_uids; Type: TABLE; Schema: public; Owner: user
+--
+
+CREATE TABLE public.sport_event_source_uids (
+    id integer NOT NULL,
+    sport_event_id integer NOT NULL,
+    arena_source_id integer NOT NULL,
+    source_uuid uuid NOT NULL
+);
+
+
+ALTER TABLE public.sport_event_source_uids OWNER TO "user";
+
+--
+-- Name: sport_event_source_uids_id_seq; Type: SEQUENCE; Schema: public; Owner: user
+--
+
+CREATE SEQUENCE public.sport_event_source_uids_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.sport_event_source_uids_id_seq OWNER TO "user";
+
+--
+-- Name: sport_event_source_uids_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
+--
+
+ALTER SEQUENCE public.sport_event_source_uids_id_seq OWNED BY public.sport_event_source_uids.id;
 
 
 --
@@ -576,10 +648,53 @@ ALTER SEQUENCE public.weight_categories_id_seq OWNED BY public.weight_categories
 
 
 --
+-- Name: weight_category_source_uids; Type: TABLE; Schema: public; Owner: user
+--
+
+CREATE TABLE public.weight_category_source_uids (
+    id integer NOT NULL,
+    weight_category_id integer NOT NULL,
+    arena_source_id integer NOT NULL,
+    arena_uuid uuid NOT NULL
+);
+
+
+ALTER TABLE public.weight_category_source_uids OWNER TO "user";
+
+--
+-- Name: weight_category_source_uids_id_seq; Type: SEQUENCE; Schema: public; Owner: user
+--
+
+CREATE SEQUENCE public.weight_category_source_uids_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.weight_category_source_uids_id_seq OWNER TO "user";
+
+--
+-- Name: weight_category_source_uids_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
+--
+
+ALTER SEQUENCE public.weight_category_source_uids_id_seq OWNED BY public.weight_category_source_uids.id;
+
+
+--
 -- Name: arena_sources id; Type: DEFAULT; Schema: public; Owner: user
 --
 
 ALTER TABLE ONLY public.arena_sources ALTER COLUMN id SET DEFAULT nextval('public.arena_sources_id_seq'::regclass);
+
+
+--
+-- Name: athlete_source_uids id; Type: DEFAULT; Schema: public; Owner: user
+--
+
+ALTER TABLE ONLY public.athlete_source_uids ALTER COLUMN id SET DEFAULT nextval('public.athlete_source_uids_id_seq'::regclass);
 
 
 --
@@ -625,6 +740,13 @@ ALTER TABLE ONLY public.refresh_tokens ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
+-- Name: sport_event_source_uids id; Type: DEFAULT; Schema: public; Owner: user
+--
+
+ALTER TABLE ONLY public.sport_event_source_uids ALTER COLUMN id SET DEFAULT nextval('public.sport_event_source_uids_id_seq'::regclass);
+
+
+--
 -- Name: sport_events id; Type: DEFAULT; Schema: public; Owner: user
 --
 
@@ -667,11 +789,26 @@ ALTER TABLE ONLY public.weight_categories ALTER COLUMN id SET DEFAULT nextval('p
 
 
 --
+-- Name: weight_category_source_uids id; Type: DEFAULT; Schema: public; Owner: user
+--
+
+ALTER TABLE ONLY public.weight_category_source_uids ALTER COLUMN id SET DEFAULT nextval('public.weight_category_source_uids_id_seq'::regclass);
+
+
+--
 -- Name: arena_sources arena_sources_pkey; Type: CONSTRAINT; Schema: public; Owner: user
 --
 
 ALTER TABLE ONLY public.arena_sources
     ADD CONSTRAINT arena_sources_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: athlete_source_uids athlete_source_uids_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+--
+
+ALTER TABLE ONLY public.athlete_source_uids
+    ADD CONSTRAINT athlete_source_uids_pkey PRIMARY KEY (id);
 
 
 --
@@ -731,6 +868,14 @@ ALTER TABLE ONLY public.refresh_tokens
 
 
 --
+-- Name: sport_event_source_uids sport_event_source_uids_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+--
+
+ALTER TABLE ONLY public.sport_event_source_uids
+    ADD CONSTRAINT sport_event_source_uids_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: sport_events sport_events_pkey; Type: CONSTRAINT; Schema: public; Owner: user
 --
 
@@ -763,6 +908,22 @@ ALTER TABLE ONLY public.athletes
 
 
 --
+-- Name: athlete_source_uids uq_athlete_source_uuid; Type: CONSTRAINT; Schema: public; Owner: user
+--
+
+ALTER TABLE ONLY public.athlete_source_uids
+    ADD CONSTRAINT uq_athlete_source_uuid UNIQUE (arena_source_id, arena_uuid);
+
+
+--
+-- Name: sport_event_source_uids uq_event_source_uuid; Type: CONSTRAINT; Schema: public; Owner: user
+--
+
+ALTER TABLE ONLY public.sport_event_source_uids
+    ADD CONSTRAINT uq_event_source_uuid UNIQUE (arena_source_id, source_uuid);
+
+
+--
 -- Name: sport_events uq_sport_event_natural_key; Type: CONSTRAINT; Schema: public; Owner: user
 --
 
@@ -784,6 +945,14 @@ ALTER TABLE ONLY public.teams
 
 ALTER TABLE ONLY public.weight_categories
     ADD CONSTRAINT uq_wc_event_weight_discipline UNIQUE (sport_event_id, max_weight, discipline_id);
+
+
+--
+-- Name: weight_category_source_uids uq_wc_source_uuid; Type: CONSTRAINT; Schema: public; Owner: user
+--
+
+ALTER TABLE ONLY public.weight_category_source_uids
+    ADD CONSTRAINT uq_wc_source_uuid UNIQUE (arena_source_id, arena_uuid);
 
 
 --
@@ -824,6 +993,14 @@ ALTER TABLE ONLY public.victory_types
 
 ALTER TABLE ONLY public.weight_categories
     ADD CONSTRAINT weight_categories_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: weight_category_source_uids weight_category_source_uids_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+--
+
+ALTER TABLE ONLY public.weight_category_source_uids
+    ADD CONSTRAINT weight_category_source_uids_pkey PRIMARY KEY (id);
 
 
 --
@@ -919,6 +1096,22 @@ ALTER TABLE ONLY public.arena_sources
 
 
 --
+-- Name: athlete_source_uids athlete_source_uids_arena_source_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+--
+
+ALTER TABLE ONLY public.athlete_source_uids
+    ADD CONSTRAINT athlete_source_uids_arena_source_id_fkey FOREIGN KEY (arena_source_id) REFERENCES public.arena_sources(id);
+
+
+--
+-- Name: athlete_source_uids athlete_source_uids_athlete_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+--
+
+ALTER TABLE ONLY public.athlete_source_uids
+    ADD CONSTRAINT athlete_source_uids_athlete_id_fkey FOREIGN KEY (athlete_id) REFERENCES public.athletes(id);
+
+
+--
 -- Name: athletes athletes_person_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
 --
 
@@ -991,6 +1184,22 @@ ALTER TABLE ONLY public.refresh_tokens
 
 
 --
+-- Name: sport_event_source_uids sport_event_source_uids_arena_source_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+--
+
+ALTER TABLE ONLY public.sport_event_source_uids
+    ADD CONSTRAINT sport_event_source_uids_arena_source_id_fkey FOREIGN KEY (arena_source_id) REFERENCES public.arena_sources(id);
+
+
+--
+-- Name: sport_event_source_uids sport_event_source_uids_sport_event_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+--
+
+ALTER TABLE ONLY public.sport_event_source_uids
+    ADD CONSTRAINT sport_event_source_uids_sport_event_id_fkey FOREIGN KEY (sport_event_id) REFERENCES public.sport_events(id);
+
+
+--
 -- Name: sync_logs sync_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
 --
 
@@ -1023,8 +1232,24 @@ ALTER TABLE ONLY public.weight_categories
 
 
 --
+-- Name: weight_category_source_uids weight_category_source_uids_arena_source_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+--
+
+ALTER TABLE ONLY public.weight_category_source_uids
+    ADD CONSTRAINT weight_category_source_uids_arena_source_id_fkey FOREIGN KEY (arena_source_id) REFERENCES public.arena_sources(id);
+
+
+--
+-- Name: weight_category_source_uids weight_category_source_uids_weight_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+--
+
+ALTER TABLE ONLY public.weight_category_source_uids
+    ADD CONSTRAINT weight_category_source_uids_weight_category_id_fkey FOREIGN KEY (weight_category_id) REFERENCES public.weight_categories(id);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
-\unrestrict KDcSKMR4jC3QgCdm8F68ZjAhHg5bxWbCdgTCRSEGicY7ewi5VwxEbhaYYOeM6pw
+\unrestrict oQu7rry9av1rInKS6OqiEr0gOZBmSp0lSxWE1upccXFWSgPU0PtTdajLWER449T
 
