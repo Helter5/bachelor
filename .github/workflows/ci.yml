@@ -40,6 +40,13 @@ jobs:
           sed -i 's/^[[:space:]]*//' .env
 
       # ── Arena stack ────────────────────────────────────────────────────────
+      - name: Login to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Start Arena services
         working-directory: arena
         run: docker compose up -d
