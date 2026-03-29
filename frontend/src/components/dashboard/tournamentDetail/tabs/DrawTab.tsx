@@ -29,6 +29,14 @@ interface DrawResult {
   total_penalty: number
   seeding: DrawAthlete[]
   bracket: DrawMatch[]
+  error?: string
+}
+
+interface CategoryDraw {
+  wc: WeightCategory
+  result: DrawResult | null
+  loading: boolean
+  error: string | null
 }
 
 interface DrawTabProps {
@@ -39,226 +47,273 @@ interface DrawTabProps {
 }
 
 export function DrawTab({ isDarkMode, eventId, weightCategories, weightCategoriesLoading }: DrawTabProps) {
-  const [selectedWcId, setSelectedWcId] = useState<number | null>(null)
   const [lastN, setLastN] = useState(3)
-  const [drawResult, setDrawResult] = useState<DrawResult | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [draws, setDraws] = useState<Record<number, CategoryDraw>>({})
+  const [expandedId, setExpandedId] = useState<number | null>(null)
+  const [generatingAll, setGeneratingAll] = useState(false)
 
-  const card = isDarkMode ? 'bg-[#0f172a] border border-white/5' : 'bg-gray-50 border border-gray-200'
   const text = isDarkMode ? 'text-white' : 'text-gray-900'
   const sub = isDarkMode ? 'text-gray-400' : 'text-gray-500'
-  const badge = isDarkMode ? 'bg-white/5 text-gray-300' : 'bg-gray-100 text-gray-700'
+  const card = isDarkMode ? 'bg-[#0f172a] border border-white/5' : 'bg-gray-50 border border-gray-200'
 
-  const handleGenerate = async () => {
-    if (!selectedWcId) return
-    setLoading(true)
-    setError(null)
-    setDrawResult(null)
+  const generateForCategory = async (wc: WeightCategory, n: number): Promise<DrawResult | null> => {
     try {
-      const data = await apiClient.get<DrawResult>(API_ENDPOINTS.DRAW(eventId, selectedWcId, lastN))
-      setDrawResult(data)
+      return await apiClient.get<DrawResult>(API_ENDPOINTS.DRAW(eventId, wc.id, n))
     } catch {
-      setError('Nepodarilo sa vygenerovať žreb')
-    } finally {
-      setLoading(false)
+      return null
     }
   }
 
-  return (
-    <div className="space-y-6">
-      <h3 className={`text-xl font-semibold ${text}`}>Generátor žrebu</h3>
+  const handleGenerateAll = async () => {
+    if (!weightCategories.length) return
+    setGeneratingAll(true)
 
-      {/* Controls */}
-      <div className={`rounded-lg p-4 ${card} flex flex-wrap gap-4 items-end`}>
-        <div className="flex-1 min-w-48">
-          <label className={`block text-sm font-medium mb-1 ${sub}`}>Váhová kategória</label>
-          {weightCategoriesLoading ? (
-            <div className={`text-sm ${sub}`}>Načítavam...</div>
-          ) : (
+    // Init loading state for all
+    const initial: Record<number, CategoryDraw> = {}
+    for (const wc of weightCategories) {
+      initial[wc.id] = { wc, result: null, loading: true, error: null }
+    }
+    setDraws(initial)
+
+    // Fire all requests in parallel
+    const results = await Promise.allSettled(
+      weightCategories.map(wc => generateForCategory(wc, lastN))
+    )
+
+    const updated: Record<number, CategoryDraw> = {}
+    results.forEach((res, i) => {
+      const wc = weightCategories[i]
+      if (res.status === "fulfilled" && res.value) {
+        updated[wc.id] = { wc, result: res.value, loading: false, error: res.value.error ?? null }
+      } else {
+        updated[wc.id] = { wc, result: null, loading: false, error: "Nepodarilo sa vygenerovať" }
+      }
+    })
+    setDraws(updated)
+
+    // Auto-expand first non-error category
+    const first = weightCategories.find(wc => updated[wc.id]?.result && !updated[wc.id]?.error)
+    if (first) setExpandedId(first.id)
+
+    setGeneratingAll(false)
+  }
+
+  const hasDraws = Object.keys(draws).length > 0
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h3 className={`text-xl font-semibold ${text}`}>Generátor žrebu</h3>
+
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <label className={`text-sm ${sub}`}>Posledných</label>
             <select
-              value={selectedWcId ?? ""}
-              onChange={e => { setSelectedWcId(Number(e.target.value) || null); setDrawResult(null) }}
-              className={`w-full rounded-lg px-3 py-2 text-sm border ${
-                isDarkMode
-                  ? 'bg-[#1e293b] border-white/10 text-white'
-                  : 'bg-white border-gray-300 text-gray-900'
+              value={lastN}
+              onChange={e => setLastN(Number(e.target.value))}
+              className={`rounded-lg px-2 py-1.5 text-sm border ${
+                isDarkMode ? 'bg-[#1e293b] border-white/10 text-white' : 'bg-white border-gray-300 text-gray-900'
               }`}
             >
-              <option value="">Vyberte kategóriu...</option>
-              {weightCategories.map(wc => (
-                <option key={wc.id} value={wc.id}>{wc.name} — {wc.audience_name}</option>
-              ))}
+              {[1, 2, 3, 5, 10].map(n => <option key={n} value={n}>{n} turnajov</option>)}
             </select>
-          )}
-        </div>
+          </div>
 
-        <div className="w-40">
-          <label className={`block text-sm font-medium mb-1 ${sub}`}>Počet turnajov (nasadenie)</label>
-          <select
-            value={lastN}
-            onChange={e => setLastN(Number(e.target.value))}
-            className={`w-full rounded-lg px-3 py-2 text-sm border ${
-              isDarkMode
-                ? 'bg-[#1e293b] border-white/10 text-white'
-                : 'bg-white border-gray-300 text-gray-900'
+          <button
+            onClick={handleGenerateAll}
+            disabled={generatingAll || weightCategoriesLoading || !weightCategories.length}
+            className={`px-4 py-2 rounded-lg font-medium text-sm text-white transition-all ${
+              generatingAll || weightCategoriesLoading || !weightCategories.length
+                ? 'bg-blue-600/50 cursor-not-allowed'
+                : 'bg-blue-600 hover:bg-blue-700'
             }`}
           >
-            {[1, 2, 3, 5, 10].map(n => (
-              <option key={n} value={n}>Posledných {n}</option>
-            ))}
-          </select>
+            {generatingAll ? 'Generujem...' : hasDraws ? 'Regenerovať všetky' : 'Generovať všetky žreby'}
+          </button>
         </div>
-
-        <button
-          onClick={handleGenerate}
-          disabled={!selectedWcId || loading}
-          className={`px-5 py-2 rounded-lg font-medium text-sm transition-all ${
-            !selectedWcId || loading
-              ? 'opacity-40 cursor-not-allowed bg-blue-600 text-white'
-              : 'bg-blue-600 hover:bg-blue-700 text-white'
-          }`}
-        >
-          {loading ? 'Generujem...' : 'Generovať žreb'}
-        </button>
       </div>
 
-      {error && (
-        <div className="rounded-lg p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-sm">{error}</div>
+      {weightCategoriesLoading && (
+        <p className={`text-sm ${sub}`}>Načítavam kategórie...</p>
       )}
 
-      {drawResult && (
-        <div className="space-y-6">
-          {/* Summary */}
-          <div className={`rounded-lg p-4 ${card} flex flex-wrap gap-6`}>
-            <div>
-              <div className={`text-xs ${sub} mb-1`}>Kategória</div>
-              <div className={`font-semibold ${text}`}>{drawResult.weight_category_name}</div>
-            </div>
-            <div>
-              <div className={`text-xs ${sub} mb-1`}>Atléti</div>
-              <div className={`font-semibold ${text}`}>{drawResult.athletes_count}</div>
-            </div>
-            <div>
-              <div className={`text-xs ${sub} mb-1`}>Veľkosť bracketа</div>
-              <div className={`font-semibold ${text}`}>{drawResult.bracket_size}</div>
-            </div>
-            <div>
-              <div className={`text-xs ${sub} mb-1`}>Voľné miesta (bye)</div>
-              <div className={`font-semibold ${text}`}>{drawResult.byes_count}</div>
-            </div>
-            <div>
-              <div className={`text-xs ${sub} mb-1`}>Celkové penalizácie</div>
-              <div className={`font-semibold ${drawResult.total_penalty > 0 ? 'text-amber-400' : 'text-green-400'}`}>
-                {drawResult.total_penalty}
-              </div>
-            </div>
-          </div>
+      {!weightCategoriesLoading && !weightCategories.length && (
+        <p className={`text-sm ${sub}`}>Žiadne váhové kategórie.</p>
+      )}
 
-          {/* Bracket */}
-          <div>
-            <h4 className={`text-lg font-semibold mb-3 ${text}`}>Žreb — 1. kolo</h4>
-            <div className="space-y-2">
-              {drawResult.bracket.map(match => (
-                <div
-                  key={match.match_number}
-                  className={`rounded-lg p-4 ${card} ${match.penalty_score > 0 ? 'border-amber-500/30' : ''}`}
-                >
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <span className={`text-xs font-mono ${sub} w-12`}>#{match.match_number}</span>
-
-                    <AthleteSlot athlete={match.athlete_a} isDarkMode={isDarkMode} />
-
-                    <span className={`text-xs font-bold ${sub}`}>vs</span>
-
-                    <AthleteSlot athlete={match.athlete_b} isDarkMode={isDarkMode} bye />
-
-                    {match.penalty_score > 0 && (
-                      <div className="ml-auto flex flex-col items-end gap-1">
-                        <span className="text-xs font-semibold text-amber-400">
-                          Penalizácia: {match.penalty_score}
-                        </span>
-                        {match.penalty_reasons.map((r, i) => (
-                          <span key={i} className="text-xs text-amber-400/70">{r}</span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Seeding table */}
-          <div>
-            <h4 className={`text-lg font-semibold mb-3 ${text}`}>Nasadenie</h4>
-            <div className={`rounded-lg overflow-hidden border ${isDarkMode ? 'border-white/5' : 'border-gray-200'}`}>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className={isDarkMode ? 'bg-white/5' : 'bg-gray-50'}>
-                    {['Nasadenie', 'Meno', 'Krajina', 'Tím', 'Skóre'].map(h => (
-                      <th key={h} className={`text-left px-4 py-2 font-medium ${sub}`}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {drawResult.seeding.map(a => (
-                    <tr key={a.person_id} className={`border-t ${isDarkMode ? 'border-white/5' : 'border-gray-100'}`}>
-                      <td className="px-4 py-2">
-                        <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
-                          a.seed <= 2 ? 'bg-yellow-500/20 text-yellow-400' :
-                          a.seed <= 4 ? 'bg-blue-500/20 text-blue-400' :
-                          badge
-                        }`}>{a.seed}</span>
-                      </td>
-                      <td className={`px-4 py-2 font-medium ${text}`}>{a.full_name}</td>
-                      <td className={`px-4 py-2 ${sub}`}>{a.country_iso_code ?? '—'}</td>
-                      <td className={`px-4 py-2 ${sub}`}>{a.team_name ?? '—'}</td>
-                      <td className={`px-4 py-2 ${sub}`}>{a.score}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+      {!hasDraws && !generatingAll && weightCategories.length > 0 && (
+        <div className={`rounded-lg p-8 text-center ${card}`}>
+          <p className={`text-sm ${sub} mb-1`}>Klikni na tlačidlo vyššie a žreb sa vygeneruje pre všetky kategórie naraz.</p>
         </div>
       )}
+
+      {/* Category cards */}
+      <div className="space-y-2">
+        {weightCategories.map(wc => {
+          const entry = draws[wc.id]
+          const isExpanded = expandedId === wc.id
+
+          return (
+            <div key={wc.id} className={`rounded-lg border overflow-hidden transition-all ${
+              isDarkMode ? 'border-white/5' : 'border-gray-200'
+            }`}>
+              {/* Header row — always visible */}
+              <button
+                onClick={() => setExpandedId(isExpanded ? null : wc.id)}
+                className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
+                  isDarkMode ? 'bg-[#1e293b] hover:bg-white/5' : 'bg-white hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <ChevronIcon expanded={isExpanded} isDarkMode={isDarkMode} />
+                  <span className={`font-medium ${text}`}>{wc.name}</span>
+                  <span className={`text-xs ${sub}`}>{wc.audience_name}</span>
+                </div>
+
+                <div className="flex items-center gap-3 text-sm">
+                  {!entry && <span className={`text-xs ${sub}`}>Nevygenerované</span>}
+                  {entry?.loading && <span className={`text-xs ${sub}`}>Generujem...</span>}
+                  {entry?.error && <span className="text-xs text-red-400">{entry.error}</span>}
+                  {entry?.result && !entry.error && (
+                    <>
+                      <span className={`text-xs ${sub}`}>{entry.result.athletes_count} atlétov</span>
+                      <PenaltyBadge penalty={entry.result.total_penalty} isDarkMode={isDarkMode} />
+                    </>
+                  )}
+                </div>
+              </button>
+
+              {/* Expanded content */}
+              {isExpanded && entry?.result && !entry.error && (
+                <div className={`px-4 pb-4 pt-2 ${isDarkMode ? 'bg-[#1e293b]' : 'bg-white'}`}>
+                  <DrawContent result={entry.result} isDarkMode={isDarkMode} />
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
 
-function AthleteSlot({
-  athlete,
-  isDarkMode,
-  bye = false,
-}: {
-  athlete: DrawAthlete | null
-  isDarkMode: boolean
-  bye?: boolean
-}) {
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+function ChevronIcon({ expanded, isDarkMode }: { expanded: boolean; isDarkMode: boolean }) {
+  return (
+    <svg
+      className={`w-4 h-4 transition-transform ${expanded ? 'rotate-90' : ''} ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
+      fill="none" viewBox="0 0 24 24" stroke="currentColor"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+    </svg>
+  )
+}
+
+function PenaltyBadge({ penalty, isDarkMode }: { penalty: number; isDarkMode: boolean }) {
+  if (penalty === 0) {
+    return <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/15 text-green-400">Bez penalizácií</span>
+  }
+  return (
+    <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400">
+      Penalizácia: {penalty}
+    </span>
+  )
+}
+
+function DrawContent({ result, isDarkMode }: { result: DrawResult; isDarkMode: boolean }) {
+  const text = isDarkMode ? 'text-white' : 'text-gray-900'
+  const sub = isDarkMode ? 'text-gray-400' : 'text-gray-500'
+  const divider = isDarkMode ? 'border-white/5' : 'border-gray-100'
+
+  return (
+    <div className="space-y-4 mt-2">
+      {/* Stats row */}
+      <div className="flex gap-5 text-sm flex-wrap">
+        <span className={sub}>Bracket: <span className={`font-medium ${text}`}>{result.bracket_size}</span></span>
+        {result.byes_count > 0 && (
+          <span className={sub}>Bye: <span className={`font-medium ${text}`}>{result.byes_count}</span></span>
+        )}
+        <span className={sub}>Nasadenie z: <span className={`font-medium ${text}`}>{result.last_n_tournaments} turnajov</span></span>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Bracket */}
+        <div>
+          <p className={`text-xs font-semibold uppercase tracking-wide ${sub} mb-2`}>1. kolo</p>
+          <div className="space-y-1.5">
+            {result.bracket.map(match => (
+              <div key={match.match_number} className={`rounded-lg p-2.5 ${isDarkMode ? 'bg-black/20' : 'bg-gray-50'} ${match.penalty_score > 0 ? 'ring-1 ring-amber-500/30' : ''}`}>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className={`text-xs font-mono w-5 ${sub}`}>{match.match_number}</span>
+                  <AthleteSlot athlete={match.athlete_a} isDarkMode={isDarkMode} />
+                  <span className={`text-xs ${sub}`}>vs</span>
+                  <AthleteSlot athlete={match.athlete_b} isDarkMode={isDarkMode} bye />
+                  {match.penalty_score > 0 && (
+                    <span className="ml-auto text-xs text-amber-400" title={match.penalty_reasons.join('\n')}>
+                      ⚠ {match.penalty_score}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Seeding */}
+        <div>
+          <p className={`text-xs font-semibold uppercase tracking-wide ${sub} mb-2`}>Nasadenie</p>
+          <div className={`rounded-lg overflow-hidden border ${isDarkMode ? 'border-white/5' : 'border-gray-200'}`}>
+            <table className="w-full text-xs">
+              <thead>
+                <tr className={isDarkMode ? 'bg-white/5' : 'bg-gray-50'}>
+                  <th className={`text-left px-3 py-1.5 font-medium ${sub}`}>#</th>
+                  <th className={`text-left px-3 py-1.5 font-medium ${sub}`}>Meno</th>
+                  <th className={`text-left px-3 py-1.5 font-medium ${sub}`}>Tím</th>
+                  <th className={`text-left px-3 py-1.5 font-medium ${sub}`}>Skóre</th>
+                </tr>
+              </thead>
+              <tbody>
+                {result.seeding.map(a => (
+                  <tr key={a.person_id} className={`border-t ${divider}`}>
+                    <td className="px-3 py-1.5">
+                      <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold ${
+                        a.seed <= 2 ? 'bg-yellow-500/20 text-yellow-400' :
+                        a.seed <= 4 ? 'bg-blue-500/20 text-blue-400' :
+                        isDarkMode ? 'bg-white/5 text-gray-400' : 'bg-gray-100 text-gray-600'
+                      }`}>{a.seed}</span>
+                    </td>
+                    <td className={`px-3 py-1.5 font-medium ${text}`}>{a.full_name}</td>
+                    <td className={`px-3 py-1.5 ${sub}`}>{a.team_name ?? '—'}</td>
+                    <td className={`px-3 py-1.5 ${sub}`}>{a.score}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function AthleteSlot({ athlete, isDarkMode, bye = false }: { athlete: DrawAthlete | null; isDarkMode: boolean; bye?: boolean }) {
   const sub = isDarkMode ? 'text-gray-400' : 'text-gray-500'
   const text = isDarkMode ? 'text-white' : 'text-gray-900'
 
   if (!athlete) {
     return (
-      <div className="flex items-center gap-2 min-w-48">
-        <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs ${sub} border ${isDarkMode ? 'border-white/10' : 'border-gray-300'}`}>—</span>
-        <span className={`text-sm italic ${sub}`}>{bye ? 'Voľné miesto (bye)' : '—'}</span>
-      </div>
+      <span className={`text-xs italic ${sub} min-w-32`}>{bye ? 'bye' : '—'}</span>
     )
   }
-
   return (
-    <div className="flex items-center gap-2 min-w-48">
-      <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+    <div className="flex items-center gap-1.5 min-w-32">
+      <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold flex-shrink-0 ${
         athlete.seed <= 2 ? 'bg-yellow-500/20 text-yellow-400' :
         athlete.seed <= 4 ? 'bg-blue-500/20 text-blue-400' :
-        isDarkMode ? 'bg-white/5 text-gray-300' : 'bg-gray-100 text-gray-600'
+        isDarkMode ? 'bg-white/5 text-gray-400' : 'bg-gray-100 text-gray-600'
       }`}>{athlete.seed}</span>
-      <div>
-        <div className={`text-sm font-medium ${text}`}>{athlete.full_name}</div>
-        <div className={`text-xs ${sub}`}>{athlete.team_name ?? athlete.country_iso_code ?? '—'}</div>
-      </div>
+      <span className={`text-xs font-medium ${text} truncate`}>{athlete.full_name}</span>
     </div>
   )
 }
