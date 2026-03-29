@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts"
 import type { EventStatistics } from "../types"
 import { CHART_COLORS } from "../types"
@@ -17,6 +18,13 @@ export function StatisticsTab({
   statsError,
   onSelectPerson,
 }: StatisticsTabProps) {
+  const tooltipStyle = useMemo(() => ({
+    backgroundColor: isDarkMode ? "#1e293b" : "#fff",
+    border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.1)" : "#e5e7eb"}`,
+    borderRadius: "8px",
+    color: isDarkMode ? "#e2e8f0" : "#1f2937",
+  }), [isDarkMode])
+
   return (
     <div>
       <h3 className={`text-xl font-semibold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -69,12 +77,7 @@ export function StatisticsTab({
                       <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={{
-                    backgroundColor: isDarkMode ? "#1e293b" : "#fff",
-                    border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.1)" : "#e5e7eb"}`,
-                    borderRadius: "8px",
-                    color: isDarkMode ? "#e2e8f0" : "#1f2937",
-                  }} />
+                  <Tooltip contentStyle={tooltipStyle} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -98,7 +101,7 @@ export function StatisticsTab({
                   </thead>
                   <tbody>
                     {eventStats.top_performers.map((p, idx) => (
-                      <tr key={idx} className={`border-b last:border-b-0 ${isDarkMode ? 'border-white/5 hover:bg-white/5' : 'border-gray-100 hover:bg-gray-50'}`}>
+                      <tr key={p.name} className={`border-b last:border-b-0 ${isDarkMode ? 'border-white/5 hover:bg-white/5' : 'border-gray-100 hover:bg-gray-50'}`}>
                         <td className="py-3 px-3 text-center">
                           <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${
                             idx === 0 ? 'bg-yellow-500/20 text-yellow-500' :
@@ -151,7 +154,7 @@ export function StatisticsTab({
                   </thead>
                   <tbody>
                     {eventStats.team_performance.map((t, idx) => (
-                      <tr key={idx} className={`border-b last:border-b-0 ${isDarkMode ? 'border-white/5 hover:bg-white/5' : 'border-gray-100 hover:bg-gray-50'}`}>
+                      <tr key={t.name} className={`border-b last:border-b-0 ${isDarkMode ? 'border-white/5 hover:bg-white/5' : 'border-gray-100 hover:bg-gray-50'}`}>
                         <td className={`py-3 px-4 text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t.name}</td>
                         <td className="py-3 px-3 text-center">
                           {t.country ? (

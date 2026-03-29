@@ -28,7 +28,6 @@ export const API_ENDPOINTS = {
   SPORT_EVENT_DETAILS: (id: string) => `/api/v1/events/${id}`,
   SPORT_EVENT_START_LIST: (eventId: string) => `/api/v1/events/${eventId}/start-list`,
   SPORT_EVENT_START_LIST_PRINT: (eventId: string) => `/api/v1/events/${eventId}/start-list/print`,
-  SPORT_EVENT_START_LIST_SHOW: (eventId: string) => `/show/start-list/${eventId}`,
 
   // Team endpoints (PUBLIC)
   TEAM_SYNC: (eventId: number) => `/api/v1/admin/sync/teams/${eventId}`,

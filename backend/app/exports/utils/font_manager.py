@@ -3,10 +3,13 @@ Font management utility for PDF exports
 """
 import os
 import sys
-from typing import Dict, Optional
+import logging
+from typing import Optional
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.fonts import addMapping
+
+logger = logging.getLogger(__name__)
 
 
 class FontManager:
@@ -81,18 +84,18 @@ class FontManager:
                 addMapping(self.FONT_DEJAVU_SANS, 0, 0, self.FONT_DEJAVU_SANS)
                 addMapping(self.FONT_DEJAVU_SANS, 1, 0, self.FONT_DEJAVU_SANS_BOLD)
                 
-                print(f"✓ Successfully registered DejaVu fonts from: {normal_path}")
+                logger.info(f"Successfully registered DejaVu fonts from: {normal_path}")
                 FontManager._fonts_registered = True
             else:
-                print("⚠ Warning: DejaVu fonts not found. Using Helvetica (limited UTF-8 support).")
-                print("  To fix: Install DejaVu fonts or set DEJAVU_SANS_PATH and DEJAVU_SANS_BOLD_PATH env vars")
+                logger.warning("DejaVu fonts not found. Using Helvetica (limited UTF-8 support). "
+                               "To fix: install DejaVu fonts or set DEJAVU_SANS_PATH and DEJAVU_SANS_BOLD_PATH env vars.")
                 # Use Helvetica as fallback (has limited UTF-8 support)
                 self.FONT_DEJAVU_SANS = 'Helvetica'
                 self.FONT_DEJAVU_SANS_BOLD = 'Helvetica-Bold'
                 FontManager._fonts_registered = True
         except Exception as e:
             # Fallback to default fonts if custom fonts are not available
-            print(f"⚠ Warning: Could not register custom fonts: {e}")
+            logger.warning(f"Could not register custom fonts: {e}")
             self.FONT_DEJAVU_SANS = 'Helvetica'
             self.FONT_DEJAVU_SANS_BOLD = 'Helvetica-Bold'
             FontManager._fonts_registered = True

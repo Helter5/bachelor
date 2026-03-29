@@ -148,6 +148,16 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
     }
   }, [fightsData, person])
 
+  const tooltipStyle = useMemo(() => ({
+    backgroundColor: isDarkMode ? "#1e293b" : "#fff",
+    border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.1)" : "#e5e7eb"}`,
+    borderRadius: "8px",
+    color: isDarkMode ? "#e2e8f0" : "#1f2937",
+  }), [isDarkMode])
+
+  const axisTickStyle = useMemo(() => ({ fill: isDarkMode ? "#94a3b8" : "#6b7280", fontSize: 12 }), [isDarkMode])
+  const axisTickSmall = useMemo(() => ({ fill: isDarkMode ? "#94a3b8" : "#6b7280", fontSize: 10 }), [isDarkMode])
+
   if (loading) {
     return (
       <div className={`text-center py-20 ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
@@ -169,13 +179,6 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
         </div>
       </div>
     )
-  }
-
-  const tooltipStyle = {
-    backgroundColor: isDarkMode ? "#1e293b" : "#fff",
-    border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.1)" : "#e5e7eb"}`,
-    borderRadius: "8px",
-    color: isDarkMode ? "#e2e8f0" : "#1f2937",
   }
 
   return (
@@ -248,8 +251,8 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={stats.victoryTypeBarData}>
               <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "rgba(255,255,255,0.05)" : "#f0f0f0"} />
-              <XAxis dataKey="name" tick={{ fill: isDarkMode ? "#94a3b8" : "#6b7280", fontSize: 12 }} />
-              <YAxis tick={{ fill: isDarkMode ? "#94a3b8" : "#6b7280", fontSize: 12 }} allowDecimals={false} />
+              <XAxis dataKey="name" tick={axisTickStyle} />
+              <YAxis tick={axisTickStyle} allowDecimals={false} />
               <Tooltip contentStyle={tooltipStyle} />
               <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                 {stats.victoryTypeBarData.map((_, i) => (
@@ -292,8 +295,8 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={stats.metricPerTournament}>
               <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "rgba(255,255,255,0.05)" : "#f0f0f0"} />
-              <XAxis dataKey="name" tick={{ fill: isDarkMode ? "#94a3b8" : "#6b7280", fontSize: 10 }} angle={-20} textAnchor="end" height={50} />
-              <YAxis tick={{ fill: isDarkMode ? "#94a3b8" : "#6b7280", fontSize: 12 }} />
+              <XAxis dataKey="name" tick={axisTickSmall} angle={-20} textAnchor="end" height={50} />
+              <YAxis tick={axisTickStyle} />
               <Tooltip contentStyle={tooltipStyle} />
               <Legend />
               {chartMetric === "tp" ? (

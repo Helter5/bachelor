@@ -73,9 +73,9 @@ function RankingTableRow({ isDarkMode, entry, onSelectPerson }: RankingTableRowP
                 Rozpis po turnajoch (detail)
               </h4>
               <div className="space-y-2">
-                {entry.breakdown.map((b, idx) => (
+                {entry.breakdown.map((b) => (
                   <div
-                    key={idx}
+                    key={b.event_name}
                     className={`flex items-center justify-between rounded-lg px-4 py-2.5 text-sm ${
                       isDarkMode ? 'bg-white/5' : 'bg-white border border-gray-100'
                     }`}

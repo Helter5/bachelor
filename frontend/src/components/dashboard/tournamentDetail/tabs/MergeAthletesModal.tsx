@@ -123,8 +123,8 @@ export function MergeAthletesModal({ isDarkMode, athletes, teams, onClose }: Mer
               <p className="text-sm">{autoDetected ? "Žiadni duplicitní atléti nenájdení" : "Žiadne výsledky"}</p>
             </div>
           ) : (
-            displayed.map((group, i) => (
-              <div key={i} className={`rounded-xl border ${border} overflow-hidden`}>
+            displayed.map((group) => (
+              <div key={group.name} className={`rounded-xl border ${border} overflow-hidden`}>
                 <div className={`px-4 py-2.5 flex items-center justify-between ${isDarkMode ? "bg-blue-900/20" : "bg-blue-50"}`}>
                   <span className={`font-semibold text-sm ${isDarkMode ? "text-blue-300" : "text-blue-700"}`}>
                     {group.name}

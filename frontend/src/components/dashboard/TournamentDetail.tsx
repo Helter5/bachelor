@@ -70,7 +70,7 @@ export function TournamentDetail({
 
   // --- Helpers ---
 
-  const getWeightCategoryStatus = (wc: WeightCategory): 'completed' | 'ongoing' | 'waiting' => {
+  const getWeightCategoryStatus = useCallback((wc: WeightCategory): 'completed' | 'ongoing' | 'waiting' => {
     if (wc.is_completed) return 'completed'
     if (wc.is_started) return 'ongoing'
     const now = new Date()
@@ -79,7 +79,7 @@ export function TournamentDetail({
     if (endDate && endDate < now) return 'completed'
     if (startDate <= now && (!endDate || endDate >= now)) return 'ongoing'
     return 'waiting'
-  }
+  }, [tournamentStartDate, tournamentEndDate])
 
   const handleNameClick = useCallback(async (name: string) => {
     if (!onSelectPerson) return

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 
 interface UseFiltersOptions<T> {
   items: T[]
@@ -57,17 +57,17 @@ export function useFilters<T>({
     return result
   }, [items, searchQuery, searchFields, filters, filterFn])
 
-  const setFilter = (key: string, value: any) => {
+  const setFilter = useCallback((key: string, value: any) => {
     setFilters(prev => ({
       ...prev,
       [key]: value
     }))
-  }
+  }, [])
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setSearchQuery('')
     setFilters({})
-  }
+  }, [])
 
   const hasActiveFilters = searchQuery !== '' || Object.keys(filters).some(key => filters[key])
 

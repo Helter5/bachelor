@@ -40,8 +40,9 @@ COOKIE_SAMESITE = "lax"
 COOKIE_PATH_AUTH = "/"
 
 
-def _record_login(session: Session, user_id: int, ip_address, user_agent, mac_address,
-                  success: bool, method: str, failure_reason: str = None):
+def _record_login(session: Session, user_id: int, ip_address: Optional[str],
+                  user_agent: Optional[str], mac_address: Optional[str],
+                  success: bool, method: str, failure_reason: Optional[str] = None) -> None:
     session.add(LoginHistory(
         user_id=user_id, ip_address=ip_address, user_agent=user_agent,
         mac_address=mac_address, success=success, login_method=method,
@@ -50,7 +51,7 @@ def _record_login(session: Session, user_id: int, ip_address, user_agent, mac_ad
     session.commit()
 
 
-def _set_auth_cookies(response: Response, access_token: str, refresh_token: str, csrf_token: str):
+def _set_auth_cookies(response: Response, access_token: str, refresh_token: str, csrf_token: str) -> None:
     secure = settings.cookie_secure
     response.set_cookie(
         key="access_token", value=access_token,
