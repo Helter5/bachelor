@@ -463,6 +463,52 @@ async def sync_victory_types(
     }
 
 
+@router.post("/full/{event_id}")
+async def sync_full(
+    event_id: int,
+    _: None = Depends(validate_csrf_and_origin),
+    user: User = Depends(require_admin),
+    session: Session = Depends(get_session),
+):
+    """
+    Sync all data for a specific event: teams → athletes → categories → fights (admin only)
+    """
+    from ....domain import SportEvent
+    event = session.exec(select(SportEvent).where(SportEvent.id == event_id)).first()
+    if not event:
+        raise HTTPException(status_code=404, detail=f"Event {event_id} not found")
+
+    source = _get_user_arena_source(user, session)
+    event_uuid = _get_source_event_uuid(session, event, source)
+
+    results = {}
+    try:
+        teams = await TeamService(session).sync_teams_for_event(event_uuid, source=source)
+        results["teams"] = {"created": teams.get("created", 0), "updated": teams.get("updated", 0)}
+    except Exception as e:
+        results["teams"] = {"error": str(e)}
+
+    try:
+        athletes = await AthleteService(session).sync_athletes_for_event(event_uuid, source=source)
+        results["athletes"] = {"created": athletes.get("created", 0), "updated": athletes.get("updated", 0)}
+    except Exception as e:
+        results["athletes"] = {"error": str(e)}
+
+    try:
+        categories = await WeightCategoryService(session).sync_weight_categories_for_event(event_uuid, source=source)
+        results["categories"] = {"created": categories.get("created", 0), "updated": categories.get("updated", 0)}
+    except Exception as e:
+        results["categories"] = {"error": str(e)}
+
+    try:
+        fights = await FightService(session).sync_fights_for_event(event_uuid, source=source)
+        results["fights"] = {"created": fights.get("created", 0), "updated": fights.get("updated", 0)}
+    except Exception as e:
+        results["fights"] = {"error": str(e)}
+
+    return {"message": f"Full sync completed for event {event.name}", "event_id": event_id, "results": results}
+
+
 @router.post("/fights/{event_id}")
 async def sync_fights(
     event_id: int,
