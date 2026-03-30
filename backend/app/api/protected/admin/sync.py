@@ -204,7 +204,12 @@ async def sync_events(
             sync_log.duration_seconds = int((sync_log.finished_at - start_time).total_seconds())
             sync_log.events_created = events_created_total
             sync_log.events_updated = events_updated_total
-            sync_log.details = {"source_id": source.id, "host": f"{source.host}:{source.port}"}
+            sync_log.details = {
+                "source_id": source.id,
+                "source_name": source.name,
+                "host": f"{source.host}:{source.port}",
+                "total_events": len(total_synced_events),
+            }
             session.add(sync_log)
             session.commit()
             _cleanup_old_sync_logs(session)

@@ -210,7 +210,7 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
 
       {/* Log Detail Modal */}
       {selectedLog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4">
           <div className={`max-w-4xl w-full max-h-[90vh] overflow-y-auto rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
             <div className={`sticky top-0 p-6 border-b ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
               <div className="flex justify-between items-center">
@@ -344,16 +344,31 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
                 </div>
               )}
 
-              {/* Details JSON */}
+              {/* Details */}
               {selectedLog.details && (
                 <div>
                   <h4 className={`text-lg font-semibold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                     Podrobné informácie
                   </h4>
-                  <div className={`p-4 rounded ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'} overflow-x-auto`}>
-                    <pre className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-800'}`}>
-                      {JSON.stringify(selectedLog.details, null, 2)}
-                    </pre>
+                  <div className={`rounded divide-y ${isDarkMode ? 'bg-gray-700 divide-gray-600' : 'bg-gray-50 divide-gray-200'}`}>
+                    {selectedLog.details.source_name != null && (
+                      <div className="flex justify-between px-4 py-2">
+                        <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Arena zdroj</span>
+                        <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{String(selectedLog.details.source_name)}</span>
+                      </div>
+                    )}
+                    {selectedLog.details.host != null && (
+                      <div className="flex justify-between px-4 py-2">
+                        <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Hostiteľ</span>
+                        <span className={`text-sm font-medium font-mono ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{String(selectedLog.details.host)}</span>
+                      </div>
+                    )}
+                    {selectedLog.details.total_events != null && (
+                      <div className="flex justify-between px-4 py-2">
+                        <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Počet eventov</span>
+                        <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{String(selectedLog.details.total_events)}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
