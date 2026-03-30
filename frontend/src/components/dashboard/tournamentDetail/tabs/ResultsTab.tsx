@@ -1,4 +1,9 @@
 import type { FightResult, WeightCategory } from "../types"
+import { StatusBadge } from "../../../ui/StatusBadge"
+import { EmptyState } from "../../../ui/EmptyState"
+import { LoadingSpinner } from "../../../ui/LoadingSpinner"
+import { ErrorAlert } from "../../../ui/ErrorAlert"
+import { DetailHeader } from "../../../ui/DetailHeader"
 
 interface ResultsTabProps {
   isDarkMode: boolean
@@ -33,28 +38,12 @@ export function ResultsTab({
     return (
       <div>
         {/* Detail View Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <button
-            onClick={closeWeightCategoryResultsDetail}
-            className={`p-2 rounded-lg transition-all ${
-              isDarkMode
-                ? 'hover:bg-white/5 text-gray-300 hover:text-white'
-                : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </button>
-          <div className="flex-1">
-            <h3 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-              {selectedWeightCategoryForResults.name}
-            </h3>
-            <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              {selectedWeightCategoryForResults.sport_name} • {selectedWeightCategoryForResults.audience_name}
-            </p>
-          </div>
-        </div>
+        <DetailHeader
+          isDarkMode={isDarkMode}
+          onBack={closeWeightCategoryResultsDetail}
+          title={selectedWeightCategoryForResults.name}
+          subtitle={`${selectedWeightCategoryForResults.sport_name} • ${selectedWeightCategoryForResults.audience_name}`}
+        />
 
         {/* Results in spider/bracket layout */}
         {(() => {
@@ -65,17 +54,12 @@ export function ResultsTab({
             const hasFighters = weightCategory && weightCategory.count_fighters > 0
 
             return (
-              <div className={`text-center py-12 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                <svg className={`mx-auto h-12 w-12 mb-4 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <p className="text-lg font-medium">
-                  {hasFighters ? 'Zápasy ešte neboli vygenerované' : 'Žiadne výsledky'}
-                </p>
-                {hasFighters && (
-                  <p className="text-sm mt-2">V tejto váhovej kategórií sú zápasníci, ale zápasy ešte neboli vytvorené</p>
-                )}
-              </div>
+              <EmptyState
+                icon="document"
+                title={hasFighters ? 'Zápasy ešte neboli vygenerované' : 'Žiadne výsledky'}
+                description={hasFighters ? 'V tejto váhovej kategórií sú zápasníci, ale zápasy ešte neboli vytvorené' : undefined}
+                isDarkMode={isDarkMode}
+              />
             )
           }
 
@@ -130,57 +114,35 @@ export function ResultsTab({
             <div className="space-y-8">
               {sortedRounds.map(([roundName, fights]) => (
                 <div key={roundName}>
-                  <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <h2 className={`text-lg font-bold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                     {roundName}
                   </h2>
 
-                  <div className={`rounded-lg overflow-hidden ${isDarkMode ? 'shadow-lg' : 'border border-gray-200'}`}>
-                    <table className="w-full">
-                      <thead>
-                        <tr className={`border-b ${isDarkMode ? 'border-white/5 bg-white/5' : 'border-gray-200 bg-gray-50'}`}>
-                          <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                            Wrestler
-                          </th>
-                          <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                            TP
-                          </th>
-                          <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                            CP
-                          </th>
-                          <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                            Victory
-                          </th>
-                          <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                            Time
-                          </th>
-                          <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                            CP
-                          </th>
-                          <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                            TP
-                          </th>
-                          <th className={`text-right py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                            Wrestler
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {fights.sort((a, b) => a.fightNumber - b.fightNumber).map((fight) => {
-                          const isFighter1Winner = fight.winnerFighter === fight.fighter1Id
-                          const isFighter2Winner = fight.winnerFighter === fight.fighter2Id
+                  <div className="space-y-2">
+                    {fights.sort((a, b) => a.fightNumber - b.fightNumber).map((fight) => {
+                      const isFighter1Winner = fight.winnerFighter === fight.fighter1Id
+                      const isFighter2Winner = fight.winnerFighter === fight.fighter2Id
+                      const tp1 = fight.technicalPoints?.find((tp: Record<string, unknown>) => tp.fighterId === fight.fighter1Id)
+                      const tp2 = fight.technicalPoints?.find((tp: Record<string, unknown>) => tp.fighterId === fight.fighter2Id)
+                      const timeStr = fight.endTime > 0
+                        ? `${Math.floor(fight.endTime / 60)}:${String(fight.endTime % 60).padStart(2, '0')}`
+                        : '—'
 
-                          return (
-                            <tr
-                              key={fight.id}
-                              className={`border-b last:border-b-0 ${
-                                isDarkMode
-                                  ? 'border-white/5 hover:bg-white/5'
-                                  : 'border-gray-100 hover:bg-gray-50'
-                              }`}
-                            >
-                              <td className={`py-3 px-4 ${
+                      return (
+                        <div
+                          key={fight.id}
+                          className={`rounded-lg p-3 ${
+                            isDarkMode
+                              ? 'bg-[#0f172a]/50 shadow-md backdrop-blur-sm'
+                              : 'bg-gray-50 border border-gray-200'
+                          }`}
+                        >
+                          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                            {/* Fighter 1 */}
+                            <div>
+                              <div className={`font-semibold text-sm ${
                                 isFighter1Winner
-                                  ? isDarkMode ? 'text-red-400 font-bold' : 'text-red-700 font-bold'
+                                  ? isDarkMode ? 'text-red-400' : 'text-red-700'
                                   : isDarkMode ? 'text-gray-300' : 'text-gray-700'
                               }`}>
                                 {onSelectPerson ? (
@@ -188,49 +150,31 @@ export function ResultsTab({
                                     {fight.fighter1FullName}
                                   </button>
                                 ) : fight.fighter1FullName}
-                              </td>
+                              </div>
+                              <div className={`text-xs mt-0.5 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                <span className={isFighter1Winner ? isDarkMode ? 'text-red-400 font-semibold' : 'text-red-600 font-semibold' : ''}>
+                                  CP {fight.fighter1RankingPoint}
+                                </span>
+                                {' · '}
+                                <span>TP {tp1 ? String(tp1.points) : '—'}</span>
+                              </div>
+                            </div>
 
-                              <td className={`py-3 px-4 text-center text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                {(() => {
-                                  const tp = fight.technicalPoints?.find((tp: Record<string, unknown>) => tp.fighterId === fight.fighter1Id)
-                                  return tp ? String(tp.points) : '-'
-                                })()}
-                              </td>
-
-                              <td className={`py-3 px-4 text-center text-sm ${
-                                isFighter1Winner
-                                  ? isDarkMode ? 'text-red-400 font-bold' : 'text-red-700 font-bold'
-                                  : isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                              }`}>
-                                {fight.fighter1RankingPoint}
-                              </td>
-
-                              <td className={`py-3 px-4 text-center text-sm font-medium ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                            {/* Center */}
+                            <div className="flex flex-col items-center gap-1">
+                              <StatusBadge variant="info" isDarkMode={isDarkMode}>
                                 {fight.victoryTypeName}
-                              </td>
+                              </StatusBadge>
+                              <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                {timeStr}
+                              </span>
+                            </div>
 
-                              <td className={`py-3 px-4 text-center text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                {fight.endTime > 0 ? `${Math.floor(fight.endTime / 60)}:${String(fight.endTime % 60).padStart(2, '0')}` : 'Nedefinovaný'}
-                              </td>
-
-                              <td className={`py-3 px-4 text-center text-sm ${
+                            {/* Fighter 2 */}
+                            <div className="text-right">
+                              <div className={`font-semibold text-sm ${
                                 isFighter2Winner
-                                  ? isDarkMode ? 'text-red-400 font-bold' : 'text-red-700 font-bold'
-                                  : isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                              }`}>
-                                {fight.fighter2RankingPoint}
-                              </td>
-
-                              <td className={`py-3 px-4 text-center text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                {(() => {
-                                  const tp = fight.technicalPoints?.find((tp: Record<string, unknown>) => tp.fighterId === fight.fighter2Id)
-                                  return tp ? String(tp.points) : '-'
-                                })()}
-                              </td>
-
-                              <td className={`py-3 px-4 text-right ${
-                                isFighter2Winner
-                                  ? isDarkMode ? 'text-red-400 font-bold' : 'text-red-700 font-bold'
+                                  ? isDarkMode ? 'text-red-400' : 'text-red-700'
                                   : isDarkMode ? 'text-gray-300' : 'text-gray-700'
                               }`}>
                                 {onSelectPerson ? (
@@ -238,12 +182,19 @@ export function ResultsTab({
                                     {fight.fighter2FullName}
                                   </button>
                                 ) : fight.fighter2FullName}
-                              </td>
-                            </tr>
-                          )
-                        })}
-                      </tbody>
-                    </table>
+                              </div>
+                              <div className={`text-xs mt-0.5 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                <span>TP {tp2 ? String(tp2.points) : '—'}</span>
+                                {' · '}
+                                <span className={isFighter2Winner ? isDarkMode ? 'text-red-400 font-semibold' : 'text-red-600 font-semibold' : ''}>
+                                  CP {fight.fighter2RankingPoint}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               ))}
@@ -261,24 +212,13 @@ export function ResultsTab({
       </h3>
 
       {resultsError && (
-        <div className={`p-4 rounded-lg mb-4 ${isDarkMode ? 'bg-red-900/20 text-red-400' : 'bg-red-50 text-red-600'}`}>
-          {resultsError}
-        </div>
+        <ErrorAlert message={resultsError} isDarkMode={isDarkMode} className="mb-4" />
       )}
 
       {resultsLoading || weightCategoriesLoading ? (
-        <div className={`text-center py-12 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p>Načítavam váhové kategórie...</p>
-        </div>
+        <LoadingSpinner text="Načítavam váhové kategórie..." isDarkMode={isDarkMode} />
       ) : weightCategories.length === 0 ? (
-        <div className={`text-center py-12 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          <svg className={`mx-auto h-12 w-12 mb-4 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          <p className="text-lg font-medium">Žiadne váhové kategórie</p>
-          <p className="text-sm mt-2">Použite synchronizáciu na hlavnej stránke</p>
-        </div>
+        <EmptyState icon="document" title="Žiadne váhové kategórie" description="Použite synchronizáciu na hlavnej stránke" isDarkMode={isDarkMode} />
       ) : (
         <div className="space-y-12">
           {(() => {
@@ -316,23 +256,11 @@ export function ResultsTab({
                           {(() => {
                             const status = getWeightCategoryStatus(wc)
                             if (status === 'completed') {
-                              return (
-                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-800'}`}>
-                                  Dokončené
-                                </span>
-                              )
+                              return <StatusBadge variant="success" isDarkMode={isDarkMode} size="md">Dokončené</StatusBadge>
                             } else if (status === 'ongoing') {
-                              return (
-                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-800'}`}>
-                                  Prebieha
-                                </span>
-                              )
+                              return <StatusBadge variant="info" isDarkMode={isDarkMode} size="md">Prebieha</StatusBadge>
                             } else {
-                              return (
-                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
-                                  Čaká
-                                </span>
-                              )
+                              return <StatusBadge variant="neutral" isDarkMode={isDarkMode} size="md">Čaká</StatusBadge>
                             }
                           })()}
                         </div>

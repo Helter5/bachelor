@@ -2,6 +2,9 @@ import { useMemo } from "react"
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts"
 import type { EventStatistics } from "../types"
 import { CHART_COLORS } from "../types"
+import { ErrorAlert } from "../../../ui/ErrorAlert"
+import { LoadingSpinner } from "../../../ui/LoadingSpinner"
+import { EmptyState } from "../../../ui/EmptyState"
 
 interface StatisticsTabProps {
   isDarkMode: boolean
@@ -32,16 +35,11 @@ export function StatisticsTab({
       </h3>
 
       {statsError && (
-        <div className={`p-4 rounded-lg mb-4 ${isDarkMode ? 'bg-red-900/20 text-red-400' : 'bg-red-50 text-red-600'}`}>
-          {statsError}
-        </div>
+        <ErrorAlert message={statsError} isDarkMode={isDarkMode} className="mb-4" />
       )}
 
       {statsLoading ? (
-        <div className={`text-center py-12 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p>Načítavam štatistiky...</p>
-        </div>
+        <LoadingSpinner text="Načítavam štatistiky..." isDarkMode={isDarkMode} />
       ) : eventStats ? (
         <div className="space-y-8">
           {/* Summary Cards */}
@@ -187,13 +185,7 @@ export function StatisticsTab({
           )}
 
           {eventStats.total_fights === 0 && (
-            <div className={`text-center py-12 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              <svg className={`mx-auto h-12 w-12 mb-4 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-              <p className="text-lg font-medium">Žiadne dáta</p>
-              <p className="text-sm mt-2">Pre tento turnaj nie sú k dispozícii žiadne zápasy</p>
-            </div>
+            <EmptyState icon="chart" title="Žiadne dáta" description="Pre tento turnaj nie sú k dispozícii žiadne zápasy" isDarkMode={isDarkMode} />
           )}
         </div>
       ) : null}

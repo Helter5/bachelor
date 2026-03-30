@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react"
 import { useRankingCategories, useRankingData } from "@/hooks/useRankingData"
 import type { RankingEntry } from "@/hooks/useRankingData"
+import { LoadingSpinner } from "../ui/LoadingSpinner"
+import { EmptyState } from "../ui/EmptyState"
 
 interface RankingTableRowProps {
   isDarkMode: boolean
@@ -340,19 +342,11 @@ export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewP
         </div>
 
         {rankingLoading && (
-          <div className={`text-center py-12 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            <div className="inline-block w-8 h-8 border-4 border-current border-t-transparent rounded-full animate-spin mb-3" />
-            <p className="text-sm">Načítavam ranking...</p>
-          </div>
+          <LoadingSpinner variant="center" size="sm" text="Načítavam ranking..." isDarkMode={isDarkMode} />
         )}
 
         {!rankingLoading && rankingData.length === 0 && selectedRankingCategory && (
-          <div className={`text-center py-12 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            <svg className={`mx-auto h-12 w-12 mb-3 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <p className="text-lg font-medium">Žiadne dáta pre túto kategóriu</p>
-          </div>
+          <EmptyState icon="document" title="Žiadne dáta pre túto kategóriu" isDarkMode={isDarkMode} />
         )}
 
         {!rankingLoading && rankingData.length > 0 && (

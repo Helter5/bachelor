@@ -5,6 +5,9 @@ import { Pagination } from "./Pagination"
 import { SearchInput } from "./SearchInput"
 import { useTournamentFilters } from "@/hooks/useTournamentFilters"
 import type { Event } from "@/hooks/useTournaments"
+import { StatusBadge } from "../ui/StatusBadge"
+import { EmptyState } from "../ui/EmptyState"
+import { LoadingSpinner } from "../ui/LoadingSpinner"
 
 interface PersonSuggestion {
   id: number
@@ -172,12 +175,7 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
 
       {/* Loading State */}
       {loading && (
-        <div className={`p-8 rounded-lg text-center ${isDarkMode ? 'bg-[#1e293b]' : 'bg-white'}`}>
-          <div className="flex items-center justify-center gap-3">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-            <span className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>Načítavam turnaje...</span>
-          </div>
-        </div>
+        <LoadingSpinner text="Načítavam turnaje..." isDarkMode={isDarkMode} variant="inline" size="md" />
       )}
 
       {/* Error State */}
@@ -197,15 +195,12 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
 
       {/* Empty State */}
       {!loading && !error && events.length === 0 && (
-        <div className={`p-8 rounded-lg text-center ${isDarkMode ? 'bg-[#1e293b]' : 'bg-white'}`}>
-          <svg className={`mx-auto h-12 w-12 ${isDarkMode ? 'text-gray-400' : 'text-gray-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          <h3 className={`mt-2 text-lg font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}>Žiadne turnaje</h3>
-          <p className={`mt-1 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            Zatiaľ neboli synchronizované žiadne turnaje. Použite tlačidlo "Synchronizovať" na načítanie dát.
-          </p>
-        </div>
+        <EmptyState
+          icon="calendar"
+          title="Žiadne turnaje"
+          description='Zatiaľ neboli synchronizované žiadne turnaje. Použite tlačidlo "Synchronizovať" na načítanie dát.'
+          isDarkMode={isDarkMode}
+        />
       )}
 
       {/* Filters and Search - Only show if there are events */}
@@ -554,11 +549,9 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
                       {/* Tournament Type Badge */}
                       {event.tournament_type && (
                         <div className="pt-1">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                            isDarkMode ? 'bg-purple-500/20 text-purple-300' : 'bg-purple-100 text-purple-700'
-                          }`}>
+                          <StatusBadge variant="purple" isDarkMode={isDarkMode} size="md">
                             {event.tournament_type}
-                          </span>
+                          </StatusBadge>
                         </div>
                       )}
                     </div>

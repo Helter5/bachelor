@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from "react"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
 import { Toast } from "@/components/ui/Toast"
+import { Checkbox } from "@/components/ui/Checkbox"
 import { WrestlerPicker } from "./WrestlerPicker"
 import type { Person, PickerMode } from "./WrestlerPicker"
 import { usePersons } from "@/hooks/usePersons"
@@ -318,20 +319,22 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
           message="Vyberte dvoch rôznych zápasníkov."
         />
 
-        <label className={`flex items-center gap-2 mb-4 cursor-pointer select-none ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-          <input
-            type="checkbox"
-            checked={includeCommonOpponents}
-            onChange={(e) => setIncludeCommonOpponents(e.target.checked)}
-            className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-          />
-          <span className="text-sm">Zahrnúť spoločných súperov (aj keď medzi sebou nezápasili)</span>
-          {includeCommonOpponents && (
-            <span className={`text-xs ml-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-              — A vs C, B vs C → porovná sa na základe C
+        <Checkbox
+          checked={includeCommonOpponents}
+          onChange={setIncludeCommonOpponents}
+          isDarkMode={isDarkMode}
+          className={`mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+          label={
+            <span className="text-sm flex items-center gap-1">
+              Zahrnúť spoločných súperov (aj keď medzi sebou nezápasili)
+              {includeCommonOpponents && (
+                <span className={`text-xs ml-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                  — A vs C, B vs C → porovná sa na základe C
+                </span>
+              )}
             </span>
-          )}
-        </label>
+          }
+        />
 
         <div className="flex items-center gap-3">
           <button

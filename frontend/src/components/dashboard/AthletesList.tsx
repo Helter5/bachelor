@@ -7,6 +7,7 @@ const PERSONS_LIMIT = 5000
 import { Pagination } from "./Pagination"
 import { SearchInput } from "./SearchInput"
 import { CountryFlag } from "./CountryFlag"
+import { LoadingSpinner } from "../ui/LoadingSpinner"
 
 interface Person {
   id: number
@@ -78,12 +79,7 @@ export function AthletesList({ isDarkMode, onSelectPerson, isAdmin }: AthletesLi
       </div>
 
       {loading && (
-        <div className={`p-8 rounded-lg text-center ${isDarkMode ? 'bg-[#1e293b]' : 'bg-white'}`}>
-          <div className="flex items-center justify-center gap-3">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-            <span className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>Načítavam atlétov...</span>
-          </div>
-        </div>
+        <LoadingSpinner text="Načítavam atlétov..." isDarkMode={isDarkMode} variant="inline" size="md" />
       )}
 
       {error && !loading && (

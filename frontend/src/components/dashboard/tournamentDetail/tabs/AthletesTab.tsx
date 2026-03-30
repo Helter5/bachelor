@@ -1,9 +1,13 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Pagination } from "../Pagination"
 import type { Team, Athlete, WeightCategory } from "../types"
 import { ITEMS_PER_PAGE } from "../types"
-import { MergeAthletesModal } from "./MergeAthletesModal"
 import { CountryFlag } from "../../CountryFlag"
+import { MultiSelect } from "../../../ui/MultiSelect"
+import { StatusBadge } from "../../../ui/StatusBadge"
+import { EmptyState } from "../../../ui/EmptyState"
+import { LoadingSpinner } from "../../../ui/LoadingSpinner"
+import { ErrorAlert } from "../../../ui/ErrorAlert"
 
 interface AthletesTabProps {
   isDarkMode: boolean
@@ -18,6 +22,12 @@ interface AthletesTabProps {
   handleNameClick: (name: string) => void
 }
 
+const GlobeIcon = (
+  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 004 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+)
+
 export function AthletesTab({
   isDarkMode,
   athletes,
@@ -31,11 +41,40 @@ export function AthletesTab({
   handleNameClick,
 }: AthletesTabProps) {
   const [filterQuery, setFilterQuery] = useState("")
-  const [showMergeModal, setShowMergeModal] = useState(false)
+  const [selectedCountries, setSelectedCountries] = useState<Set<string>>(new Set())
 
-  const filtered = filterQuery.trim()
-    ? athletes.filter(a => a.person_full_name?.toLowerCase().includes(filterQuery.toLowerCase()))
-    : athletes
+  const countryOptions = useMemo(() => {
+    const seen = new Set<string>()
+    return teams
+      .filter(t => t.country_iso_code && !seen.has(t.country_iso_code) && !!seen.add(t.country_iso_code))
+      .map(t => ({
+        value: t.country_iso_code,
+        label: t.name,
+        icon: <CountryFlag code={t.country_iso_code} flagOnly />,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label))
+  }, [teams])
+
+  const toggleCountry = (code: string) => {
+    setSelectedCountries(prev => {
+      const next = new Set(prev)
+      if (next.has(code)) next.delete(code)
+      else next.add(code)
+      return next
+    })
+    setAthletesPage(1)
+  }
+
+  const filtered = athletes.filter(a => {
+    if (filterQuery.trim() && !a.person_full_name?.toLowerCase().includes(filterQuery.toLowerCase())) return false
+    if (selectedCountries.size > 0) {
+      const team = teams.find(t => t.id === a.team_id)
+      if (!team || !selectedCountries.has(team.country_iso_code)) return false
+    }
+    return true
+  })
+
+  const hasActiveFilter = filterQuery.trim() || selectedCountries.size > 0
 
   return (
     <div>
@@ -43,58 +82,46 @@ export function AthletesTab({
         Atléti
       </h3>
 
-      {/* Filter + Merge button row */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-4/5">
-          <input
-            type="text"
-            value={filterQuery}
-            onChange={e => { setFilterQuery(e.target.value); setAthletesPage(1) }}
-            placeholder="Filtrovať podľa mena..."
-            className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              isDarkMode
-                ? 'bg-[#1e293b] border-gray-600 text-white placeholder-gray-500'
-                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-            }`}
-          />
-        </div>
-        <button
-          onClick={() => setShowMergeModal(true)}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+      {/* Filter row */}
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
+        <input
+          type="text"
+          value={filterQuery}
+          onChange={e => { setFilterQuery(e.target.value); setAthletesPage(1) }}
+          placeholder="Meno..."
+          className={`flex-1 min-w-[140px] px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
             isDarkMode
-              ? 'bg-[#1e293b] border border-gray-600 text-gray-300 hover:text-white hover:border-gray-400'
-              : 'bg-white border border-gray-300 text-gray-600 hover:text-gray-900 hover:border-gray-400'
+              ? 'bg-[#1e293b] border-gray-600 text-white placeholder-gray-500'
+              : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
           }`}
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-          </svg>
-          Duplicitní atléti
-        </button>
+        />
+        <MultiSelect
+          options={countryOptions}
+          selected={selectedCountries}
+          onToggle={toggleCountry}
+          onClear={() => { setSelectedCountries(new Set()); setAthletesPage(1) }}
+          placeholder="Krajina"
+          isDarkMode={isDarkMode}
+          buttonIcon={GlobeIcon}
+        />
       </div>
 
       {athletesError && (
-        <div className={`p-4 rounded-lg mb-4 ${isDarkMode ? 'bg-red-900/20 text-red-400' : 'bg-red-50 text-red-600'}`}>
-          {athletesError}
-        </div>
+        <ErrorAlert message={athletesError} isDarkMode={isDarkMode} className="mb-4" />
       )}
 
       {athletesLoading && athletes.length === 0 ? (
-        <div className={`text-center py-12 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p>Načítavam atlétov...</p>
-        </div>
+        <LoadingSpinner text="Načítavam atlétov..." isDarkMode={isDarkMode} />
       ) : filtered.length === 0 ? (
-        <div className={`text-center py-12 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          <svg className={`mx-auto h-12 w-12 mb-4 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
-          <p className="text-lg font-medium">{filterQuery ? 'Žiadne výsledky' : 'Žiadni atléti'}</p>
-          <p className="text-sm mt-2">{filterQuery ? 'Skúste iný výraz' : 'Použite synchronizáciu na hlavnej stránke'}</p>
-        </div>
+        <EmptyState
+          icon="person"
+          title={hasActiveFilter ? 'Žiadne výsledky' : 'Žiadni atléti'}
+          description={hasActiveFilter ? 'Skúste zmeniť filter' : 'Použite synchronizáciu na hlavnej stránke'}
+          isDarkMode={isDarkMode}
+        />
       ) : (
         <>
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {filtered
               .slice((athletesPage - 1) * ITEMS_PER_PAGE, athletesPage * ITEMS_PER_PAGE)
               .map((athlete) => {
@@ -109,35 +136,31 @@ export function AthletesTab({
                       : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <h4 className={`font-semibold text-base ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <h4 className={`font-semibold text-sm truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                         {onSelectPerson ? (
                           <button onClick={() => handleNameClick(athlete.person_full_name)} className={`hover:underline text-left ${isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}>
                             {athlete.person_full_name}
                           </button>
                         ) : athlete.person_full_name}
                       </h4>
-                      <div className="flex items-center gap-3 mt-1 text-xs">
+                      <div className="flex items-center gap-2 mt-1 text-xs flex-wrap">
                         <div className="flex items-center gap-1">
                           <CountryFlag code={athleteTeam?.country_iso_code} flagOnly />
                           <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
                             {athleteTeam?.name || 'Bez tímu'}
                           </span>
                         </div>
-                        <span className={isDarkMode ? 'text-gray-500' : 'text-gray-400'}>•</span>
-                        <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
+                        <span className={isDarkMode ? 'text-gray-600' : 'text-gray-300'}>•</span>
+                        <span className={`px-1.5 py-0.5 rounded text-xs ${isDarkMode ? 'bg-white/5 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
                           {athleteWeightCategory?.name || 'Bez kategórie'}
                         </span>
                       </div>
                     </div>
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                      athlete.is_competing
-                        ? isDarkMode ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-800'
-                        : isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'
-                    }`}>
+                    <StatusBadge variant={athlete.is_competing ? 'success' : 'neutral'} isDarkMode={isDarkMode}>
                       {athlete.is_competing ? 'Súťaží' : 'Nesúťaží'}
-                    </span>
+                    </StatusBadge>
                   </div>
                 </div>
               )
@@ -151,15 +174,6 @@ export function AthletesTab({
             onPageChange={setAthletesPage}
           />
         </>
-      )}
-
-      {showMergeModal && (
-        <MergeAthletesModal
-          isDarkMode={isDarkMode}
-          athletes={athletes}
-          teams={teams}
-          onClose={() => setShowMergeModal(false)}
-        />
       )}
     </div>
   )

@@ -2,6 +2,11 @@ import { Pagination } from "../Pagination"
 import type { WeightCategory, Team, Athlete } from "../types"
 import { ITEMS_PER_PAGE } from "../types"
 import { CountryFlag } from "../../CountryFlag"
+import { StatusBadge } from "../../../ui/StatusBadge"
+import { EmptyState } from "../../../ui/EmptyState"
+import { LoadingSpinner } from "../../../ui/LoadingSpinner"
+import { ErrorAlert } from "../../../ui/ErrorAlert"
+import { DetailHeader } from "../../../ui/DetailHeader"
 
 interface CategoriesTabProps {
   isDarkMode: boolean
@@ -46,35 +51,16 @@ export function CategoriesTab({
     return (
       <div>
         {/* Detail View Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <button
-            onClick={closeWeightCategoryDetail}
-            className={`p-2 rounded-lg transition-all ${
-              isDarkMode
-                ? 'hover:bg-white/5 text-gray-300 hover:text-white'
-                : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </button>
-          <div>
-            <h3 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-              {selectedWeightCategory.name}
-            </h3>
-            <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              {selectedWeightCategory.sport_name} • {selectedWeightCategory.audience_name}
-            </p>
-          </div>
-        </div>
+        <DetailHeader
+          isDarkMode={isDarkMode}
+          onBack={closeWeightCategoryDetail}
+          title={selectedWeightCategory.name}
+          subtitle={`${selectedWeightCategory.sport_name} • ${selectedWeightCategory.audience_name}`}
+        />
 
         {/* Athletes in Weight Category */}
         {loadingWeightCategoryAthletes ? (
-          <div className={`text-center py-12 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p>Načítavam atlétov...</p>
-          </div>
+          <LoadingSpinner text="Načítavam atlétov..." isDarkMode={isDarkMode} />
         ) : weightCategoryAthletes.length > 0 ? (
           <>
             <div className="space-y-2">
@@ -108,13 +94,9 @@ export function CategoriesTab({
                         </div>
                       </div>
                       {athlete.is_competing ? (
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${isDarkMode ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-800'}`}>
-                          Súťaží
-                        </span>
+                        <StatusBadge variant="success" isDarkMode={isDarkMode}>Súťaží</StatusBadge>
                       ) : (
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
-                          Nesúťaží
-                        </span>
+                        <StatusBadge variant="neutral" isDarkMode={isDarkMode}>Nesúťaží</StatusBadge>
                       )}
                     </div>
                   </div>
@@ -130,13 +112,7 @@ export function CategoriesTab({
             />
           </>
         ) : (
-          <div className={`text-center py-12 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            <svg className={`mx-auto h-12 w-12 mb-4 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            <p className="text-lg font-medium">Žiadni atléti</p>
-            <p className="text-sm mt-2">V tejto váhovej kategórií nie sú žiadni atléti</p>
-          </div>
+          <EmptyState icon="person" title="Žiadni atléti" description="V tejto váhovej kategórií nie sú žiadni atléti" isDarkMode={isDarkMode} />
         )}
       </div>
     )
@@ -149,24 +125,13 @@ export function CategoriesTab({
       </h3>
 
       {weightCategoriesError && (
-        <div className={`p-4 rounded-lg mb-4 ${isDarkMode ? 'bg-red-900/20 text-red-400' : 'bg-red-50 text-red-600'}`}>
-          {weightCategoriesError}
-        </div>
+        <ErrorAlert message={weightCategoriesError} isDarkMode={isDarkMode} className="mb-4" />
       )}
 
       {weightCategoriesLoading && weightCategories.length === 0 ? (
-        <div className={`text-center py-12 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p>Načítavam váhové kategórie...</p>
-        </div>
+        <LoadingSpinner text="Načítavam váhové kategórie..." isDarkMode={isDarkMode} />
       ) : weightCategories.length === 0 ? (
-        <div className={`text-center py-12 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          <svg className={`mx-auto h-12 w-12 mb-4 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-          </svg>
-          <p className="text-lg font-medium">Žiadne váhové kategórie</p>
-          <p className="text-sm mt-2">Použite synchronizáciu na hlavnej stránke</p>
-        </div>
+        <EmptyState icon="weight" title="Žiadne váhové kategórie" description="Použite synchronizáciu na hlavnej stránke" isDarkMode={isDarkMode} />
       ) : (
         <div className="space-y-8">
           {(() => {
@@ -191,55 +156,39 @@ export function CategoriesTab({
                     {type}
                   </h4>
 
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                     {paginatedCategories.map((wc) => (
                       <div
                         key={wc.id}
                         onClick={() => openWeightCategoryDetail({ id: wc.id, name: wc.name, sport_name: wc.sport_name, audience_name: wc.audience_name })}
-                        className={`rounded-lg p-3 transition-all cursor-pointer ${
+                        className={`rounded-lg p-4 transition-all cursor-pointer flex flex-col ${
                           isDarkMode
                             ? 'bg-[#0f172a]/50 hover:bg-[#1e293b] shadow-md hover:shadow-xl backdrop-blur-sm'
                             : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <h5 className={`font-semibold text-base ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                              {wc.name}
-                            </h5>
+                        <h5 className={`font-bold text-xl mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                          {wc.name}
+                        </h5>
+                        <div className="flex items-center justify-between mt-auto">
+                          <div className="flex items-center gap-1 text-xs">
+                            <svg className={`w-3.5 h-3.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            <span className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
+                              {wc.count_fighters}
+                            </span>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-1.5 text-xs">
-                              <svg className={`w-3.5 h-3.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                              </svg>
-                              <span className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
-                                {wc.count_fighters}
-                              </span>
-                            </div>
-                            {(() => {
-                              const status = getWeightCategoryStatus(wc)
-                              if (status === 'completed') {
-                                return (
-                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${isDarkMode ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-800'}`}>
-                                    Dokončené
-                                  </span>
-                                )
-                              } else if (status === 'ongoing') {
-                                return (
-                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${isDarkMode ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-800'}`}>
-                                    Prebieha
-                                  </span>
-                                )
-                              } else {
-                                return (
-                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
-                                    Čaká
-                                  </span>
-                                )
-                              }
-                            })()}
-                          </div>
+                          {(() => {
+                            const status = getWeightCategoryStatus(wc)
+                            if (status === 'completed') {
+                              return <StatusBadge variant="success" isDarkMode={isDarkMode}>Dokončené</StatusBadge>
+                            } else if (status === 'ongoing') {
+                              return <StatusBadge variant="info" isDarkMode={isDarkMode}>Prebieha</StatusBadge>
+                            } else {
+                              return <StatusBadge variant="neutral" isDarkMode={isDarkMode}>Čaká</StatusBadge>
+                            }
+                          })()}
                         </div>
                       </div>
                     ))}
