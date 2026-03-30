@@ -1,12 +1,12 @@
 """Sync log entity for tracking synchronization operations"""
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Dict, Any
 from sqlmodel import SQLModel, Field, Column, JSON
 
 
 class SyncLogBase(SQLModel):
     user_id: int = Field(foreign_key="users.id")
-    started_at: datetime = Field(default_factory=datetime.utcnow)
+    started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     finished_at: Optional[datetime] = None
     status: str = Field(default="in_progress", max_length=20)
     duration_seconds: Optional[int] = None

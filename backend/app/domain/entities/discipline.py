@@ -1,5 +1,5 @@
 """Discipline entity - sport + audience combination with tournament rules"""
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from sqlmodel import Field, SQLModel
 
@@ -16,4 +16,4 @@ class Discipline(SQLModel, table=True):
     rounds_number: Optional[int] = None
     round_duration: Optional[int] = None
     tournament_type: Optional[str] = Field(default=None, max_length=50)
-    sync_timestamp: datetime = Field(default_factory=datetime.utcnow)
+    sync_timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

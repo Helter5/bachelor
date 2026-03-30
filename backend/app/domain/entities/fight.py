@@ -1,5 +1,5 @@
 """Fight entity - synced from Arena API"""
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID
 from sqlmodel import Field, SQLModel
@@ -32,4 +32,4 @@ class Fight(FightBase, table=True):
     fighter_one_id: Optional[int] = Field(default=None, foreign_key="athletes.id")
     fighter_two_id: Optional[int] = Field(default=None, foreign_key="athletes.id")
     winner_id: Optional[int] = Field(default=None, foreign_key="athletes.id")
-    sync_timestamp: datetime = Field(default_factory=datetime.utcnow)
+    sync_timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

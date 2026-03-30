@@ -1,5 +1,5 @@
 """Security utilities for JWT tokens and password hashing"""
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 import secrets
 import hashlib
@@ -112,14 +112,14 @@ def create_access_token(user_id: int, role: str, session_id: int = None) -> tupl
     Returns:
         tuple[str, datetime]: (token, expiration_time)
     """
-    expires_at = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     jti = secrets.token_urlsafe(16)  # Unique token ID for tracking
 
     payload = {
         "sub": str(user_id),
         "role": role,
         "exp": expires_at,
-        "iat": datetime.utcnow(),
+        "iat": datetime.now(timezone.utc),
         "jti": jti,  # JWT ID for token tracking/revocation
         "iss": JWT_ISSUER,  # Issuer
         "aud": JWT_AUDIENCE,  # Audience
@@ -154,7 +154,7 @@ def create_refresh_token(user_id: int, session: Session, ip_address: Optional[st
     # Generate secure random token
     plain_token = secrets.token_urlsafe(32)
     token_hash = hash_token(plain_token)  # Store hash, not plaintext!
-    expires_at = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    expires_at = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
 
     # Check if there's an existing session with the same mac_address
     existing_session = None
@@ -172,7 +172,7 @@ def create_refresh_token(user_id: int, session: Session, ip_address: Optional[st
         existing_session.expires_at = expires_at
         existing_session.ip_address = ip_address
         existing_session.user_agent = user_agent
-        existing_session.last_used_at = datetime.utcnow()
+        existing_session.last_used_at = datetime.now(timezone.utc)
         session.add(existing_session)
         session.commit()
         return plain_token, token_hash, expires_at, existing_session.id
@@ -182,12 +182,12 @@ def create_refresh_token(user_id: int, session: Session, ip_address: Optional[st
             token=token_hash,  # HASH, not plaintext
             user_id=user_id,
             expires_at=expires_at,
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
             is_revoked=False,
             ip_address=ip_address,
             user_agent=user_agent,
             mac_address=mac_address,
-            last_used_at=datetime.utcnow(),
+            last_used_at=datetime.now(timezone.utc),
         )
         session.add(refresh_token)
         session.commit()
@@ -210,7 +210,7 @@ def verify_refresh_token(token: str, session: Session) -> Optional[tuple[int, in
     statement = select(RefreshToken).where(
         RefreshToken.token == token_hash,
         RefreshToken.is_revoked == False,
-        RefreshToken.expires_at > datetime.utcnow()
+        RefreshToken.expires_at > datetime.now(timezone.utc)
     )
     
     refresh_token = session.exec(statement).first()
@@ -344,14 +344,14 @@ def create_email_verification_token(user_id: int, session: Session) -> tuple[str
     # Generate secure random token
     plain_token = secrets.token_urlsafe(32)
     token_hash = hash_token(plain_token)
-    expires_at = datetime.utcnow() + timedelta(hours=24)  # 24 hour expiry
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=24)  # 24 hour expiry
 
     # Store HASH in database
     verification_token = EmailVerificationToken(
         token=token_hash,
         user_id=user_id,
         expires_at=expires_at,
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
         is_used=False,
     )
     session.add(verification_token)
@@ -379,7 +379,7 @@ def verify_email_verification_token(token: str, session: Session) -> Optional[in
     statement = select(EmailVerificationToken).where(
         EmailVerificationToken.token == token_hash,
         EmailVerificationToken.is_used == False,
-        EmailVerificationToken.expires_at > datetime.utcnow()
+        EmailVerificationToken.expires_at > datetime.now(timezone.utc)
     )
 
     verification_token = session.exec(statement).first()
@@ -455,14 +455,14 @@ def create_password_reset_token(user_id: int, session: Session) -> tuple[str, st
     # Generate secure random token
     plain_token = secrets.token_urlsafe(32)
     token_hash = hash_token(plain_token)
-    expires_at = datetime.utcnow() + timedelta(hours=1)  # 1 hour expiry
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=1)  # 1 hour expiry
 
     # Store HASH in database
     reset_token = PasswordResetToken(
         token=token_hash,
         user_id=user_id,
         expires_at=expires_at,
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
         is_used=False,
     )
     session.add(reset_token)
@@ -490,7 +490,7 @@ def verify_password_reset_token(token: str, session: Session) -> Optional[int]:
     statement = select(PasswordResetToken).where(
         PasswordResetToken.token == token_hash,
         PasswordResetToken.is_used == False,
-        PasswordResetToken.expires_at > datetime.utcnow()
+        PasswordResetToken.expires_at > datetime.now(timezone.utc)
     )
 
     reset_token = session.exec(statement).first()

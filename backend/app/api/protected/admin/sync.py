@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, 
 from sqlmodel import Session, select, col
 from typing import Optional
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 
 from ....database import get_session
 from ....domain.entities.user import User
@@ -104,7 +104,7 @@ async def sync_events(
     """
     # Generate idempotency key if not provided
     if not idempotency_key:
-        idempotency_key = f"sync_events_{datetime.utcnow().isoformat()}"
+        idempotency_key = f"sync_events_{datetime.now(timezone.utc).isoformat()}"
     
     # Check if already processed (idempotency)
     if idempotency_key in _sync_results:
@@ -135,14 +135,14 @@ async def sync_events(
         sync_log = SyncLog(
             user_id=user.id,
             status="in_progress",
-            started_at=datetime.utcnow(),
+            started_at=datetime.now(timezone.utc),
             ip_address=ip_address
         )
         session.add(sync_log)
         session.commit()
         session.refresh(sync_log)
 
-        start_time = datetime.utcnow()
+        start_time = datetime.now(timezone.utc)
 
         try:
             # Use the requesting user's Arena source
@@ -194,13 +194,13 @@ async def sync_events(
                     events_updated_total += 1
 
             # Update last_sync_at for the source
-            source.last_sync_at = datetime.utcnow()
+            source.last_sync_at = datetime.now(timezone.utc)
             session.add(source)
             session.commit()
 
             # Update sync log
             sync_log.status = "success"
-            sync_log.finished_at = datetime.utcnow()
+            sync_log.finished_at = datetime.now(timezone.utc)
             sync_log.duration_seconds = int((sync_log.finished_at - start_time).total_seconds())
             sync_log.events_created = events_created_total
             sync_log.events_updated = events_updated_total
@@ -223,7 +223,7 @@ async def sync_events(
         except Exception as e:
             # Update sync log with failure
             sync_log.status = "failed"
-            sync_log.finished_at = datetime.utcnow()
+            sync_log.finished_at = datetime.now(timezone.utc)
             sync_log.duration_seconds = int((sync_log.finished_at - start_time).total_seconds())
             sync_log.error_message = str(e)
             session.add(sync_log)
@@ -254,7 +254,7 @@ async def sync_teams(
     """
     # Generate idempotency key if not provided
     if not idempotency_key:
-        idempotency_key = f"sync_teams_{event_id}_{datetime.utcnow().isoformat()}"
+        idempotency_key = f"sync_teams_{event_id}_{datetime.now(timezone.utc).isoformat()}"
     
     # Check if already processed (idempotency)
     if idempotency_key in _sync_results:
@@ -323,7 +323,7 @@ async def sync_athletes(
     """
     # Generate idempotency key if not provided
     if not idempotency_key:
-        idempotency_key = f"sync_athletes_{event_id}_{datetime.utcnow().isoformat()}"
+        idempotency_key = f"sync_athletes_{event_id}_{datetime.now(timezone.utc).isoformat()}"
     
     # Check if already processed (idempotency)
     if idempotency_key in _sync_results:
@@ -392,7 +392,7 @@ async def sync_categories(
     """
     # Generate idempotency key if not provided
     if not idempotency_key:
-        idempotency_key = f"sync_categories_{event_id}_{datetime.utcnow().isoformat()}"
+        idempotency_key = f"sync_categories_{event_id}_{datetime.now(timezone.utc).isoformat()}"
     
     # Check if already processed (idempotency)
     if idempotency_key in _sync_results:
@@ -475,7 +475,7 @@ async def sync_fights(
     Sync fights for specific event from Arena API (admin only)
     """
     if not idempotency_key:
-        idempotency_key = f"sync_fights_{event_id}_{datetime.utcnow().isoformat()}"
+        idempotency_key = f"sync_fights_{event_id}_{datetime.now(timezone.utc).isoformat()}"
 
     if idempotency_key in _sync_results:
         return _sync_results[idempotency_key]

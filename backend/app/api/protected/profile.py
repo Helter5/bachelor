@@ -5,7 +5,7 @@ from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, List
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from ...database import get_session
 from ...domain.entities.user import User
@@ -103,7 +103,7 @@ async def update_my_profile(
     if profile_data.email:
         user.email = profile_data.email
 
-    user.updated_at = datetime.utcnow()
+    user.updated_at = datetime.now(timezone.utc)
 
     session.add(user)
     session.commit()
@@ -140,7 +140,7 @@ async def change_password(
 
     # Update password
     user.password_hash = hash_password(password_data.new_password)
-    user.updated_at = datetime.utcnow()
+    user.updated_at = datetime.now(timezone.utc)
 
     session.add(user)
     session.commit()
@@ -205,7 +205,7 @@ async def upload_avatar(
     # Update user avatar URL
     avatar_url = f"/uploads/avatars/{unique_filename}"
     user.avatar_url = avatar_url
-    user.updated_at = datetime.utcnow()
+    user.updated_at = datetime.now(timezone.utc)
 
     session.add(user)
     session.commit()
@@ -232,7 +232,7 @@ async def delete_avatar(
 
         # Clear avatar URL
         user.avatar_url = None
-        user.updated_at = datetime.utcnow()
+        user.updated_at = datetime.now(timezone.utc)
 
         session.add(user)
         session.commit()
@@ -259,7 +259,7 @@ async def get_active_sessions(
     statement = select(RefreshToken).where(
         RefreshToken.user_id == user.id,
         RefreshToken.is_revoked == False,
-        RefreshToken.expires_at > datetime.utcnow()
+        RefreshToken.expires_at > datetime.now(timezone.utc)
     ).order_by(RefreshToken.created_at.desc())
 
     tokens = session.exec(statement).all()

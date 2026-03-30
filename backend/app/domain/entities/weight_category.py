@@ -1,5 +1,5 @@
 """Weight Category entity - synced from Arena API"""
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID
 from sqlmodel import Field, SQLModel, UniqueConstraint
@@ -27,7 +27,7 @@ class WeightCategory(WeightCategoryBase, table=True):
     uid: UUID = Field(index=True)
     discipline_id: Optional[int] = Field(default=None, foreign_key="disciplines.id")
     sport_event_id: Optional[int] = Field(default=None, foreign_key="sport_events.id")
-    sync_timestamp: datetime = Field(default_factory=datetime.utcnow)
+    sync_timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     @property
     def name(self) -> Optional[str]:

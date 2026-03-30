@@ -1,5 +1,5 @@
 """User entity and related models"""
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID, uuid4
 from sqlmodel import Field, SQLModel
@@ -28,6 +28,6 @@ class User(UserBase, table=True):
     is_active: bool = Field(default=True)
     is_verified: bool = Field(default=False)
     avatar_url: Optional[str] = Field(default=None, max_length=500)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

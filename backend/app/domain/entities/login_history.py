@@ -1,5 +1,5 @@
 """Login History entity - tracks user login attempts"""
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from sqlmodel import Field, SQLModel
 
@@ -14,7 +14,7 @@ class LoginHistory(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="users.id", index=True)
-    login_at: datetime = Field(default_factory=datetime.utcnow)
+    login_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     ip_address: Optional[str] = Field(default=None, max_length=45)
     user_agent: Optional[str] = None
     mac_address: Optional[str] = Field(default=None, max_length=255)

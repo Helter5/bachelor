@@ -8,7 +8,7 @@ from typing import List, Optional, Dict, Any, TYPE_CHECKING
 if TYPE_CHECKING:
     from ..domain.entities.arena_source import ArenaSource
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 
 from ..domain import SportEvent, SportEventBase
@@ -167,7 +167,7 @@ class SportEventService(BaseService[SportEvent]):
                     for key, value in new_data.items():
                         if key != "arena_uuid":
                             setattr(existing_event, key, value)
-                    existing_event.updated_at = datetime.utcnow()
+                    existing_event.updated_at = datetime.now(timezone.utc)
                     self.session.commit()
                     self.session.refresh(existing_event)
                     logger.info(f"Updated sport event: {existing_event.name}")
