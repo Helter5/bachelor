@@ -310,6 +310,7 @@ async def reset_password(token: str, session: Session = Depends(get_session)):
 
     new_password = generate_random_password(12)
     user.password_hash = hash_password(new_password)
+    user.is_verified = True  # clicking reset link proves email ownership
     session.add(user)
     session.commit()
 
