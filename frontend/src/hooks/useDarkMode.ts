@@ -12,9 +12,10 @@ export function useDarkMode() {
     return true
   })
 
-  // Persist to localStorage whenever it changes
+  // Persist to localStorage and sync .dark class on <html>
   useEffect(() => {
     localStorage.setItem(DARK_MODE_KEY, JSON.stringify(isDarkMode))
+    document.documentElement.classList.toggle('dark', isDarkMode)
   }, [isDarkMode])
 
   const toggleDarkMode = useCallback(() => {

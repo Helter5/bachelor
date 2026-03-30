@@ -27,6 +27,10 @@
   border-color: hsl(var(--color-border));
 }
 
+.dark * {
+  --color-border: 215 20% 20%;
+}
+
 body {
   background-color: hsl(var(--color-background));
   color: hsl(var(--color-foreground));
