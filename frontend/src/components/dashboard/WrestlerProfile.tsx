@@ -309,89 +309,88 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
         </div>
       </div>
 
-      {/* Events Table */}
+      {/* Events Cards */}
       <div className={`rounded-xl p-6 ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
         <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>Turnaje</h3>
-        <div className={`rounded-lg overflow-hidden ${isDarkMode ? "shadow-lg" : "border border-gray-200"}`}>
-          <table className="w-full">
-            <thead>
-              <tr className={`border-b ${isDarkMode ? "border-white/5 bg-white/5" : "border-gray-200 bg-gray-50"}`}>
-                <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Turnaj</th>
-                <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Tím</th>
-                <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Kategória</th>
-              </tr>
-            </thead>
-            <tbody>
-              {person.events.map((event) => (
-                <tr key={event.athlete_id} className={`border-b last:border-b-0 ${isDarkMode ? "border-white/5 hover:bg-white/5" : "border-gray-100 hover:bg-gray-50"}`}>
-                  <td className={`py-3 px-4 text-sm font-medium ${isDarkMode ? "text-white" : "text-gray-900"}`}>{event.event_name || "-"}</td>
-                  <td className={`py-3 px-4 text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
-                    {event.team_country ? (
-                      <span
-                        className={`fi fi-${event.team_country.toLowerCase()} rounded-sm`}
-                        style={{ fontSize: "1.2rem" }}
-                        title={event.team_name ?? undefined}
-                      />
-                    ) : (
-                      event.team_name || "-"
-                    )}
-                  </td>
-                  <td className={`py-3 px-4 text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>{event.weight_category || "-"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {person.events.map((event) => (
+            <div
+              key={event.athlete_id}
+              className={`flex items-center gap-3 rounded-lg px-4 py-3 ${isDarkMode ? "bg-white/5" : "bg-gray-50 border border-gray-200"}`}
+            >
+              {event.team_country ? (
+                <span className={`fi fi-${event.team_country.toLowerCase()} fis rounded-sm flex-shrink-0`} style={{ fontSize: "1.5rem" }} title={event.team_name ?? undefined} />
+              ) : (
+                <div className={`w-6 h-6 rounded-sm flex-shrink-0 ${isDarkMode ? "bg-white/10" : "bg-gray-200"}`} />
+              )}
+              <div className="min-w-0 flex-1">
+                <p className={`text-sm font-medium truncate ${isDarkMode ? "text-white" : "text-gray-900"}`}>{event.event_name || "-"}</p>
+                {event.team_name && (
+                  <p className={`text-xs truncate ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>{event.team_name}</p>
+                )}
+              </div>
+              {event.weight_category && (
+                <span className={`text-xs font-medium px-2 py-1 rounded-full flex-shrink-0 ${isDarkMode ? "bg-purple-900/40 text-purple-300" : "bg-purple-100 text-purple-700"}`}>
+                  {event.weight_category}
+                </span>
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Fights Table */}
+      {/* Fights grouped by event */}
       <div className={`rounded-xl p-6 ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
         <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>Zápasy ({stats.totalFights})</h3>
-        <div className={`rounded-lg overflow-hidden ${isDarkMode ? "shadow-lg" : "border border-gray-200"}`}>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className={`border-b ${isDarkMode ? "border-white/5 bg-white/5" : "border-gray-200 bg-gray-50"}`}>
-                  <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Turnaj</th>
-                  <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Kategória</th>
-                  <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Súper</th>
-                  <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Výsledok</th>
-                  <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Typ</th>
-                  <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>TP</th>
-                  <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>CP</th>
-                </tr>
-              </thead>
-              <tbody>
-                {fightsData.fights.map((fight) => (
-                  <tr key={fight.fight_id} className={`border-b last:border-b-0 ${isDarkMode ? "border-white/5 hover:bg-white/5" : "border-gray-100 hover:bg-gray-50"}`}>
-                    <td className={`py-3 px-4 text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>{fight.event_name || "-"}</td>
-                    <td className={`py-3 px-4 text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>{fight.weight_category || "-"}</td>
-                    <td className={`py-3 px-4 text-sm font-medium ${isDarkMode ? "text-white" : "text-gray-900"}`}>{fight.opponent || "-"}</td>
-                    <td className="py-3 px-4 text-center">
-                      {fight.is_winner === true ? (
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${isDarkMode ? "bg-green-900/30 text-green-400" : "bg-green-100 text-green-800"}`}>V</span>
-                      ) : fight.is_winner === false ? (
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${isDarkMode ? "bg-red-900/30 text-red-400" : "bg-red-100 text-red-800"}`}>P</span>
-                      ) : (
-                        <span className={`text-xs ${isDarkMode ? "text-gray-500" : "text-gray-400"}`}>-</span>
-                      )}
-                    </td>
-                    <td className={`py-3 px-4 text-center text-sm font-medium ${isDarkMode ? "text-purple-400" : "text-purple-600"}`}>{fight.victory_type || "-"}</td>
-                    <td className={`py-3 px-4 text-center text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
-                      <span className={fight.is_winner ? "font-bold" : ""}>{fight.tp_self ?? "-"}</span>
-                      <span className={isDarkMode ? "text-gray-500" : "text-gray-400"}> : </span>
-                      <span>{fight.tp_opponent ?? "-"}</span>
-                    </td>
-                    <td className={`py-3 px-4 text-center text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
-                      <span className={fight.is_winner ? "font-bold" : ""}>{fight.cp_self ?? "-"}</span>
-                      <span className={isDarkMode ? "text-gray-500" : "text-gray-400"}> : </span>
-                      <span>{fight.cp_opponent ?? "-"}</span>
-                    </td>
-                  </tr>
+        <div className="space-y-4">
+          {Object.entries(
+            fightsData.fights.reduce<Record<string, PersonFight[]>>((acc, fight) => {
+              const key = fight.event_name || "Neznámy turnaj"
+              if (!acc[key]) acc[key] = []
+              acc[key].push(fight)
+              return acc
+            }, {})
+          ).map(([eventName, fights]) => (
+            <div key={eventName}>
+              <div className={`flex items-center gap-2 mb-2`}>
+                <span className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>{eventName}</span>
+                <div className={`flex-1 h-px ${isDarkMode ? "bg-white/10" : "bg-gray-200"}`} />
+                <span className={`text-xs ${isDarkMode ? "text-gray-500" : "text-gray-400"}`}>{fights[0].weight_category}</span>
+              </div>
+              <div className="space-y-1">
+                {fights.map((fight) => (
+                  <div
+                    key={fight.fight_id}
+                    className={`flex items-center gap-3 rounded-lg px-4 py-2.5 ${isDarkMode ? "bg-white/5" : "bg-gray-50 border border-gray-100"}`}
+                  >
+                    {fight.is_winner === true ? (
+                      <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold flex-shrink-0 ${isDarkMode ? "bg-green-900/40 text-green-400" : "bg-green-100 text-green-700"}`}>V</span>
+                    ) : fight.is_winner === false ? (
+                      <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold flex-shrink-0 ${isDarkMode ? "bg-red-900/40 text-red-400" : "bg-red-100 text-red-700"}`}>P</span>
+                    ) : (
+                      <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs flex-shrink-0 ${isDarkMode ? "bg-white/10 text-gray-500" : "bg-gray-200 text-gray-400"}`}>?</span>
+                    )}
+                    <span className={`flex-1 text-sm font-medium truncate ${isDarkMode ? "text-white" : "text-gray-900"}`}>{fight.opponent || "-"}</span>
+                    {fight.victory_type && (
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded flex-shrink-0 ${isDarkMode ? "bg-purple-900/30 text-purple-300" : "bg-purple-50 text-purple-600"}`}>
+                        {fight.victory_type}
+                      </span>
+                    )}
+                    <span className={`text-xs flex-shrink-0 tabular-nums ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+                      TP <span className={fight.is_winner ? "font-bold" : ""}>{fight.tp_self ?? "-"}</span>
+                      <span className={isDarkMode ? "text-gray-600" : "text-gray-300"}> : </span>
+                      {fight.tp_opponent ?? "-"}
+                    </span>
+                    <span className={`text-xs flex-shrink-0 tabular-nums ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+                      CP <span className={fight.is_winner ? "font-bold" : ""}>{fight.cp_self ?? "-"}</span>
+                      <span className={isDarkMode ? "text-gray-600" : "text-gray-300"}> : </span>
+                      {fight.cp_opponent ?? "-"}
+                    </span>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
