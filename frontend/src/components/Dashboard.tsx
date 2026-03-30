@@ -159,7 +159,7 @@ export function Dashboard({ onLogout, userData }: DashboardProps) {
                   onBack={clearPersonSelection}
                 />
               ) : (
-                <AthletesList isDarkMode={isDarkMode} onSelectPerson={selectPerson} isAdmin={userData?.role === 'admin'} />
+                <AthletesList isDarkMode={isDarkMode} onSelectPerson={selectPerson} />
               )
             ) : dashboardState.activeSection === 'fighters' ? (
               <FightersList isDarkMode={isDarkMode} />

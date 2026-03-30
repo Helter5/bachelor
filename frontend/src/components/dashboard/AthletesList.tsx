@@ -1,13 +1,13 @@
 import { useState, useMemo, useEffect, useCallback } from "react"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
-import { DuplicateAthletesModal } from "./DuplicateAthletesModal"
-
-const PERSONS_LIMIT = 5000
 import { Pagination } from "./Pagination"
 import { SearchInput } from "./SearchInput"
 import { CountryFlag } from "./CountryFlag"
 import { LoadingSpinner } from "../ui/LoadingSpinner"
+import { MultiSelect } from "../ui/MultiSelect"
+
+const PERSONS_LIMIT = 5000
 
 interface Person {
   id: number
@@ -19,17 +19,16 @@ interface Person {
 interface AthletesListProps {
   isDarkMode: boolean
   onSelectPerson: (person: { id: number; name: string }) => void
-  isAdmin?: boolean
 }
 
-export function AthletesList({ isDarkMode, onSelectPerson, isAdmin }: AthletesListProps) {
+export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) {
   const [persons, setPersons] = useState<Person[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [selectedCountries, setSelectedCountries] = useState<Set<string>>(new Set())
   const [currentPage, setCurrentPage] = useState(1)
   const [showAll, setShowAll] = useState(false)
-  const [showDuplicateModal, setShowDuplicateModal] = useState(false)
   const itemsPerPage = 30
 
   const fetchPersons = useCallback(async () => {
@@ -48,11 +47,25 @@ export function AthletesList({ isDarkMode, onSelectPerson, isAdmin }: AthletesLi
 
   useEffect(() => { fetchPersons() }, [fetchPersons])
 
+  const countryOptions = useMemo(() => {
+    const seen = new Set<string>()
+    return persons
+      .filter(p => p.country_iso_code && !seen.has(p.country_iso_code) && !!seen.add(p.country_iso_code))
+      .map(p => ({
+        value: p.country_iso_code!,
+        label: p.country_iso_code!,
+        icon: <CountryFlag code={p.country_iso_code} flagOnly />,
+      }))
+      .sort((a, b) => a.value.localeCompare(b.value))
+  }, [persons])
+
   const filtered = useMemo(() => {
-    if (!searchQuery) return persons
-    const q = searchQuery.toLowerCase()
-    return persons.filter(p => p.full_name.toLowerCase().includes(q))
-  }, [persons, searchQuery])
+    return persons.filter(p => {
+      if (searchQuery && !p.full_name.toLowerCase().includes(searchQuery.toLowerCase())) return false
+      if (selectedCountries.size > 0 && (!p.country_iso_code || !selectedCountries.has(p.country_iso_code))) return false
+      return true
+    })
+  }, [persons, searchQuery, selectedCountries])
 
   const currentPersons = showAll
     ? filtered
@@ -60,13 +73,6 @@ export function AthletesList({ isDarkMode, onSelectPerson, isAdmin }: AthletesLi
 
   return (
     <div className="space-y-6">
-      <DuplicateAthletesModal
-        isOpen={showDuplicateModal}
-        isDarkMode={isDarkMode}
-        persons={persons}
-        onClose={() => setShowDuplicateModal(false)}
-        onMerged={fetchPersons}
-      />
 
       {/* Header */}
       <div>
@@ -104,7 +110,7 @@ export function AthletesList({ isDarkMode, onSelectPerson, isAdmin }: AthletesLi
           <div className={`rounded-lg overflow-hidden ${isDarkMode ? 'bg-[#1e293b] shadow-lg' : 'bg-white border border-gray-200'}`}>
             <div className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-4/5">
+                <div className="flex-1">
                   <SearchInput
                     isDarkMode={isDarkMode}
                     value={searchQuery}
@@ -112,52 +118,77 @@ export function AthletesList({ isDarkMode, onSelectPerson, isAdmin }: AthletesLi
                     placeholder="Hľadať podľa mena..."
                   />
                 </div>
-                <button
-                  onClick={() => setShowDuplicateModal(true)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors border ${
-                    isDarkMode
-                      ? 'bg-[#0f172a] border-gray-600 text-gray-300 hover:text-white hover:border-gray-400'
-                      : 'bg-gray-50 border-gray-300 text-gray-600 hover:text-gray-900 hover:border-gray-400'
-                  }`}
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                  Duplicitní atléti
-                </button>
+                <MultiSelect
+                  options={countryOptions}
+                  selected={selectedCountries}
+                  onToggle={(val) => {
+                    setSelectedCountries(prev => {
+                      const next = new Set(prev)
+                      next.has(val) ? next.delete(val) : next.add(val)
+                      return next
+                    })
+                    setCurrentPage(1)
+                  }}
+                  onClear={() => { setSelectedCountries(new Set()); setCurrentPage(1) }}
+                  placeholder="Krajina"
+                  isDarkMode={isDarkMode}
+                  buttonIcon={
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6H11l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                    </svg>
+                  }
+                />
               </div>
               <div className={`mt-2 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                 {filtered.length} z {persons.length} atlétov
               </div>
             </div>
 
-            {/* List */}
-            <div className="px-4 pb-4 space-y-1">
+            {/* Grid */}
+            <div className="p-4">
               {currentPersons.length === 0 ? (
                 <p className={`text-center py-8 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                   Žiadni atléti neboli nájdení
                 </p>
-              ) : currentPersons.map((person) => (
-                <div
-                  key={person.id}
-                  onClick={() => onSelectPerson({ id: person.id, name: person.full_name })}
-                  className={`flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer transition-colors ${
-                    isDarkMode
-                      ? 'hover:bg-white/5'
-                      : 'hover:bg-gray-50'
-                  }`}
-                >
-                  <span className={`text-base font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {person.full_name}
-                  </span>
-                  <div className="flex items-center gap-5">
-                    <CountryFlag code={person.country_iso_code} style={{ fontSize: '1.2rem' }} />
-                    <span className={`text-sm tabular-nums w-6 text-right ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                      {person.fight_count}
-                    </span>
-                  </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                  {currentPersons.map((person) => (
+                    <div
+                      key={person.id}
+                      onClick={() => onSelectPerson({ id: person.id, name: person.full_name })}
+                      className={`rounded-lg transition-all hover:scale-[1.02] cursor-pointer overflow-hidden ${
+                        isDarkMode
+                          ? 'bg-[#0f172a] hover:bg-[#1e3a5f] shadow-lg hover:shadow-2xl'
+                          : 'bg-white hover:shadow-xl border border-gray-200 shadow-sm'
+                      }`}
+                    >
+                      {/* Flag area */}
+                      <div className={`flex items-center justify-center py-5 ${isDarkMode ? 'bg-white/5' : 'bg-gray-50'}`}>
+                        {person.country_iso_code ? (
+                          <span
+                            className={`fi fi-${person.country_iso_code.toLowerCase()} fis rounded`}
+                            style={{ fontSize: '3rem' }}
+                            title={person.country_iso_code}
+                          />
+                        ) : (
+                          <svg className={`w-12 h-12 ${isDarkMode ? 'text-gray-600' : 'text-gray-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                        )}
+                      </div>
+                      {/* Info */}
+                      <div className="px-3 py-2">
+                        <p className={`text-sm font-semibold leading-tight line-clamp-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                          {person.full_name}
+                        </p>
+                        <p className={`mt-1 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                          {person.fight_count} {person.fight_count === 1 ? 'zápas' : person.fight_count >= 2 && person.fight_count <= 4 ? 'zápasy' : 'zápasov'}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
