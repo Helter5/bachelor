@@ -337,9 +337,6 @@ export function TournamentDetail({
           <h2 className={`text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
             {tournamentName}
           </h2>
-          <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            ID: {tournamentId} • UUID: {tournamentUuid}
-          </p>
         </div>
       </div>
 
