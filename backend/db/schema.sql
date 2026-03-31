@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict oQu7rry9av1rInKS6OqiEr0gOZBmSp0lSxWE1upccXFWSgPU0PtTdajLWER449T
+\restrict rKF6mLe6vKWpOdqSdXnihbG0EUMZZwm9dy9nkjofDiNPn0xQmmKIRFVXgwbbQvk
 
 -- Dumped from database version 16.13
 -- Dumped by pg_dump version 16.13
@@ -183,6 +183,44 @@ ALTER SEQUENCE public.disciplines_id_seq OWNED BY public.disciplines.id;
 
 
 --
+-- Name: email_verification_tokens; Type: TABLE; Schema: public; Owner: user
+--
+
+CREATE TABLE public.email_verification_tokens (
+    id integer NOT NULL,
+    token character varying(255) NOT NULL,
+    user_id integer NOT NULL,
+    expires_at timestamp without time zone NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    is_used boolean NOT NULL
+);
+
+
+ALTER TABLE public.email_verification_tokens OWNER TO "user";
+
+--
+-- Name: email_verification_tokens_id_seq; Type: SEQUENCE; Schema: public; Owner: user
+--
+
+CREATE SEQUENCE public.email_verification_tokens_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.email_verification_tokens_id_seq OWNER TO "user";
+
+--
+-- Name: email_verification_tokens_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
+--
+
+ALTER SEQUENCE public.email_verification_tokens_id_seq OWNED BY public.email_verification_tokens.id;
+
+
+--
 -- Name: fights; Type: TABLE; Schema: public; Owner: user
 --
 
@@ -200,7 +238,9 @@ CREATE TABLE public.fights (
     victory_type character varying,
     duration integer,
     id integer NOT NULL,
-    sync_timestamp timestamp without time zone NOT NULL
+    sync_timestamp timestamp without time zone NOT NULL,
+    round_name character varying(100),
+    fight_number integer
 );
 
 
@@ -267,6 +307,44 @@ ALTER SEQUENCE public.login_history_id_seq OWNER TO "user";
 --
 
 ALTER SEQUENCE public.login_history_id_seq OWNED BY public.login_history.id;
+
+
+--
+-- Name: password_reset_tokens; Type: TABLE; Schema: public; Owner: user
+--
+
+CREATE TABLE public.password_reset_tokens (
+    id integer NOT NULL,
+    token character varying(255) NOT NULL,
+    user_id integer NOT NULL,
+    expires_at timestamp without time zone NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    is_used boolean NOT NULL
+);
+
+
+ALTER TABLE public.password_reset_tokens OWNER TO "user";
+
+--
+-- Name: password_reset_tokens_id_seq; Type: SEQUENCE; Schema: public; Owner: user
+--
+
+CREATE SEQUENCE public.password_reset_tokens_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.password_reset_tokens_id_seq OWNER TO "user";
+
+--
+-- Name: password_reset_tokens_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
+--
+
+ALTER SEQUENCE public.password_reset_tokens_id_seq OWNED BY public.password_reset_tokens.id;
 
 
 --
@@ -712,6 +790,13 @@ ALTER TABLE ONLY public.disciplines ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
+-- Name: email_verification_tokens id; Type: DEFAULT; Schema: public; Owner: user
+--
+
+ALTER TABLE ONLY public.email_verification_tokens ALTER COLUMN id SET DEFAULT nextval('public.email_verification_tokens_id_seq'::regclass);
+
+
+--
 -- Name: fights id; Type: DEFAULT; Schema: public; Owner: user
 --
 
@@ -723,6 +808,13 @@ ALTER TABLE ONLY public.fights ALTER COLUMN id SET DEFAULT nextval('public.fight
 --
 
 ALTER TABLE ONLY public.login_history ALTER COLUMN id SET DEFAULT nextval('public.login_history_id_seq'::regclass);
+
+
+--
+-- Name: password_reset_tokens id; Type: DEFAULT; Schema: public; Owner: user
+--
+
+ALTER TABLE ONLY public.password_reset_tokens ALTER COLUMN id SET DEFAULT nextval('public.password_reset_tokens_id_seq'::regclass);
 
 
 --
@@ -836,6 +928,14 @@ ALTER TABLE ONLY public.disciplines
 
 
 --
+-- Name: email_verification_tokens email_verification_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+--
+
+ALTER TABLE ONLY public.email_verification_tokens
+    ADD CONSTRAINT email_verification_tokens_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: fights fights_pkey; Type: CONSTRAINT; Schema: public; Owner: user
 --
 
@@ -849,6 +949,14 @@ ALTER TABLE ONLY public.fights
 
 ALTER TABLE ONLY public.login_history
     ADD CONSTRAINT login_history_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: password_reset_tokens password_reset_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+--
+
+ALTER TABLE ONLY public.password_reset_tokens
+    ADD CONSTRAINT password_reset_tokens_pkey PRIMARY KEY (id);
 
 
 --
@@ -1018,6 +1126,20 @@ CREATE INDEX ix_athletes_uid ON public.athletes USING btree (uid);
 
 
 --
+-- Name: ix_email_verification_tokens_token; Type: INDEX; Schema: public; Owner: user
+--
+
+CREATE UNIQUE INDEX ix_email_verification_tokens_token ON public.email_verification_tokens USING btree (token);
+
+
+--
+-- Name: ix_email_verification_tokens_user_id; Type: INDEX; Schema: public; Owner: user
+--
+
+CREATE INDEX ix_email_verification_tokens_user_id ON public.email_verification_tokens USING btree (user_id);
+
+
+--
 -- Name: ix_fights_uid; Type: INDEX; Schema: public; Owner: user
 --
 
@@ -1029,6 +1151,20 @@ CREATE INDEX ix_fights_uid ON public.fights USING btree (uid);
 --
 
 CREATE INDEX ix_login_history_user_id ON public.login_history USING btree (user_id);
+
+
+--
+-- Name: ix_password_reset_tokens_token; Type: INDEX; Schema: public; Owner: user
+--
+
+CREATE UNIQUE INDEX ix_password_reset_tokens_token ON public.password_reset_tokens USING btree (token);
+
+
+--
+-- Name: ix_password_reset_tokens_user_id; Type: INDEX; Schema: public; Owner: user
+--
+
+CREATE INDEX ix_password_reset_tokens_user_id ON public.password_reset_tokens USING btree (user_id);
 
 
 --
@@ -1120,6 +1256,14 @@ ALTER TABLE ONLY public.athletes
 
 
 --
+-- Name: email_verification_tokens email_verification_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+--
+
+ALTER TABLE ONLY public.email_verification_tokens
+    ADD CONSTRAINT email_verification_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
 -- Name: fights fights_fighter_one_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
 --
 
@@ -1173,6 +1317,14 @@ ALTER TABLE ONLY public.fights
 
 ALTER TABLE ONLY public.login_history
     ADD CONSTRAINT login_history_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: password_reset_tokens password_reset_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+--
+
+ALTER TABLE ONLY public.password_reset_tokens
+    ADD CONSTRAINT password_reset_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
 --
@@ -1251,5 +1403,5 @@ ALTER TABLE ONLY public.weight_category_source_uids
 -- PostgreSQL database dump complete
 --
 
-\unrestrict oQu7rry9av1rInKS6OqiEr0gOZBmSp0lSxWE1upccXFWSgPU0PtTdajLWER449T
+\unrestrict rKF6mLe6vKWpOdqSdXnihbG0EUMZZwm9dy9nkjofDiNPn0xQmmKIRFVXgwbbQvk
 

@@ -219,6 +219,10 @@ class FightService(BaseService[Fight]):
                 # Duration: endTime (seconds)
                 duration = fight_data.get("endTime")
 
+                # Round info
+                round_name = fight_data.get("round")
+                fight_number = fight_data.get("fightNumber")
+
                 fight_create = FightBase(
                     uid=UUID(fight_uid),
                     sport_event_id=event_db_id,
@@ -232,6 +236,8 @@ class FightService(BaseService[Fight]):
                     cp_two=cp_two,
                     victory_type=self._resolve_victory_type(fight_data.get("victoryType")),
                     duration=duration,
+                    round_name=round_name,
+                    fight_number=fight_number,
                 )
 
                 # Check if fight already exists by natural key (sport_event + fighters + weight_category)

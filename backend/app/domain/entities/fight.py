@@ -19,6 +19,8 @@ class FightBase(SQLModel):
     cp_two: Optional[int] = None
     victory_type: Optional[str] = Field(default=None, foreign_key="victory_types.code")
     duration: Optional[int] = None
+    round_name: Optional[str] = Field(default=None, max_length=100)
+    fight_number: Optional[int] = None
 
 
 class Fight(FightBase, table=True):
