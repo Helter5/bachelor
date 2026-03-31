@@ -3,6 +3,13 @@ import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
 import { Pagination } from "./Pagination"
 import { SearchInput } from "./SearchInput"
+import { Select } from "../ui/Select"
+
+const COMPETING_OPTIONS = [
+  { value: "", label: "Všetci" },
+  { value: "yes", label: "Súťaží" },
+  { value: "no", label: "Nesúťaží" },
+]
 
 interface Athlete {
   id: string
@@ -130,6 +137,11 @@ export function FightersList({ isDarkMode }: FightersListProps) {
     return Array.from(new Set(athletes.map(a => a.accreditationStatus).filter((s): s is string => Boolean(s)))).sort()
   }, [athletes])
 
+  const accreditationOptions = useMemo(() => [
+    { value: "", label: "Všetky stavy" },
+    ...uniqueAccreditationStatuses.map((s) => ({ value: s, label: s })),
+  ], [uniqueAccreditationStatuses])
+
   // Filter and sort athletes
   const filteredAndSortedAthletes = useMemo(() => {
     let filtered = athletes.filter(athlete => {
@@ -229,19 +241,13 @@ export function FightersList({ isDarkMode }: FightersListProps) {
             <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               Súťaží
             </label>
-            <select
+            <Select
               value={competingFilter}
-              onChange={(e) => handleFilterChange(searchQuery, e.target.value, accreditationFilter)}
-              className={`w-full px-4 py-2 rounded-lg ${
-                isDarkMode
-                  ? 'bg-[#0f172a] text-white focus:border-blue-500'
-                  : 'bg-gray-50 text-gray-900 focus:border-blue-500'
-              } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
-            >
-              <option value="">Všetci</option>
-              <option value="yes">Súťaží</option>
-              <option value="no">Nesúťaží</option>
-            </select>
+              onChange={(v) => handleFilterChange(searchQuery, v, accreditationFilter)}
+              options={COMPETING_OPTIONS}
+              isDarkMode={isDarkMode}
+              className="w-full"
+            />
           </div>
 
           {/* Accreditation Filter */}
@@ -249,20 +255,13 @@ export function FightersList({ isDarkMode }: FightersListProps) {
             <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               Akreditácia
             </label>
-            <select
+            <Select
               value={accreditationFilter}
-              onChange={(e) => handleFilterChange(searchQuery, competingFilter, e.target.value)}
-              className={`w-full px-4 py-2 rounded-lg ${
-                isDarkMode
-                  ? 'bg-[#0f172a] text-white focus:border-blue-500'
-                  : 'bg-gray-50 text-gray-900 focus:border-blue-500'
-              } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
-            >
-              <option value="">Všetky stavy</option>
-              {uniqueAccreditationStatuses.map(status => (
-                <option key={status} value={status}>{status}</option>
-              ))}
-            </select>
+              onChange={(v) => handleFilterChange(searchQuery, competingFilter, v)}
+              options={accreditationOptions}
+              isDarkMode={isDarkMode}
+              className="w-full"
+            />
           </div>
         </div>
 

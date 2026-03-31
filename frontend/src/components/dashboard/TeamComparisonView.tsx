@@ -1,7 +1,8 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useEvents } from "@/hooks/useEvents"
 import { useEventStatistics } from "@/hooks/useEventStatistics"
 import type { TeamPerformance } from "@/hooks/useEventStatistics"
+import { Select } from "../ui/Select"
 
 interface TeamComparisonViewProps {
   isDarkMode: boolean
@@ -54,30 +55,25 @@ function TeamSelector({
   teams: TeamPerformance[]
   excludeName: string
 }) {
+  const teamOptions = useMemo(() => [
+    { value: "", label: "— Vyber tím —" },
+    ...teams
+      .filter((t) => t.name !== excludeName)
+      .map((t) => ({ value: t.name, label: t.country ? `${t.country} — ${t.name}` : t.name })),
+  ], [teams, excludeName])
+
   return (
     <div className={`rounded-xl p-5 ${isDarkMode ? "bg-[#0f172a]/60 border border-white/5" : "bg-gray-50 border border-gray-200"}`}>
       <p className={`text-xs font-semibold uppercase tracking-wider mb-3 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
         {label}
       </p>
-      <select
+      <Select
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`w-full rounded-lg px-3 py-2 text-sm font-medium border transition-colors ${
-          isDarkMode
-            ? "bg-[#1e293b] border-white/10 text-white focus:border-blue-500 focus:outline-none"
-            : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:outline-none"
-        }`}
-      >
-        <option value="">— Vyber tím —</option>
-        {teams
-          .filter((t) => t.name !== excludeName)
-          .map((t) => (
-            <option key={t.name} value={t.name}>
-              {t.country ? `${t.country} — ` : ""}
-              {t.name}
-            </option>
-          ))}
-      </select>
+        onChange={onChange}
+        options={teamOptions}
+        isDarkMode={isDarkMode}
+        className="w-full"
+      />
       {value && (
         <div className={`mt-3 text-sm font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>
           {value}
@@ -101,8 +97,13 @@ export function TeamComparisonView({ isDarkMode, onBack }: TeamComparisonViewPro
   const team2 = teams.find((t) => t.name === team2Name) ?? null
   const canCompare = !!team1 && !!team2 && team1Name !== team2Name
 
+  const eventOptions = useMemo(() => [
+    { value: 0, label: "— Vyber turnaj —" },
+    ...events.map((e) => ({ value: e.id, label: e.name })),
+  ], [events])
+
   const handleEventChange = (id: number) => {
-    setSelectedEventId(id)
+    setSelectedEventId(id === 0 ? null : id)
     setTeam1Name("")
     setTeam2Name("")
     setShowResults(false)
@@ -147,22 +148,13 @@ export function TeamComparisonView({ isDarkMode, onBack }: TeamComparisonViewPro
           <label className={`block text-sm font-medium mb-2 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
             Turnaj
           </label>
-          <select
-            value={selectedEventId ?? ""}
-            onChange={(e) => handleEventChange(Number(e.target.value))}
-            className={`w-full max-w-md rounded-lg px-3 py-2 text-sm border transition-colors ${
-              isDarkMode
-                ? "bg-[#0f172a] border-white/10 text-white focus:border-blue-500 focus:outline-none"
-                : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:outline-none"
-            }`}
-          >
-            <option value="">— Vyber turnaj —</option>
-            {events.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.name}
-              </option>
-            ))}
-          </select>
+          <Select
+            value={selectedEventId ?? 0}
+            onChange={handleEventChange}
+            options={eventOptions}
+            isDarkMode={isDarkMode}
+            className="w-full max-w-md"
+          />
         </div>
 
         {/* Loading spinner */}

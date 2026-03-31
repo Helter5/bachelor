@@ -2,6 +2,9 @@ import { useState } from "react"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
 import type { WeightCategory } from "../types"
+import { Select } from "../../../ui/Select"
+
+const LAST_N_OPTIONS = [1, 2, 3, 5, 10].map((n) => ({ value: n, label: `${n} turnajov` }))
 
 interface DrawAthlete {
   seed: number
@@ -108,15 +111,12 @@ export function DrawTab({ isDarkMode, eventId, weightCategories, weightCategorie
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <label className={`text-sm ${sub}`}>Posledných</label>
-            <select
+            <Select
               value={lastN}
-              onChange={e => setLastN(Number(e.target.value))}
-              className={`rounded-lg px-2 py-1.5 text-sm border ${
-                isDarkMode ? 'bg-[#1e293b] border-white/10 text-white' : 'bg-white border-gray-300 text-gray-900'
-              }`}
-            >
-              {[1, 2, 3, 5, 10].map(n => <option key={n} value={n}>{n} turnajov</option>)}
-            </select>
+              onChange={setLastN}
+              options={LAST_N_OPTIONS}
+              isDarkMode={isDarkMode}
+            />
           </div>
 
           <button

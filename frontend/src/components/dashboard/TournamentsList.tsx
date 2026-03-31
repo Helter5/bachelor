@@ -8,6 +8,7 @@ import type { Event } from "@/hooks/useTournaments"
 import { StatusBadge } from "../ui/StatusBadge"
 import { EmptyState } from "../ui/EmptyState"
 import { LoadingSpinner } from "../ui/LoadingSpinner"
+import { Select } from "../ui/Select"
 
 interface PersonSuggestion {
   id: number
@@ -135,6 +136,11 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
     clearFilters,
     hasActiveFilters,
   } = useTournamentFilters(events)
+
+  const locationOptions = useMemo(() => [
+    { value: "", label: "Všetky lokality" },
+    ...uniqueLocations.map((loc) => ({ value: loc, label: loc })),
+  ], [uniqueLocations])
 
   // Apply person filter on top of base filters
   const displayedEvents = useMemo(
@@ -372,32 +378,13 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
 
               {/* Location Filter */}
               <div>
-                <div className="relative">
-                  <select
-                    value={locationFilter}
-                    onChange={(e) => handleFilterChange(searchQuery, e.target.value)}
-                    className={`w-full px-3 py-2 pr-8 rounded-lg text-sm transition-all appearance-none cursor-pointer ${
-                      isDarkMode
-                        ? 'bg-[#0f172a]/50 text-white focus:bg-[#0f172a] shadow-inner focus:ring-2 focus:ring-blue-500/30'
-                        : 'bg-gray-50 text-gray-900 border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
-                    } focus:outline-none`}
-                  >
-                    <option value="">Všetky lokality</option>
-                    {uniqueLocations.map(location => (
-                      <option key={location} value={location}>{location}</option>
-                    ))}
-                  </select>
-                  <svg
-                    className={`absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none ${
-                      isDarkMode ? 'text-gray-500' : 'text-gray-400'
-                    }`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
+                <Select
+                  value={locationFilter}
+                  onChange={(v) => handleFilterChange(searchQuery, v)}
+                  options={locationOptions}
+                  isDarkMode={isDarkMode}
+                  className="w-full"
+                />
               </div>
             </div>
 

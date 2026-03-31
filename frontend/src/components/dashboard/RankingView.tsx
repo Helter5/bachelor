@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { useRankingCategories, useRankingData } from "@/hooks/useRankingData"
 import type { RankingEntry } from "@/hooks/useRankingData"
 import { LoadingSpinner } from "../ui/LoadingSpinner"
 import { EmptyState } from "../ui/EmptyState"
+import { Select } from "../ui/Select"
 
 interface RankingTableRowProps {
   isDarkMode: boolean
@@ -121,6 +122,16 @@ export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewP
   const dateInputRef = useRef<HTMLInputElement>(null)
 
   const { data: rankingData, loading: rankingLoading } = useRankingData(selectedRankingCategory, lastN, dateFrom || undefined)
+
+  const categoryOptions = useMemo(
+    () => categories.map((cat) => ({ value: cat, label: cat })),
+    [categories]
+  )
+
+  const lastNOptions = useMemo(
+    () => [1, 2, 3, 4, 5].map((n) => ({ value: n, label: String(n) })),
+    []
+  )
 
   useEffect(() => {
     if (categories.length > 0 && !selectedRankingCategory) {
@@ -273,37 +284,23 @@ export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewP
             <label className={`block text-sm font-medium mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               Váhová kategória
             </label>
-            <select
+            <Select
               value={selectedRankingCategory}
-              onChange={(e) => setSelectedRankingCategory(e.target.value)}
-              className={`h-9 px-3 rounded-lg text-sm border ${
-                isDarkMode
-                  ? 'bg-[#0f172a] text-white border-white/10 focus:border-purple-500'
-                  : 'bg-white text-gray-900 border-gray-300 focus:border-purple-500'
-              } focus:outline-none`}
-            >
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
+              onChange={setSelectedRankingCategory}
+              options={categoryOptions}
+              isDarkMode={isDarkMode}
+            />
           </div>
           <div className="flex flex-col">
             <label className={`block text-sm font-medium mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               Počet turnajov
             </label>
-            <select
+            <Select
               value={lastN}
-              onChange={(e) => setLastN(Number(e.target.value))}
-              className={`h-9 px-3 rounded-lg text-sm border ${
-                isDarkMode
-                  ? 'bg-[#0f172a] text-white border-white/10 focus:border-purple-500'
-                  : 'bg-white text-gray-900 border-gray-300 focus:border-purple-500'
-              } focus:outline-none`}
-            >
-              {[1, 2, 3, 4, 5].map(n => (
-                <option key={n} value={n}>{n}</option>
-              ))}
-            </select>
+              onChange={setLastN}
+              options={lastNOptions}
+              isDarkMode={isDarkMode}
+            />
           </div>
           <div className="flex flex-col">
             <label className={`block text-sm font-medium mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
