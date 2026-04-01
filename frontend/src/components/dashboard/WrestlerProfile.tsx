@@ -233,11 +233,11 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Win/Loss Pie */}
-        <div className={`rounded-xl p-6 ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
+        <div className={`rounded-xl p-6 min-h-[400px] ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
           <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>{t("wrestlerProfile.charts.winLoss")}</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <PieChart style={{ overflow: "visible" }}>
-              <Pie data={stats.pieData} cx="50%" cy="55%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, value }) => `${name}: ${value}`}>
+          <ResponsiveContainer width="100%" height={320}>
+            <PieChart style={{ overflow: "visible" }} margin={{ top: 24, right: 8, left: 8, bottom: 8 }}>
+              <Pie data={stats.pieData} cx="50%" cy="58%" innerRadius={56} outerRadius={92} dataKey="value" label={({ name, value }) => `${name}: ${value}`}>
                 <Cell fill={WIN_COLOR} />
                 <Cell fill={LOSS_COLOR} />
               </Pie>
@@ -248,9 +248,9 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
         </div>
 
         {/* Victory Type Bar */}
-        <div className={`rounded-xl p-6 ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
+        <div className={`rounded-xl p-6 min-h-[400px] ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
           <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>{t("wrestlerProfile.charts.winTypes")}</h3>
-          <ResponsiveContainer width="100%" height={220}>
+          <ResponsiveContainer width="100%" height={300}>
             <BarChart data={stats.victoryTypeBarData}>
               <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "rgba(255,255,255,0.05)" : "#f0f0f0"} />
               <XAxis dataKey="name" tick={axisTickStyle} />
@@ -266,7 +266,7 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
         </div>
 
         {/* TP/CP per Tournament Line */}
-        <div className={`rounded-xl p-6 ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
+        <div className={`rounded-xl p-6 min-h-[400px] ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
           <div className="flex items-center justify-between mb-4">
             <h3 className={`text-lg font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>
               {t("wrestlerProfile.charts.metricByTournament", { metric: chartMetric === "tp" ? "TP" : "CP" })}
@@ -294,7 +294,7 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
               </button>
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={220}>
+          <ResponsiveContainer width="100%" height={300}>
             <LineChart data={stats.metricPerTournament}>
               <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "rgba(255,255,255,0.05)" : "#f0f0f0"} />
               <XAxis dataKey="name" tick={axisTickSmall} angle={-20} textAnchor="end" height={50} />
