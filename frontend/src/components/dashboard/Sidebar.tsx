@@ -85,9 +85,11 @@ export function Sidebar({
   userData,
 }: SidebarProps) {
   const { t, i18n } = useTranslation()
+  const currentLanguage = i18n.resolvedLanguage || i18n.language || 'sk'
+  const isSlovak = currentLanguage.toLowerCase().startsWith('sk')
 
   const toggleLanguage = () => {
-    i18n.changeLanguage(i18n.language === 'sk' ? 'en' : 'sk')
+    i18n.changeLanguage(isSlovak ? 'en' : 'sk')
   }
 
   // Get first letter of first name for avatar
@@ -154,12 +156,12 @@ export function Sidebar({
         <div className="flex items-center gap-2 mt-6">
           <button
             onClick={toggleLanguage}
-            title={i18n.language === 'sk' ? 'Switch to English' : 'Prepnúť na slovenčinu'}
+            title={isSlovak ? 'Switch to English' : 'Prepnúť na slovenčinu'}
             className={`flex-shrink-0 px-2 py-1 rounded-md text-xs font-semibold transition-colors ${
               isDarkMode ? 'text-slate-300 hover:bg-white/10' : 'text-gray-600 hover:bg-gray-100'
             }`}
           >
-            {i18n.language === 'sk' ? 'EN' : 'SK'}
+            {isSlovak ? 'SK' : 'EN'}
           </button>
           <button
             onClick={onLogout}
