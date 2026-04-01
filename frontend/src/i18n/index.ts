@@ -16,8 +16,9 @@ i18n
     fallbackLng: 'sk',
     supportedLngs: ['sk', 'en'],
     detection: {
-      order: ['localStorage', 'navigator'],
+      order: ['path', 'localStorage', 'navigator'],
       caches: ['localStorage'],
+      lookupFromPathIndex: 0,
       lookupLocalStorage: 'i18n_lang',
     },
     interpolation: {

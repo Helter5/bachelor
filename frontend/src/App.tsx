@@ -6,6 +6,32 @@ import { ResetPassword } from "@/components/ResetPassword"
 import { apiClient, ApiError } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
 
+const SUPPORTED_LOCALES = new Set(["sk", "en"])
+
+function getPreferredLocale() {
+  const stored = localStorage.getItem("i18n_lang")?.toLowerCase()
+  if (stored && SUPPORTED_LOCALES.has(stored)) return stored
+
+  const browser = navigator.language?.toLowerCase().split("-")[0]
+  return browser && SUPPORTED_LOCALES.has(browser) ? browser : "sk"
+}
+
+function ensureLocalePrefixInPath() {
+  const pathname = window.location.pathname
+  const segments = pathname.split("/").filter(Boolean)
+  const firstSegment = segments[0]?.toLowerCase()
+
+  if (firstSegment && SUPPORTED_LOCALES.has(firstSegment)) {
+    return
+  }
+
+  const locale = getPreferredLocale()
+  const nextPath = `/${[locale, ...segments].join("/")}`
+  const query = window.location.search || ""
+  const hash = window.location.hash || ""
+  window.history.replaceState({}, "", `${nextPath}${query}${hash}`)
+}
+
 interface UserData {
   id: string;
   username: string;
@@ -44,6 +70,8 @@ function App() {
 
   // Check if user is already logged in on component mount
   useEffect(() => {
+    ensureLocalePrefixInPath();
+
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get("token");
     const path = window.location.pathname;
@@ -75,7 +103,8 @@ function App() {
 
   const handleBackToLogin = () => {
     // Clear URL params and go back to landing
-    window.history.replaceState({}, "", "/");
+    const locale = getPreferredLocale();
+    window.history.replaceState({}, "", `/${locale}`);
     setCurrentPage("landing");
   };
 
@@ -91,7 +120,8 @@ function App() {
       setUserData(null);
       setIsLoggedIn(false);
       // Clear URL query params (e.g. ?section=logs)
-      window.history.replaceState({}, "", "/");
+      const locale = getPreferredLocale();
+      window.history.replaceState({}, "", `/${locale}`);
     }
   };
 

@@ -1,6 +1,9 @@
 import { useState, useCallback, useEffect } from 'react'
+import i18n from '@/i18n'
 
-const DASHBOARD_BASE_PATH = '/dashboard'
+const SUPPORTED_LOCALES = new Set(['sk', 'en'])
+const DEFAULT_LOCALE = 'sk'
+const DASHBOARD_SEGMENT = 'dashboard'
 const VALID_SECTIONS = new Set(['home', 'tournaments', 'athletes', 'stats', 'fighters', 'settings', 'logs'])
 
 interface TournamentDetail {
@@ -28,8 +31,30 @@ function getPathSegments() {
   return window.location.pathname.split('/').filter(Boolean)
 }
 
-function buildPath(section: string) {
-  return section === 'home' ? DASHBOARD_BASE_PATH : `${DASHBOARD_BASE_PATH}/${section}`
+function getLocaleFromPath() {
+  const first = getPathSegments()[0]?.toLowerCase()
+  return first && SUPPORTED_LOCALES.has(first) ? first : null
+}
+
+function getCurrentLocale() {
+  const fromPath = getLocaleFromPath()
+  if (fromPath) return fromPath
+
+  const resolved = (i18n.resolvedLanguage || i18n.language || DEFAULT_LOCALE).toLowerCase().split('-')[0]
+  return SUPPORTED_LOCALES.has(resolved) ? resolved : DEFAULT_LOCALE
+}
+
+function getPathSegmentsWithoutLocale() {
+  const segments = getPathSegments()
+  if (segments[0] && SUPPORTED_LOCALES.has(segments[0].toLowerCase())) {
+    return segments.slice(1)
+  }
+  return segments
+}
+
+function buildPath(section: string, locale = getCurrentLocale()) {
+  const basePath = `/${locale}/${DASHBOARD_SEGMENT}`
+  return section === 'home' ? basePath : `${basePath}/${section}`
 }
 
 function appendQuery(path: string, params: URLSearchParams) {
@@ -39,13 +64,13 @@ function appendQuery(path: string, params: URLSearchParams) {
 
 function parseLocationState() {
   const params = new URLSearchParams(window.location.search)
-  const segments = getPathSegments()
+  const segments = getPathSegmentsWithoutLocale()
 
   let section = 'home'
   let tournamentId: number | null = null
   let personId: number | null = null
 
-  const dashboardIndex = segments.indexOf('dashboard')
+  const dashboardIndex = segments.indexOf(DASHBOARD_SEGMENT)
   const rootIndex = dashboardIndex >= 0 ? dashboardIndex + 1 : 0
 
   const sectionFromPath = segments[rootIndex]
@@ -100,6 +125,11 @@ export function useDashboardState() {
   useEffect(() => {
     const handlePopState = () => {
       const { section, personId, tournamentId } = parseLocationState()
+      const locale = getLocaleFromPath()
+      if (locale && i18n.resolvedLanguage !== locale) {
+        i18n.changeLanguage(locale)
+      }
+
       setState(prev => ({
         ...prev,
         activeSection: section,
@@ -134,7 +164,9 @@ export function useDashboardState() {
     const params = new URLSearchParams(window.location.search)
     const pathnameWithoutPerson = window.location.pathname.replace(/\/person\/\d+\/?$/, '')
     const fallbackSection = state.activeSection === 'home' ? 'stats' : state.activeSection
-    const basePath = pathnameWithoutPerson.startsWith(DASHBOARD_BASE_PATH)
+    const localeDashboardPrefix = `/${getCurrentLocale()}/${DASHBOARD_SEGMENT}`
+    const legacyDashboardPrefix = `/${DASHBOARD_SEGMENT}`
+    const basePath = pathnameWithoutPerson.startsWith(localeDashboardPrefix) || pathnameWithoutPerson.startsWith(legacyDashboardPrefix)
       ? pathnameWithoutPerson
       : buildPath(fallbackSection)
     const nextPath = `${basePath}/person/${person.id}`

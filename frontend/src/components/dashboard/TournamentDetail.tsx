@@ -34,12 +34,17 @@ export function TournamentDetail({
   onSelectPerson
 }: TournamentDetailProps) {
   const { t } = useTranslation()
+  const getLocalePrefix = useCallback(() => {
+    const first = window.location.pathname.split('/').filter(Boolean)[0]?.toLowerCase()
+    return first === 'en' || first === 'sk' ? `/${first}` : '/sk'
+  }, [])
+
   const tabsOrder: TabType[] = ["weight-categories", "teams", "athletes", "results", "statistics", "draw", "export"]
   const isTabType = (value: string | null): value is TabType => {
     return !!value && tabsOrder.includes(value as TabType)
   }
 
-  const getTournamentBasePath = useCallback(() => `/dashboard/tournaments/${tournamentId}`, [tournamentId])
+  const getTournamentBasePath = useCallback(() => `${getLocalePrefix()}/dashboard/tournaments/${tournamentId}`, [getLocalePrefix, tournamentId])
 
   const pushPathWithCurrentQuery = useCallback((path: string) => {
     const params = new URLSearchParams(window.location.search)

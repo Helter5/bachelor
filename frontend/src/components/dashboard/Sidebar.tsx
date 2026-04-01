@@ -88,8 +88,22 @@ export function Sidebar({
   const currentLanguage = i18n.resolvedLanguage || i18n.language || 'sk'
   const isSlovak = currentLanguage.toLowerCase().startsWith('sk')
 
+  const withLocalePrefix = (nextLocale: 'sk' | 'en') => {
+    const segments = window.location.pathname.split('/').filter(Boolean)
+    const first = segments[0]?.toLowerCase()
+    const rest = first === 'sk' || first === 'en' ? segments.slice(1) : segments
+    const path = `/${[nextLocale, ...rest].join('/')}`
+    return path === `/${nextLocale}` ? path : path.replace(/\/$/, '')
+  }
+
   const toggleLanguage = () => {
-    i18n.changeLanguage(isSlovak ? 'en' : 'sk')
+    const nextLocale: 'sk' | 'en' = isSlovak ? 'en' : 'sk'
+    i18n.changeLanguage(nextLocale)
+
+    const nextPath = withLocalePrefix(nextLocale)
+    const query = window.location.search || ''
+    const hash = window.location.hash || ''
+    window.history.pushState({}, '', `${nextPath}${query}${hash}`)
   }
 
   // Get first letter of first name for avatar
