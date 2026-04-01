@@ -316,14 +316,32 @@ export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewP
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
                 onClick={() => dateInputRef.current?.showPicker()}
+                style={{ colorScheme: isDarkMode ? 'dark' : 'light' }}
                 className={`h-9 px-3 rounded-lg text-sm border cursor-pointer ${
-                  dateFrom ? 'pr-8' : ''
+                  'date-input-calendar '
+                }${
+                  isDarkMode ? 'date-input-calendar--dark ' : ''
+                }${
+                  'pr-8 '
                 } ${
                   isDarkMode
                     ? 'bg-[#0f172a] text-white border-white/10 focus:border-purple-500'
                     : 'bg-white text-gray-900 border-gray-300 focus:border-purple-500'
                 } focus:outline-none`}
               />
+              {!dateFrom && (
+                <svg
+                  className={`absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none ${
+                    isDarkMode ? 'text-white' : 'text-gray-500'
+                  }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10m-12 9h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v11a2 2 0 002 2z" />
+                </svg>
+              )}
               {dateFrom && (
                 <button
                   onClick={() => setDateFrom("")}

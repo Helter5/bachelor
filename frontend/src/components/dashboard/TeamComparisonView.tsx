@@ -62,7 +62,7 @@ function TeamSelector({
     ...teams
       .filter((t) => t.name !== excludeName)
       .map((t) => ({ value: t.name, label: t.country ? `${t.country} — ${t.name}` : t.name })),
-  ], [teams, excludeName])
+  ], [teams, excludeName, t])
 
   return (
     <div className={`rounded-xl p-5 ${isDarkMode ? "bg-[#0f172a]/60 border border-white/5" : "bg-gray-50 border border-gray-200"}`}>
@@ -101,9 +101,9 @@ export function TeamComparisonView({ isDarkMode, onBack }: TeamComparisonViewPro
   const canCompare = !!team1 && !!team2 && team1Name !== team2Name
 
   const eventOptions = useMemo(() => [
-    { value: 0, label: t("teamComparison.selectTournament") },
+    { value: 0, label: t("common.selectTournament") },
     ...events.map((e) => ({ value: e.id, label: e.name })),
-  ], [events])
+  ], [events, t])
 
   const handleEventChange = (id: number) => {
     setSelectedEventId(id === 0 ? null : id)

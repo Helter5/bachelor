@@ -1,10 +1,9 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
 import type { WeightCategory } from "../types"
 import { Select } from "../../../ui/Select"
-
-const LAST_N_OPTIONS = [1, 2, 3, 5, 10].map((n) => ({ value: n, label: `${n} turnajov` }))
 
 interface DrawAthlete {
   seed: number
@@ -50,10 +49,16 @@ interface DrawTabProps {
 }
 
 export function DrawTab({ isDarkMode, eventId, weightCategories, weightCategoriesLoading }: DrawTabProps) {
+  const { t } = useTranslation()
   const [lastN, setLastN] = useState(3)
   const [draws, setDraws] = useState<Record<number, CategoryDraw>>({})
   const [expandedId, setExpandedId] = useState<number | null>(null)
   const [generatingAll, setGeneratingAll] = useState(false)
+
+  const lastNOptions = useMemo(
+    () => [1, 2, 3, 5, 10].map((n) => ({ value: n, label: `${n} ${t("draw.tournamentCount")}` })),
+    [t],
+  )
 
   const text = isDarkMode ? 'text-white' : 'text-gray-900'
   const sub = isDarkMode ? 'text-gray-400' : 'text-gray-500'
@@ -89,7 +94,7 @@ export function DrawTab({ isDarkMode, eventId, weightCategories, weightCategorie
       if (res.status === "fulfilled" && res.value) {
         updated[wc.id] = { wc, result: res.value, loading: false, error: res.value.error ?? null }
       } else {
-        updated[wc.id] = { wc, result: null, loading: false, error: "Nepodarilo sa vygenerovať" }
+        updated[wc.id] = { wc, result: null, loading: false, error: t("draw.failed") }
       }
     })
     setDraws(updated)
@@ -106,15 +111,15 @@ export function DrawTab({ isDarkMode, eventId, weightCategories, weightCategorie
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h3 className={`text-xl font-semibold ${text}`}>Generátor žrebu</h3>
+        <h3 className={`text-xl font-semibold ${text}`}>{t("draw.title")}</h3>
 
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <label className={`text-sm ${sub}`}>Posledných</label>
+            <label className={`text-sm ${sub}`}>{t("draw.lastN")}</label>
             <Select
               value={lastN}
               onChange={setLastN}
-              options={LAST_N_OPTIONS}
+              options={lastNOptions}
               isDarkMode={isDarkMode}
             />
           </div>
@@ -128,22 +133,22 @@ export function DrawTab({ isDarkMode, eventId, weightCategories, weightCategorie
                 : 'bg-blue-600 hover:bg-blue-700'
             }`}
           >
-            {generatingAll ? 'Generujem...' : hasDraws ? 'Regenerovať všetky' : 'Generovať všetky žreby'}
+            {generatingAll ? t("draw.generating") : hasDraws ? t("draw.regenerateAll") : t("draw.generateAll")}
           </button>
         </div>
       </div>
 
       {weightCategoriesLoading && (
-        <p className={`text-sm ${sub}`}>Načítavam kategórie...</p>
+        <p className={`text-sm ${sub}`}>{t("draw.loadingCategories")}</p>
       )}
 
       {!weightCategoriesLoading && !weightCategories.length && (
-        <p className={`text-sm ${sub}`}>Žiadne váhové kategórie.</p>
+        <p className={`text-sm ${sub}`}>{t("draw.noCategories")}</p>
       )}
 
       {!hasDraws && !generatingAll && weightCategories.length > 0 && (
         <div className={`rounded-lg p-8 text-center ${card}`}>
-          <p className={`text-sm ${sub} mb-1`}>Klikni na tlačidlo vyššie a žreb sa vygeneruje pre všetky kategórie naraz.</p>
+          <p className={`text-sm ${sub} mb-1`}>{t("draw.instructions")}</p>
         </div>
       )}
 
@@ -171,12 +176,12 @@ export function DrawTab({ isDarkMode, eventId, weightCategories, weightCategorie
                 </div>
 
                 <div className="flex items-center gap-3 text-sm">
-                  {!entry && <span className={`text-xs ${sub}`}>Nevygenerované</span>}
-                  {entry?.loading && <span className={`text-xs ${sub}`}>Generujem...</span>}
+                  {!entry && <span className={`text-xs ${sub}`}>{t("draw.notGenerated")}</span>}
+                  {entry?.loading && <span className={`text-xs ${sub}`}>{t("draw.generating")}</span>}
                   {entry?.error && <span className="text-xs text-red-400">{entry.error}</span>}
                   {entry?.result && !entry.error && (
                     <>
-                      <span className={`text-xs ${sub}`}>{entry.result.athletes_count} atlétov</span>
+                      <span className={`text-xs ${sub}`}>{entry.result.athletes_count} {t("draw.athletes")}</span>
                       <PenaltyBadge penalty={entry.result.total_penalty} isDarkMode={isDarkMode} />
                     </>
                   )}
@@ -211,17 +216,20 @@ function ChevronIcon({ expanded, isDarkMode }: { expanded: boolean; isDarkMode: 
 }
 
 function PenaltyBadge({ penalty, isDarkMode }: { penalty: number; isDarkMode: boolean }) {
+  const { t } = useTranslation()
+
   if (penalty === 0) {
-    return <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/15 text-green-400">Bez penalizácií</span>
+    return <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/15 text-green-400">{t("draw.penaltyNone")}</span>
   }
   return (
     <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400">
-      Penalizácia: {penalty}
+      {t("draw.penaltyLabel", { count: penalty })}
     </span>
   )
 }
 
 function DrawContent({ result, isDarkMode }: { result: DrawResult; isDarkMode: boolean }) {
+  const { t } = useTranslation()
   const text = isDarkMode ? 'text-white' : 'text-gray-900'
   const sub = isDarkMode ? 'text-gray-400' : 'text-gray-500'
   const divider = isDarkMode ? 'border-white/5' : 'border-gray-100'
@@ -230,17 +238,17 @@ function DrawContent({ result, isDarkMode }: { result: DrawResult; isDarkMode: b
     <div className="space-y-4 mt-2">
       {/* Stats row */}
       <div className="flex gap-5 text-sm flex-wrap">
-        <span className={sub}>Bracket: <span className={`font-medium ${text}`}>{result.bracket_size}</span></span>
+        <span className={sub}>{t("draw.bracketLabel")} <span className={`font-medium ${text}`}>{result.bracket_size}</span></span>
         {result.byes_count > 0 && (
-          <span className={sub}>Bye: <span className={`font-medium ${text}`}>{result.byes_count}</span></span>
+          <span className={sub}>{t("draw.byeLabel")} <span className={`font-medium ${text}`}>{result.byes_count}</span></span>
         )}
-        <span className={sub}>Nasadenie z: <span className={`font-medium ${text}`}>{result.last_n_tournaments} turnajov</span></span>
+        <span className={sub}>{t("draw.seedingFrom", { count: result.last_n_tournaments })}</span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Bracket */}
         <div>
-          <p className={`text-xs font-semibold uppercase tracking-wide ${sub} mb-2`}>1. kolo</p>
+          <p className={`text-xs font-semibold uppercase tracking-wide ${sub} mb-2`}>{t("draw.round1")}</p>
           <div className="space-y-1.5">
             {result.bracket.map(match => (
               <div key={match.match_number} className={`rounded-lg p-2.5 ${isDarkMode ? 'bg-black/20' : 'bg-gray-50'} ${match.penalty_score > 0 ? 'ring-1 ring-amber-500/30' : ''}`}>
@@ -262,15 +270,15 @@ function DrawContent({ result, isDarkMode }: { result: DrawResult; isDarkMode: b
 
         {/* Seeding */}
         <div>
-          <p className={`text-xs font-semibold uppercase tracking-wide ${sub} mb-2`}>Nasadenie</p>
+          <p className={`text-xs font-semibold uppercase tracking-wide ${sub} mb-2`}>{t("draw.seeding")}</p>
           <div className={`rounded-lg overflow-hidden border ${isDarkMode ? 'border-white/5' : 'border-gray-200'}`}>
             <table className="w-full text-xs">
               <thead>
                 <tr className={isDarkMode ? 'bg-white/5' : 'bg-gray-50'}>
-                  <th className={`text-left px-3 py-1.5 font-medium ${sub}`}>#</th>
-                  <th className={`text-left px-3 py-1.5 font-medium ${sub}`}>Meno</th>
-                  <th className={`text-left px-3 py-1.5 font-medium ${sub}`}>Tím</th>
-                  <th className={`text-left px-3 py-1.5 font-medium ${sub}`}>Skóre</th>
+                  <th className={`text-left px-3 py-1.5 font-medium ${sub}`}>{t("draw.tableHash")}</th>
+                  <th className={`text-left px-3 py-1.5 font-medium ${sub}`}>{t("draw.tableName")}</th>
+                  <th className={`text-left px-3 py-1.5 font-medium ${sub}`}>{t("draw.tableTeam")}</th>
+                  <th className={`text-left px-3 py-1.5 font-medium ${sub}`}>{t("draw.tableScore")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -298,12 +306,13 @@ function DrawContent({ result, isDarkMode }: { result: DrawResult; isDarkMode: b
 }
 
 function AthleteSlot({ athlete, isDarkMode, bye = false }: { athlete: DrawAthlete | null; isDarkMode: boolean; bye?: boolean }) {
+  const { t } = useTranslation()
   const sub = isDarkMode ? 'text-gray-400' : 'text-gray-500'
   const text = isDarkMode ? 'text-white' : 'text-gray-900'
 
   if (!athlete) {
     return (
-      <span className={`text-xs italic ${sub} min-w-32`}>{bye ? 'bye' : '—'}</span>
+      <span className={`text-xs italic ${sub} min-w-32`}>{bye ? t("draw.byeText") : '—'}</span>
     )
   }
   return (

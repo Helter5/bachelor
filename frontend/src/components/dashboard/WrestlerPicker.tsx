@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next"
+import { OptionDropdown } from "@/components/ui/OptionDropdown"
 
 export interface Person {
   id: number
@@ -41,43 +42,70 @@ export function WrestlerPicker({
   const { t } = useTranslation()
   const label = t("comparison.wrestler", { number: wrestler })
 
+  const panelClass = isDarkMode
+    ? "bg-[#0f172a]/95 border-white/10 shadow-[0_24px_70px_rgba(15,23,42,0.45)]"
+    : "bg-white/95 border-gray-200 shadow-[0_24px_70px_rgba(15,23,42,0.08)]"
+
+  const headerClass = isDarkMode
+    ? "border-white/10 bg-white/5"
+    : "border-gray-100 bg-gradient-to-r from-purple-50 to-white"
+
+  const filteredOptions = filteredPersons.slice(0, 15).map((person) => ({
+    value: person.id,
+    label: person.full_name,
+    description: person.country_iso_code,
+    badge: person.id,
+  }))
+
+  const allOptions = allPersons.map((person) => ({
+    value: person.id,
+    label: person.full_name,
+    description: person.country_iso_code,
+    badge: person.id,
+  }))
+
   return (
     <div className="relative" ref={containerRef}>
-      <div className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-        {label}
+      <div className={`mb-2 flex items-center justify-between text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+        <span>{label}</span>
+        <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${isDarkMode ? 'bg-white/5 text-gray-400' : 'bg-gray-100 text-gray-500'}`}>
+          {selected ? t("common.selected") : t("comparison.selectFromList")}
+        </span>
       </div>
 
-      {/* Selected */}
       {selected && (
-        <div className={`flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-sm ${
-          isDarkMode
-            ? 'bg-purple-900/30 text-white border border-purple-500/30'
-            : 'bg-purple-50 text-gray-900 border border-purple-200'
-        }`}>
-          <span>
-            <span className="font-medium">{selected.full_name}</span>
-            {selected.country_iso_code && (
-              <span className={`ml-2 text-xs ${isDarkMode ? 'text-purple-300' : 'text-purple-600'}`}>
-                ({selected.country_iso_code})
-              </span>
-            )}
-          </span>
-          <button
-            onClick={() => { onSelect(null); onSearchChange(""); onModeChange("idle") }}
-            className={`p-0.5 rounded hover:bg-purple-500/20 transition-colors ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-400 hover:text-gray-700'}`}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+        <div className={`relative overflow-hidden rounded-2xl border px-4 py-3 text-sm ${panelClass}`}>
+          <div className={`absolute inset-x-0 top-0 h-1 ${isDarkMode ? 'bg-gradient-to-r from-purple-500 via-fuchsia-500 to-blue-500' : 'bg-gradient-to-r from-purple-400 via-fuchsia-400 to-blue-400'}`} />
+          <div className="relative flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <div className={`truncate font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                {selected.full_name}
+              </div>
+              {selected.country_iso_code && (
+                <div className={`mt-0.5 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  {selected.country_iso_code}
+                </div>
+              )}
+            </div>
+            <button
+              onClick={() => { onSelect(null); onSearchChange(""); onModeChange("idle") }}
+              className={`shrink-0 inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+                isDarkMode ? 'bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700'
+              }`}
+              title="Vymazať výber"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Search mode */}
       {!selected && mode === "search" && (
         <div className="relative">
           <div className="relative flex items-center">
-            <svg className={`absolute left-3 w-4 h-4 ${isDarkMode ? 'text-blue-400' : 'text-blue-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className={`absolute left-3 w-4 h-4 ${isDarkMode ? 'text-purple-300' : 'text-purple-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
@@ -86,69 +114,55 @@ export function WrestlerPicker({
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder={t("comparison.searchPlaceholder")}
-              className={`w-full pl-10 pr-10 py-2.5 rounded-lg text-sm transition-all ${
+              className={`w-full rounded-2xl border py-3 pl-10 pr-10 text-sm outline-none transition-all ${
                 isDarkMode
-                  ? 'bg-blue-950/40 text-white placeholder-blue-300/40 border-2 border-blue-500/40 focus:border-blue-400 shadow-lg shadow-blue-500/10'
-                  : 'bg-blue-50 text-gray-900 placeholder-blue-400/60 border-2 border-blue-300 focus:border-blue-500 shadow-lg shadow-blue-500/10'
-              } focus:outline-none`}
+                  ? 'border-white/10 bg-[#0f172a] text-white placeholder-gray-500 shadow-[0_18px_50px_rgba(15,23,42,0.35)] focus:border-purple-400'
+                  : 'border-gray-200 bg-white text-gray-900 placeholder-gray-400 shadow-[0_18px_50px_rgba(15,23,42,0.08)] focus:border-purple-300'
+              }`}
             />
             <button
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => { onSearchChange(""); onModeChange("idle") }}
-              className={`absolute right-3 p-0.5 rounded transition-colors ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-400 hover:text-gray-700'}`}
+              className={`absolute right-3 p-1.5 rounded-full transition-colors ${isDarkMode ? 'text-gray-400 hover:bg-white/10 hover:text-white' : 'text-gray-400 hover:bg-gray-100 hover:text-gray-700'}`}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
-          {filteredPersons.length > 0 && (
-            <div className={`absolute z-20 w-full mt-1 rounded-lg shadow-xl max-h-48 overflow-y-auto ${
-              isDarkMode ? 'bg-[#1e293b] border border-blue-500/20' : 'bg-white border border-blue-200'
-            }`}>
-              {filteredPersons.slice(0, 15).map(p => (
-                <button
-                  key={p.id}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => { onSelect(p); onSearchChange(""); onModeChange("idle") }}
-                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                    isDarkMode ? 'text-gray-200 hover:bg-blue-500/20' : 'text-gray-900 hover:bg-blue-50'
-                  }`}
-                >
-                  <span className="font-medium">{p.full_name}</span>
-                  {p.country_iso_code && (
-                    <span className={`ml-2 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      ({p.country_iso_code})
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
-          {search.trim() && filteredPersons.length === 0 && (
-            <div className={`absolute z-20 w-full mt-1 rounded-lg shadow-xl px-4 py-3 text-sm ${
-              isDarkMode ? 'bg-[#1e293b] border border-white/10 text-gray-400' : 'bg-white border border-gray-200 text-gray-500'
-            }`}>
-              {t("comparison.noWrestlerFound")}
-            </div>
-          )}
+
+          <OptionDropdown
+            options={filteredOptions}
+            selectedValue={selected?.id ?? null}
+            onSelect={(personId) => {
+              const person = filteredPersons.find((item) => item.id === personId)
+              if (!person) return
+              onSelect(person)
+              onSearchChange("")
+              onModeChange("idle")
+            }}
+            isDarkMode={isDarkMode}
+            emptyText={t("comparison.noWrestlerFound")}
+            className="absolute z-20 w-full mt-2"
+            panelClassName={panelClass}
+            headerTitle={t("comparison.selectFromList")}
+            headerSubtitle={search.trim() ? t("comparison.searchTitle") : t("comparison.clickToSelect")}
+            rightHeader={
+              <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${isDarkMode ? 'bg-white/10 text-gray-200' : 'bg-gray-100 text-gray-600'}`}>
+                {filteredPersons.length}
+              </span>
+            }
+          />
         </div>
       )}
 
-      {/* Browse dropdown */}
       {!selected && mode === "browse" && (
         <div>
-          <div className={`w-full px-4 py-2.5 rounded-lg text-sm flex items-center justify-between ${
-            isDarkMode
-              ? 'bg-[#0f172a]/50 text-gray-400 border border-white/10'
-              : 'bg-gray-50 text-gray-500 border border-gray-200'
-          }`}>
-            <span>{t("comparison.selectFromList")}</span>
+          <div className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-sm ${isDarkMode ? 'border-white/10 bg-[#0f172a]/70 text-gray-300 shadow-[0_18px_50px_rgba(15,23,42,0.25)]' : 'border-gray-200 bg-white text-gray-600 shadow-[0_18px_50px_rgba(15,23,42,0.08)]'}`}>
+            <span className="truncate">{t("comparison.selectFromList")}</span>
             <button
               onClick={(e) => { e.stopPropagation(); onModeChange("search") }}
-              className={`p-1 rounded transition-colors ${
-                isDarkMode ? 'hover:bg-blue-500/20 text-gray-500 hover:text-blue-400' : 'hover:bg-blue-50 text-gray-400 hover:text-blue-500'
-              }`}
+              className={`p-1.5 rounded-full transition-colors ${isDarkMode ? 'text-gray-400 hover:bg-purple-500/20 hover:text-purple-300' : 'text-gray-400 hover:bg-purple-50 hover:text-purple-500'}`}
               title={t("comparison.searchTitle")}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -156,52 +170,45 @@ export function WrestlerPicker({
               </svg>
             </button>
           </div>
-          <div className={`absolute z-20 w-full mt-1 rounded-lg shadow-xl max-h-60 overflow-y-auto ${
-            isDarkMode ? 'bg-[#1e293b] border border-white/10' : 'bg-white border border-gray-200'
-          }`}>
-            {allPersons.length === 0 ? (
-              <div className={`px-4 py-3 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                {t("comparison.noWrestlers")}
-              </div>
-            ) : (
-              allPersons.map(p => (
-                <button
-                  key={p.id}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => { onSelect(p); onSearchChange(""); onModeChange("idle") }}
-                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                    isDarkMode ? 'text-gray-200 hover:bg-[#334155]' : 'text-gray-900 hover:bg-gray-100'
-                  }`}
-                >
-                  <span className="font-medium">{p.full_name}</span>
-                  {p.country_iso_code && (
-                    <span className={`ml-2 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      ({p.country_iso_code})
-                    </span>
-                  )}
-                </button>
-              ))
-            )}
-          </div>
+
+          <OptionDropdown
+            options={allOptions}
+            selectedValue={selected?.id ?? null}
+            onSelect={(personId) => {
+              const person = allPersons.find((item) => item.id === personId)
+              if (!person) return
+              onSelect(person)
+              onSearchChange("")
+              onModeChange("idle")
+            }}
+            isDarkMode={isDarkMode}
+            emptyText={t("comparison.noWrestlers")}
+            className="absolute z-20 w-full mt-2"
+            panelClassName={panelClass}
+            headerTitle={t("comparison.selectFromList")}
+            headerSubtitle={t("comparison.clickToSelect")}
+            rightHeader={
+              <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${isDarkMode ? 'bg-white/10 text-gray-200' : 'bg-gray-100 text-gray-600'}`}>
+                {allPersons.length}
+              </span>
+            }
+          />
         </div>
       )}
 
-      {/* Idle */}
       {!selected && mode === "idle" && (
         <div
-          className={`w-full px-4 py-2.5 rounded-lg text-sm cursor-pointer transition-all flex items-center justify-between ${
+          className={`flex w-full cursor-pointer items-center justify-between rounded-2xl border px-4 py-3 text-sm transition-all ${
             isDarkMode
-              ? 'bg-[#0f172a]/50 text-gray-500 border border-white/10 hover:border-purple-500/30 hover:text-gray-400'
-              : 'bg-gray-50 text-gray-400 border border-gray-200 hover:border-purple-300 hover:text-gray-500'
+              ? 'border-white/10 bg-[#0f172a]/70 text-gray-400 shadow-[0_18px_50px_rgba(15,23,42,0.25)] hover:border-purple-400/30 hover:text-gray-200'
+              : 'border-gray-200 bg-white text-gray-400 shadow-[0_18px_50px_rgba(15,23,42,0.06)] hover:border-purple-300 hover:text-gray-600'
           }`}
           onClick={() => onModeChange("browse")}
         >
-          <span>{t("comparison.clickToSelect")}</span>
+          <span className="truncate">{t("comparison.clickToSelect")}</span>
           <button
             onClick={(e) => { e.stopPropagation(); onModeChange("search") }}
-            className={`p-1 rounded transition-colors ${
-              isDarkMode ? 'hover:bg-blue-500/20 text-gray-500 hover:text-blue-400' : 'hover:bg-blue-50 text-gray-400 hover:text-blue-500'
-            }`}
+            className={`p-1.5 rounded-full transition-colors ${isDarkMode ? 'text-gray-500 hover:bg-purple-500/20 hover:text-purple-300' : 'text-gray-400 hover:bg-purple-50 hover:text-purple-500'}`}
             title={t("comparison.searchTitle")}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

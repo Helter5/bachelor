@@ -35,7 +35,11 @@
     "show": "Zobraziť",
     "download": "Stiahnuť",
     "all": "Všetky",
-    "backToCategories": "Späť na kategórie"
+    "backToCategories": "Späť na kategórie",
+    "select": "Vybrať",
+    "selected": "Vybrané",
+    "chooseOneOption": "Vyberte jednu možnosť",
+    "selectTournament": "Vyber turnaj..."
   },
   "auth": {
     "login": "Prihlásiť sa",
@@ -262,6 +266,7 @@
     "seedingFrom": "Nasadenie z: {{count}} turnajov",
     "athletes": "atlétov",
     "tournamentCount": "turnajov",
+    "byeText": "voľno",
     "tableHash": "#",
     "tableName": "Meno",
     "tableTeam": "Tím",
@@ -389,7 +394,7 @@
     "title": "Porovnanie tímov",
     "subtitle": "Porovnanie výkonu dvoch tímov v rámci vybraného turnaja",
     "tournament": "Turnaj",
-    "selectTournament": "— Vyber turnaj —",
+    "selectTournament": "Vyber turnaj...",
     "loadingTeams": "Načítavam tímy...",
     "noTeams": "Pre tento turnaj neboli nájdené žiadne tímy so štatistikami.",
     "team1": "Tím 1",

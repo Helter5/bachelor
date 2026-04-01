@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from "react"
+import { useTranslation } from "react-i18next"
+import { OptionDropdown } from "./OptionDropdown"
 
 export interface SelectOption<T extends string | number = string> {
   value: T
@@ -22,6 +24,7 @@ export function Select<T extends string | number = string>({
   placeholder,
   className = "",
 }: SelectProps<T>) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -42,11 +45,11 @@ export function Select<T extends string | number = string>({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className={`w-full h-9 flex items-center gap-2 px-3 rounded-lg text-sm border transition-colors ${
+        className={`w-full h-10 flex items-center justify-between gap-2 px-3 rounded-xl text-sm border transition-colors ${
           isDarkMode
-            ? "bg-[#0f172a] text-white border-white/10 hover:border-white/20"
-            : "bg-white text-gray-900 border-gray-300 hover:border-gray-400"
-        } ${open ? (isDarkMode ? "border-purple-500" : "border-purple-500") : ""}`}
+            ? "bg-[#0f172a]/85 text-white border-white/10 hover:border-sky-400/35"
+            : "bg-white text-gray-900 border-gray-300 hover:border-sky-300"
+        } ${open ? (isDarkMode ? "border-sky-400/50" : "border-sky-400") : ""}`}
       >
         <span className="truncate max-w-[160px]">
           {selected ? selected.label : placeholder ?? "—"}
@@ -64,38 +67,29 @@ export function Select<T extends string | number = string>({
       </button>
 
       {open && (
-        <div
-          className={`absolute z-20 mt-1 min-w-full rounded-lg shadow-lg border overflow-y-auto max-h-60 ${
-            isDarkMode
-              ? "bg-[#1e293b] border-white/10"
-              : "bg-white border-gray-200"
-          }`}
-        >
-          {options.map((option) => {
-            const isSelected = option.value === value
-            return (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => {
-                  onChange(option.value)
-                  setOpen(false)
-                }}
-                className={`w-full text-left px-3 py-2 text-sm transition-colors ${
-                  isSelected
-                    ? isDarkMode
-                      ? "bg-purple-600/20 text-purple-300"
-                      : "bg-purple-50 text-purple-700 font-medium"
-                    : isDarkMode
-                    ? "text-gray-200 hover:bg-white/5"
-                    : "text-gray-800 hover:bg-gray-50"
-                }`}
-              >
-                {option.label}
-              </button>
-            )
-          })}
-        </div>
+        <OptionDropdown
+          options={options.map((option) => ({ value: option.value, label: option.label }))}
+          selectedValue={value}
+          onSelect={(selectedValue) => {
+            onChange(selectedValue)
+            setOpen(false)
+          }}
+          isDarkMode={isDarkMode}
+          emptyText={placeholder ?? "No options"}
+          maxHeightClass="max-h-60"
+          className="absolute z-20 mt-2 min-w-full"
+          headerTitle={t("common.select")}
+          headerSubtitle={t("common.chooseOneOption")}
+          rightHeader={
+            <span
+              className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                isDarkMode ? "bg-white/10 text-gray-200" : "bg-gray-100 text-gray-600"
+              }`}
+            >
+              {options.length}
+            </span>
+          }
+        />
       )}
     </div>
   )

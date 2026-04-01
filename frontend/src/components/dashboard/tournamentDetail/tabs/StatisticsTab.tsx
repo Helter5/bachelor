@@ -47,10 +47,10 @@ export function StatisticsTab({
           {/* Summary Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "Celkom zápasov", value: eventStats.total_fights, color: "text-blue-500" },
-              { label: "Priem. dĺžka", value: eventStats.avg_duration > 0 ? `${Math.floor(eventStats.avg_duration / 60)}:${String(eventStats.avg_duration % 60).padStart(2, '0')}` : "-", color: "text-green-500" },
-              { label: "Priem. TP", value: eventStats.avg_tp, color: "text-purple-500" },
-              { label: "Priem. CP", value: eventStats.avg_cp, color: "text-yellow-500" },
+              { label: t('statistics.totalFights'), value: eventStats.total_fights, color: "text-blue-500" },
+              { label: t('statistics.avgDuration'), value: eventStats.avg_duration > 0 ? `${Math.floor(eventStats.avg_duration / 60)}:${String(eventStats.avg_duration % 60).padStart(2, '0')}` : "-", color: "text-green-500" },
+              { label: t('statistics.avgTp'), value: eventStats.avg_tp, color: "text-purple-500" },
+              { label: t('statistics.avgCp'), value: eventStats.avg_cp, color: "text-yellow-500" },
             ].map((card) => (
               <div key={card.label} className={`rounded-xl p-4 text-center ${isDarkMode ? 'bg-[#0f172a]/50' : 'bg-gray-50 border border-gray-200'}`}>
                 <p className={`text-xs font-medium mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{card.label}</p>
@@ -62,7 +62,7 @@ export function StatisticsTab({
           {/* Victory Type Pie Chart */}
           {Object.keys(eventStats.victory_type_distribution).length > 0 && (
             <div className={`rounded-xl p-6 ${isDarkMode ? 'bg-[#0f172a]/50' : 'bg-gray-50 border border-gray-200'}`}>
-              <h4 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Rozloženie typov víťazstiev</h4>
+              <h4 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t('statistics.victoryTypes')}</h4>
               <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
                   <Pie
@@ -86,17 +86,17 @@ export function StatisticsTab({
           {/* Top Performers */}
           {eventStats.top_performers.length > 0 && (
             <div>
-              <h4 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Najlepší zápasníci</h4>
+              <h4 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t('statistics.topPerformers')}</h4>
               <div className={`rounded-lg overflow-hidden ${isDarkMode ? 'shadow-lg' : 'border border-gray-200'}`}>
                 <table className="w-full">
                   <thead>
                     <tr className={`border-b ${isDarkMode ? 'border-white/5 bg-white/5' : 'border-gray-200 bg-gray-50'}`}>
-                      <th className={`text-center py-3 px-3 text-sm font-semibold w-12 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>#</th>
-                      <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Meno</th>
-                      <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Tím</th>
-                      <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Výhry</th>
-                      <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Zápasy</th>
-                      <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Win rate</th>
+                      <th className={`text-center py-3 px-3 text-sm font-semibold w-12 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('statistics.tableHash')}</th>
+                      <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('statistics.tableName')}</th>
+                      <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('statistics.tableTeam')}</th>
+                      <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('statistics.tableWins')}</th>
+                      <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('statistics.tableFights')}</th>
+                      <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('statistics.tableWinRate')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -140,16 +140,16 @@ export function StatisticsTab({
           {/* Team Performance */}
           {eventStats.team_performance.length > 0 && (
             <div>
-              <h4 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Výkon tímov</h4>
+              <h4 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t('statistics.teamPerformance')}</h4>
               <div className={`rounded-lg overflow-hidden ${isDarkMode ? 'shadow-lg' : 'border border-gray-200'}`}>
                 <table className="w-full">
                   <thead>
                     <tr className={`border-b ${isDarkMode ? 'border-white/5 bg-white/5' : 'border-gray-200 bg-gray-50'}`}>
-                      <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Tím</th>
-                      <th className={`text-center py-3 px-3 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Krajina</th>
-                      <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Výhry</th>
-                      <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Prehry</th>
-                      <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Win rate</th>
+                      <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('statistics.tableTeam')}</th>
+                      <th className={`text-center py-3 px-3 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('statistics.tableCountry')}</th>
+                      <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('statistics.tableWins')}</th>
+                      <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('statistics.tableLosses')}</th>
+                      <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('statistics.tableWinRate')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -187,7 +187,12 @@ export function StatisticsTab({
           )}
 
           {eventStats.total_fights === 0 && (
-            <EmptyState icon="chart" title="Žiadne dáta" description="Pre tento turnaj nie sú k dispozícii žiadne zápasy" isDarkMode={isDarkMode} />
+            <EmptyState
+              icon="chart"
+              title={t('tournamentDetail.errors.noStatsData')}
+              description={t('tournamentDetail.errors.noFightsForEvent')}
+              isDarkMode={isDarkMode}
+            />
           )}
         </div>
       ) : null}

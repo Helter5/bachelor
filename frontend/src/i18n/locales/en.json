@@ -35,7 +35,11 @@
     "show": "Show",
     "download": "Download",
     "all": "All",
-    "backToCategories": "Back to categories"
+    "backToCategories": "Back to categories",
+    "select": "Select",
+    "selected": "Selected",
+    "chooseOneOption": "Choose one option",
+    "selectTournament": "Select tournament..."
   },
   "auth": {
     "login": "Log in",
@@ -262,6 +266,7 @@
     "seedingFrom": "Seeded from: {{count}} tournaments",
     "athletes": "athletes",
     "tournamentCount": "tournaments",
+    "byeText": "bye",
     "tableHash": "#",
     "tableName": "Name",
     "tableTeam": "Team",
@@ -389,7 +394,7 @@
     "title": "Team comparison",
     "subtitle": "Compare the performance of two teams within a selected tournament",
     "tournament": "Tournament",
-    "selectTournament": "— Select tournament —",
+    "selectTournament": "Select tournament...",
     "loadingTeams": "Loading teams...",
     "noTeams": "No teams with statistics were found for this tournament.",
     "team1": "Team 1",

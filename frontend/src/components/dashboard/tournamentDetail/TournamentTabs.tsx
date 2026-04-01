@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import type { TabType } from "./types"
 
 interface TournamentTabsProps {
@@ -13,39 +14,41 @@ interface TournamentTabsProps {
 }
 
 export function TournamentTabs({ isDarkMode, activeTab, onTabChange, tabCounts }: TournamentTabsProps) {
+  const { t } = useTranslation()
+
   const tabs: { id: TabType; label: string; icon: string; count?: number }[] = [
     { 
       id: "weight-categories", 
-      label: "Váhové kategórie", 
+      label: t("tournamentDetail.tabs.weightCategories"), 
       icon: "weight",
       count: tabCounts?.weightCategories
     },
     { 
       id: "teams", 
-      label: "Tímy", 
+      label: t("tournamentDetail.tabs.teams"), 
       icon: "users",
       count: tabCounts?.teams
     },
     { 
       id: "athletes", 
-      label: "Atlét",
+      label: t("tournamentDetail.tabs.athletes"),
       icon: "user",
       count: tabCounts?.athletes
     },
     {
       id: "results",
-      label: "Výsledky",
+      label: t("tournamentDetail.tabs.results"),
       icon: "trophy",
       count: tabCounts?.results
     },
     {
       id: "statistics",
-      label: "Štatistiky",
+      label: t("tournamentDetail.tabs.statistics"),
       icon: "chart"
     },
     {
       id: "export",
-      label: "Exportovanie",
+      label: t("tournamentDetail.tabs.export"),
       icon: "export"
     }
   ]

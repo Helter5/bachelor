@@ -1,3 +1,5 @@
+import { formatDate } from '@/utils/dateFormatter'
+
 interface TournamentDetailHeaderProps {
   isDarkMode: boolean
   tournamentName: string
@@ -13,15 +15,6 @@ export function TournamentDetailHeader({
   tournamentEndDate,
   onBack
 }: TournamentDetailHeaderProps) {
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('sk-SK', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
-
   return (
     <div className="flex items-start justify-between gap-4 mb-6">
       <div className="flex-1">

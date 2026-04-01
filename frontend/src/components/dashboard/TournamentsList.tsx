@@ -10,6 +10,7 @@ import { StatusBadge } from "../ui/StatusBadge"
 import { EmptyState } from "../ui/EmptyState"
 import { LoadingSpinner } from "../ui/LoadingSpinner"
 import { Select } from "../ui/Select"
+import { formatDate } from "@/utils/dateFormatter"
 
 interface PersonSuggestion {
   id: number
@@ -159,15 +160,6 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
   const currentEvents = displayedEvents.slice(startIndex, endIndex)
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('sk-SK', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
 
   return (
     <div className="space-y-6">
