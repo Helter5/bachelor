@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 type ToastVariant = "success" | "error" | "warning"
 
@@ -8,7 +8,7 @@ interface ToastProps {
   title: string
   message?: string
   onClose?: () => void
-  /** Auto-dismiss after ms (0 = no auto-dismiss). Default: 3000 for success, 0 for others */
+  /** Auto-dismiss after ms (0 = no auto-dismiss). Default: 7500 for all variants */
   duration?: number
 }
 
@@ -59,21 +59,57 @@ const config: Record<ToastVariant, {
 }
 
 export function Toast({ show, variant, title, message, onClose, duration }: ToastProps) {
-  const autoDismiss = duration ?? (variant === "success" ? 3000 : 0)
+  const [isExiting, setIsExiting] = useState(false)
+
+  const autoDismiss = duration ?? 7500
+  const exitDelay = useMemo(() => {
+    if (!autoDismiss || autoDismiss <= 0) return 0
+    if (autoDismiss <= 2000) return Math.max(300, autoDismiss - 300)
+    if (autoDismiss <= 5000) return Math.max(1000, autoDismiss - 1000)
+    return 5000
+  }, [autoDismiss])
+
+  useEffect(() => {
+    if (!show) {
+      setIsExiting(false)
+    }
+  }, [show])
 
   useEffect(() => {
     if (!show || !autoDismiss || !onClose) return
-    const timer = setTimeout(onClose, autoDismiss)
-    return () => clearTimeout(timer)
-  }, [show, autoDismiss, onClose])
+
+    const exitTimer = setTimeout(() => setIsExiting(true), exitDelay)
+    const closeTimer = setTimeout(onClose, autoDismiss)
+
+    return () => {
+      clearTimeout(exitTimer)
+      clearTimeout(closeTimer)
+    }
+  }, [show, autoDismiss, exitDelay, onClose])
 
   if (!show) return null
 
   const c = config[variant]
+  const exitStyle = isExiting
+    ? {
+        opacity: 0,
+        transform: "translateY(8px) scale(0.985)",
+      }
+    : {
+        opacity: 1,
+        transform: "translateY(0px) scale(1)",
+      }
 
   return (
     <div className={`fixed ${c.position} z-50 ${c.animation}`}>
-      <div className={`${c.bg} text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 max-w-md`}>
+      <div
+        className={`${c.bg} text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 max-w-md`}
+        style={{
+          ...exitStyle,
+          transition: "opacity 2200ms ease, transform 2200ms ease",
+          willChange: "opacity, transform",
+        }}
+      >
         {c.icon}
         <div className="flex-1">
           <p className="font-semibold">{title}</p>
