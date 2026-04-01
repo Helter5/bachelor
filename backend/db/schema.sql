@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict rKF6mLe6vKWpOdqSdXnihbG0EUMZZwm9dy9nkjofDiNPn0xQmmKIRFVXgwbbQvk
+\restrict oxmE23hwoL8xyKBh6mA2ALG4gbC1LcL8870KERTZDOEEz80gDpaOR94IGC3TWbD
 
 -- Dumped from database version 16.13
 -- Dumped by pg_dump version 16.13
@@ -23,7 +23,7 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- Name: arena_sources; Type: TABLE; Schema: public; Owner: user
+-- Name: arena_sources; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.arena_sources (
@@ -41,10 +41,8 @@ CREATE TABLE public.arena_sources (
 );
 
 
-ALTER TABLE public.arena_sources OWNER TO "user";
-
 --
--- Name: arena_sources_id_seq; Type: SEQUENCE; Schema: public; Owner: user
+-- Name: arena_sources_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.arena_sources_id_seq
@@ -56,17 +54,15 @@ CREATE SEQUENCE public.arena_sources_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.arena_sources_id_seq OWNER TO "user";
-
 --
--- Name: arena_sources_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
+-- Name: arena_sources_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.arena_sources_id_seq OWNED BY public.arena_sources.id;
 
 
 --
--- Name: athlete_source_uids; Type: TABLE; Schema: public; Owner: user
+-- Name: athlete_source_uids; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.athlete_source_uids (
@@ -77,10 +73,8 @@ CREATE TABLE public.athlete_source_uids (
 );
 
 
-ALTER TABLE public.athlete_source_uids OWNER TO "user";
-
 --
--- Name: athlete_source_uids_id_seq; Type: SEQUENCE; Schema: public; Owner: user
+-- Name: athlete_source_uids_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.athlete_source_uids_id_seq
@@ -92,17 +86,15 @@ CREATE SEQUENCE public.athlete_source_uids_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.athlete_source_uids_id_seq OWNER TO "user";
-
 --
--- Name: athlete_source_uids_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
+-- Name: athlete_source_uids_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.athlete_source_uids_id_seq OWNED BY public.athlete_source_uids.id;
 
 
 --
--- Name: athletes; Type: TABLE; Schema: public; Owner: user
+-- Name: athletes; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.athletes (
@@ -117,10 +109,8 @@ CREATE TABLE public.athletes (
 );
 
 
-ALTER TABLE public.athletes OWNER TO "user";
-
 --
--- Name: athletes_id_seq; Type: SEQUENCE; Schema: public; Owner: user
+-- Name: athletes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.athletes_id_seq
@@ -132,17 +122,15 @@ CREATE SEQUENCE public.athletes_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.athletes_id_seq OWNER TO "user";
-
 --
--- Name: athletes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
+-- Name: athletes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.athletes_id_seq OWNED BY public.athletes.id;
 
 
 --
--- Name: disciplines; Type: TABLE; Schema: public; Owner: user
+-- Name: disciplines; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.disciplines (
@@ -158,10 +146,8 @@ CREATE TABLE public.disciplines (
 );
 
 
-ALTER TABLE public.disciplines OWNER TO "user";
-
 --
--- Name: disciplines_id_seq; Type: SEQUENCE; Schema: public; Owner: user
+-- Name: disciplines_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.disciplines_id_seq
@@ -173,17 +159,15 @@ CREATE SEQUENCE public.disciplines_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.disciplines_id_seq OWNER TO "user";
-
 --
--- Name: disciplines_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
+-- Name: disciplines_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.disciplines_id_seq OWNED BY public.disciplines.id;
 
 
 --
--- Name: email_verification_tokens; Type: TABLE; Schema: public; Owner: user
+-- Name: email_verification_tokens; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.email_verification_tokens (
@@ -196,10 +180,8 @@ CREATE TABLE public.email_verification_tokens (
 );
 
 
-ALTER TABLE public.email_verification_tokens OWNER TO "user";
-
 --
--- Name: email_verification_tokens_id_seq; Type: SEQUENCE; Schema: public; Owner: user
+-- Name: email_verification_tokens_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.email_verification_tokens_id_seq
@@ -211,17 +193,15 @@ CREATE SEQUENCE public.email_verification_tokens_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.email_verification_tokens_id_seq OWNER TO "user";
-
 --
--- Name: email_verification_tokens_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
+-- Name: email_verification_tokens_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.email_verification_tokens_id_seq OWNED BY public.email_verification_tokens.id;
 
 
 --
--- Name: fights; Type: TABLE; Schema: public; Owner: user
+-- Name: fights; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.fights (
@@ -240,14 +220,17 @@ CREATE TABLE public.fights (
     id integer NOT NULL,
     sync_timestamp timestamp without time zone NOT NULL,
     round_name character varying(100),
-    fight_number integer
+    fight_number integer,
+    CONSTRAINT fights_cp_one_nonnegative CHECK (((cp_one IS NULL) OR (cp_one >= 0))),
+    CONSTRAINT fights_cp_two_nonnegative CHECK (((cp_two IS NULL) OR (cp_two >= 0))),
+    CONSTRAINT fights_duration_nonnegative CHECK (((duration IS NULL) OR (duration >= 0))),
+    CONSTRAINT fights_tp_one_nonnegative CHECK (((tp_one IS NULL) OR (tp_one >= 0))),
+    CONSTRAINT fights_tp_two_nonnegative CHECK (((tp_two IS NULL) OR (tp_two >= 0)))
 );
 
 
-ALTER TABLE public.fights OWNER TO "user";
-
 --
--- Name: fights_id_seq; Type: SEQUENCE; Schema: public; Owner: user
+-- Name: fights_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.fights_id_seq
@@ -259,17 +242,15 @@ CREATE SEQUENCE public.fights_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.fights_id_seq OWNER TO "user";
-
 --
--- Name: fights_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
+-- Name: fights_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.fights_id_seq OWNED BY public.fights.id;
 
 
 --
--- Name: login_history; Type: TABLE; Schema: public; Owner: user
+-- Name: login_history; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.login_history (
@@ -285,10 +266,8 @@ CREATE TABLE public.login_history (
 );
 
 
-ALTER TABLE public.login_history OWNER TO "user";
-
 --
--- Name: login_history_id_seq; Type: SEQUENCE; Schema: public; Owner: user
+-- Name: login_history_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.login_history_id_seq
@@ -300,17 +279,15 @@ CREATE SEQUENCE public.login_history_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.login_history_id_seq OWNER TO "user";
-
 --
--- Name: login_history_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
+-- Name: login_history_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.login_history_id_seq OWNED BY public.login_history.id;
 
 
 --
--- Name: password_reset_tokens; Type: TABLE; Schema: public; Owner: user
+-- Name: password_reset_tokens; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.password_reset_tokens (
@@ -323,10 +300,8 @@ CREATE TABLE public.password_reset_tokens (
 );
 
 
-ALTER TABLE public.password_reset_tokens OWNER TO "user";
-
 --
--- Name: password_reset_tokens_id_seq; Type: SEQUENCE; Schema: public; Owner: user
+-- Name: password_reset_tokens_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.password_reset_tokens_id_seq
@@ -338,17 +313,15 @@ CREATE SEQUENCE public.password_reset_tokens_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.password_reset_tokens_id_seq OWNER TO "user";
-
 --
--- Name: password_reset_tokens_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
+-- Name: password_reset_tokens_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.password_reset_tokens_id_seq OWNED BY public.password_reset_tokens.id;
 
 
 --
--- Name: persons; Type: TABLE; Schema: public; Owner: user
+-- Name: persons; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.persons (
@@ -359,10 +332,8 @@ CREATE TABLE public.persons (
 );
 
 
-ALTER TABLE public.persons OWNER TO "user";
-
 --
--- Name: persons_id_seq; Type: SEQUENCE; Schema: public; Owner: user
+-- Name: persons_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.persons_id_seq
@@ -374,17 +345,15 @@ CREATE SEQUENCE public.persons_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.persons_id_seq OWNER TO "user";
-
 --
--- Name: persons_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
+-- Name: persons_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.persons_id_seq OWNED BY public.persons.id;
 
 
 --
--- Name: refresh_tokens; Type: TABLE; Schema: public; Owner: user
+-- Name: refresh_tokens; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.refresh_tokens (
@@ -401,10 +370,8 @@ CREATE TABLE public.refresh_tokens (
 );
 
 
-ALTER TABLE public.refresh_tokens OWNER TO "user";
-
 --
--- Name: refresh_tokens_id_seq; Type: SEQUENCE; Schema: public; Owner: user
+-- Name: refresh_tokens_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.refresh_tokens_id_seq
@@ -416,17 +383,15 @@ CREATE SEQUENCE public.refresh_tokens_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.refresh_tokens_id_seq OWNER TO "user";
-
 --
--- Name: refresh_tokens_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
+-- Name: refresh_tokens_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.refresh_tokens_id_seq OWNED BY public.refresh_tokens.id;
 
 
 --
--- Name: sport_event_source_uids; Type: TABLE; Schema: public; Owner: user
+-- Name: sport_event_source_uids; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.sport_event_source_uids (
@@ -437,10 +402,8 @@ CREATE TABLE public.sport_event_source_uids (
 );
 
 
-ALTER TABLE public.sport_event_source_uids OWNER TO "user";
-
 --
--- Name: sport_event_source_uids_id_seq; Type: SEQUENCE; Schema: public; Owner: user
+-- Name: sport_event_source_uids_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.sport_event_source_uids_id_seq
@@ -452,23 +415,21 @@ CREATE SEQUENCE public.sport_event_source_uids_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.sport_event_source_uids_id_seq OWNER TO "user";
-
 --
--- Name: sport_event_source_uids_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
+-- Name: sport_event_source_uids_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.sport_event_source_uids_id_seq OWNED BY public.sport_event_source_uids.id;
 
 
 --
--- Name: sport_events; Type: TABLE; Schema: public; Owner: user
+-- Name: sport_events; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.sport_events (
     name character varying NOT NULL,
-    start_date character varying,
-    end_date character varying,
+    start_date date,
+    end_date date,
     country_iso_code character varying,
     address_locality character varying,
     is_individual_event boolean,
@@ -487,10 +448,8 @@ CREATE TABLE public.sport_events (
 );
 
 
-ALTER TABLE public.sport_events OWNER TO "user";
-
 --
--- Name: sport_events_id_seq; Type: SEQUENCE; Schema: public; Owner: user
+-- Name: sport_events_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.sport_events_id_seq
@@ -502,17 +461,15 @@ CREATE SEQUENCE public.sport_events_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.sport_events_id_seq OWNER TO "user";
-
 --
--- Name: sport_events_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
+-- Name: sport_events_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.sport_events_id_seq OWNED BY public.sport_events.id;
 
 
 --
--- Name: sync_logs; Type: TABLE; Schema: public; Owner: user
+-- Name: sync_logs; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.sync_logs (
@@ -534,14 +491,13 @@ CREATE TABLE public.sync_logs (
     error_message character varying,
     details json,
     ip_address character varying(45),
-    id integer NOT NULL
+    id integer NOT NULL,
+    CONSTRAINT sync_logs_duration_nonnegative CHECK (((duration_seconds IS NULL) OR (duration_seconds >= 0)))
 );
 
 
-ALTER TABLE public.sync_logs OWNER TO "user";
-
 --
--- Name: sync_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: user
+-- Name: sync_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.sync_logs_id_seq
@@ -553,17 +509,15 @@ CREATE SEQUENCE public.sync_logs_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.sync_logs_id_seq OWNER TO "user";
-
 --
--- Name: sync_logs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
+-- Name: sync_logs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.sync_logs_id_seq OWNED BY public.sync_logs.id;
 
 
 --
--- Name: teams; Type: TABLE; Schema: public; Owner: user
+-- Name: teams; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.teams (
@@ -575,14 +529,14 @@ CREATE TABLE public.teams (
     final_rank integer,
     country_iso_code character varying,
     id integer NOT NULL,
-    sync_timestamp timestamp without time zone NOT NULL
+    sync_timestamp timestamp without time zone NOT NULL,
+    CONSTRAINT teams_athlete_count_nonnegative CHECK (((athlete_count IS NULL) OR (athlete_count >= 0))),
+    CONSTRAINT teams_final_rank_nonnegative CHECK (((final_rank IS NULL) OR (final_rank >= 0)))
 );
 
 
-ALTER TABLE public.teams OWNER TO "user";
-
 --
--- Name: teams_id_seq; Type: SEQUENCE; Schema: public; Owner: user
+-- Name: teams_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.teams_id_seq
@@ -594,17 +548,15 @@ CREATE SEQUENCE public.teams_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.teams_id_seq OWNER TO "user";
-
 --
--- Name: teams_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
+-- Name: teams_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.teams_id_seq OWNED BY public.teams.id;
 
 
 --
--- Name: users; Type: TABLE; Schema: public; Owner: user
+-- Name: users; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.users (
@@ -624,10 +576,8 @@ CREATE TABLE public.users (
 );
 
 
-ALTER TABLE public.users OWNER TO "user";
-
 --
--- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: user
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.users_id_seq
@@ -639,17 +589,15 @@ CREATE SEQUENCE public.users_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.users_id_seq OWNER TO "user";
-
 --
--- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
--- Name: victory_types; Type: TABLE; Schema: public; Owner: user
+-- Name: victory_types; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.victory_types (
@@ -660,32 +608,8 @@ CREATE TABLE public.victory_types (
 );
 
 
-ALTER TABLE public.victory_types OWNER TO "user";
-
 --
--- Name: victory_types_id_seq; Type: SEQUENCE; Schema: public; Owner: user
---
-
-CREATE SEQUENCE public.victory_types_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.victory_types_id_seq OWNER TO "user";
-
---
--- Name: victory_types_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
---
-
-ALTER SEQUENCE public.victory_types_id_seq OWNED BY public.victory_types.id;
-
-
---
--- Name: weight_categories; Type: TABLE; Schema: public; Owner: user
+-- Name: weight_categories; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.weight_categories (
@@ -697,14 +621,77 @@ CREATE TABLE public.weight_categories (
     is_completed boolean,
     sport_event_id integer,
     id integer NOT NULL,
-    sync_timestamp timestamp without time zone NOT NULL
+    sync_timestamp timestamp without time zone NOT NULL,
+    CONSTRAINT weight_categories_count_fighters_nonnegative CHECK (((count_fighters IS NULL) OR (count_fighters >= 0))),
+    CONSTRAINT weight_categories_max_weight_nonnegative CHECK (((max_weight IS NULL) OR (max_weight >= 0)))
 );
 
 
-ALTER TABLE public.weight_categories OWNER TO "user";
+--
+-- Name: v_fights_readable; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.v_fights_readable AS
+ SELECT f.id,
+    f.uid,
+    f.sport_event_id,
+    se.name AS sport_event_name,
+    f.weight_category_id,
+    wc.max_weight,
+    f.round_name,
+    f.fight_number,
+    f.fighter_one_id,
+    p1.full_name AS fighter_one_name,
+    t1.name AS fighter_one_team,
+    f.fighter_two_id,
+    p2.full_name AS fighter_two_name,
+    t2.name AS fighter_two_team,
+    f.winner_id,
+    pw.full_name AS winner_name,
+    f.victory_type,
+    vt.type AS victory_type_name,
+    f.tp_one,
+    f.tp_two,
+    f.cp_one,
+    f.cp_two,
+    f.duration,
+    f.sync_timestamp
+   FROM (((((((((((public.fights f
+     LEFT JOIN public.sport_events se ON ((se.id = f.sport_event_id)))
+     LEFT JOIN public.weight_categories wc ON ((wc.id = f.weight_category_id)))
+     LEFT JOIN public.athletes a1 ON ((a1.id = f.fighter_one_id)))
+     LEFT JOIN public.persons p1 ON ((p1.id = a1.person_id)))
+     LEFT JOIN public.teams t1 ON ((t1.id = a1.team_id)))
+     LEFT JOIN public.athletes a2 ON ((a2.id = f.fighter_two_id)))
+     LEFT JOIN public.persons p2 ON ((p2.id = a2.person_id)))
+     LEFT JOIN public.teams t2 ON ((t2.id = a2.team_id)))
+     LEFT JOIN public.athletes aw ON ((aw.id = f.winner_id)))
+     LEFT JOIN public.persons pw ON ((pw.id = aw.person_id)))
+     LEFT JOIN public.victory_types vt ON (((vt.code)::text = (f.victory_type)::text)));
+
 
 --
--- Name: weight_categories_id_seq; Type: SEQUENCE; Schema: public; Owner: user
+-- Name: victory_types_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.victory_types_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: victory_types_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.victory_types_id_seq OWNED BY public.victory_types.id;
+
+
+--
+-- Name: weight_categories_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.weight_categories_id_seq
@@ -716,17 +703,15 @@ CREATE SEQUENCE public.weight_categories_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.weight_categories_id_seq OWNER TO "user";
-
 --
--- Name: weight_categories_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
+-- Name: weight_categories_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.weight_categories_id_seq OWNED BY public.weight_categories.id;
 
 
 --
--- Name: weight_category_source_uids; Type: TABLE; Schema: public; Owner: user
+-- Name: weight_category_source_uids; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.weight_category_source_uids (
@@ -737,10 +722,8 @@ CREATE TABLE public.weight_category_source_uids (
 );
 
 
-ALTER TABLE public.weight_category_source_uids OWNER TO "user";
-
 --
--- Name: weight_category_source_uids_id_seq; Type: SEQUENCE; Schema: public; Owner: user
+-- Name: weight_category_source_uids_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.weight_category_source_uids_id_seq
@@ -752,143 +735,141 @@ CREATE SEQUENCE public.weight_category_source_uids_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.weight_category_source_uids_id_seq OWNER TO "user";
-
 --
--- Name: weight_category_source_uids_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
+-- Name: weight_category_source_uids_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.weight_category_source_uids_id_seq OWNED BY public.weight_category_source_uids.id;
 
 
 --
--- Name: arena_sources id; Type: DEFAULT; Schema: public; Owner: user
+-- Name: arena_sources id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.arena_sources ALTER COLUMN id SET DEFAULT nextval('public.arena_sources_id_seq'::regclass);
 
 
 --
--- Name: athlete_source_uids id; Type: DEFAULT; Schema: public; Owner: user
+-- Name: athlete_source_uids id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.athlete_source_uids ALTER COLUMN id SET DEFAULT nextval('public.athlete_source_uids_id_seq'::regclass);
 
 
 --
--- Name: athletes id; Type: DEFAULT; Schema: public; Owner: user
+-- Name: athletes id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.athletes ALTER COLUMN id SET DEFAULT nextval('public.athletes_id_seq'::regclass);
 
 
 --
--- Name: disciplines id; Type: DEFAULT; Schema: public; Owner: user
+-- Name: disciplines id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.disciplines ALTER COLUMN id SET DEFAULT nextval('public.disciplines_id_seq'::regclass);
 
 
 --
--- Name: email_verification_tokens id; Type: DEFAULT; Schema: public; Owner: user
+-- Name: email_verification_tokens id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.email_verification_tokens ALTER COLUMN id SET DEFAULT nextval('public.email_verification_tokens_id_seq'::regclass);
 
 
 --
--- Name: fights id; Type: DEFAULT; Schema: public; Owner: user
+-- Name: fights id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.fights ALTER COLUMN id SET DEFAULT nextval('public.fights_id_seq'::regclass);
 
 
 --
--- Name: login_history id; Type: DEFAULT; Schema: public; Owner: user
+-- Name: login_history id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.login_history ALTER COLUMN id SET DEFAULT nextval('public.login_history_id_seq'::regclass);
 
 
 --
--- Name: password_reset_tokens id; Type: DEFAULT; Schema: public; Owner: user
+-- Name: password_reset_tokens id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.password_reset_tokens ALTER COLUMN id SET DEFAULT nextval('public.password_reset_tokens_id_seq'::regclass);
 
 
 --
--- Name: persons id; Type: DEFAULT; Schema: public; Owner: user
+-- Name: persons id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.persons ALTER COLUMN id SET DEFAULT nextval('public.persons_id_seq'::regclass);
 
 
 --
--- Name: refresh_tokens id; Type: DEFAULT; Schema: public; Owner: user
+-- Name: refresh_tokens id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.refresh_tokens ALTER COLUMN id SET DEFAULT nextval('public.refresh_tokens_id_seq'::regclass);
 
 
 --
--- Name: sport_event_source_uids id; Type: DEFAULT; Schema: public; Owner: user
+-- Name: sport_event_source_uids id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.sport_event_source_uids ALTER COLUMN id SET DEFAULT nextval('public.sport_event_source_uids_id_seq'::regclass);
 
 
 --
--- Name: sport_events id; Type: DEFAULT; Schema: public; Owner: user
+-- Name: sport_events id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.sport_events ALTER COLUMN id SET DEFAULT nextval('public.sport_events_id_seq'::regclass);
 
 
 --
--- Name: sync_logs id; Type: DEFAULT; Schema: public; Owner: user
+-- Name: sync_logs id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.sync_logs ALTER COLUMN id SET DEFAULT nextval('public.sync_logs_id_seq'::regclass);
 
 
 --
--- Name: teams id; Type: DEFAULT; Schema: public; Owner: user
+-- Name: teams id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.teams ALTER COLUMN id SET DEFAULT nextval('public.teams_id_seq'::regclass);
 
 
 --
--- Name: users id; Type: DEFAULT; Schema: public; Owner: user
+-- Name: users id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
 
 
 --
--- Name: victory_types id; Type: DEFAULT; Schema: public; Owner: user
+-- Name: victory_types id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.victory_types ALTER COLUMN id SET DEFAULT nextval('public.victory_types_id_seq'::regclass);
 
 
 --
--- Name: weight_categories id; Type: DEFAULT; Schema: public; Owner: user
+-- Name: weight_categories id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.weight_categories ALTER COLUMN id SET DEFAULT nextval('public.weight_categories_id_seq'::regclass);
 
 
 --
--- Name: weight_category_source_uids id; Type: DEFAULT; Schema: public; Owner: user
+-- Name: weight_category_source_uids id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.weight_category_source_uids ALTER COLUMN id SET DEFAULT nextval('public.weight_category_source_uids_id_seq'::regclass);
 
 
 --
--- Name: arena_sources arena_sources_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: arena_sources arena_sources_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.arena_sources
@@ -896,7 +877,7 @@ ALTER TABLE ONLY public.arena_sources
 
 
 --
--- Name: athlete_source_uids athlete_source_uids_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: athlete_source_uids athlete_source_uids_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.athlete_source_uids
@@ -904,7 +885,7 @@ ALTER TABLE ONLY public.athlete_source_uids
 
 
 --
--- Name: athletes athletes_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: athletes athletes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.athletes
@@ -912,7 +893,7 @@ ALTER TABLE ONLY public.athletes
 
 
 --
--- Name: disciplines disciplines_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: disciplines disciplines_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.disciplines
@@ -920,7 +901,7 @@ ALTER TABLE ONLY public.disciplines
 
 
 --
--- Name: disciplines disciplines_sport_id_key; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: disciplines disciplines_sport_id_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.disciplines
@@ -928,7 +909,7 @@ ALTER TABLE ONLY public.disciplines
 
 
 --
--- Name: email_verification_tokens email_verification_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: email_verification_tokens email_verification_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.email_verification_tokens
@@ -936,7 +917,7 @@ ALTER TABLE ONLY public.email_verification_tokens
 
 
 --
--- Name: fights fights_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: fights fights_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.fights
@@ -944,7 +925,7 @@ ALTER TABLE ONLY public.fights
 
 
 --
--- Name: login_history login_history_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: login_history login_history_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.login_history
@@ -952,7 +933,7 @@ ALTER TABLE ONLY public.login_history
 
 
 --
--- Name: password_reset_tokens password_reset_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: password_reset_tokens password_reset_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.password_reset_tokens
@@ -960,7 +941,7 @@ ALTER TABLE ONLY public.password_reset_tokens
 
 
 --
--- Name: persons persons_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: persons persons_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.persons
@@ -968,7 +949,7 @@ ALTER TABLE ONLY public.persons
 
 
 --
--- Name: refresh_tokens refresh_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: refresh_tokens refresh_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.refresh_tokens
@@ -976,7 +957,7 @@ ALTER TABLE ONLY public.refresh_tokens
 
 
 --
--- Name: sport_event_source_uids sport_event_source_uids_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: sport_event_source_uids sport_event_source_uids_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.sport_event_source_uids
@@ -984,7 +965,7 @@ ALTER TABLE ONLY public.sport_event_source_uids
 
 
 --
--- Name: sport_events sport_events_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: sport_events sport_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.sport_events
@@ -992,7 +973,7 @@ ALTER TABLE ONLY public.sport_events
 
 
 --
--- Name: sync_logs sync_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: sync_logs sync_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.sync_logs
@@ -1000,7 +981,7 @@ ALTER TABLE ONLY public.sync_logs
 
 
 --
--- Name: teams teams_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: teams teams_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.teams
@@ -1008,7 +989,7 @@ ALTER TABLE ONLY public.teams
 
 
 --
--- Name: athletes uq_athlete_event_person_wc; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: athletes uq_athlete_event_person_wc; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.athletes
@@ -1016,7 +997,7 @@ ALTER TABLE ONLY public.athletes
 
 
 --
--- Name: athlete_source_uids uq_athlete_source_uuid; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: athlete_source_uids uq_athlete_source_uuid; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.athlete_source_uids
@@ -1024,7 +1005,7 @@ ALTER TABLE ONLY public.athlete_source_uids
 
 
 --
--- Name: sport_event_source_uids uq_event_source_uuid; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: sport_event_source_uids uq_event_source_uuid; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.sport_event_source_uids
@@ -1032,7 +1013,15 @@ ALTER TABLE ONLY public.sport_event_source_uids
 
 
 --
--- Name: sport_events uq_sport_event_natural_key; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: fights uq_fights_event_uid; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.fights
+    ADD CONSTRAINT uq_fights_event_uid UNIQUE (sport_event_id, uid);
+
+
+--
+-- Name: sport_events uq_sport_event_natural_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.sport_events
@@ -1040,7 +1029,7 @@ ALTER TABLE ONLY public.sport_events
 
 
 --
--- Name: teams uq_team_event_name; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: teams uq_team_event_name; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.teams
@@ -1048,7 +1037,7 @@ ALTER TABLE ONLY public.teams
 
 
 --
--- Name: weight_categories uq_wc_event_weight_discipline; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: weight_categories uq_wc_event_weight_discipline; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.weight_categories
@@ -1056,7 +1045,7 @@ ALTER TABLE ONLY public.weight_categories
 
 
 --
--- Name: weight_category_source_uids uq_wc_source_uuid; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: weight_category_source_uids uq_wc_source_uuid; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.weight_category_source_uids
@@ -1064,7 +1053,7 @@ ALTER TABLE ONLY public.weight_category_source_uids
 
 
 --
--- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users
@@ -1072,7 +1061,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: users users_uid_key; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: users users_uid_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users
@@ -1080,7 +1069,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: victory_types victory_types_code_key; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: victory_types victory_types_code_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.victory_types
@@ -1088,7 +1077,7 @@ ALTER TABLE ONLY public.victory_types
 
 
 --
--- Name: victory_types victory_types_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: victory_types victory_types_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.victory_types
@@ -1096,7 +1085,7 @@ ALTER TABLE ONLY public.victory_types
 
 
 --
--- Name: weight_categories weight_categories_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: weight_categories weight_categories_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.weight_categories
@@ -1104,7 +1093,7 @@ ALTER TABLE ONLY public.weight_categories
 
 
 --
--- Name: weight_category_source_uids weight_category_source_uids_pkey; Type: CONSTRAINT; Schema: public; Owner: user
+-- Name: weight_category_source_uids weight_category_source_uids_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.weight_category_source_uids
@@ -1112,119 +1101,182 @@ ALTER TABLE ONLY public.weight_category_source_uids
 
 
 --
--- Name: ix_arena_sources_user_id; Type: INDEX; Schema: public; Owner: user
+-- Name: ix_arena_sources_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_arena_sources_user_id ON public.arena_sources USING btree (user_id);
 
 
 --
--- Name: ix_athletes_uid; Type: INDEX; Schema: public; Owner: user
+-- Name: ix_athletes_sport_event_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_athletes_sport_event_id ON public.athletes USING btree (sport_event_id);
+
+
+--
+-- Name: ix_athletes_team_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_athletes_team_id ON public.athletes USING btree (team_id);
+
+
+--
+-- Name: ix_athletes_uid; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_athletes_uid ON public.athletes USING btree (uid);
 
 
 --
--- Name: ix_email_verification_tokens_token; Type: INDEX; Schema: public; Owner: user
+-- Name: ix_athletes_weight_category_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_athletes_weight_category_id ON public.athletes USING btree (weight_category_id);
+
+
+--
+-- Name: ix_email_verification_tokens_token; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX ix_email_verification_tokens_token ON public.email_verification_tokens USING btree (token);
 
 
 --
--- Name: ix_email_verification_tokens_user_id; Type: INDEX; Schema: public; Owner: user
+-- Name: ix_email_verification_tokens_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_email_verification_tokens_user_id ON public.email_verification_tokens USING btree (user_id);
 
 
 --
--- Name: ix_fights_uid; Type: INDEX; Schema: public; Owner: user
+-- Name: ix_fights_fighter_one_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_fights_fighter_one_id ON public.fights USING btree (fighter_one_id);
+
+
+--
+-- Name: ix_fights_fighter_two_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_fights_fighter_two_id ON public.fights USING btree (fighter_two_id);
+
+
+--
+-- Name: ix_fights_sport_event_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_fights_sport_event_id ON public.fights USING btree (sport_event_id);
+
+
+--
+-- Name: ix_fights_uid; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_fights_uid ON public.fights USING btree (uid);
 
 
 --
--- Name: ix_login_history_user_id; Type: INDEX; Schema: public; Owner: user
+-- Name: ix_fights_weight_category_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_fights_weight_category_id ON public.fights USING btree (weight_category_id);
+
+
+--
+-- Name: ix_login_history_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_login_history_user_id ON public.login_history USING btree (user_id);
 
 
 --
--- Name: ix_password_reset_tokens_token; Type: INDEX; Schema: public; Owner: user
+-- Name: ix_password_reset_tokens_token; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX ix_password_reset_tokens_token ON public.password_reset_tokens USING btree (token);
 
 
 --
--- Name: ix_password_reset_tokens_user_id; Type: INDEX; Schema: public; Owner: user
+-- Name: ix_password_reset_tokens_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_password_reset_tokens_user_id ON public.password_reset_tokens USING btree (user_id);
 
 
 --
--- Name: ix_persons_full_name; Type: INDEX; Schema: public; Owner: user
+-- Name: ix_persons_full_name; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_persons_full_name ON public.persons USING btree (full_name);
 
 
 --
--- Name: ix_refresh_tokens_token; Type: INDEX; Schema: public; Owner: user
+-- Name: ix_refresh_tokens_token; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX ix_refresh_tokens_token ON public.refresh_tokens USING btree (token);
 
 
 --
--- Name: ix_refresh_tokens_user_id; Type: INDEX; Schema: public; Owner: user
+-- Name: ix_refresh_tokens_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_refresh_tokens_user_id ON public.refresh_tokens USING btree (user_id);
 
 
 --
--- Name: ix_sport_events_arena_uuid; Type: INDEX; Schema: public; Owner: user
+-- Name: ix_sport_events_arena_uuid; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_sport_events_arena_uuid ON public.sport_events USING btree (arena_uuid);
 
 
 --
--- Name: ix_teams_uid; Type: INDEX; Schema: public; Owner: user
+-- Name: ix_teams_sport_event_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_teams_sport_event_id ON public.teams USING btree (sport_event_id);
+
+
+--
+-- Name: ix_teams_uid; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_teams_uid ON public.teams USING btree (uid);
 
 
 --
--- Name: ix_users_email; Type: INDEX; Schema: public; Owner: user
+-- Name: ix_users_email; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX ix_users_email ON public.users USING btree (email);
 
 
 --
--- Name: ix_users_username; Type: INDEX; Schema: public; Owner: user
+-- Name: ix_users_username; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX ix_users_username ON public.users USING btree (username);
 
 
 --
--- Name: ix_weight_categories_uid; Type: INDEX; Schema: public; Owner: user
+-- Name: ix_weight_categories_sport_event_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_weight_categories_sport_event_id ON public.weight_categories USING btree (sport_event_id);
+
+
+--
+-- Name: ix_weight_categories_uid; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_weight_categories_uid ON public.weight_categories USING btree (uid);
 
 
 --
--- Name: arena_sources arena_sources_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+-- Name: arena_sources arena_sources_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.arena_sources
@@ -1232,7 +1284,7 @@ ALTER TABLE ONLY public.arena_sources
 
 
 --
--- Name: athlete_source_uids athlete_source_uids_arena_source_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+-- Name: athlete_source_uids athlete_source_uids_arena_source_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.athlete_source_uids
@@ -1240,7 +1292,7 @@ ALTER TABLE ONLY public.athlete_source_uids
 
 
 --
--- Name: athlete_source_uids athlete_source_uids_athlete_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+-- Name: athlete_source_uids athlete_source_uids_athlete_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.athlete_source_uids
@@ -1248,7 +1300,7 @@ ALTER TABLE ONLY public.athlete_source_uids
 
 
 --
--- Name: athletes athletes_person_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+-- Name: athletes athletes_person_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.athletes
@@ -1256,7 +1308,31 @@ ALTER TABLE ONLY public.athletes
 
 
 --
--- Name: email_verification_tokens email_verification_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+-- Name: athletes athletes_sport_event_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.athletes
+    ADD CONSTRAINT athletes_sport_event_id_fkey FOREIGN KEY (sport_event_id) REFERENCES public.sport_events(id);
+
+
+--
+-- Name: athletes athletes_team_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.athletes
+    ADD CONSTRAINT athletes_team_id_fkey FOREIGN KEY (team_id) REFERENCES public.teams(id);
+
+
+--
+-- Name: athletes athletes_weight_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.athletes
+    ADD CONSTRAINT athletes_weight_category_id_fkey FOREIGN KEY (weight_category_id) REFERENCES public.weight_categories(id);
+
+
+--
+-- Name: email_verification_tokens email_verification_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.email_verification_tokens
@@ -1264,7 +1340,7 @@ ALTER TABLE ONLY public.email_verification_tokens
 
 
 --
--- Name: fights fights_fighter_one_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+-- Name: fights fights_fighter_one_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.fights
@@ -1272,7 +1348,7 @@ ALTER TABLE ONLY public.fights
 
 
 --
--- Name: fights fights_fighter_two_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+-- Name: fights fights_fighter_two_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.fights
@@ -1280,7 +1356,7 @@ ALTER TABLE ONLY public.fights
 
 
 --
--- Name: fights fights_sport_event_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+-- Name: fights fights_sport_event_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.fights
@@ -1288,7 +1364,7 @@ ALTER TABLE ONLY public.fights
 
 
 --
--- Name: fights fights_victory_type_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+-- Name: fights fights_victory_type_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.fights
@@ -1296,7 +1372,7 @@ ALTER TABLE ONLY public.fights
 
 
 --
--- Name: fights fights_weight_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+-- Name: fights fights_weight_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.fights
@@ -1304,7 +1380,7 @@ ALTER TABLE ONLY public.fights
 
 
 --
--- Name: fights fights_winner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+-- Name: fights fights_winner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.fights
@@ -1312,7 +1388,7 @@ ALTER TABLE ONLY public.fights
 
 
 --
--- Name: login_history login_history_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+-- Name: login_history login_history_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.login_history
@@ -1320,7 +1396,7 @@ ALTER TABLE ONLY public.login_history
 
 
 --
--- Name: password_reset_tokens password_reset_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+-- Name: password_reset_tokens password_reset_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.password_reset_tokens
@@ -1328,7 +1404,7 @@ ALTER TABLE ONLY public.password_reset_tokens
 
 
 --
--- Name: refresh_tokens refresh_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+-- Name: refresh_tokens refresh_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.refresh_tokens
@@ -1336,7 +1412,7 @@ ALTER TABLE ONLY public.refresh_tokens
 
 
 --
--- Name: sport_event_source_uids sport_event_source_uids_arena_source_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+-- Name: sport_event_source_uids sport_event_source_uids_arena_source_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.sport_event_source_uids
@@ -1344,7 +1420,7 @@ ALTER TABLE ONLY public.sport_event_source_uids
 
 
 --
--- Name: sport_event_source_uids sport_event_source_uids_sport_event_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+-- Name: sport_event_source_uids sport_event_source_uids_sport_event_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.sport_event_source_uids
@@ -1352,7 +1428,7 @@ ALTER TABLE ONLY public.sport_event_source_uids
 
 
 --
--- Name: sync_logs sync_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+-- Name: sync_logs sync_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.sync_logs
@@ -1360,7 +1436,7 @@ ALTER TABLE ONLY public.sync_logs
 
 
 --
--- Name: teams teams_sport_event_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+-- Name: teams teams_sport_event_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.teams
@@ -1368,7 +1444,7 @@ ALTER TABLE ONLY public.teams
 
 
 --
--- Name: weight_categories weight_categories_discipline_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+-- Name: weight_categories weight_categories_discipline_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.weight_categories
@@ -1376,7 +1452,7 @@ ALTER TABLE ONLY public.weight_categories
 
 
 --
--- Name: weight_categories weight_categories_sport_event_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+-- Name: weight_categories weight_categories_sport_event_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.weight_categories
@@ -1384,7 +1460,7 @@ ALTER TABLE ONLY public.weight_categories
 
 
 --
--- Name: weight_category_source_uids weight_category_source_uids_arena_source_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+-- Name: weight_category_source_uids weight_category_source_uids_arena_source_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.weight_category_source_uids
@@ -1392,7 +1468,7 @@ ALTER TABLE ONLY public.weight_category_source_uids
 
 
 --
--- Name: weight_category_source_uids weight_category_source_uids_weight_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
+-- Name: weight_category_source_uids weight_category_source_uids_weight_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.weight_category_source_uids
@@ -1403,5 +1479,5 @@ ALTER TABLE ONLY public.weight_category_source_uids
 -- PostgreSQL database dump complete
 --
 
-\unrestrict rKF6mLe6vKWpOdqSdXnihbG0EUMZZwm9dy9nkjofDiNPn0xQmmKIRFVXgwbbQvk
+\unrestrict oxmE23hwoL8xyKBh6mA2ALG4gbC1LcL8870KERTZDOEEz80gDpaOR94IGC3TWbD
 

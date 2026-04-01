@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react"
+import { useCallback, useEffect, useState, type ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { RankingView } from "./RankingView"
 import { ComparisonView } from "./ComparisonView"
@@ -10,6 +10,33 @@ interface DashboardStatsProps {
 }
 
 type StatsCategory = "comparison" | "rankings" | "team_comparison" | null
+
+const STATS_VIEW_QUERY_KEY = "stats_view"
+
+function parseStatsCategoryFromUrl(): StatsCategory {
+  const params = new URLSearchParams(window.location.search)
+  const value = params.get(STATS_VIEW_QUERY_KEY)
+
+  if (value === "comparison" || value === "rankings" || value === "team_comparison") {
+    return value
+  }
+
+  return null
+}
+
+function pushStatsCategoryToUrl(category: StatsCategory) {
+  const params = new URLSearchParams(window.location.search)
+
+  if (category) {
+    params.set(STATS_VIEW_QUERY_KEY, category)
+  } else {
+    params.delete(STATS_VIEW_QUERY_KEY)
+  }
+
+  const query = params.toString()
+  const nextUrl = query ? `${window.location.pathname}?${query}` : window.location.pathname
+  window.history.pushState({}, "", nextUrl)
+}
 
 interface StatsCategoryCardProps {
   isDarkMode: boolean
@@ -54,18 +81,37 @@ function StatsCategoryCard({ isDarkMode, onClick, color, icon, title, descriptio
 
 export function DashboardStats({ isDarkMode, onSelectPerson }: DashboardStatsProps) {
   const { t } = useTranslation()
-  const [selectedCategory, setSelectedCategory] = useState<StatsCategory>(null)
+  const [selectedCategory, setSelectedCategory] = useState<StatsCategory>(() => parseStatsCategoryFromUrl())
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setSelectedCategory(parseStatsCategoryFromUrl())
+    }
+
+    window.addEventListener("popstate", handlePopState)
+    return () => window.removeEventListener("popstate", handlePopState)
+  }, [])
+
+  const handleSelectCategory = useCallback((category: Exclude<StatsCategory, null>) => {
+    setSelectedCategory(category)
+    pushStatsCategoryToUrl(category)
+  }, [])
+
+  const handleBackToStatsOverview = useCallback(() => {
+    setSelectedCategory(null)
+    pushStatsCategoryToUrl(null)
+  }, [])
 
   if (selectedCategory === "rankings") {
-    return <RankingView isDarkMode={isDarkMode} onSelectPerson={onSelectPerson} onBack={() => setSelectedCategory(null)} />
+    return <RankingView isDarkMode={isDarkMode} onSelectPerson={onSelectPerson} onBack={handleBackToStatsOverview} />
   }
 
   if (selectedCategory === "comparison") {
-    return <ComparisonView isDarkMode={isDarkMode} onSelectPerson={onSelectPerson} onBack={() => setSelectedCategory(null)} />
+    return <ComparisonView isDarkMode={isDarkMode} onSelectPerson={onSelectPerson} onBack={handleBackToStatsOverview} />
   }
 
   if (selectedCategory === "team_comparison") {
-    return <TeamComparisonView isDarkMode={isDarkMode} onBack={() => setSelectedCategory(null)} />
+    return <TeamComparisonView isDarkMode={isDarkMode} onBack={handleBackToStatsOverview} />
   }
 
   return (
@@ -77,7 +123,7 @@ export function DashboardStats({ isDarkMode, onSelectPerson }: DashboardStatsPro
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatsCategoryCard
           isDarkMode={isDarkMode}
-          onClick={() => setSelectedCategory("comparison")}
+          onClick={() => handleSelectCategory("comparison")}
           color="purple"
           icon={
             <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -89,7 +135,7 @@ export function DashboardStats({ isDarkMode, onSelectPerson }: DashboardStatsPro
         />
         <StatsCategoryCard
           isDarkMode={isDarkMode}
-          onClick={() => setSelectedCategory("rankings")}
+          onClick={() => handleSelectCategory("rankings")}
           color="yellow"
           icon={
             <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -101,7 +147,7 @@ export function DashboardStats({ isDarkMode, onSelectPerson }: DashboardStatsPro
         />
         <StatsCategoryCard
           isDarkMode={isDarkMode}
-          onClick={() => setSelectedCategory("team_comparison")}
+          onClick={() => handleSelectCategory("team_comparison")}
           color="blue"
           icon={
             <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
