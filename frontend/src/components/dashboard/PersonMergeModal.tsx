@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
@@ -25,6 +26,7 @@ export function PersonMergeModal({
   persons,
   isDarkMode,
 }: PersonMergeModalProps) {
+  const { t } = useTranslation()
   const [targetId, setTargetId] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -47,7 +49,7 @@ export function PersonMergeModal({
       onClose()
     } catch (err) {
       console.error("Merge failed:", err)
-      setError(err instanceof Error ? err.message : "Zlúčenie zlyhalo")
+      setError(err instanceof Error ? err.message : t("personMerge.mergeError"))
     } finally {
       setLoading(false)
     }
@@ -71,10 +73,10 @@ export function PersonMergeModal({
           </div>
           <div className="flex-1">
             <h3 className={`text-xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-              Zlúčiť osoby
+              {t("personMerge.title")}
             </h3>
             <p className={`mb-4 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-              Vyberte primárnu osobu, ktorej meno a krajina sa zachovajú. Ostatné záznamy budú zlúčené a odstránené.
+              {t("personMerge.description")}
             </p>
           </div>
         </div>
@@ -115,7 +117,7 @@ export function PersonMergeModal({
                 <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>-</span>
               )}
               {targetId === person.id && (
-                <span className="text-xs font-medium text-blue-500 flex-shrink-0">Primárna</span>
+                <span className="text-xs font-medium text-blue-500 flex-shrink-0">{t("personMerge.primaryLabel")}</span>
               )}
             </label>
           ))}
@@ -133,14 +135,14 @@ export function PersonMergeModal({
             disabled={loading}
             className={isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}
           >
-            Zrušiť
+            {t("personMerge.cancelButton")}
           </Button>
           <Button
             onClick={handleMerge}
             disabled={!targetId || loading}
             className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Zlučujem...' : 'Zlúčiť'}
+            {loading ? t("personMerge.mergingButton") : t("personMerge.mergeButton")}
           </Button>
         </div>
       </div>

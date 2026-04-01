@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
 import { Pagination } from "./Pagination"
@@ -22,6 +23,7 @@ interface AthletesListProps {
 }
 
 export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) {
+  const { t } = useTranslation()
   const [persons, setPersons] = useState<Person[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -77,29 +79,29 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
       {/* Header */}
       <div>
         <h2 className={`text-3xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-          Atléti
+          {t("athletes.title")}
         </h2>
         <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-          Prehľad všetkých registrovaných atlétov
+          {t("athletes.subtitle")}
         </p>
       </div>
 
       {loading && (
-        <LoadingSpinner text="Načítavam atlétov..." isDarkMode={isDarkMode} variant="inline" size="md" />
+        <LoadingSpinner text={t("athletes.loading")} isDarkMode={isDarkMode} variant="inline" size="md" />
       )}
 
       {error && !loading && (
         <div className={`p-6 rounded-lg ${isDarkMode ? 'bg-red-500/10' : 'bg-red-50'}`}>
-          <p className={`font-semibold ${isDarkMode ? 'text-red-400' : 'text-red-700'}`}>Chyba pri načítaní atlétov</p>
+          <p className={`font-semibold ${isDarkMode ? 'text-red-400' : 'text-red-700'}`}>{t("athletes.loadError")}</p>
           <p className={`text-sm ${isDarkMode ? 'text-red-300' : 'text-red-600'}`}>{error}</p>
         </div>
       )}
 
       {!loading && !error && persons.length === 0 && (
         <div className={`p-8 rounded-lg text-center ${isDarkMode ? 'bg-[#1e293b]' : 'bg-white'}`}>
-          <p className={`text-lg font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}>Žiadni atléti</p>
+          <p className={`text-lg font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}>{t("athletes.empty")}</p>
           <p className={`mt-1 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            Zatiaľ neboli synchronizovaní žiadni atléti.
+            {t("athletes.emptyDesc")}
           </p>
         </div>
       )}
@@ -115,7 +117,7 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
                     isDarkMode={isDarkMode}
                     value={searchQuery}
                     onChange={(value) => { setSearchQuery(value); setCurrentPage(1) }}
-                    placeholder="Hľadať podľa mena..."
+                    placeholder={t("athletes.searchPlaceholder")}
                   />
                 </div>
                 <MultiSelect
@@ -130,7 +132,7 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
                     setCurrentPage(1)
                   }}
                   onClear={() => { setSelectedCountries(new Set()); setCurrentPage(1) }}
-                  placeholder="Krajina"
+                  placeholder={t("athletes.countryPlaceholder")}
                   isDarkMode={isDarkMode}
                   buttonIcon={
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -140,7 +142,7 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
                 />
               </div>
               <div className={`mt-2 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                {filtered.length} z {persons.length} atlétov
+                {t("athletes.countOf", { count: filtered.length, total: persons.length })}
               </div>
             </div>
 
@@ -148,7 +150,7 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
             <div className="p-4">
               {currentPersons.length === 0 ? (
                 <p className={`text-center py-8 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  Žiadni atléti neboli nájdení
+                  {t("athletes.notFound")}
                 </p>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
@@ -182,7 +184,7 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
                           {person.full_name}
                         </p>
                         <p className={`mt-1 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                          {person.fight_count} {person.fight_count === 1 ? 'zápas' : person.fight_count >= 2 && person.fight_count <= 4 ? 'zápasy' : 'zápasov'}
+                          {person.fight_count} {person.fight_count === 1 ? t('athletes.fightCount_one') : person.fight_count >= 2 && person.fight_count <= 4 ? t('athletes.fightCount_few') : t('athletes.fightCount_many')}
                         </p>
                       </div>
                     </div>
@@ -202,7 +204,7 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
                     : 'bg-white text-gray-600 hover:text-gray-900 border border-gray-300'
                 }`}
               >
-                Zobraziť po stránkach
+                {t("athletes.showPaged")}
               </button>
             </div>
           ) : (

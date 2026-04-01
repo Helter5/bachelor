@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next"
+
 export interface Person {
   id: number
   full_name: string
@@ -36,7 +38,8 @@ export function WrestlerPicker({
   searchInputRef,
   containerRef,
 }: WrestlerPickerProps) {
-  const label = `Zápasník ${wrestler}`
+  const { t } = useTranslation()
+  const label = t("comparison.wrestler", { number: wrestler })
 
   return (
     <div className="relative" ref={containerRef}>
@@ -82,7 +85,7 @@ export function WrestlerPicker({
               type="text"
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Zadajte meno zápasníka..."
+              placeholder={t("comparison.searchPlaceholder")}
               className={`w-full pl-10 pr-10 py-2.5 rounded-lg text-sm transition-all ${
                 isDarkMode
                   ? 'bg-blue-950/40 text-white placeholder-blue-300/40 border-2 border-blue-500/40 focus:border-blue-400 shadow-lg shadow-blue-500/10'
@@ -126,7 +129,7 @@ export function WrestlerPicker({
             <div className={`absolute z-20 w-full mt-1 rounded-lg shadow-xl px-4 py-3 text-sm ${
               isDarkMode ? 'bg-[#1e293b] border border-white/10 text-gray-400' : 'bg-white border border-gray-200 text-gray-500'
             }`}>
-              Nenašiel sa žiadny zápasník
+              {t("comparison.noWrestlerFound")}
             </div>
           )}
         </div>
@@ -140,13 +143,13 @@ export function WrestlerPicker({
               ? 'bg-[#0f172a]/50 text-gray-400 border border-white/10'
               : 'bg-gray-50 text-gray-500 border border-gray-200'
           }`}>
-            <span>Vyberte zo zoznamu...</span>
+            <span>{t("comparison.selectFromList")}</span>
             <button
               onClick={(e) => { e.stopPropagation(); onModeChange("search") }}
               className={`p-1 rounded transition-colors ${
                 isDarkMode ? 'hover:bg-blue-500/20 text-gray-500 hover:text-blue-400' : 'hover:bg-blue-50 text-gray-400 hover:text-blue-500'
               }`}
-              title="Vyhľadávanie"
+              title={t("comparison.searchTitle")}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -158,7 +161,7 @@ export function WrestlerPicker({
           }`}>
             {allPersons.length === 0 ? (
               <div className={`px-4 py-3 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                Žiadni zápasníci
+                {t("comparison.noWrestlers")}
               </div>
             ) : (
               allPersons.map(p => (
@@ -193,13 +196,13 @@ export function WrestlerPicker({
           }`}
           onClick={() => onModeChange("browse")}
         >
-          <span>Kliknite pre výber zápasníka...</span>
+          <span>{t("comparison.clickToSelect")}</span>
           <button
             onClick={(e) => { e.stopPropagation(); onModeChange("search") }}
             className={`p-1 rounded transition-colors ${
               isDarkMode ? 'hover:bg-blue-500/20 text-gray-500 hover:text-blue-400' : 'hover:bg-blue-50 text-gray-400 hover:text-blue-500'
             }`}
-            title="Vyhľadávanie"
+            title={t("comparison.searchTitle")}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

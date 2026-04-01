@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { apiClient } from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/config/api'
 import { validateRequired, validateEmail, validatePassword, validatePasswordMatch } from '@/utils/validation'
@@ -18,6 +19,7 @@ interface ProfileSettingsProps {
 }
 
 export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
+  const { t } = useTranslation()
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -54,7 +56,7 @@ export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
       })
     } catch (err) {
       console.error('Error loading profile:', err)
-      setError('Nepodarilo sa načítať profil')
+      setError(t('profile.loadError'))
     } finally {
       setLoading(false)
     }
@@ -64,8 +66,8 @@ export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
     const value = profileForm[field]
     let error = ''
     if (field === 'email') error = validateEmail(value)
-    else if (field === 'first_name') error = validateRequired(value, 'Meno')
-    else if (field === 'last_name') error = validateRequired(value, 'Priezvisko')
+    else if (field === 'first_name') error = validateRequired(value, t('profile.firstName'))
+    else if (field === 'last_name') error = validateRequired(value, t('profile.lastName'))
     setProfileErrors(prev => ({ ...prev, [field]: error }))
   }
 
@@ -80,8 +82,8 @@ export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
     setSuccess(null)
 
     const newErrors = {
-      first_name: validateRequired(profileForm.first_name, 'Meno'),
-      last_name: validateRequired(profileForm.last_name, 'Priezvisko'),
+      first_name: validateRequired(profileForm.first_name, t('profile.firstName')),
+      last_name: validateRequired(profileForm.last_name, t('profile.lastName')),
       email: validateEmail(profileForm.email),
     }
     setProfileErrors(newErrors)
@@ -90,15 +92,15 @@ export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
     try {
       const updated = await apiClient.put<User>(API_ENDPOINTS.PROFILE_ME, profileForm)
       setUser(updated)
-      setSuccess('Profil bol úspešne aktualizovaný')
+      setSuccess(t('profile.updateSuccess'))
     } catch {
-      setError('Nepodarilo sa aktualizovať profil')
+      setError(t('profile.updateError'))
     }
   }
 
   const handlePasswordBlur = (field: keyof typeof passwordForm) => {
     let error = ''
-    if (field === 'current_password') error = validateRequired(passwordForm.current_password, 'Aktuálne heslo')
+    if (field === 'current_password') error = validateRequired(passwordForm.current_password, t('profile.currentPassword'))
     else if (field === 'new_password') error = validatePassword(passwordForm.new_password)
     else if (field === 'confirm_password') error = validatePasswordMatch(passwordForm.new_password, passwordForm.confirm_password)
     setPasswordErrors(prev => ({ ...prev, [field]: error }))
@@ -115,7 +117,7 @@ export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
     setSuccess(null)
 
     const newErrors = {
-      current_password: validateRequired(passwordForm.current_password, 'Aktuálne heslo'),
+      current_password: validateRequired(passwordForm.current_password, t('profile.currentPassword')),
       new_password: validatePassword(passwordForm.new_password),
       confirm_password: validatePasswordMatch(passwordForm.new_password, passwordForm.confirm_password),
     }
@@ -127,11 +129,11 @@ export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
         current_password: passwordForm.current_password,
         new_password: passwordForm.new_password
       })
-      setSuccess('Heslo bolo úspešne zmenené. Všetky ostatné relácie boli odhlásené.')
+      setSuccess(t('profile.passwordSuccess'))
       setPasswordForm({ current_password: '', new_password: '', confirm_password: '' })
       setPasswordErrors({})
     } catch {
-      setError('Nepodarilo sa zmeniť heslo')
+      setError(t('profile.passwordError'))
     }
   }
 
@@ -143,7 +145,7 @@ export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
   if (loading) {
     return (
       <div className="text-center py-8">
-        <div className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Načítavam...</div>
+        <div className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>{t('profile.loading')}</div>
       </div>
     )
   }
@@ -164,14 +166,14 @@ export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
       {/* Profile Info Section */}
       <div className={`rounded-lg p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'}`}>
         <h3 className={`text-xl font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-          Osobné údaje
+          {t('profile.personalData')}
         </h3>
 
         <form onSubmit={handleUpdateProfile} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                Meno
+                {t('profile.firstName')}
               </label>
               <input
                 type="text"
@@ -187,7 +189,7 @@ export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
 
             <div>
               <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                Priezvisko
+                {t('profile.lastName')}
               </label>
               <input
                 type="text"
@@ -204,7 +206,7 @@ export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
 
           <div>
             <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              Email
+              {t('profile.email')}
             </label>
             <input
               type="email"
@@ -222,7 +224,7 @@ export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
             type="submit"
             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
           >
-            Uložiť zmeny
+            {t('profile.saveChanges')}
           </button>
         </form>
       </div>
@@ -230,13 +232,13 @@ export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
       {/* Password Change Section */}
       <div className={`rounded-lg p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'}`}>
         <h3 className={`text-xl font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-          Zmena hesla
+          {t('profile.changePassword')}
         </h3>
 
         <form onSubmit={handleChangePassword} className="space-y-4">
           <div>
             <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              Aktuálne heslo
+              {t('profile.currentPassword')}
             </label>
             <input
               type="password"
@@ -252,7 +254,7 @@ export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
 
           <div>
             <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              Nové heslo
+              {t('profile.newPassword')}
             </label>
             <input
               type="password"
@@ -268,7 +270,7 @@ export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
 
           <div>
             <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              Potvrdiť nové heslo
+              {t('profile.confirmNewPassword')}
             </label>
             <input
               type="password"
@@ -286,7 +288,7 @@ export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
             type="submit"
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
-            Zmeniť heslo
+            {t('profile.changePasswordButton')}
           </button>
         </form>
       </div>

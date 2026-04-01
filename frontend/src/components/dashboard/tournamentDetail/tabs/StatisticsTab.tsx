@@ -1,4 +1,5 @@
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts"
 import type { EventStatistics } from "../types"
 import { CHART_COLORS } from "../types"
@@ -21,6 +22,7 @@ export function StatisticsTab({
   statsError,
   onSelectPerson,
 }: StatisticsTabProps) {
+  const { t } = useTranslation()
   const tooltipStyle = useMemo(() => ({
     backgroundColor: isDarkMode ? "#1e293b" : "#fff",
     border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.1)" : "#e5e7eb"}`,
@@ -31,7 +33,7 @@ export function StatisticsTab({
   return (
     <div>
       <h3 className={`text-xl font-semibold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-        Štatistiky turnaja
+        {t('statistics.tournamentTitle')}
       </h3>
 
       {statsError && (
@@ -39,7 +41,7 @@ export function StatisticsTab({
       )}
 
       {statsLoading ? (
-        <LoadingSpinner text="Načítavam štatistiky..." isDarkMode={isDarkMode} />
+        <LoadingSpinner text={t('statistics.loadingStats')} isDarkMode={isDarkMode} />
       ) : eventStats ? (
         <div className="space-y-8">
           {/* Summary Cards */}

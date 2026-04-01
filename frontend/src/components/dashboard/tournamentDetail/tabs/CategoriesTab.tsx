@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import { Pagination } from "../Pagination"
 import type { WeightCategory, Team, Athlete } from "../types"
 import { ITEMS_PER_PAGE } from "../types"
@@ -47,6 +48,7 @@ export function CategoriesTab({
   onSelectPerson,
   handleNameClick,
 }: CategoriesTabProps) {
+  const { t } = useTranslation()
   if (selectedWeightCategory) {
     return (
       <div>
@@ -60,7 +62,7 @@ export function CategoriesTab({
 
         {/* Athletes in Weight Category */}
         {loadingWeightCategoryAthletes ? (
-          <LoadingSpinner text="Načítavam atlétov..." isDarkMode={isDarkMode} />
+          <LoadingSpinner text={t('tournamentDetail.errors.loadingAthletes')} isDarkMode={isDarkMode} />
         ) : weightCategoryAthletes.length > 0 ? (
           <>
             <div className="space-y-2">
@@ -89,14 +91,14 @@ export function CategoriesTab({
                         <div className="flex items-center gap-1 text-xs mt-0.5">
                           <CountryFlag code={athleteTeam?.country_iso_code} />
                           <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-                            {athleteTeam?.name || 'Bez tímu'}
+                            {athleteTeam?.name || t('tournamentDetail.noTeam')}
                           </span>
                         </div>
                       </div>
                       {athlete.is_competing ? (
-                        <StatusBadge variant="success" isDarkMode={isDarkMode}>Súťaží</StatusBadge>
+                        <StatusBadge variant="success" isDarkMode={isDarkMode}>{t('fighters.competing')}</StatusBadge>
                       ) : (
-                        <StatusBadge variant="neutral" isDarkMode={isDarkMode}>Nesúťaží</StatusBadge>
+                        <StatusBadge variant="neutral" isDarkMode={isDarkMode}>{t('fighters.notCompeting')}</StatusBadge>
                       )}
                     </div>
                   </div>
@@ -112,7 +114,7 @@ export function CategoriesTab({
             />
           </>
         ) : (
-          <EmptyState icon="person" title="Žiadni atléti" description="V tejto váhovej kategórií nie sú žiadni atléti" isDarkMode={isDarkMode} />
+          <EmptyState icon="person" title={t('tournamentDetail.errors.noAthletes')} description={t('tournamentDetail.errors.noAthletesInCategory')} isDarkMode={isDarkMode} />
         )}
       </div>
     )
@@ -121,7 +123,7 @@ export function CategoriesTab({
   return (
     <div>
       <h3 className={`text-xl font-semibold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-        Váhové kategórie
+        {t('tournamentDetail.weightCategoriesTitle')}
       </h3>
 
       {weightCategoriesError && (
@@ -129,9 +131,9 @@ export function CategoriesTab({
       )}
 
       {weightCategoriesLoading && weightCategories.length === 0 ? (
-        <LoadingSpinner text="Načítavam váhové kategórie..." isDarkMode={isDarkMode} />
+        <LoadingSpinner text={t('tournamentDetail.errors.loadingWeightCategories')} isDarkMode={isDarkMode} />
       ) : weightCategories.length === 0 ? (
-        <EmptyState icon="weight" title="Žiadne váhové kategórie" description="Použite synchronizáciu na hlavnej stránke" isDarkMode={isDarkMode} />
+        <EmptyState icon="weight" title={t('tournamentDetail.errors.noWeightCategories')} description={t('tournamentDetail.errors.syncFirst')} isDarkMode={isDarkMode} />
       ) : (
         <div className="space-y-8">
           {(() => {
@@ -182,11 +184,11 @@ export function CategoriesTab({
                           {(() => {
                             const status = getWeightCategoryStatus(wc)
                             if (status === 'completed') {
-                              return <StatusBadge variant="success" isDarkMode={isDarkMode}>Dokončené</StatusBadge>
+                              return <StatusBadge variant="success" isDarkMode={isDarkMode}>{t('tournamentDetail.statusCompleted')}</StatusBadge>
                             } else if (status === 'ongoing') {
-                              return <StatusBadge variant="info" isDarkMode={isDarkMode}>Prebieha</StatusBadge>
+                              return <StatusBadge variant="info" isDarkMode={isDarkMode}>{t('tournamentDetail.statusOngoing')}</StatusBadge>
                             } else {
-                              return <StatusBadge variant="neutral" isDarkMode={isDarkMode}>Čaká</StatusBadge>
+                              return <StatusBadge variant="neutral" isDarkMode={isDarkMode}>{t('tournamentDetail.statusWaiting')}</StatusBadge>
                             }
                           })()}
                         </div>

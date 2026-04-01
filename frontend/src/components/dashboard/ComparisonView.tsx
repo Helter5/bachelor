@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
 import { Toast } from "@/components/ui/Toast"
@@ -60,22 +61,23 @@ interface FightHistoryTableProps {
 }
 
 function FightHistoryTable({ isDarkMode, fights }: FightHistoryTableProps) {
+  const { t } = useTranslation()
   return (
     <div>
       <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-        História zápasov
+        {t("comparison.fightHistory")}
       </h3>
       <div className={`rounded-lg overflow-hidden ${isDarkMode ? 'shadow-lg' : 'border border-gray-200'}`}>
         <table className="w-full">
           <thead>
             <tr className={`border-b ${isDarkMode ? 'border-white/5 bg-white/5' : 'border-gray-200 bg-gray-50'}`}>
-              <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Turnaj</th>
-              <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Kategória</th>
-              <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Víťaz</th>
-              <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Typ výhry</th>
-              <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>CP</th>
-              <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>TP</th>
-              <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Čas</th>
+              <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t("comparison.tableHeaders.tournament")}</th>
+              <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t("comparison.tableHeaders.category")}</th>
+              <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t("comparison.tableHeaders.winner")}</th>
+              <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t("comparison.tableHeaders.winType")}</th>
+              <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t("comparison.tableHeaders.cp")}</th>
+              <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t("comparison.tableHeaders.tp")}</th>
+              <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t("comparison.tableHeaders.time")}</th>
             </tr>
           </thead>
           <tbody>
@@ -134,6 +136,7 @@ interface CommonOpponentCardProps {
 }
 
 function CommonOpponentCard({ isDarkMode, opp, person1Name, person2Name }: CommonOpponentCardProps) {
+  const { t } = useTranslation()
   return (
     <div className={`rounded-lg p-5 ${isDarkMode ? 'bg-[#0f172a]/60 border border-white/5' : 'bg-gray-50 border border-gray-200'}`}>
       <div className={`text-sm font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -163,7 +166,7 @@ function CommonOpponentCard({ isDarkMode, opp, person1Name, person2Name }: Commo
                 )}
               </div>
             ) : (
-              <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>Žiadne zápasy</span>
+              <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>{t("comparison.noFights")}</span>
             )}
           </div>
         ))}
@@ -179,6 +182,7 @@ interface ComparisonViewProps {
 }
 
 export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: ComparisonViewProps) {
+  const { t } = useTranslation()
   const persons = usePersons()
 
   const [wrestler1Search, setWrestler1Search] = useState("")
@@ -251,7 +255,7 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
       const data = await apiClient.get<ComparisonResult>(API_ENDPOINTS.PERSON_COMPARE(selectedWrestler1.id, selectedWrestler2.id, includeCommonOpponents))
       setComparisonResult(data)
     } catch {
-      setComparisonResult({ error: "Nepodarilo sa načítať porovnanie" })
+      setComparisonResult({ error: t("comparison.noFights") })
     } finally {
       setComparing(false)
     }
@@ -270,15 +274,15 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
-        Späť na kategórie
+        {t("comparison.backToCategories")}
       </button>
 
       <div className={`rounded-xl p-8 ${isDarkMode ? 'bg-[#1e293b]' : 'bg-white border border-gray-200'} shadow-lg`}>
         <h2 className={`text-2xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-          Porovnanie zápasníkov
+          {t("comparison.title")}
         </h2>
         <p className={`text-sm mb-6 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-          Porovnanie štatistík naprieč všetkými turnajmi
+          {t("comparison.subtitle")}
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -315,8 +319,8 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
         <Toast
           show={!!isSameWrestler}
           variant="warning"
-          title="Nie je možné porovnať zápasníka so sebou samým"
-          message="Vyberte dvoch rôznych zápasníkov."
+          title={t("comparison.sameWrestlerWarning")}
+          message={t("comparison.sameWrestlerMsg")}
         />
 
         <Checkbox
@@ -326,7 +330,7 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
           className={`mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
           label={
             <span className="text-sm flex items-center gap-1">
-              Zahrnúť spoločných súperov (aj keď medzi sebou nezápasili)
+              {t("comparison.includeCommonOpponents")}
               {includeCommonOpponents && (
                 <span className={`text-xs ml-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
                   — A vs C, B vs C → porovná sa na základe C
@@ -348,7 +352,7 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'
             }`}
           >
-            {comparing ? 'Načítavam...' : 'Porovnať'}
+            {comparing ? t("comparison.comparingButton") : t("comparison.compareButton")}
           </button>
           <button
             onClick={reset}
@@ -358,7 +362,7 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
             }`}
           >
-            Zrušiť
+            {t("comparison.cancelButton")}
           </button>
         </div>
 
@@ -367,7 +371,7 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
             {/* Head-to-head summary */}
             <div className={`rounded-xl p-6 ${isDarkMode ? 'bg-[#0f172a]/80 border border-white/5' : 'bg-gray-50 border border-gray-200'}`}>
               <h3 className={`text-lg font-bold mb-6 text-center ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                Vzájomné zápasy
+                {t("comparison.headToHead")}
               </h3>
               <div className="flex items-center justify-center gap-6">
                 {[
@@ -393,7 +397,7 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
                       {wins}
                     </div>
                     <div className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                      {pluralizeSk(wins, 'výhra', 'výhry', 'výhier')}
+                      {pluralizeSk(wins, t("comparison.wins"), t("comparison.winsFew"), t("comparison.winsMany"))}
                     </div>
                   </div>
                 )).reduce<React.ReactNode[]>((acc, el, i) => {
@@ -401,7 +405,7 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
                     acc.push(
                       <div key="vs" className="flex flex-col items-center">
                         <div className={`text-sm font-bold px-4 py-2 rounded-full ${isDarkMode ? 'bg-white/5 text-gray-400' : 'bg-gray-200 text-gray-500'}`}>
-                          {comparisonResult.total_fights} {pluralizeSk(comparisonResult.total_fights, 'zápas', 'zápasy', 'zápasov')}
+                          {comparisonResult.total_fights} {pluralizeSk(comparisonResult.total_fights, t("comparison.fights"), t("comparison.fightsFew"), t("comparison.fightsMany"))}
                         </div>
                       </div>
                     )
@@ -421,15 +425,15 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
                 <svg className={`mx-auto h-12 w-12 mb-3 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                 </svg>
-                <p className="text-lg font-medium">Žiadne vzájomné zápasy</p>
-                <p className="text-sm mt-1">Títo zápasníci proti sebe ešte nezápasili</p>
+                <p className="text-lg font-medium">{t("comparison.noHeadToHead")}</p>
+                <p className="text-sm mt-1">{t("comparison.noHeadToHeadDesc")}</p>
               </div>
             )}
 
             {comparisonResult.common_opponents && comparisonResult.common_opponents.length > 0 && (
               <div>
                 <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Spoloční súperi ({comparisonResult.common_opponents.length})
+                  {t("comparison.commonOpponents", { count: comparisonResult.common_opponents.length })}
                 </h3>
                 <div className="space-y-4">
                   {comparisonResult.common_opponents.map((opp, idx) => (
@@ -447,7 +451,7 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
 
             {comparisonResult.common_opponents && comparisonResult.common_opponents.length === 0 && (
               <div className={`text-center py-6 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                <p className="text-sm">Žiadni spoloční súperi</p>
+                <p className="text-sm">{t("comparison.noCommonOpponents")}</p>
               </div>
             )}
           </div>

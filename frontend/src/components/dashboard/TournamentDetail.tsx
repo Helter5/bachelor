@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
 
@@ -32,6 +33,7 @@ export function TournamentDetail({
   onBack,
   onSelectPerson
 }: TournamentDetailProps) {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<TabType>("weight-categories")
 
   const [teams, setTeams] = useState<Team[]>([])
@@ -106,7 +108,7 @@ export function TournamentDetail({
       setTeams(data || [])
     } catch (error) {
       console.error('Error loading teams:', error)
-      setTeamsError('Nepodarilo sa načítať tímy')
+      setTeamsError(t("tournamentDetail.errors.loadTeams"))
     } finally {
       setTeamsLoading(false)
     }
@@ -120,7 +122,7 @@ export function TournamentDetail({
       setWeightCategories(data || [])
     } catch (error) {
       console.error('Error loading weight categories:', error)
-      setWeightCategoriesError('Nepodarilo sa načítať váhové kategórie')
+      setWeightCategoriesError(t("tournamentDetail.errors.loadWeightCategories"))
     } finally {
       setWeightCategoriesLoading(false)
     }
@@ -138,7 +140,7 @@ export function TournamentDetail({
       setAthletes(data || [])
     } catch (error) {
       console.error('Error loading athletes:', error)
-      setAthletesError('Nepodarilo sa načítať atlétov')
+      setAthletesError(t("tournamentDetail.errors.loadAthletes"))
     } finally {
       setAthletesLoading(false)
     }
@@ -153,7 +155,7 @@ export function TournamentDetail({
       setResults(data || [])
     } catch (error) {
       console.error('Error loading results:', error)
-      setResultsError('Nepodarilo sa načítať výsledky')
+      setResultsError(t("tournamentDetail.errors.loadResults"))
     } finally {
       setResultsLoading(false)
     }
@@ -167,7 +169,7 @@ export function TournamentDetail({
       setEventStats(data)
     } catch (error) {
       console.error('Error loading statistics:', error)
-      setStatsError('Nepodarilo sa načítať štatistiky')
+      setStatsError(t("tournamentDetail.errors.loadStatistics"))
     } finally {
       setStatsLoading(false)
     }
@@ -308,13 +310,13 @@ export function TournamentDetail({
   // --- Render ---
 
   const tabs: { id: TabType; label: string }[] = [
-    { id: "weight-categories", label: "Váhové kategórie" },
-    { id: "teams", label: "Tímy" },
-    { id: "athletes", label: "Atléti" },
-    { id: "results", label: "Výsledky" },
-    { id: "statistics", label: "Štatistiky" },
-    { id: "draw", label: "Žreb" },
-    { id: "export", label: "Exportovanie" },
+    { id: "weight-categories", label: t("tournamentDetail.tabs.weightCategories") },
+    { id: "teams", label: t("tournamentDetail.tabs.teams") },
+    { id: "athletes", label: t("tournamentDetail.tabs.athletes") },
+    { id: "results", label: t("tournamentDetail.tabs.results") },
+    { id: "statistics", label: t("tournamentDetail.tabs.statistics") },
+    { id: "draw", label: t("tournamentDetail.tabs.draw") },
+    { id: "export", label: t("tournamentDetail.tabs.export") },
   ]
 
   return (

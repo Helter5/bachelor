@@ -12,8 +12,11 @@
   "dependencies": {
     "@react-oauth/google": "^0.13.4",
     "flag-icons": "^7.5.0",
+    "i18next": "^26.0.3",
+    "i18next-browser-languagedetector": "^8.2.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-i18next": "^17.0.2",
     "react-svg-pan-zoom": "^3.13.1",
     "react-tournament-brackets": "^1.0.41",
     "recharts": "^3.7.0",

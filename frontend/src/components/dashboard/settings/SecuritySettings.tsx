@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { apiClient } from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/config/api'
 
@@ -28,6 +29,7 @@ interface SecuritySettingsProps {
 }
 
 export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
+  const { t } = useTranslation()
   const [sessions, setSessions] = useState<ActiveSession[]>([])
   const [loginHistory, setLoginHistory] = useState<LoginHistoryEntry[]>([])
   const [loadingSessions, setLoadingSessions] = useState(true)
@@ -48,7 +50,7 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
       setSessions(data)
     } catch (err) {
       console.error('Error loading sessions:', err)
-      setError('Nepodarilo sa načítať aktívne relácie')
+      setError(t('security.loadError'))
     } finally {
       setLoadingSessions(false)
     }
@@ -69,21 +71,21 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
   }
 
   const handleRevokeSession = async (sessionId: number) => {
-    if (!confirm('Naozaj chcete odhlásiť túto reláciu?')) return
+    if (!confirm(t('security.confirmRevoke'))) return
 
     try {
       setError(null)
       setSuccess(null)
       await apiClient.delete(API_ENDPOINTS.PROFILE_REVOKE_SESSION(sessionId))
-      setSuccess('Relácia bola úspešne odhlásená')
+      setSuccess(t('security.revokeSuccess'))
       await loadSessions()
     } catch {
-      setError('Nepodarilo sa odhlásiť reláciu')
+      setError(t('security.revokeError'))
     }
   }
 
   const handleRevokeAllSessions = async () => {
-    if (!confirm('Naozaj chcete odhlásiť všetky ostatné relácie? Budete musieť sa znova prihlásiť.')) return
+    if (!confirm(t('security.confirmRevokeAll'))) return
 
     try {
       setError(null)
@@ -95,7 +97,7 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
       // Redirect to login immediately
       window.location.href = '/'
     } catch {
-      setError('Nepodarilo sa odhlásiť relácie')
+      setError(t('security.revokeAllError'))
     }
   }
 
@@ -104,12 +106,12 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
   }
 
   const getBrowserInfo = (userAgent: string | null) => {
-    if (!userAgent) return 'Neznámy'
+    if (!userAgent) return t('security.unknownBrowser')
     if (userAgent.includes('Chrome')) return 'Chrome'
     if (userAgent.includes('Firefox')) return 'Firefox'
     if (userAgent.includes('Safari')) return 'Safari'
     if (userAgent.includes('Edge')) return 'Edge'
-    return 'Iný prehliadač'
+    return t('security.unknownUser')
   }
 
   return (
@@ -129,29 +131,29 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
       <div className={`rounded-lg p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'}`}>
         <div className="flex justify-between items-center mb-4">
           <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            Aktívne relácie
+            {t('security.activeSessions')}
           </h3>
           {sessions.length > 1 && (
             <button
               onClick={handleRevokeAllSessions}
               className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
             >
-              Odhlásiť všetky ostatné
+              {t('security.revokeAll')}
             </button>
           )}
         </div>
 
         <p className={`text-sm mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          Zariadenia a prehliadače, kde ste momentálne prihlásený
+          {t('security.activeSessionsDesc')}
         </p>
 
         {loadingSessions ? (
           <div className="text-center py-8">
-            <div className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Načítavam...</div>
+            <div className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>{t('security.loading')}</div>
           </div>
         ) : sessions.length === 0 ? (
           <div className="text-center py-8">
-            <div className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Žiadne aktívne relácie</div>
+            <div className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>{t('security.noSessions')}</div>
           </div>
         ) : (
           <div className="space-y-3">
@@ -176,14 +178,14 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
                       </span>
                       {session.is_current && (
                         <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">
-                          Aktuálna relácia
+                          {t('security.currentSession')}
                         </span>
                       )}
                     </div>
                     <div className={`text-sm space-y-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                      <div>IP adresa: {session.ip_address || 'Neznáma'}</div>
-                      <div>Prihlásenie: {formatDate(session.created_at)}</div>
-                      <div>Posledná aktivita: {formatDate(session.last_used_at)}</div>
+                      <div>{t('security.ipAddress')}: {session.ip_address || t('security.unknownIp')}</div>
+                      <div>{t('security.loginDate')}: {formatDate(session.created_at)}</div>
+                      <div>{t('security.lastActivity')}: {formatDate(session.last_used_at)}</div>
                     </div>
                   </div>
 
@@ -192,7 +194,7 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
                       onClick={() => handleRevokeSession(session.id)}
                       className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
                     >
-                      Odhlásiť
+                      {t('security.revokeSession')}
                     </button>
                   )}
                 </div>
@@ -205,20 +207,20 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
       {/* Login History */}
       <div className={`rounded-lg p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'}`}>
         <h3 className={`text-xl font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-          História prihlásení
+          {t('security.loginHistory')}
         </h3>
 
         <p className={`text-sm mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          Posledných 20 pokusov o prihlásenie (úspešných aj neúspešných)
+          {t('security.loginHistoryDesc')}
         </p>
 
         {loadingHistory ? (
           <div className="text-center py-8">
-            <div className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Načítavam...</div>
+            <div className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>{t('security.loading')}</div>
           </div>
         ) : loginHistory.length === 0 ? (
           <div className="text-center py-8">
-            <div className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Žiadna história prihlásení</div>
+            <div className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>{t('security.noHistory')}</div>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -226,19 +228,19 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
               <thead>
                 <tr className={`border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                   <th className={`text-left py-2 px-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Dátum a čas
+                    {t('security.tableDate')}
                   </th>
                   <th className={`text-left py-2 px-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    IP adresa
+                    {t('security.tableIp')}
                   </th>
                   <th className={`text-left py-2 px-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Prehliadač
+                    {t('security.tableBrowser')}
                   </th>
                   <th className={`text-left py-2 px-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Spôsob prihlásenia
+                    {t('security.tableMethod')}
                   </th>
                   <th className={`text-left py-2 px-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Stav
+                    {t('security.tableStatus')}
                   </th>
                 </tr>
               </thead>
@@ -252,7 +254,7 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
                       {formatDate(entry.login_at)}
                     </td>
                     <td className={`py-2 px-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                      {entry.ip_address || 'Neznáma'}
+                      {entry.ip_address || t('security.unknownIp')}
                     </td>
                     <td className={`py-2 px-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                       {getBrowserInfo(entry.user_agent)}
@@ -264,18 +266,18 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
                         </span>
                       ) : (
                         <span className={`px-2 py-1 text-xs rounded ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
-                          Lokálne
+                          {t('security.methodLocal')}
                         </span>
                       )}
                     </td>
                     <td className="py-2 px-3">
                       {entry.success ? (
                         <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">
-                          Úspech
+                          {t('security.statusSuccess')}
                         </span>
                       ) : (
                         <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded">
-                          Neúspech
+                          {t('security.statusFailed')}
                           {entry.failure_reason && `: ${entry.failure_reason}`}
                         </span>
                       )}

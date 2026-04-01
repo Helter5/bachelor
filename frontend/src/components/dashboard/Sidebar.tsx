@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 interface UserData {
   id: string;
   username: string;
@@ -22,7 +24,7 @@ interface SidebarProps {
 const menuItems = [
   {
     id: "home",
-    label: "Prehľad",
+    labelKey: "sidebar.nav.home",
     adminOnly: false,
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -32,7 +34,7 @@ const menuItems = [
   },
   {
     id: "tournaments",
-    label: "Turnaje",
+    labelKey: "sidebar.nav.tournaments",
     adminOnly: false,
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -42,7 +44,7 @@ const menuItems = [
   },
   {
     id: "athletes",
-    label: "Atléti",
+    labelKey: "sidebar.nav.athletes",
     adminOnly: false,
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -52,7 +54,7 @@ const menuItems = [
   },
   {
     id: "stats",
-    label: "Štatistiky",
+    labelKey: "sidebar.nav.stats",
     adminOnly: false,
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -62,7 +64,7 @@ const menuItems = [
   },
   {
     id: "logs",
-    label: "Logy",
+    labelKey: "sidebar.nav.logs",
     adminOnly: true,
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -82,6 +84,12 @@ export function Sidebar({
   onLogout,
   userData,
 }: SidebarProps) {
+  const { t, i18n } = useTranslation()
+
+  const toggleLanguage = () => {
+    i18n.changeLanguage(i18n.language === 'sk' ? 'en' : 'sk')
+  }
+
   // Get first letter of first name for avatar
   const avatarLetter = userData?.first_name?.charAt(0).toUpperCase() || 'U';
   const displayName = userData ? `${userData.first_name} ${userData.last_name}` : 'User';
@@ -94,7 +102,7 @@ export function Sidebar({
   return (
     <aside className={`
       fixed lg:relative inset-y-0 left-0 z-40
-      flex flex-col w-64
+      flex flex-col w-72
       transform transition-all duration-300 ease-in-out
       ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       ${isDarkMode ? 'bg-[#1e293b] shadow-2xl shadow-black/30' : 'bg-white border-r border-gray-200'}
@@ -124,7 +132,7 @@ export function Sidebar({
             }`}
           >
             {item.icon}
-            <span>{item.label}</span>
+            <span>{t(item.labelKey)}</span>
           </button>
         ))}
       </nav>
@@ -145,8 +153,17 @@ export function Sidebar({
         {/* Actions row */}
         <div className="flex items-center gap-2 mt-6">
           <button
+            onClick={toggleLanguage}
+            title={i18n.language === 'sk' ? 'Switch to English' : 'Prepnúť na slovenčinu'}
+            className={`flex-shrink-0 px-2 py-1 rounded-md text-xs font-semibold transition-colors ${
+              isDarkMode ? 'text-slate-300 hover:bg-white/10' : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            {i18n.language === 'sk' ? 'EN' : 'SK'}
+          </button>
+          <button
             onClick={onLogout}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${
               isDarkMode
                 ? 'bg-white/5 text-slate-300 hover:bg-white/10'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -155,12 +172,12 @@ export function Sidebar({
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
-            Odhlásiť sa
+            {t('sidebar.actions.logout')}
           </button>
           <div className="flex-1" />
           <button
             onClick={toggleDarkMode}
-            title={isDarkMode ? 'Svetlý režim' : 'Tmavý režim'}
+            title={isDarkMode ? t('sidebar.actions.lightMode') : t('sidebar.actions.darkMode')}
             className={`flex-shrink-0 p-1.5 rounded-lg transition-colors ${
               isDarkMode ? 'text-yellow-400 hover:bg-white/5' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
             }`}
@@ -177,7 +194,7 @@ export function Sidebar({
           </button>
           <button
             onClick={() => { setActiveSection('settings'); setIsMobileMenuOpen(false) }}
-            title="Nastavenia"
+            title={t('sidebar.actions.settings')}
             className={`flex-shrink-0 p-1.5 rounded-lg transition-colors ${
               activeSection === 'settings'
                 ? isDarkMode ? 'text-blue-400 bg-blue-500/10' : 'text-blue-600 bg-blue-50'

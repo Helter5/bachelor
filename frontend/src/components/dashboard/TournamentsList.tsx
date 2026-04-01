@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
 import { Pagination } from "./Pagination"
@@ -22,6 +23,7 @@ interface TournamentsListProps {
 }
 
 export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsListProps) {
+  const { t } = useTranslation()
   const [currentPage, setCurrentPage] = useState(1)
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
@@ -138,9 +140,9 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
   } = useTournamentFilters(events)
 
   const locationOptions = useMemo(() => [
-    { value: "", label: "Všetky lokality" },
+    { value: "", label: t("tournaments.allLocalities") },
     ...uniqueLocations.map((loc) => ({ value: loc, label: loc })),
-  ], [uniqueLocations])
+  ], [uniqueLocations, t])
 
   // Apply person filter on top of base filters
   const displayedEvents = useMemo(
@@ -172,16 +174,16 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
       {/* Header */}
       <div>
         <h2 className={`text-3xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-          Turnaje
+          {t("tournaments.title")}
         </h2>
         <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-          Prehľad všetkých turnajov a eventov
+          {t("tournaments.subtitle")}
         </p>
       </div>
 
       {/* Loading State */}
       {loading && (
-        <LoadingSpinner text="Načítavam turnaje..." isDarkMode={isDarkMode} variant="inline" size="md" />
+        <LoadingSpinner text={t("tournaments.loading")} isDarkMode={isDarkMode} variant="inline" size="md" />
       )}
 
       {/* Error State */}
@@ -192,7 +194,7 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div>
-              <p className={`font-semibold ${isDarkMode ? 'text-red-400' : 'text-red-700'}`}>Chyba pri načítaní turnajov</p>
+              <p className={`font-semibold ${isDarkMode ? 'text-red-400' : 'text-red-700'}`}>{t("tournaments.loadError")}</p>
               <p className={`text-sm ${isDarkMode ? 'text-red-300' : 'text-red-600'}`}>{error}</p>
             </div>
           </div>
@@ -203,8 +205,8 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
       {!loading && !error && events.length === 0 && (
         <EmptyState
           icon="calendar"
-          title="Žiadne turnaje"
-          description='Zatiaľ neboli synchronizované žiadne turnaje. Použite tlačidlo "Synchronizovať" na načítanie dát.'
+          title={t("tournaments.empty")}
+          description={t("tournaments.emptyDesc")}
           isDarkMode={isDarkMode}
         />
       )}
@@ -222,7 +224,7 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                 </svg>
                 <h3 className={`text-sm font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Filtre a vyhľadávanie
+                  {t("tournaments.filtersTitle")}
                 </h3>
                 <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                   ({displayedEvents.length}/{events.length})
@@ -246,7 +248,7 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                  Zrušiť
+                  {t("tournaments.clearFilters")}
                 </button>
               )}
             </div>
@@ -261,7 +263,7 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
                   isDarkMode={isDarkMode}
                   value={searchQuery}
                   onChange={(v) => handleFilterChange(v, locationFilter)}
-                  placeholder="Hľadať podľa názvu, miesta, kontinentu..."
+                  placeholder={t("tournaments.searchPlaceholder")}
                 />
               </div>
 
@@ -296,7 +298,7 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
                         value={personSearchQuery}
                         onChange={(e) => setPersonSearchQuery(e.target.value)}
                         onFocus={() => { if (personSuggestions.length > 0) setShowPersonDropdown(true) }}
-                        placeholder="Hľadať podľa atléta..."
+                        placeholder={t("tournaments.athleteSearchPlaceholder")}
                         className={`w-full px-3 py-2 pl-9 rounded-lg text-sm transition-all ${
                           isDarkMode
                             ? 'bg-[#0f172a]/50 text-white focus:bg-[#0f172a] placeholder-gray-500 shadow-inner focus:ring-2 focus:ring-blue-500/30'
@@ -368,7 +370,7 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
                           : 'bg-white border border-gray-200'
                       }`}>
                         <div className={`px-3 py-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                          Žiadni atléti nenájdení
+                          {t("tournaments.noAthletesFound")}
                         </div>
                       </div>
                     )}
@@ -405,7 +407,7 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
                 </svg>
-                Názov
+                {t("tournaments.sortByName")}
                 {sortBy === "name" && (
                   <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
                 )}
@@ -425,7 +427,7 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                Dátum
+                {t("tournaments.sortByDate")}
                 {sortBy === "date" && (
                   <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
                 )}
@@ -549,7 +551,7 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
           ))
         ) : (
           <div className={`col-span-full text-center py-12 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            Žiadne turnaje neboli nájdené
+            {t("tournaments.notFound")}
           </div>
         )}
       </div>

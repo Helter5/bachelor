@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { apiClient } from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/config/api'
 import { ProfileSettings } from './settings/ProfileSettings'
@@ -19,6 +20,7 @@ interface SettingsProps {
 type TabType = 'profile' | 'arena-sources' | 'security'
 
 export function Settings({ isDarkMode }: SettingsProps) {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<TabType>('profile')
   const [user, setUser] = useState<User | null>(null)
 
@@ -38,15 +40,15 @@ export function Settings({ isDarkMode }: SettingsProps) {
   const isAdmin = user?.role === 'admin'
 
   const tabs = [
-    { id: 'profile' as TabType, label: 'Profil', adminOnly: false },
-    { id: 'arena-sources' as TabType, label: 'Arena Zdroje', adminOnly: true },
-    { id: 'security' as TabType, label: 'Zabezpečenie', adminOnly: false },
+    { id: 'profile' as TabType, label: t("settings.tabs.profile"), adminOnly: false },
+    { id: 'arena-sources' as TabType, label: t("settings.tabs.arenaSources"), adminOnly: true },
+    { id: 'security' as TabType, label: t("settings.tabs.security"), adminOnly: false },
   ].filter(tab => !tab.adminOnly || isAdmin)
 
   return (
     <div className="max-w-6xl mx-auto">
       <h2 className={`text-3xl font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-        Nastavenia
+        {t("settings.title")}
       </h2>
 
       {/* Tabs */}

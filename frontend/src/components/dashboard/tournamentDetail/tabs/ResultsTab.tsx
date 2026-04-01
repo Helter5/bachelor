@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import type { FightResult, WeightCategory } from "../types"
 import { StatusBadge } from "../../../ui/StatusBadge"
 import { EmptyState } from "../../../ui/EmptyState"
@@ -34,6 +35,8 @@ export function ResultsTab({
   onSelectPerson,
   handleNameClick,
 }: ResultsTabProps) {
+  const { t } = useTranslation()
+
   if (selectedWeightCategoryForResults) {
     return (
       <div>
@@ -56,8 +59,8 @@ export function ResultsTab({
             return (
               <EmptyState
                 icon="document"
-                title={hasFighters ? 'Zápasy ešte neboli vygenerované' : 'Žiadne výsledky'}
-                description={hasFighters ? 'V tejto váhovej kategórií sú zápasníci, ale zápasy ešte neboli vytvorené' : undefined}
+                title={hasFighters ? t('tournamentDetail.errors.noFightsYet') : t('tournamentDetail.errors.noResults')}
+                description={hasFighters ? undefined : undefined}
                 isDarkMode={isDarkMode}
               />
             )
@@ -208,7 +211,7 @@ export function ResultsTab({
   return (
     <div>
       <h3 className={`text-xl font-semibold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-        Výsledky
+        {t('tournamentDetail.resultsTitle')}
       </h3>
 
       {resultsError && (
@@ -216,9 +219,9 @@ export function ResultsTab({
       )}
 
       {resultsLoading || weightCategoriesLoading ? (
-        <LoadingSpinner text="Načítavam váhové kategórie..." isDarkMode={isDarkMode} />
+        <LoadingSpinner text={t('tournamentDetail.errors.loadingWeightCategories')} isDarkMode={isDarkMode} />
       ) : weightCategories.length === 0 ? (
-        <EmptyState icon="document" title="Žiadne váhové kategórie" description="Použite synchronizáciu na hlavnej stránke" isDarkMode={isDarkMode} />
+        <EmptyState icon="document" title={t('tournamentDetail.errors.noWeightCategories')} description={t('tournamentDetail.errors.syncFirst')} isDarkMode={isDarkMode} />
       ) : (
         <div className="space-y-12">
           {(() => {
@@ -256,11 +259,11 @@ export function ResultsTab({
                           {(() => {
                             const status = getWeightCategoryStatus(wc)
                             if (status === 'completed') {
-                              return <StatusBadge variant="success" isDarkMode={isDarkMode} size="md">Dokončené</StatusBadge>
+                              return <StatusBadge variant="success" isDarkMode={isDarkMode} size="md">{t('tournamentDetail.statusCompleted')}</StatusBadge>
                             } else if (status === 'ongoing') {
-                              return <StatusBadge variant="info" isDarkMode={isDarkMode} size="md">Prebieha</StatusBadge>
+                              return <StatusBadge variant="info" isDarkMode={isDarkMode} size="md">{t('tournamentDetail.statusOngoing')}</StatusBadge>
                             } else {
-                              return <StatusBadge variant="neutral" isDarkMode={isDarkMode} size="md">Čaká</StatusBadge>
+                              return <StatusBadge variant="neutral" isDarkMode={isDarkMode} size="md">{t('tournamentDetail.statusWaiting')}</StatusBadge>
                             }
                           })()}
                         </div>
@@ -271,7 +274,7 @@ export function ResultsTab({
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
                         <span className={`font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                          {wc.count_fighters} zápasníkov
+                          {wc.count_fighters} {t('tournamentDetail.fighters')}
                         </span>
                       </div>
                     </div>

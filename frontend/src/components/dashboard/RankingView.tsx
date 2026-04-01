@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { useRankingCategories, useRankingData } from "@/hooks/useRankingData"
 import type { RankingEntry } from "@/hooks/useRankingData"
 import { LoadingSpinner } from "../ui/LoadingSpinner"
@@ -12,6 +13,7 @@ interface RankingTableRowProps {
 }
 
 function RankingTableRow({ isDarkMode, entry, onSelectPerson }: RankingTableRowProps) {
+  const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
 
   return (
@@ -73,7 +75,7 @@ function RankingTableRow({ isDarkMode, entry, onSelectPerson }: RankingTableRowP
           <td colSpan={7} className={`px-4 pb-4 ${isDarkMode ? 'bg-[#0f172a]/50' : 'bg-gray-50'}`}>
             <div className="pt-2">
               <h4 className={`text-xs font-semibold uppercase tracking-wider mb-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                Rozpis po turnajoch (detail)
+                {t("ranking.breakdown")}
               </h4>
               <div className="space-y-2">
                 {entry.breakdown.map((b) => (
@@ -114,6 +116,7 @@ interface RankingViewProps {
 }
 
 export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewProps) {
+  const { t } = useTranslation()
   const categories = useRankingCategories()
   const [selectedRankingCategory, setSelectedRankingCategory] = useState("")
   const [lastN, setLastN] = useState(3)
@@ -152,17 +155,17 @@ export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewP
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
-        Späť na kategórie
+        {t("ranking.backToCategories")}
       </button>
 
       <div className={`rounded-xl p-8 ${isDarkMode ? 'bg-[#1e293b]' : 'bg-white border border-gray-200'} shadow-lg`}>
         <div className="flex items-start justify-between mb-6">
           <div>
             <h2 className={`text-2xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-              Výkonnostný rebríček
+              {t("ranking.title")}
             </h2>
             <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              Ranking zápasníkov podľa váhovej kategórie za posledné turnaje
+              {t("ranking.subtitle")}
             </p>
           </div>
           <button
@@ -176,7 +179,7 @@ export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewP
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            Vysvetlenie metodiky
+            {t("ranking.explainButton")}
           </button>
         </div>
 
@@ -192,7 +195,7 @@ export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewP
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Ako sa počíta ranking?
+                  {t("ranking.methodology.title")}
                 </h3>
                 <button
                   onClick={() => setShowRankingExplanation(false)}
@@ -206,22 +209,22 @@ export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewP
 
               <div className={`space-y-4 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                 <div>
-                  <h4 className={`font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>1. Skóre za turnaj</h4>
-                  <p>Pre každý turnaj sa vypočíta skóre ako súčet dvoch zložiek:</p>
+                  <h4 className={`font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t("ranking.methodology.step1Title")}</h4>
+                  <p>{t("ranking.methodology.step1Desc")}</p>
                   <div className={`mt-2 rounded-lg p-3 font-mono text-xs ${isDarkMode ? 'bg-black/30' : 'bg-gray-50'}`}>
-                    turnajové_skóre = výkonnostné_body + bonus_za_výhry
+                    {t("ranking.methodology.step1Formula")}
                   </div>
                 </div>
                 <div>
-                  <h4 className={`font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>2. Výkonnostné body (max 20)</h4>
+                  <h4 className={`font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t("ranking.methodology.step2Title")}</h4>
                   <div className={`rounded-lg p-3 font-mono text-xs ${isDarkMode ? 'bg-black/30' : 'bg-gray-50'}`}>
-                    (počet_výhier / počet_zápasov) x 20
+                    {t("ranking.methodology.step2Formula")}
                   </div>
-                  <p className="mt-1">Neporazený zápasník na turnaji dostane plných 20 bodov.</p>
+                  <p className="mt-1">{t("ranking.methodology.step2Note")}</p>
                 </div>
                 <div>
-                  <h4 className={`font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>3. Bonus za štýl výhier</h4>
-                  <p className="mb-2">Každá výhra dostane bonus podľa spôsobu víťazstva:</p>
+                  <h4 className={`font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t("ranking.methodology.step3Title")}</h4>
+                  <p className="mb-2">{t("ranking.methodology.step3Desc")}</p>
                   <div className={`rounded-lg overflow-hidden ${isDarkMode ? 'border border-white/10' : 'border border-gray-200'}`}>
                     <table className="w-full text-xs">
                       <tbody>
@@ -243,11 +246,11 @@ export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewP
                   </div>
                 </div>
                 <div>
-                  <h4 className={`font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>4. Váha podľa novosti turnaja</h4>
-                  <p>Novší turnaj má väčšiu váhu. Berú sa posledné turnaje v danej kategórii:</p>
+                  <h4 className={`font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t("ranking.methodology.step4Title")}</h4>
+                  <p>{t("ranking.methodology.step4Desc")}</p>
                   <div className="flex gap-2 mt-2">
                     {[
-                      { label: "Najnovší", weight: "x1.0" },
+                      { label: t("ranking.methodology.newestLabel"), weight: "x1.0" },
                       { label: "2.", weight: "x0.7" },
                       { label: "3.", weight: "x0.4" },
                       { label: "4.", weight: "x0.2" },
@@ -261,9 +264,9 @@ export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewP
                   </div>
                 </div>
                 <div>
-                  <h4 className={`font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>5. Celkové skóre</h4>
+                  <h4 className={`font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t("ranking.methodology.step5Title")}</h4>
                   <div className={`rounded-lg p-3 font-mono text-xs ${isDarkMode ? 'bg-black/30' : 'bg-gray-50'}`}>
-                    celkové_skóre = &Sigma; (turnajové_skóre x váha_novosti)
+                    {t("ranking.methodology.step5Formula")}
                   </div>
                 </div>
               </div>
@@ -272,7 +275,7 @@ export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewP
                 onClick={() => setShowRankingExplanation(false)}
                 className="mt-6 w-full py-2.5 rounded-lg font-medium text-sm bg-purple-600 hover:bg-purple-700 text-white transition-all"
               >
-                Rozumiem!
+                {t("ranking.methodology.confirmButton")}
               </button>
             </div>
           </div>
@@ -282,7 +285,7 @@ export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewP
         <div className="flex flex-wrap items-start gap-4 mb-6">
           <div className="flex flex-col">
             <label className={`block text-sm font-medium mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              Váhová kategória
+              {t("ranking.weightCategory")}
             </label>
             <Select
               value={selectedRankingCategory}
@@ -293,7 +296,7 @@ export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewP
           </div>
           <div className="flex flex-col">
             <label className={`block text-sm font-medium mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              Počet turnajov
+              {t("ranking.tournamentCount")}
             </label>
             <Select
               value={lastN}
@@ -304,7 +307,7 @@ export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewP
           </div>
           <div className="flex flex-col">
             <label className={`block text-sm font-medium mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              Dátum od
+              {t("ranking.dateFrom")}
             </label>
             <div className="relative">
               <input
@@ -324,7 +327,7 @@ export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewP
               {dateFrom && (
                 <button
                   onClick={() => setDateFrom("")}
-                  title="Zrušiť filter"
+                  title={t("ranking.clearFilter")}
                   className={`absolute right-2 top-1/2 -translate-y-1/2 rounded transition-colors ${
                     isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-400 hover:text-gray-700'
                   }`}
@@ -339,11 +342,11 @@ export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewP
         </div>
 
         {rankingLoading && (
-          <LoadingSpinner variant="center" size="sm" text="Načítavam ranking..." isDarkMode={isDarkMode} />
+          <LoadingSpinner variant="center" size="sm" text={t("ranking.loading")} isDarkMode={isDarkMode} />
         )}
 
         {!rankingLoading && rankingData.length === 0 && selectedRankingCategory && (
-          <EmptyState icon="document" title="Žiadne dáta pre túto kategóriu" isDarkMode={isDarkMode} />
+          <EmptyState icon="document" title={t("ranking.noData")} isDarkMode={isDarkMode} />
         )}
 
         {!rankingLoading && rankingData.length > 0 && (
@@ -352,11 +355,11 @@ export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewP
               <thead>
                 <tr className={`border-b ${isDarkMode ? 'border-white/5 bg-white/5' : 'border-gray-200 bg-gray-50'}`}>
                   <th className={`text-center py-3 px-3 text-sm font-semibold w-12 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>#</th>
-                  <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Meno</th>
-                  <th className={`text-center py-3 px-3 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Krajina</th>
-                  <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Skóre</th>
-                  <th className={`text-center py-3 px-3 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Turnaje</th>
-                  <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>W/L</th>
+                  <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t("ranking.tableHeaders.name")}</th>
+                  <th className={`text-center py-3 px-3 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t("ranking.tableHeaders.country")}</th>
+                  <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t("ranking.tableHeaders.score")}</th>
+                  <th className={`text-center py-3 px-3 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t("ranking.tableHeaders.tournaments")}</th>
+                  <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t("ranking.tableHeaders.wl")}</th>
                   <th className={`text-center py-3 px-3 text-sm font-semibold w-12 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}></th>
                 </tr>
               </thead>

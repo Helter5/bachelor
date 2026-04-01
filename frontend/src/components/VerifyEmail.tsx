@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { apiClient, ApiError } from "@/services/apiClient"
@@ -10,6 +11,7 @@ interface VerifyEmailProps {
 }
 
 export function VerifyEmail({ token, onBackToLogin }: VerifyEmailProps) {
+  const { t } = useTranslation()
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading")
   const [message, setMessage] = useState("")
   const hasVerified = useRef(false) // Prevent double verification in React Strict Mode
@@ -17,7 +19,7 @@ export function VerifyEmail({ token, onBackToLogin }: VerifyEmailProps) {
   useEffect(() => {
     if (!token) {
       setStatus("error")
-      setMessage("Neplatný verifikačný odkaz")
+      setMessage(t("verifyEmail.invalidLink"))
       return
     }
 
@@ -39,9 +41,9 @@ export function VerifyEmail({ token, onBackToLogin }: VerifyEmailProps) {
         console.error("Verification error:", error)
         setStatus("error")
         if (error instanceof ApiError) {
-          setMessage(error.message || "Neplatný alebo expirovaný verifikačný token")
+          setMessage(error.message || t("verifyEmail.invalidToken"))
         } else {
-          setMessage("Chyba pri overovaní emailu")
+          setMessage(t("verifyEmail.verifyError"))
         }
       }
     }
@@ -57,8 +59,8 @@ export function VerifyEmail({ token, onBackToLogin }: VerifyEmailProps) {
             {status === "loading" && (
               <div className="text-center">
                 <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <h2 className="text-2xl font-bold text-white mb-2">Overujem email...</h2>
-                <p className="text-gray-400">Prosím počkajte</p>
+                <h2 className="text-2xl font-bold text-white mb-2">{t("verifyEmail.loading")}</h2>
+                <p className="text-gray-400">{t("verifyEmail.pleaseWait")}</p>
               </div>
             )}
 
@@ -79,13 +81,13 @@ export function VerifyEmail({ token, onBackToLogin }: VerifyEmailProps) {
                     />
                   </svg>
                 </div>
-                <h2 className="text-2xl font-bold text-white mb-2">Email overený!</h2>
+                <h2 className="text-2xl font-bold text-white mb-2">{t("verifyEmail.successTitle")}</h2>
                 <p className="text-gray-400 mb-6">{message}</p>
                 <Button
                   onClick={onBackToLogin}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                  Prihlásiť sa
+                  {t("verifyEmail.backToLogin")}
                 </Button>
               </div>
             )}
@@ -107,13 +109,13 @@ export function VerifyEmail({ token, onBackToLogin }: VerifyEmailProps) {
                     />
                   </svg>
                 </div>
-                <h2 className="text-2xl font-bold text-white mb-2">Chyba overenia</h2>
+                <h2 className="text-2xl font-bold text-white mb-2">{t("verifyEmail.errorTitle")}</h2>
                 <p className="text-gray-400 mb-6">{message}</p>
                 <Button
                   onClick={onBackToLogin}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                  Späť na prihlásenie
+                  {t("verifyEmail.backToLoginError")}
                 </Button>
               </div>
             )}

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import { Sidebar } from "./dashboard/Sidebar"
 import { SyncConfirmModal } from "./dashboard/SyncConfirmModal"
 import { Toast } from "./ui/Toast"
@@ -30,6 +31,7 @@ interface DashboardProps {
 }
 
 export function Dashboard({ onLogout, userData }: DashboardProps) {
+  const { t } = useTranslation()
   // Custom hooks for state management
   const { syncState, handleSyncClick, confirmSync, cancelSync, dismissError } = useSync()
   const { isDarkMode, toggleDarkMode } = useDarkMode()
@@ -60,13 +62,13 @@ export function Dashboard({ onLogout, userData }: DashboardProps) {
       <Toast
         show={syncState.showSuccess}
         variant="success"
-        title="Synchronizácia úspešná!"
-        message="Dáta boli aktualizované"
+        title={t("dashboard.toast.syncSuccess")}
+        message={t("dashboard.toast.syncSuccessMsg")}
       />
       <Toast
         show={syncState.showError}
         variant="error"
-        title="Synchronizácia zlyhala"
+        title={t("dashboard.toast.syncError")}
         message={syncState.errorMessage}
         onClose={dismissError}
       />
@@ -168,7 +170,7 @@ export function Dashboard({ onLogout, userData }: DashboardProps) {
             ) : dashboardState.activeSection === 'logs' ? (
               <div>
                 <h2 className={`text-3xl font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Logy
+                  {t("dashboard.logs")}
                 </h2>
                 <SyncLogs isDarkMode={isDarkMode} />
               </div>
@@ -178,14 +180,14 @@ export function Dashboard({ onLogout, userData }: DashboardProps) {
                 <div className="mb-8">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                     <div>
-                      <h2 className={`text-3xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Prehľad</h2>
-                      <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>Vitajte späť! Tu je prehľad vašej federácie.</p>
+                      <h2 className={`text-3xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t("dashboard.title")}</h2>
+                      <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>{t("dashboard.welcome")}</p>
                     </div>
 
                     {/* Sync Button */}
                     <div className="flex items-center gap-3">
                       {syncState.isSyncing && (
-                        <span className="text-sm text-blue-600 animate-pulse">Synchronizujem...</span>
+                        <span className="text-sm text-blue-600 animate-pulse">{t("dashboard.syncing")}</span>
                       )}
                       <div className="flex flex-col items-end gap-2">
                         <button
@@ -198,8 +200,8 @@ export function Dashboard({ onLogout, userData }: DashboardProps) {
                               : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95'
                             }
                           `}
-                          title="Kliknite pre synchronizáciu"
-                          aria-label="Synchronizovať údaje"
+                          title={t("dashboard.syncTooltip")}
+                          aria-label={t("dashboard.syncAriaLabel")}
                         >
                           <svg
                             className={`w-5 h-5 ${syncState.isSyncing ? 'animate-spin' : ''}`}
@@ -215,12 +217,12 @@ export function Dashboard({ onLogout, userData }: DashboardProps) {
                             />
                           </svg>
                           <span className="hidden sm:inline">
-                            {syncState.isSyncing ? 'Synchronizujem' : 'Synchronizovať'}
+                            {syncState.isSyncing ? t("dashboard.syncButtonActive") : t("dashboard.syncButton")}
                           </span>
                         </button>
                         {syncState.lastSyncDate && (
                           <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                            Naposledy: {syncState.lastSyncDate}
+                            {t("dashboard.lastSync", { date: syncState.lastSyncDate })}
                           </span>
                         )}
                       </div>
@@ -233,9 +235,9 @@ export function Dashboard({ onLogout, userData }: DashboardProps) {
                   onClick={toggleDetailsMobile}
                   className="xl:hidden w-full mb-6 p-4 bg-white rounded-lg border border-gray-200 flex items-center justify-between hover:bg-gray-50 transition-colors"
                   aria-expanded={dashboardState.showDetailsMobile}
-                  aria-label="Zobraziť detailné informácie"
+                  aria-label={t("dashboard.showDetails")}
                 >
-                  <span className="font-medium text-gray-900">Zobraziť detailné informácie</span>
+                  <span className="font-medium text-gray-900">{t("dashboard.showDetails")}</span>
                   <svg
                     className={`w-5 h-5 text-gray-600 transition-transform ${dashboardState.showDetailsMobile ? 'rotate-180' : ''}`}
                     fill="none"

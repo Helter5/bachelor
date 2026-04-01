@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
 import {
@@ -52,6 +53,7 @@ const WIN_COLOR = "#10b981"
 const LOSS_COLOR = "#ef4444"
 
 export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfileProps) {
+  const { t } = useTranslation()
   const [person, setPerson] = useState<PersonDetail | null>(null)
   const [fightsData, setFightsData] = useState<PersonFightsResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -70,7 +72,7 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
         setPerson(personData)
         setFightsData(fightsResp)
       })
-      .catch(() => setError("Nepodarilo sa načítať profil zápasníka"))
+      .catch(() => setError(t("wrestlerProfile.loadError")))
       .finally(() => setLoading(false))
   }, [personId])
 
@@ -140,8 +142,8 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
       mostCommonVictory,
       numTournaments,
       pieData: [
-        { name: "Výhra", value: wins },
-        { name: "Prehra", value: losses },
+        { name: t("wrestlerProfile.charts.win"), value: wins },
+        { name: t("wrestlerProfile.charts.loss"), value: losses },
       ],
       victoryTypeBarData,
       metricPerTournament,
@@ -162,7 +164,7 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
     return (
       <div className={`text-center py-20 ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
         <div className="inline-block w-10 h-10 border-4 border-current border-t-transparent rounded-full animate-spin mb-4" />
-        <p>Načítavam profil...</p>
+        <p>{t("wrestlerProfile.loading")}</p>
       </div>
     )
   }
@@ -172,10 +174,10 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
       <div className="space-y-4">
         <button onClick={onBack} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${isDarkMode ? "bg-[#1e293b] hover:bg-[#334155] text-gray-300" : "bg-gray-100 hover:bg-gray-200 text-gray-700"}`}>
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-          Späť
+          {t("wrestlerProfile.back")}
         </button>
         <div className={`rounded-lg p-8 text-center ${isDarkMode ? "bg-red-900/20 text-red-400" : "bg-red-50 text-red-600"}`}>
-          {error || "Nepodarilo sa načítať profil"}
+          {error || t("wrestlerProfile.loadErrorGeneric")}
         </div>
       </div>
     )
@@ -202,7 +204,7 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
               {person.full_name}
             </h2>
             <p className={`text-sm mt-1 ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
-              {stats.totalFights} zápasov na {stats.numTournaments} turnajoch
+              {t("wrestlerProfile.subtitle", { fights: stats.totalFights, tournaments: stats.numTournaments })}
             </p>
           </div>
         </div>
@@ -211,12 +213,12 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {[
-          { label: "Zápasy", value: stats.totalFights, color: "text-blue-500" },
-          { label: "Win rate", value: `${stats.winRate}%`, color: "text-green-500" },
-          { label: "Priem. TP", value: stats.avgTp, color: "text-purple-500" },
-          { label: "Priem. CP", value: stats.avgCp, color: "text-yellow-500" },
-          { label: "Najč. výhra", value: stats.mostCommonVictory, color: "text-orange-500" },
-          { label: "Turnaje", value: stats.numTournaments, color: "text-cyan-500" },
+          { label: t("wrestlerProfile.cards.fights"), value: stats.totalFights, color: "text-blue-500" },
+          { label: t("wrestlerProfile.cards.winRate"), value: `${stats.winRate}%`, color: "text-green-500" },
+          { label: t("wrestlerProfile.cards.avgTp"), value: stats.avgTp, color: "text-purple-500" },
+          { label: t("wrestlerProfile.cards.avgCp"), value: stats.avgCp, color: "text-yellow-500" },
+          { label: t("wrestlerProfile.cards.topWin"), value: stats.mostCommonVictory, color: "text-orange-500" },
+          { label: t("wrestlerProfile.cards.tournaments"), value: stats.numTournaments, color: "text-cyan-500" },
         ].map((card) => (
           <div
             key={card.label}
@@ -232,7 +234,7 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Win/Loss Pie */}
         <div className={`rounded-xl p-6 ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
-          <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>Výhra / Prehra</h3>
+          <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>{t("wrestlerProfile.charts.winLoss")}</h3>
           <ResponsiveContainer width="100%" height={250}>
             <PieChart style={{ overflow: "visible" }}>
               <Pie data={stats.pieData} cx="50%" cy="55%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, value }) => `${name}: ${value}`}>
@@ -247,7 +249,7 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
 
         {/* Victory Type Bar */}
         <div className={`rounded-xl p-6 ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
-          <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>Typy víťazstiev</h3>
+          <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>{t("wrestlerProfile.charts.winTypes")}</h3>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={stats.victoryTypeBarData}>
               <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "rgba(255,255,255,0.05)" : "#f0f0f0"} />
@@ -267,7 +269,7 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
         <div className={`rounded-xl p-6 ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
           <div className="flex items-center justify-between mb-4">
             <h3 className={`text-lg font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>
-              Priem. {chartMetric === "tp" ? "TP" : "CP"} podľa turnaja
+              {t("wrestlerProfile.charts.metricByTournament", { metric: chartMetric === "tp" ? "TP" : "CP" })}
             </h3>
             <div className={`flex rounded-lg overflow-hidden ${isDarkMode ? "bg-white/5" : "bg-gray-100"}`}>
               <button
@@ -300,9 +302,9 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
               <Tooltip contentStyle={tooltipStyle} />
               <Legend />
               {chartMetric === "tp" ? (
-                <Line type="monotone" dataKey="avgTp" name="Priem. TP" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4, fill: "#8b5cf6" }} />
+                <Line type="monotone" dataKey="avgTp" name={t("wrestlerProfile.charts.metricByTournament", { metric: "TP" })} stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4, fill: "#8b5cf6" }} />
               ) : (
-                <Line type="monotone" dataKey="avgCp" name="Priem. CP" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4, fill: "#f59e0b" }} />
+                <Line type="monotone" dataKey="avgCp" name={t("wrestlerProfile.charts.metricByTournament", { metric: "CP" })} stroke="#f59e0b" strokeWidth={2} dot={{ r: 4, fill: "#f59e0b" }} />
               )}
             </LineChart>
           </ResponsiveContainer>
@@ -311,7 +313,7 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
 
       {/* Events Cards */}
       <div className={`rounded-xl p-6 ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
-        <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>Turnaje</h3>
+        <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>{t("wrestlerProfile.tournamentsSection")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {person.events.map((event) => (
             <div
@@ -341,11 +343,11 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
 
       {/* Fights grouped by event */}
       <div className={`rounded-xl p-6 ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
-        <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>Zápasy ({stats.totalFights})</h3>
+        <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>{t("wrestlerProfile.fightsSection", { count: stats.totalFights })}</h3>
         <div className="space-y-4">
           {Object.entries(
             fightsData.fights.reduce<Record<string, PersonFight[]>>((acc, fight) => {
-              const key = fight.event_name || "Neznámy turnaj"
+              const key = fight.event_name || t("wrestlerProfile.unknownTournament")
               if (!acc[key]) acc[key] = []
               acc[key].push(fight)
               return acc

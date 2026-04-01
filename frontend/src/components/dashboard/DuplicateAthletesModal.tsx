@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { PersonMergeModal } from "./PersonMergeModal"
 
 interface Person {
@@ -28,6 +29,7 @@ export function DuplicateAthletesModal({
   onClose,
   onMerged,
 }: DuplicateAthletesModalProps) {
+  const { t } = useTranslation()
   const [searchQuery, setSearchQuery] = useState("")
   const [mergeGroup, setMergeGroup] = useState<Person[] | null>(null)
 
@@ -71,11 +73,11 @@ export function DuplicateAthletesModal({
           {/* Header */}
           <div className={`flex items-center justify-between px-6 py-4 border-b ${border}`}>
             <div>
-              <h2 className={`text-lg font-bold ${text}`}>Duplicitní atléti</h2>
+              <h2 className={`text-lg font-bold ${text}`}>{t("duplicateAthletes.title")}</h2>
               <p className={`text-xs mt-0.5 ${subtext}`}>
                 {allDuplicates.length > 0
-                  ? `Nájdených ${allDuplicates.length} skupín s rovnakým menom`
-                  : "Žiadni duplicitní atléti"}
+                  ? t("duplicateAthletes.foundGroups", { count: allDuplicates.length })
+                  : t("duplicateAthletes.noDuplicates")}
               </p>
             </div>
             <button
@@ -95,7 +97,7 @@ export function DuplicateAthletesModal({
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Filtrovať podľa mena..."
+                placeholder={t("duplicateAthletes.searchPlaceholder")}
                 className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${inputBg}`}
               />
             </div>
@@ -109,10 +111,10 @@ export function DuplicateAthletesModal({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <p className="text-sm font-medium">
-                  {searchQuery ? "Žiadne výsledky" : "Žiadni duplicitní atléti"}
+                  {searchQuery ? t("duplicateAthletes.noResults") : t("duplicateAthletes.noDuplicates")}
                 </p>
                 {!searchQuery && (
-                  <p className="text-xs mt-1">Každý atlét má jedinečné meno</p>
+                  <p className="text-xs mt-1">{t("duplicateAthletes.uniqueNames")}</p>
                 )}
               </div>
             ) : (
@@ -124,13 +126,13 @@ export function DuplicateAthletesModal({
                     </span>
                     <div className="flex items-center gap-2">
                       <span className={`text-xs px-2 py-0.5 rounded-full ${isDarkMode ? "bg-amber-800/40 text-amber-300" : "bg-amber-100 text-amber-600"}`}>
-                        {group.persons.length}× výskyt
+                        {t("duplicateAthletes.occurrences", { count: group.persons.length })}
                       </span>
                       <button
                         onClick={() => setMergeGroup(group.persons)}
                         className="text-xs px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors"
                       >
-                        Zlúčiť
+                        {t("duplicateAthletes.mergeButton")}
                       </button>
                     </div>
                   </div>
@@ -141,7 +143,7 @@ export function DuplicateAthletesModal({
                           {p.country_iso_code || "—"}
                         </span>
                         <span className={`text-xs ${isDarkMode ? "text-gray-500" : "text-gray-400"}`}>
-                          {p.fight_count} {p.fight_count === 1 ? "zápas" : "zápasov"}
+                          {p.fight_count} {p.fight_count === 1 ? t("duplicateAthletes.fightCountOne") : t("duplicateAthletes.fightCountMany")}
                         </span>
                       </div>
                     ))}

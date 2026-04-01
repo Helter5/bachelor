@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 
 interface SyncConfirmModalProps {
@@ -15,6 +16,7 @@ export function SyncConfirmModal({
   lastSyncDate,
   isDarkMode,
 }: SyncConfirmModalProps) {
+  const { t } = useTranslation()
   if (!isOpen) return null
 
   return (
@@ -35,10 +37,10 @@ export function SyncConfirmModal({
           </div>
           <div className="flex-1">
             <h3 className={`text-xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-              Potvrdiť synchronizáciu
+              {t("syncModal.title")}
             </h3>
             <p className={`mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-              Chystáte sa synchronizovať údaje do databázy. Táto akcia aktualizuje všetky záznamy.
+              {t("syncModal.description")}
             </p>
 
             <div className={`rounded-lg p-4 mb-4 border ${isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
@@ -46,7 +48,7 @@ export function SyncConfirmModal({
                 <svg className={`w-4 h-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>Posledná synchronizácia:</span>
+                <span className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>{t("syncModal.lastSync")}</span>
               </div>
               <p className={`font-semibold mt-1 ml-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                 {lastSyncDate}
@@ -54,7 +56,7 @@ export function SyncConfirmModal({
             </div>
 
             <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              Chcete pokračovať so synchronizáciou?
+              {t("syncModal.question")}
             </p>
           </div>
         </div>
@@ -64,13 +66,13 @@ export function SyncConfirmModal({
             onClick={onCancel}
             className="bg-red-600 hover:bg-red-700 text-white"
           >
-            Nie, zrušiť
+            {t("syncModal.cancelButton")}
           </Button>
           <Button
             onClick={onConfirm}
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
-            Áno, synchronizovať
+            {t("syncModal.confirmButton")}
           </Button>
         </div>
       </div>

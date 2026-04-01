@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { Pagination } from "../Pagination"
 import type { Team, Athlete, WeightCategory } from "../types"
 import { ITEMS_PER_PAGE } from "../types"
@@ -40,6 +41,7 @@ export function AthletesTab({
   onSelectPerson,
   handleNameClick,
 }: AthletesTabProps) {
+  const { t } = useTranslation()
   const [filterQuery, setFilterQuery] = useState("")
   const [selectedCountries, setSelectedCountries] = useState<Set<string>>(new Set())
 
@@ -79,7 +81,7 @@ export function AthletesTab({
   return (
     <div>
       <h3 className={`text-xl font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-        Atléti
+        {t('tournamentDetail.athletesTitle')}
       </h3>
 
       {/* Filter row */}
@@ -88,7 +90,7 @@ export function AthletesTab({
           type="text"
           value={filterQuery}
           onChange={e => { setFilterQuery(e.target.value); setAthletesPage(1) }}
-          placeholder="Meno..."
+          placeholder={t('tournamentDetail.namePlaceholder')}
           className={`flex-1 min-w-[140px] px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
             isDarkMode
               ? 'bg-[#1e293b] border-gray-600 text-white placeholder-gray-500'
@@ -100,7 +102,7 @@ export function AthletesTab({
           selected={selectedCountries}
           onToggle={toggleCountry}
           onClear={() => { setSelectedCountries(new Set()); setAthletesPage(1) }}
-          placeholder="Krajina"
+          placeholder={t('athletes.countryPlaceholder')}
           isDarkMode={isDarkMode}
           buttonIcon={GlobeIcon}
         />
@@ -111,12 +113,12 @@ export function AthletesTab({
       )}
 
       {athletesLoading && athletes.length === 0 ? (
-        <LoadingSpinner text="Načítavam atlétov..." isDarkMode={isDarkMode} />
+        <LoadingSpinner text={t('tournamentDetail.errors.loadingAthletes')} isDarkMode={isDarkMode} />
       ) : filtered.length === 0 ? (
         <EmptyState
           icon="person"
-          title={hasActiveFilter ? 'Žiadne výsledky' : 'Žiadni atléti'}
-          description={hasActiveFilter ? 'Skúste zmeniť filter' : 'Použite synchronizáciu na hlavnej stránke'}
+          title={hasActiveFilter ? t('tournaments.notFound') : t('tournamentDetail.errors.noAthletes')}
+          description={hasActiveFilter ? t('tournamentDetail.tryChangingFilter') : t('tournamentDetail.errors.syncFirst')}
           isDarkMode={isDarkMode}
         />
       ) : (
@@ -149,17 +151,17 @@ export function AthletesTab({
                         <div className="flex items-center gap-1">
                           <CountryFlag code={athleteTeam?.country_iso_code} flagOnly />
                           <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-                            {athleteTeam?.name || 'Bez tímu'}
+                            {athleteTeam?.name || t('tournamentDetail.noTeam')}
                           </span>
                         </div>
                         <span className={isDarkMode ? 'text-gray-600' : 'text-gray-300'}>•</span>
                         <span className={`px-1.5 py-0.5 rounded text-xs ${isDarkMode ? 'bg-white/5 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
-                          {athleteWeightCategory?.name || 'Bez kategórie'}
+                          {athleteWeightCategory?.name || t('tournamentDetail.noCategory')}
                         </span>
                       </div>
                     </div>
                     <StatusBadge variant={athlete.is_competing ? 'success' : 'neutral'} isDarkMode={isDarkMode}>
-                      {athlete.is_competing ? 'Súťaží' : 'Nesúťaží'}
+                      {athlete.is_competing ? t('fighters.competing') : t('fighters.notCompeting')}
                     </StatusBadge>
                   </div>
                 </div>

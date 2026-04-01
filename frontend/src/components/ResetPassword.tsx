@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { apiClient, ApiError } from "@/services/apiClient"
@@ -10,6 +11,7 @@ interface ResetPasswordProps {
 }
 
 export function ResetPassword({ token, onBackToLogin }: ResetPasswordProps) {
+  const { t } = useTranslation()
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading")
   const [message, setMessage] = useState("")
   const hasReset = useRef(false) // Prevent double reset in React Strict Mode
@@ -17,7 +19,7 @@ export function ResetPassword({ token, onBackToLogin }: ResetPasswordProps) {
   useEffect(() => {
     if (!token) {
       setStatus("error")
-      setMessage("Neplatný odkaz na obnovenie hesla")
+      setMessage(t("resetPassword.invalidLink"))
       return
     }
 
@@ -39,9 +41,9 @@ export function ResetPassword({ token, onBackToLogin }: ResetPasswordProps) {
         console.error("Password reset error:", error)
         setStatus("error")
         if (error instanceof ApiError) {
-          setMessage(error.message || "Neplatný alebo expirovaný token")
+          setMessage(error.message || t("resetPassword.invalidToken"))
         } else {
-          setMessage("Chyba pri obnovení hesla")
+          setMessage(t("resetPassword.resetError"))
         }
       }
     }
@@ -57,8 +59,8 @@ export function ResetPassword({ token, onBackToLogin }: ResetPasswordProps) {
             {status === "loading" && (
               <div className="text-center">
                 <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <h2 className="text-2xl font-bold text-white mb-2">Obnovujem heslo...</h2>
-                <p className="text-gray-400">Prosím počkajte</p>
+                <h2 className="text-2xl font-bold text-white mb-2">{t("resetPassword.loading")}</h2>
+                <p className="text-gray-400">{t("resetPassword.pleaseWait")}</p>
               </div>
             )}
 
@@ -79,7 +81,7 @@ export function ResetPassword({ token, onBackToLogin }: ResetPasswordProps) {
                     />
                   </svg>
                 </div>
-                <h2 className="text-2xl font-bold text-white mb-2">Heslo obnovené!</h2>
+                <h2 className="text-2xl font-bold text-white mb-2">{t("resetPassword.successTitle")}</h2>
                 <p className="text-gray-400 mb-2">{message}</p>
                 <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mb-6">
                   <div className="flex items-start gap-3">
@@ -98,10 +100,10 @@ export function ResetPassword({ token, onBackToLogin }: ResetPasswordProps) {
                     </svg>
                     <div className="text-left">
                       <p className="text-sm font-medium text-yellow-500 mb-1">
-                        Skontrolujte váš email
+                        {t("resetPassword.checkEmail")}
                       </p>
                       <p className="text-xs text-gray-400">
-                        Nové heslo bolo odoslané na váš email. Použite ho na prihlásenie.
+                        {t("resetPassword.checkEmailDesc")}
                       </p>
                     </div>
                   </div>
@@ -110,7 +112,7 @@ export function ResetPassword({ token, onBackToLogin }: ResetPasswordProps) {
                   onClick={onBackToLogin}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                  Prihlásiť sa
+                  {t("resetPassword.backToLogin")}
                 </Button>
               </div>
             )}
@@ -132,13 +134,13 @@ export function ResetPassword({ token, onBackToLogin }: ResetPasswordProps) {
                     />
                   </svg>
                 </div>
-                <h2 className="text-2xl font-bold text-white mb-2">Chyba obnovenia</h2>
+                <h2 className="text-2xl font-bold text-white mb-2">{t("resetPassword.errorTitle")}</h2>
                 <p className="text-gray-400 mb-6">{message}</p>
                 <Button
                   onClick={onBackToLogin}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                  Späť na prihlásenie
+                  {t("resetPassword.backToLoginError")}
                 </Button>
               </div>
             )}

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next"
+
 interface PaginationProps {
   isDarkMode: boolean
   currentPage: number
@@ -8,6 +10,7 @@ interface PaginationProps {
 }
 
 export function Pagination({ isDarkMode, currentPage, totalItems, itemsPerPage, onPageChange, onShowAll }: PaginationProps) {
+  const { t } = useTranslation()
   const totalPages = Math.ceil(totalItems / itemsPerPage)
 
   if (totalPages <= 1 && !onShowAll) return null
@@ -45,8 +48,8 @@ export function Pagination({ isDarkMode, currentPage, totalItems, itemsPerPage, 
 
   return (
     <div className={`flex items-center justify-center gap-0.5 py-3 px-4 rounded-lg ${isDarkMode ? 'bg-[#1e293b]' : 'bg-white border border-gray-200'}`}>
-      <button onClick={() => onPageChange(1)} disabled={currentPage === 1} title="Prvá strana" className={navBtn(currentPage === 1)}>«</button>
-      <button onClick={() => onPageChange(Math.max(1, currentPage - 1))} disabled={currentPage === 1} title="Predošlá" className={navBtn(currentPage === 1)}>‹</button>
+      <button onClick={() => onPageChange(1)} disabled={currentPage === 1} title={t("pagination.firstPage")} className={navBtn(currentPage === 1)}>«</button>
+      <button onClick={() => onPageChange(Math.max(1, currentPage - 1))} disabled={currentPage === 1} title={t("pagination.prevPage")} className={navBtn(currentPage === 1)}>‹</button>
 
       <div className={`mx-1 h-5 w-px ${isDarkMode ? 'bg-white/10' : 'bg-gray-200'}`} />
 
@@ -62,8 +65,8 @@ export function Pagination({ isDarkMode, currentPage, totalItems, itemsPerPage, 
 
       <div className={`mx-1 h-5 w-px ${isDarkMode ? 'bg-white/10' : 'bg-gray-200'}`} />
 
-      <button onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} title="Ďalšia" className={navBtn(currentPage === totalPages)}>›</button>
-      <button onClick={() => onPageChange(totalPages)} disabled={currentPage === totalPages} title="Posledná strana" className={navBtn(currentPage === totalPages)}>»</button>
+      <button onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} title={t("pagination.nextPage")} className={navBtn(currentPage === totalPages)}>›</button>
+      <button onClick={() => onPageChange(totalPages)} disabled={currentPage === totalPages} title={t("pagination.lastPage")} className={navBtn(currentPage === totalPages)}>»</button>
 
       {onShowAll && (
         <>
@@ -76,7 +79,7 @@ export function Pagination({ isDarkMode, currentPage, totalItems, itemsPerPage, 
                 : 'bg-blue-50 text-blue-600 hover:bg-blue-100 ring-1 ring-blue-200'
             }`}
           >
-            Všetky
+            {t("pagination.showAll")}
           </button>
         </>
       )}

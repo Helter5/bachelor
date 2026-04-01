@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { apiClient } from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/config/api'
 
@@ -32,6 +33,7 @@ interface SyncLogsProps {
 }
 
 export function SyncLogs({ isDarkMode }: SyncLogsProps) {
+  const { t } = useTranslation()
   const [logs, setLogs] = useState<SyncLog[]>([])
   const [selectedLog, setSelectedLog] = useState<SyncLog | null>(null)
   const [loading, setLoading] = useState(true)
@@ -49,7 +51,7 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
       setLogs(data)
     } catch (err) {
       console.error('Error loading sync logs:', err)
-      setError('Nepodarilo sa načítať logy synchronizácií')
+      setError(t('syncLogs.loadError'))
     } finally {
       setLoading(false)
     }
@@ -61,7 +63,7 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
       setSelectedLog(data)
     } catch (err) {
       console.error('Error loading log detail:', err)
-      setError('Nepodarilo sa načítať detail logu')
+      setError(t('syncLogs.detailLoadError'))
     }
   }
 
@@ -93,11 +95,11 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'success':
-        return 'Úspech'
+        return t('syncLogs.statusSuccess')
       case 'failed':
-        return 'Chyba'
+        return t('syncLogs.statusFailed')
       case 'in_progress':
-        return 'Prebieha'
+        return t('syncLogs.statusInProgress')
       default:
         return status
     }
@@ -129,20 +131,20 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
       {/* Logs List */}
       <div className={`rounded-lg p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'}`}>
         <h3 className={`text-xl font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-          História synchronizácií
+          {t('syncLogs.title')}
         </h3>
 
         <p className={`text-sm mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          Posledných 10 synchronizácií (úspešných aj neúspešných)
+          {t('syncLogs.desc')}
         </p>
 
         {loading ? (
           <div className="text-center py-8">
-            <div className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Načítavam...</div>
+            <div className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>{t('syncLogs.loading')}</div>
           </div>
         ) : logs.length === 0 ? (
           <div className="text-center py-8">
-            <div className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Žiadne synchronizácie</div>
+            <div className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>{t('syncLogs.empty')}</div>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -150,22 +152,22 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
               <thead>
                 <tr className={`border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                   <th className={`text-left py-2 px-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Dátum a čas
+                    {t('syncLogs.tableDate')}
                   </th>
                   <th className={`text-left py-2 px-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Používateľ
+                    {t('syncLogs.tableUser')}
                   </th>
                   <th className={`text-left py-2 px-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Stav
+                    {t('syncLogs.tableStatus')}
                   </th>
                   <th className={`text-left py-2 px-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Trvanie
+                    {t('syncLogs.tableDuration')}
                   </th>
                   <th className={`text-left py-2 px-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Celkom záznamov
+                    {t('syncLogs.tableTotal')}
                   </th>
                   <th className={`text-left py-2 px-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Akcia
+                    {t('syncLogs.tableAction')}
                   </th>
                 </tr>
               </thead>
@@ -179,7 +181,7 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
                       {formatDate(log.started_at)}
                     </td>
                     <td className={`py-2 px-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                      {log.username || 'Neznámy'}
+                      {log.username || t('syncLogs.unknownUser')}
                     </td>
                     <td className="py-2 px-3">
                       <span className={`px-2 py-1 rounded text-xs ${getStatusColor(log.status)}`}>
@@ -197,7 +199,7 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
                         onClick={() => loadLogDetail(log.id)}
                         className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                       >
-                        Detail
+                        {t('common.detail')}
                       </button>
                     </td>
                   </tr>
@@ -215,7 +217,7 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
             <div className={`sticky top-0 p-6 border-b ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
               <div className="flex justify-between items-center">
                 <h3 className={`text-2xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Detail synchronizácie #{selectedLog.id}
+                  {t('syncLogs.detailTitle', { id: selectedLog.id })}
                 </h3>
                 <button
                   onClick={() => setSelectedLog(null)}
@@ -231,25 +233,25 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Používateľ
+                    {t('syncLogs.detailUser')}
                   </div>
                   <div className={`text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {selectedLog.username || 'Neznámy'} {selectedLog.ip_address && `(${selectedLog.ip_address})`}
+                    {selectedLog.username || t('syncLogs.unknownUser')} {selectedLog.ip_address && `(${selectedLog.ip_address})`}
                   </div>
                 </div>
 
                 <div>
                   <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Arena zdroj
+                    {t('syncLogs.detailSource')}
                   </div>
                   <div className={`text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {selectedLog.arena_source_name || 'Všetky zdroje'}
+                    {selectedLog.arena_source_name || t('syncLogs.detailAllSources')}
                   </div>
                 </div>
 
                 <div>
                   <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Začiatok
+                    {t('syncLogs.detailStart')}
                   </div>
                   <div className={`text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                     {formatDate(selectedLog.started_at)}
@@ -258,16 +260,16 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
 
                 <div>
                   <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Koniec
+                    {t('syncLogs.detailEnd')}
                   </div>
                   <div className={`text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {selectedLog.finished_at ? formatDate(selectedLog.finished_at) : 'Prebieha'}
+                    {selectedLog.finished_at ? formatDate(selectedLog.finished_at) : t('syncLogs.detailInProgress')}
                   </div>
                 </div>
 
                 <div>
                   <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Trvanie
+                    {t('syncLogs.detailDuration')}
                   </div>
                   <div className={`text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                     {formatDuration(selectedLog.duration_seconds)}
@@ -276,7 +278,7 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
 
                 <div>
                   <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Stav
+                    {t('syncLogs.detailStatus')}
                   </div>
                   <div>
                     <span className={`px-3 py-1 rounded text-sm ${getStatusColor(selectedLog.status)}`}>
@@ -289,46 +291,46 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
               {/* Statistics */}
               <div>
                 <h4 className={`text-lg font-semibold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Štatistiky
+                  {t('syncLogs.statsTitle')}
                 </h4>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   <div className={`p-4 rounded ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                    <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Eventy</div>
+                    <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('syncLogs.statsEvents')}</div>
                     <div className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                       +{selectedLog.events_created} / ~{selectedLog.events_updated}
                     </div>
                   </div>
 
                   <div className={`p-4 rounded ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                    <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Atlétovi</div>
+                    <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('syncLogs.statsAthletes')}</div>
                     <div className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                       +{selectedLog.athletes_created} / ~{selectedLog.athletes_updated}
                     </div>
                   </div>
 
                   <div className={`p-4 rounded ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                    <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Tímy</div>
+                    <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('syncLogs.statsTeams')}</div>
                     <div className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                       +{selectedLog.teams_created} / ~{selectedLog.teams_updated}
                     </div>
                   </div>
 
                   <div className={`p-4 rounded ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                    <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Kategórie</div>
+                    <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('syncLogs.statsCategories')}</div>
                     <div className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                       +{selectedLog.weight_categories_created} / ~{selectedLog.weight_categories_updated}
                     </div>
                   </div>
 
                   <div className={`p-4 rounded ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                    <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Zápasy</div>
+                    <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('syncLogs.statsFights')}</div>
                     <div className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                       +{selectedLog.fights_created} / ~{selectedLog.fights_updated}
                     </div>
                   </div>
                 </div>
                 <div className={`text-xs mt-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                  + = nové, ~ = aktualizované
+                  {t('syncLogs.statsLegend')}
                 </div>
               </div>
 
@@ -336,7 +338,7 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
               {selectedLog.error_message && (
                 <div>
                   <h4 className={`text-lg font-semibold mb-3 text-red-600`}>
-                    Chybová hláška
+                    {t('syncLogs.errorTitle')}
                   </h4>
                   <div className={`p-4 rounded bg-red-50 border border-red-200`}>
                     <code className="text-sm text-red-900">{selectedLog.error_message}</code>
@@ -348,24 +350,24 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
               {selectedLog.details && (
                 <div>
                   <h4 className={`text-lg font-semibold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                    Podrobné informácie
+                    {t('syncLogs.detailsTitle')}
                   </h4>
                   <div className={`rounded divide-y ${isDarkMode ? 'bg-gray-700 divide-gray-600' : 'bg-gray-50 divide-gray-200'}`}>
                     {selectedLog.details.source_name != null && (
                       <div className="flex justify-between px-4 py-2">
-                        <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Arena zdroj</span>
+                        <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('syncLogs.detailsSourceName')}</span>
                         <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{String(selectedLog.details.source_name)}</span>
                       </div>
                     )}
                     {selectedLog.details.host != null && (
                       <div className="flex justify-between px-4 py-2">
-                        <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Hostiteľ</span>
+                        <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('syncLogs.detailsHost')}</span>
                         <span className={`text-sm font-medium font-mono ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{String(selectedLog.details.host)}</span>
                       </div>
                     )}
                     {selectedLog.details.total_events != null && (
                       <div className="flex justify-between px-4 py-2">
-                        <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Počet eventov</span>
+                        <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('syncLogs.detailsEventsCount')}</span>
                         <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{String(selectedLog.details.total_events)}</span>
                       </div>
                     )}
@@ -379,7 +381,7 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
                   onClick={() => setSelectedLog(null)}
                   className={`px-6 py-2 rounded ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
-                  Zavrieť
+                  {t('syncLogs.close')}
                 </button>
               </div>
             </div>

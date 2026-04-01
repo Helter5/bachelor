@@ -1,15 +1,10 @@
 import { useState, useMemo, useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
 import { Pagination } from "./Pagination"
 import { SearchInput } from "./SearchInput"
 import { Select } from "../ui/Select"
-
-const COMPETING_OPTIONS = [
-  { value: "", label: "Všetci" },
-  { value: "yes", label: "Súťaží" },
-  { value: "no", label: "Nesúťaží" },
-]
 
 interface Athlete {
   id: string
@@ -44,6 +39,7 @@ interface FightersListProps {
 }
 
 export function FightersList({ isDarkMode }: FightersListProps) {
+  const { t } = useTranslation()
   const [athletes, setAthletes] = useState<Athlete[]>([])
   const [sportEvents, setSportEvents] = useState<SportEvent[]>([])
   const [teams, setTeams] = useState<Team[]>([])
@@ -56,6 +52,12 @@ export function FightersList({ isDarkMode }: FightersListProps) {
   const [accreditationFilter, setAccreditationFilter] = useState("")
   const [sortBy, setSortBy] = useState<"name" | "competing">("name")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
+
+  const COMPETING_OPTIONS = [
+    { value: "", label: t('fighters.competingOptions.all') },
+    { value: "yes", label: t('fighters.competingOptions.yes') },
+    { value: "no", label: t('fighters.competingOptions.no') },
+  ]
 
   const itemsPerPage = 20
 
@@ -109,7 +111,7 @@ export function FightersList({ isDarkMode }: FightersListProps) {
 
     } catch (err) {
       console.error('Error loading data:', err)
-      setError('Nepodarilo sa načítať zápasníkov')
+      setError(t('fighters.loadError'))
     } finally {
       setLoading(false)
     }
@@ -138,9 +140,9 @@ export function FightersList({ isDarkMode }: FightersListProps) {
   }, [athletes])
 
   const accreditationOptions = useMemo(() => [
-    { value: "", label: "Všetky stavy" },
+    { value: "", label: t('fighters.allStatuses') },
     ...uniqueAccreditationStatuses.map((s) => ({ value: s, label: s })),
-  ], [uniqueAccreditationStatuses])
+  ], [uniqueAccreditationStatuses, t])
 
   // Filter and sort athletes
   const filteredAndSortedAthletes = useMemo(() => {
@@ -192,7 +194,7 @@ export function FightersList({ isDarkMode }: FightersListProps) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className={`text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-          Načítavam zápasníkov...
+          {t('fighters.loading')}
         </div>
       </div>
     )
@@ -213,10 +215,10 @@ export function FightersList({ isDarkMode }: FightersListProps) {
       {/* Header */}
       <div>
         <h2 className={`text-3xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-          Zápasníci
+          {t('fighters.title')}
         </h2>
         <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-          Prehľad všetkých zápasníkov
+          {t('fighters.subtitle')}
         </p>
       </div>
 
@@ -226,20 +228,20 @@ export function FightersList({ isDarkMode }: FightersListProps) {
           {/* Search */}
           <div className="md:col-span-2">
             <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              Vyhľadávanie
+              {t('fighters.searchLabel')}
             </label>
             <SearchInput
               isDarkMode={isDarkMode}
               value={searchQuery}
               onChange={(v) => handleFilterChange(v, competingFilter, accreditationFilter)}
-              placeholder="Hľadať podľa mena..."
+              placeholder={t('fighters.searchPlaceholder')}
             />
           </div>
 
           {/* Competing Filter */}
           <div>
             <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              Súťaží
+              {t('fighters.competingLabel')}
             </label>
             <Select
               value={competingFilter}
@@ -253,7 +255,7 @@ export function FightersList({ isDarkMode }: FightersListProps) {
           {/* Accreditation Filter */}
           <div>
             <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              Akreditácia
+              {t('fighters.accreditationLabel')}
             </label>
             <Select
               value={accreditationFilter}
@@ -268,7 +270,7 @@ export function FightersList({ isDarkMode }: FightersListProps) {
         {/* Sort Options */}
         <div className="mt-4">
           <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-            Zoradiť podľa
+            {t('fighters.sortLabel')}
           </label>
           <div className="flex gap-2">
             <button
@@ -279,7 +281,7 @@ export function FightersList({ isDarkMode }: FightersListProps) {
                   : isDarkMode ? "bg-[#0f172a] text-gray-300 hover:bg-white/5" : "bg-gray-50 text-gray-700 hover:bg-gray-100"
               }`}
             >
-              Meno {sortBy === "name" && (sortOrder === "asc" ? "↑" : "↓")}
+              {t('fighters.sortName')} {sortBy === "name" && (sortOrder === "asc" ? "↑" : "↓")}
             </button>
             <button
               onClick={() => handleSort("competing")}
@@ -289,14 +291,14 @@ export function FightersList({ isDarkMode }: FightersListProps) {
                   : isDarkMode ? "bg-[#0f172a] text-gray-300 hover:bg-white/5" : "bg-gray-50 text-gray-700 hover:bg-gray-100"
               }`}
             >
-              Súťaží {sortBy === "competing" && (sortOrder === "asc" ? "↑" : "↓")}
+              {t('fighters.sortCompeting')} {sortBy === "competing" && (sortOrder === "asc" ? "↑" : "↓")}
             </button>
           </div>
         </div>
 
         {/* Results count */}
         <div className={`mt-4 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          Nájdených: {filteredAndSortedAthletes.length} zápasníkov
+          {t('fighters.foundCount', { count: filteredAndSortedAthletes.length })}
         </div>
       </div>
 
@@ -331,7 +333,7 @@ export function FightersList({ isDarkMode }: FightersListProps) {
                       ? isDarkMode ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-700'
                       : isDarkMode ? 'bg-gray-500/20 text-gray-400' : 'bg-gray-100 text-gray-700'
                   }`}>
-                    {athlete.isCompeting ? 'Súťaží' : 'Nesúťaží'}
+                    {athlete.isCompeting ? t('fighters.competing') : t('fighters.notCompeting')}
                   </div>
                 </div>
 
@@ -347,13 +349,13 @@ export function FightersList({ isDarkMode }: FightersListProps) {
 
                 <div className="grid grid-cols-2 gap-4 mb-3">
                   <div>
-                    <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Akreditácia</p>
+                    <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('fighters.accreditationField')}</p>
                     <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                       {athlete.accreditationStatus || 'N/A'}
                     </p>
                   </div>
                   <div>
-                    <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Turnaj UUID</p>
+                    <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('fighters.tournamentUuid')}</p>
                     <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                       {eventUuid.substring(0, 8)}...
                     </p>
@@ -367,7 +369,7 @@ export function FightersList({ isDarkMode }: FightersListProps) {
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
                         </svg>
-                        <span className="text-xs">Váha: {weightCategory}</span>
+                        <span className="text-xs">{t('fighters.weight', { weight: weightCategory })}</span>
                       </div>
                     )}
                     {athlete.teamId && (
@@ -375,7 +377,7 @@ export function FightersList({ isDarkMode }: FightersListProps) {
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
-                        <span className="text-xs">Tím: {teamName}</span>
+                        <span className="text-xs">{t('fighters.team', { team: teamName })}</span>
                       </div>
                     )}
                   </div>
@@ -385,7 +387,7 @@ export function FightersList({ isDarkMode }: FightersListProps) {
           })
         ) : (
           <div className={`col-span-2 text-center py-12 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            Žiadni zápasníci neboli nájdení
+            {t('fighters.notFound')}
           </div>
         )}
       </div>

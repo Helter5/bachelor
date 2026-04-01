@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import { Pagination } from "../Pagination"
 import type { Team, Athlete, WeightCategory } from "../types"
 import { ITEMS_PER_PAGE } from "../types"
@@ -45,6 +46,8 @@ export function TeamsTab({
   onSelectPerson,
   handleNameClick,
 }: TeamsTabProps) {
+  const { t } = useTranslation()
+
   if (selectedTeam) {
     return (
       <div>
@@ -53,13 +56,13 @@ export function TeamsTab({
           isDarkMode={isDarkMode}
           onBack={closeTeamDetail}
           title={selectedTeam.name}
-          subtitle="Atléti tímu"
+          subtitle={t('tournamentDetail.teamAthletes')}
           leading={<CountryFlag code={teams.find(t => t.id === parseInt(selectedTeam.id))?.country_iso_code} style={{ fontSize: '3rem' }} flagOnly />}
         />
 
         {/* Athletes in Team */}
         {loadingTeamAthletes ? (
-          <LoadingSpinner text="Načítavam atlétov..." isDarkMode={isDarkMode} />
+          <LoadingSpinner text={t('tournamentDetail.errors.loadingAthletes')} isDarkMode={isDarkMode} />
         ) : teamAthletes.length > 0 ? (
           <>
             <div className="space-y-2">
@@ -86,13 +89,13 @@ export function TeamsTab({
                           ) : athlete.person_full_name}
                         </h4>
                         <div className={`text-xs mt-0.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                          {athleteWeightCategory?.name || 'Bez kategórie'}
+                          {athleteWeightCategory?.name || t('tournamentDetail.noCategory')}
                         </div>
                       </div>
                       {athlete.is_competing ? (
-                        <StatusBadge variant="success" isDarkMode={isDarkMode}>Súťaží</StatusBadge>
+                        <StatusBadge variant="success" isDarkMode={isDarkMode}>{t('fighters.competing')}</StatusBadge>
                       ) : (
-                        <StatusBadge variant="neutral" isDarkMode={isDarkMode}>Nesúťaží</StatusBadge>
+                        <StatusBadge variant="neutral" isDarkMode={isDarkMode}>{t('fighters.notCompeting')}</StatusBadge>
                       )}
                     </div>
                   </div>
@@ -108,7 +111,7 @@ export function TeamsTab({
             />
           </>
         ) : (
-          <EmptyState icon="person" title="Žiadni atléti" description="V tomto tíme nie sú žiadni atléti" isDarkMode={isDarkMode} />
+          <EmptyState icon="person" title={t('tournamentDetail.errors.noAthletes')} description={t('tournamentDetail.errors.noAthletesInTeam')} isDarkMode={isDarkMode} />
         )}
       </div>
     )
@@ -117,7 +120,7 @@ export function TeamsTab({
   return (
     <div>
       <h3 className={`text-xl font-semibold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-        Tímy
+        {t('tournamentDetail.teamsTitle')}
       </h3>
 
       {teamsError && (
@@ -125,9 +128,9 @@ export function TeamsTab({
       )}
 
       {teamsLoading && teams.length === 0 ? (
-        <LoadingSpinner text="Načítavam tímy..." isDarkMode={isDarkMode} />
+        <LoadingSpinner text={t('tournamentDetail.errors.loadingTeams')} isDarkMode={isDarkMode} />
       ) : teams.length === 0 ? (
-        <EmptyState icon="team" title="Žiadne tímy" description="Použite synchronizáciu na hlavnej stránke" isDarkMode={isDarkMode} />
+        <EmptyState icon="team" title={t('tournamentDetail.errors.noTeams')} description={t('tournamentDetail.errors.syncFirst')} isDarkMode={isDarkMode} />
       ) : (
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -152,7 +155,7 @@ export function TeamsTab({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                   <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-                    {team.athlete_count || 0} atlétov
+                    {t('tournamentDetail.athleteCount', { count: team.athlete_count || 0 })}
                   </span>
                 </div>
               </div>

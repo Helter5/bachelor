@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS, API_BASE_URL } from "@/config/api"
 import { SearchInput } from "./SearchInput"
@@ -18,6 +19,7 @@ interface Tournament {
 }
 
 export function ExportPdfModal({ isDarkMode, isOpen, onClose, exportType }: ExportPdfModalProps) {
+  const { t } = useTranslation()
   const [tournaments, setTournaments] = useState<Tournament[]>([])
   const [selectedTournament, setSelectedTournament] = useState<string>("")
   const [loading, setLoading] = useState(false)
@@ -53,7 +55,7 @@ export function ExportPdfModal({ isDarkMode, isOpen, onClose, exportType }: Expo
       setError(null)
     } catch (err) {
       console.error('Error fetching tournaments:', err)
-      setError('Nepodarilo sa načítať turnaje')
+      setError(t('exportPdf.loadError'))
     } finally {
       setLoading(false)
     }
@@ -88,16 +90,16 @@ export function ExportPdfModal({ isDarkMode, isOpen, onClose, exportType }: Expo
       window.URL.revokeObjectURL(url)
     } catch (error) {
       console.error('Error downloading PDF:', error)
-      alert('Nepodarilo sa stiahnuť PDF')
+      alert(t('exportPdf.downloadError'))
     }
   }
 
   if (!isOpen) return null
 
-  const title = exportType === "teams" ? "Zoznam týmov" : "Zoznam atlétov"
-  const description = exportType === "teams" 
-    ? "Vyberte turnaj pre export zoznamu všetkých týmov"
-    : "Vyberte turnaj pre export zoznamu všetkých atlétov"
+  const title = exportType === "teams" ? t('exportPdf.teamsTitle') : t('exportPdf.athletesTitle')
+  const description = exportType === "teams"
+    ? t('exportPdf.teamsDesc')
+    : t('exportPdf.athletesDesc')
 
   // Filter and sort tournaments
   const filteredTournaments = tournaments
@@ -157,7 +159,7 @@ export function ExportPdfModal({ isDarkMode, isOpen, onClose, exportType }: Expo
                 isDarkMode={isDarkMode}
                 value={searchQuery}
                 onChange={setSearchQuery}
-                placeholder="Hľadať turnaj..."
+                placeholder={t('exportPdf.searchPlaceholder')}
                 className="flex-1"
               />
 
@@ -169,7 +171,7 @@ export function ExportPdfModal({ isDarkMode, isOpen, onClose, exportType }: Expo
                     ? 'bg-[#1e293b] text-gray-300 hover:bg-[#334155] shadow-lg'
                     : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
                 }`}
-                title={sortOrder === "asc" ? "Zoradiť Z-A" : "Zoradiť A-Z"}
+                title={sortOrder === "asc" ? t('exportPdf.sortAz') : t('exportPdf.sortZa')}
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   {sortOrder === "asc" ? (
@@ -184,7 +186,7 @@ export function ExportPdfModal({ isDarkMode, isOpen, onClose, exportType }: Expo
 
             {/* Results Count */}
             <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              {loading ? 'Načítavam...' : `${filteredTournaments.length} ${filteredTournaments.length === 1 ? 'turnaj' : filteredTournaments.length < 5 ? 'turnaje' : 'turnajov'}`}
+              {loading ? t('exportPdf.loading') : `${filteredTournaments.length} ${filteredTournaments.length === 1 ? t('exportPdf.countOne') : filteredTournaments.length < 5 ? t('exportPdf.countFew') : t('exportPdf.countMany')}`}
             </p>
           </div>
 
@@ -196,7 +198,7 @@ export function ExportPdfModal({ isDarkMode, isOpen, onClose, exportType }: Expo
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Načítavam turnaje...
+                {t('exportPdf.loadingTournaments')}
               </div>
             ) : error ? (
               <div className="p-8 text-center text-red-500">
@@ -204,7 +206,7 @@ export function ExportPdfModal({ isDarkMode, isOpen, onClose, exportType }: Expo
               </div>
             ) : filteredTournaments.length === 0 ? (
               <div className={`p-8 text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Žiadne turnaje nenájdené
+                {t('exportPdf.notFound')}
               </div>
             ) : (
               <div className="space-y-2">
@@ -259,7 +261,7 @@ export function ExportPdfModal({ isDarkMode, isOpen, onClose, exportType }: Expo
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            Zrušiť
+            {t('exportPdf.cancel')}
           </button>
           <button
             onClick={handlePreview}
@@ -276,7 +278,7 @@ export function ExportPdfModal({ isDarkMode, isOpen, onClose, exportType }: Expo
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
             </svg>
-            Zobraziť
+            {t('exportPdf.preview')}
           </button>
           <button
             onClick={handleDownload}
@@ -292,7 +294,7 @@ export function ExportPdfModal({ isDarkMode, isOpen, onClose, exportType }: Expo
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
-            Stiahnuť
+            {t('exportPdf.download')}
           </button>
         </div>
       </div>

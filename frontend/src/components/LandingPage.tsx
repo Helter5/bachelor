@@ -1,4 +1,5 @@
 import { useState, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -13,6 +14,7 @@ interface LandingPageProps {
 }
 
 export function LandingPage({ onLogin }: LandingPageProps) {
+  const { t } = useTranslation()
   const [isRegister, setIsRegister] = useState(false)
   const [showResendVerification, setShowResendVerification] = useState(false)
   const [showForgotPassword, setShowForgotPassword] = useState(false)
@@ -45,7 +47,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
     // Basic validation
     if (!loginData.username.trim() || !loginData.password.trim()) {
-      showToast("warning", "Vyplňte všetky polia")
+      showToast("warning", t("landing.toasts.fillAllFields"))
       return
     }
 
@@ -71,17 +73,17 @@ export function LandingPage({ onLogin }: LandingPageProps) {
     } catch (error) {
       console.error("Login error:", error)
       if (error instanceof ApiError && error.status === 401) {
-        showToast("error", "Nesprávne prihlasovacie údaje")
+        showToast("error", t("landing.toasts.invalidCredentials"))
       } else if (error instanceof ApiError && error.status === 403) {
         // Email not verified - show resend verification form
         // Pre-fill email field with the username/email used for login
         setResendEmail(loginData.username)
         setShowResendVerification(true)
-        showToast("warning", "Email nie je overený", "Odošlite si nový verifikačný email.")
+        showToast("warning", t("landing.toasts.emailNotVerified"), t("landing.toasts.emailNotVerifiedMsg"))
       } else if (error instanceof Error) {
-        showToast("error", "Chyba prihlásenia", error.message)
+        showToast("error", t("landing.toasts.loginError"), error.message)
       } else {
-        showToast("error", "Chyba prihlásenia", "Nastala chyba pri pripájaní na server")
+        showToast("error", t("landing.toasts.loginError"), t("landing.toasts.serverError"))
       }
     }
   };
@@ -90,7 +92,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
     e.preventDefault()
 
     if (!resendEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(resendEmail)) {
-      showToast("warning", "Zadajte platný email")
+      showToast("warning", t("landing.toasts.enterValidEmail"))
       return
     }
 
@@ -100,12 +102,12 @@ export function LandingPage({ onLogin }: LandingPageProps) {
         { email: resendEmail },
         { requireAuth: false }
       )
-      showToast("success", "Email odoslaný!", "Skontrolujte svoju schránku.")
+      showToast("success", t("landing.toasts.emailSent"), t("landing.toasts.emailSentMsg"))
       setShowResendVerification(false)
       setResendEmail("")
     } catch (error) {
       console.error("Resend verification error:", error)
-      showToast("error", "Chyba", "Nepodarilo sa odoslať email")
+      showToast("error", t("landing.toasts.error"), t("landing.toasts.sendError"))
     }
   };
 
@@ -113,7 +115,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
     e.preventDefault()
 
     if (!forgotPasswordEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(forgotPasswordEmail)) {
-      showToast("warning", "Zadajte platný email")
+      showToast("warning", t("landing.toasts.enterValidEmail"))
       return
     }
 
@@ -123,12 +125,12 @@ export function LandingPage({ onLogin }: LandingPageProps) {
         { email: forgotPasswordEmail },
         { requireAuth: false }
       )
-      showToast("success", "Žiadosť odoslaná", "Ak email existuje v našom systéme, bol odoslaný odkaz na obnovenie hesla.")
+      showToast("success", t("landing.toasts.requestSent"), t("landing.toasts.requestSentMsg"))
       setShowForgotPassword(false)
       setForgotPasswordEmail("")
     } catch (error) {
       console.error("Forgot password error:", error)
-      showToast("error", "Chyba", "Nepodarilo sa odoslať žiadosť")
+      showToast("error", t("landing.toasts.error"), t("landing.toasts.sendRequestError"))
     }
   };
 
@@ -148,23 +150,23 @@ export function LandingPage({ onLogin }: LandingPageProps) {
     } catch (error) {
       console.error("Google login error:", error)
       if (error instanceof ApiError) {
-        showToast("error", "Chyba prihlásenia cez Google", error.message)
+        showToast("error", t("landing.toasts.googleLoginError"), error.message)
       } else {
-        showToast("error", "Chyba prihlásenia cez Google", "Nastala chyba pri pripájaní")
+        showToast("error", t("landing.toasts.googleLoginError"), t("landing.toasts.serverError"))
       }
     }
   };
 
   const handleGoogleError = () => {
-    showToast("error", "Chyba prihlásenia", "Google prihlásenie zlyhalo")
+    showToast("error", t("landing.toasts.loginError"), t("landing.toasts.googleLoginFailed"))
   };
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const newErrors: Record<string, string> = {
       username: validateUsername(formData.username),
-      firstName: validateRequired(formData.firstName, 'Meno'),
-      lastName: validateRequired(formData.lastName, 'Priezvisko'),
+      firstName: validateRequired(formData.firstName, t("landing.validation.firstNameLabel")),
+      lastName: validateRequired(formData.lastName, t("landing.validation.lastNameLabel")),
       email: validateEmail(formData.email),
       password: validatePassword(formData.password),
       confirmPassword: validatePasswordMatch(formData.password, formData.confirmPassword),
@@ -192,7 +194,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
       )
 
       // Success
-      showToast("success", "Registrácia úspešná!", "Skontrolujte váš email a overte si účet pred prihlásením.")
+      showToast("success", t("landing.toasts.registrationSuccess"), t("landing.toasts.registrationSuccessMsg"))
       setIsRegister(false)
       // Reset form
       setFormData({
@@ -214,10 +216,10 @@ export function LandingPage({ onLogin }: LandingPageProps) {
           newErrors.email = errorMessage
           setErrors(newErrors)
         } else {
-          showToast("error", "Chyba registrácie", errorMessage)
+          showToast("error", t("landing.toasts.registrationError"), errorMessage)
         }
       } else {
-        showToast("error", "Chyba registrácie", "Nastala chyba pri pripájaní na server")
+        showToast("error", t("landing.toasts.registrationError"), t("landing.toasts.serverError"))
       }
     }
   }
@@ -234,8 +236,8 @@ export function LandingPage({ onLogin }: LandingPageProps) {
     const value = formData[field as keyof typeof formData]
     let error = ""
     if (field === 'username') error = validateUsername(value)
-    else if (field === 'firstName') error = validateRequired(value, 'Meno')
-    else if (field === 'lastName') error = validateRequired(value, 'Priezvisko')
+    else if (field === 'firstName') error = validateRequired(value, t("landing.validation.firstNameLabel"))
+    else if (field === 'lastName') error = validateRequired(value, t("landing.validation.lastNameLabel"))
     else if (field === 'email') error = validateEmail(value)
     else if (field === 'password') error = validatePassword(value)
     else if (field === 'confirmPassword') error = validatePasswordMatch(formData.password, value)
@@ -271,7 +273,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
               Wrestling Federation
             </h1>
             <p className="text-blue-100 text-lg drop-shadow-md">
-              Profesionálny systém na správu zápasníkov, turnajov a štatistík
+              {t("landing.tagline")}
             </p>
           </div>
 
@@ -283,9 +285,9 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-white mb-1">Správa zápasníkov</h3>
+                <h3 className="font-semibold text-white mb-1">{t("landing.feature1Title")}</h3>
                 <p className="text-blue-100 text-sm">
-                  Kompletná databáza s profilmi a históriou
+                  {t("landing.feature1Desc")}
                 </p>
               </div>
             </div>
@@ -297,9 +299,9 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-white mb-1">Organizácia turnajov</h3>
+                <h3 className="font-semibold text-white mb-1">{t("landing.feature2Title")}</h3>
                 <p className="text-blue-100 text-sm">
-                  Plánovanie a sledovanie podujatí
+                  {t("landing.feature2Desc")}
                 </p>
               </div>
             </div>
@@ -311,16 +313,16 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-white mb-1">Detailné štatistiky</h3>
+                <h3 className="font-semibold text-white mb-1">{t("landing.feature3Title")}</h3>
                 <p className="text-blue-100 text-sm">
-                  Analýzy výsledkov a výkonnosti
+                  {t("landing.feature3Desc")}
                 </p>
               </div>
             </div>
           </div>
 
           <div className="text-gray-400 text-sm relative z-10">
-            © 2025 Wrestling Federation. Všetky práva vyhradené.
+            {t("landing.copyright")}
           </div>
         </div>
 
@@ -333,10 +335,10 @@ export function LandingPage({ onLogin }: LandingPageProps) {
           <div className="w-full max-w-md relative z-10">
             <div className="mb-8">
               <h2 className="text-3xl font-bold text-white mb-2">
-                {isRegister ? "Vytvorte si účet" : "Vitajte späť"}
+                {isRegister ? t("landing.createAccount") : t("landing.welcomeBack")}
               </h2>
               <p className="text-gray-400">
-                {isRegister ? "Registrujte sa a získajte prístup k systému" : "Prihláste sa do svojho účtu"}
+                {isRegister ? t("landing.registerSubtitle") : t("landing.loginSubtitle")}
               </p>
             </div>
 
@@ -359,12 +361,12 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                         </svg>
                       </div>
-                      <h3 className="text-lg font-semibold text-white mb-1">Zabudli ste heslo?</h3>
-                      <p className="text-sm text-gray-400">Zadajte váš email a pošleme vám odkaz na obnovenie hesla</p>
+                      <h3 className="text-lg font-semibold text-white mb-1">{t("landing.forgotPasswordTitle")}</h3>
+                      <p className="text-sm text-gray-400">{t("landing.forgotPasswordSubtitle")}</p>
                     </div>
                     <div className="space-y-2">
                       <label htmlFor="forgot-email" className="text-sm font-medium text-gray-300">
-                        E-mail
+                        {t("landing.emailLabel")}
                       </label>
                       <Input
                         id="forgot-email"
@@ -376,7 +378,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                       />
                     </div>
                     <Button type="submit" className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white" size="lg">
-                      Odoslať odkaz
+                      {t("landing.sendLink")}
                     </Button>
                     <Button
                       type="button"
@@ -387,7 +389,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                       className="w-full h-11 bg-gray-600 hover:bg-gray-700 text-white"
                       size="lg"
                     >
-                      Zrušiť
+                      {t("common.cancel")}
                     </Button>
                   </form>
                 ) : showResendVerification ? (
@@ -399,12 +401,12 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
                       </div>
-                      <h3 className="text-lg font-semibold text-white mb-1">Email nie je overený</h3>
-                      <p className="text-sm text-gray-400">Zadajte váš email a odošleme vám nový verifikačný odkaz</p>
+                      <h3 className="text-lg font-semibold text-white mb-1">{t("landing.resendVerificationTitle")}</h3>
+                      <p className="text-sm text-gray-400">{t("landing.resendVerificationSubtitle")}</p>
                     </div>
                     <div className="space-y-2">
                       <label htmlFor="resend-email" className="text-sm font-medium text-gray-300">
-                        E-mail
+                        {t("landing.emailLabel")}
                       </label>
                       <Input
                         id="resend-email"
@@ -416,7 +418,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                       />
                     </div>
                     <Button type="submit" className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white" size="lg">
-                      Odoslať verifikačný email
+                      {t("landing.sendVerificationEmail")}
                     </Button>
                     <Button
                       type="button"
@@ -427,7 +429,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                       className="w-full h-11 bg-gray-600 hover:bg-gray-700 text-white"
                       size="lg"
                     >
-                      Zrušiť
+                      {t("common.cancel")}
                     </Button>
                   </form>
                 ) : !isRegister ? (
@@ -448,7 +450,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                       </svg>
-                      Prihlásiť sa cez Google
+                      {t("landing.loginWithGoogle")}
                     </button>
 
                     {/* Divider */}
@@ -457,7 +459,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                         <div className="w-full border-t border-white/10"></div>
                       </div>
                       <div className="relative flex justify-center">
-                        <span className="bg-[#1e293b] px-4 text-xs text-gray-500 uppercase tracking-wider">alebo</span>
+                        <span className="bg-[#1e293b] px-4 text-xs text-gray-500 uppercase tracking-wider">{t("landing.or")}</span>
                       </div>
                     </div>
 
@@ -465,7 +467,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                     <form onSubmit={handleLoginClick} className="space-y-4">
                       <div className="space-y-2">
                         <label htmlFor="username" className="text-sm font-medium text-gray-300">
-                          Prihlasovacie meno
+                          {t("landing.loginLabel")}
                         </label>
                         <Input
                           id="username"
@@ -478,7 +480,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                             if (errors.loginUsername) setErrors(prev => ({ ...prev, loginUsername: '' }))
                           }}
                           onBlur={() => {
-                            if (!loginData.username.trim()) setErrors(prev => ({ ...prev, loginUsername: 'Prihlasovacie meno je povinné' }))
+                            if (!loginData.username.trim()) setErrors(prev => ({ ...prev, loginUsername: t("landing.validation.loginUsernameRequired") }))
                           }}
                         />
                         {errors.loginUsername && (
@@ -488,14 +490,14 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <label htmlFor="password" className="text-sm font-medium text-gray-300">
-                            Heslo
+                            {t("landing.passwordLabel")}
                           </label>
                           <button
                             type="button"
                             onClick={() => setShowForgotPassword(true)}
                             className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
                           >
-                            Zabudli ste?
+                            {t("landing.forgotPasswordLink")}
                           </button>
                         </div>
                         <Input
@@ -509,7 +511,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                             if (errors.loginPassword) setErrors(prev => ({ ...prev, loginPassword: '' }))
                           }}
                           onBlur={() => {
-                            if (!loginData.password.trim()) setErrors(prev => ({ ...prev, loginPassword: 'Heslo je povinné' }))
+                            if (!loginData.password.trim()) setErrors(prev => ({ ...prev, loginPassword: t("landing.validation.loginPasswordRequired") }))
                           }}
                         />
                         {errors.loginPassword && (
@@ -517,7 +519,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                         )}
                       </div>
                       <Button type="submit" className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white transition-colors" size="lg">
-                        Prihlásiť sa
+                        {t("landing.submitLogin")}
                       </Button>
                     </form>
 
@@ -534,7 +536,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                   <form onSubmit={handleRegisterSubmit} className="space-y-4">
                     <div className="space-y-2">
                       <label htmlFor="username" className="text-sm font-medium text-gray-300">
-                        Prihlasovacie meno
+                        {t("landing.loginLabel")}
                       </label>
                       <Input
                         id="username"
@@ -553,7 +555,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label htmlFor="firstName" className="text-sm font-medium text-gray-300">
-                          Meno
+                          {t("landing.validation.firstNameLabel")}
                         </label>
                         <Input
                           id="firstName"
@@ -571,7 +573,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
                       <div className="space-y-2">
                         <label htmlFor="lastName" className="text-sm font-medium text-gray-300">
-                          Priezvisko
+                          {t("landing.validation.lastNameLabel")}
                         </label>
                         <Input
                           id="lastName"
@@ -590,7 +592,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
                     <div className="space-y-2">
                       <label htmlFor="reg-email" className="text-sm font-medium text-gray-300">
-                        E-mail
+                        {t("landing.emailLabel")}
                       </label>
                       <Input
                         id="reg-email"
@@ -608,7 +610,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
                     <div className="space-y-2">
                       <label htmlFor="reg-password" className="text-sm font-medium text-gray-300">
-                        Heslo
+                        {t("landing.passwordLabel")}
                       </label>
                       <Input
                         id="reg-password"
@@ -626,7 +628,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
                     <div className="space-y-2">
                       <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-300">
-                        Zopakuj heslo
+                        {t("landing.repeatPassword")}
                       </label>
                       <Input
                         id="confirmPassword"
@@ -643,14 +645,14 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                     </div>
 
                     <Button type="submit" className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white" size="lg">
-                      Registrovať
+                      {t("landing.submitRegister")}
                     </Button>
                   </form>
                 )}
 
                 {/* Toggle between Login and Register */}
                 <div className="mt-6 text-center text-sm text-gray-400">
-                  {isRegister ? "Už máte účet? " : "Nemáte účet? "}
+                  {isRegister ? t("landing.hasAccount") : t("landing.noAccount")}
                   <button
                     type="button"
                     onClick={() => {
@@ -667,7 +669,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                     }}
                     className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
                   >
-                    {isRegister ? "Prihláste sa" : "Registrujte sa"}
+                    {isRegister ? t("landing.loginLink") : t("landing.registerLink")}
                   </button>
                 </div>
               </CardContent>
@@ -677,7 +679,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
             <div className="lg:hidden mt-8 text-center">
               <h3 className="font-semibold text-white mb-2">Wrestling Federation</h3>
               <p className="text-gray-400 text-sm">
-                Profesionálny systém na správu zápasníkov a turnajov
+                {t("landing.mobileBranding")}
               </p>
             </div>
           </div>

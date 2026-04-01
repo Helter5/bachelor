@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { useEvents } from "@/hooks/useEvents"
 import { useEventStatistics } from "@/hooks/useEventStatistics"
 import type { TeamPerformance } from "@/hooks/useEventStatistics"
@@ -55,8 +56,9 @@ function TeamSelector({
   teams: TeamPerformance[]
   excludeName: string
 }) {
+  const { t } = useTranslation()
   const teamOptions = useMemo(() => [
-    { value: "", label: "— Vyber tím —" },
+    { value: "", label: t("teamComparison.selectTeam") },
     ...teams
       .filter((t) => t.name !== excludeName)
       .map((t) => ({ value: t.name, label: t.country ? `${t.country} — ${t.name}` : t.name })),
@@ -84,6 +86,7 @@ function TeamSelector({
 }
 
 export function TeamComparisonView({ isDarkMode, onBack }: TeamComparisonViewProps) {
+  const { t } = useTranslation()
   const events = useEvents()
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null)
   const [team1Name, setTeam1Name] = useState("")
@@ -98,7 +101,7 @@ export function TeamComparisonView({ isDarkMode, onBack }: TeamComparisonViewPro
   const canCompare = !!team1 && !!team2 && team1Name !== team2Name
 
   const eventOptions = useMemo(() => [
-    { value: 0, label: "— Vyber turnaj —" },
+    { value: 0, label: t("teamComparison.selectTournament") },
     ...events.map((e) => ({ value: e.id, label: e.name })),
   ], [events])
 
@@ -132,21 +135,21 @@ export function TeamComparisonView({ isDarkMode, onBack }: TeamComparisonViewPro
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
-        Späť na kategórie
+        {t("teamComparison.backToCategories")}
       </button>
 
       <div className={`rounded-xl p-8 ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-lg`}>
         <h2 className={`text-2xl font-bold mb-2 ${isDarkMode ? "text-white" : "text-gray-900"}`}>
-          Porovnanie tímov
+          {t("teamComparison.title")}
         </h2>
         <p className={`text-sm mb-6 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
-          Porovnanie výkonu dvoch tímov v rámci vybraného turnaja
+          {t("teamComparison.subtitle")}
         </p>
 
         {/* Event selector */}
         <div className="mb-6">
           <label className={`block text-sm font-medium mb-2 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
-            Turnaj
+            {t("teamComparison.tournament")}
           </label>
           <Select
             value={selectedEventId ?? 0}
@@ -160,14 +163,14 @@ export function TeamComparisonView({ isDarkMode, onBack }: TeamComparisonViewPro
         {/* Loading spinner */}
         {loading && (
           <div className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
-            Načítavam tímy...
+            {t("teamComparison.loadingTeams")}
           </div>
         )}
 
         {/* No teams found */}
         {!loading && selectedEventId && teams.length === 0 && (
           <div className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
-            Pre tento turnaj neboli nájdené žiadne tímy so štatistikami.
+            {t("teamComparison.noTeams")}
           </div>
         )}
 
@@ -177,7 +180,7 @@ export function TeamComparisonView({ isDarkMode, onBack }: TeamComparisonViewPro
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <TeamSelector
                 isDarkMode={isDarkMode}
-                label="Tím 1"
+                label={t("teamComparison.team1")}
                 value={team1Name}
                 onChange={(v) => { setTeam1Name(v); setShowResults(false) }}
                 teams={teams}
@@ -185,7 +188,7 @@ export function TeamComparisonView({ isDarkMode, onBack }: TeamComparisonViewPro
               />
               <TeamSelector
                 isDarkMode={isDarkMode}
-                label="Tím 2"
+                label={t("teamComparison.team2")}
                 value={team2Name}
                 onChange={(v) => { setTeam2Name(v); setShowResults(false) }}
                 teams={teams}
@@ -205,7 +208,7 @@ export function TeamComparisonView({ isDarkMode, onBack }: TeamComparisonViewPro
                       : "bg-gray-200 text-gray-400 cursor-not-allowed"
                 }`}
               >
-                Porovnať
+                {t("teamComparison.compareButton")}
               </button>
               {showResults && (
                 <button
@@ -216,7 +219,7 @@ export function TeamComparisonView({ isDarkMode, onBack }: TeamComparisonViewPro
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200"
                   }`}
                 >
-                  Zrušiť
+                  {t("teamComparison.cancelButton")}
                 </button>
               )}
             </div>
@@ -251,28 +254,19 @@ export function TeamComparisonView({ isDarkMode, onBack }: TeamComparisonViewPro
               <div className={`h-px ${isDarkMode ? "bg-white/5" : "bg-gray-200"}`} />
 
               {/* Stat rows */}
-              <StatRow label="Zápasy" v1={team1.total_fights} v2={team2.total_fights} isDarkMode={isDarkMode} />
-              <StatRow label="Výhry" v1={team1.wins} v2={team2.wins} isDarkMode={isDarkMode} />
-              <StatRow label="Prehry" v1={team1.losses} v2={team2.losses} isDarkMode={isDarkMode} higherIsBetter={false} />
-              <StatRow label="Úspešnosť" v1={team1.win_rate.toFixed(1)} v2={team2.win_rate.toFixed(1)} isDarkMode={isDarkMode} suffix="%" />
+              <StatRow label={t("teamComparison.statFights")} v1={team1.total_fights} v2={team2.total_fights} isDarkMode={isDarkMode} />
+              <StatRow label={t("teamComparison.statWins")} v1={team1.wins} v2={team2.wins} isDarkMode={isDarkMode} />
+              <StatRow label={t("teamComparison.statLosses")} v1={team1.losses} v2={team2.losses} isDarkMode={isDarkMode} higherIsBetter={false} />
+              <StatRow label={t("teamComparison.statWinRate")} v1={team1.win_rate.toFixed(1)} v2={team2.win_rate.toFixed(1)} isDarkMode={isDarkMode} suffix="%" />
             </div>
 
             {/* Quick verdict */}
             {team1.win_rate !== team2.win_rate && (
               <div className={`mt-4 text-center text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
-                {team1.win_rate > team2.win_rate ? (
-                  <span>
-                    <span className={`font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>{team1.name}</span>
-                    {" "}má lepšiu úspešnosť o{" "}
-                    <span className="text-green-500 font-bold">{(team1.win_rate - team2.win_rate).toFixed(1)}%</span>
-                  </span>
-                ) : (
-                  <span>
-                    <span className={`font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>{team2.name}</span>
-                    {" "}má lepšiu úspešnosť o{" "}
-                    <span className="text-green-500 font-bold">{(team2.win_rate - team1.win_rate).toFixed(1)}%</span>
-                  </span>
-                )}
+                {team1.win_rate > team2.win_rate
+                  ? t("teamComparison.betterWinRate", { name: team1.name, diff: (team1.win_rate - team2.win_rate).toFixed(1) })
+                  : t("teamComparison.betterWinRate", { name: team2.name, diff: (team2.win_rate - team1.win_rate).toFixed(1) })
+                }
               </div>
             )}
           </div>

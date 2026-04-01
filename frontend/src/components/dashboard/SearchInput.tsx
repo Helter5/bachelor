@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next"
+
 interface SearchInputProps {
   isDarkMode: boolean
   value: string
@@ -6,14 +8,16 @@ interface SearchInputProps {
   className?: string
 }
 
-export function SearchInput({ isDarkMode, value, onChange, placeholder = "Hľadať...", className = "" }: SearchInputProps) {
+export function SearchInput({ isDarkMode, value, onChange, placeholder, className = "" }: SearchInputProps) {
+  const { t } = useTranslation()
+  const resolvedPlaceholder = placeholder ?? t("searchInput.defaultPlaceholder")
   return (
     <div className={`relative ${className}`}>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
+        placeholder={resolvedPlaceholder}
         className={`w-full px-3 py-2 pl-9 rounded-lg text-sm transition-all ${
           isDarkMode
             ? 'bg-[#0f172a]/50 text-white focus:bg-[#0f172a] placeholder-gray-500 shadow-inner focus:ring-2 focus:ring-blue-500/30'
