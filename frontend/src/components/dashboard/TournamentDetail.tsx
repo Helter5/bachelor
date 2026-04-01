@@ -34,7 +34,45 @@ export function TournamentDetail({
   onSelectPerson
 }: TournamentDetailProps) {
   const { t } = useTranslation()
-  const [activeTab, setActiveTab] = useState<TabType>("weight-categories")
+  const tabsOrder: TabType[] = ["weight-categories", "teams", "athletes", "results", "statistics", "draw", "export"]
+  const isTabType = (value: string | null): value is TabType => {
+    return !!value && tabsOrder.includes(value as TabType)
+  }
+
+  const getTournamentBasePath = useCallback(() => `/dashboard/tournaments/${tournamentId}`, [tournamentId])
+
+  const pushPathWithCurrentQuery = useCallback((path: string) => {
+    const params = new URLSearchParams(window.location.search)
+    const query = params.toString()
+    window.history.pushState({}, '', query ? `${path}?${query}` : path)
+  }, [])
+
+  const pushCurrentPathWithQuery = useCallback((params: URLSearchParams) => {
+    const query = params.toString()
+    window.history.pushState({}, '', query ? `${window.location.pathname}?${query}` : window.location.pathname)
+  }, [])
+
+  const getTabPath = useCallback((tab: TabType) => {
+    const basePath = getTournamentBasePath()
+    return tab === 'weight-categories' ? basePath : `${basePath}/${tab}`
+  }, [getTournamentBasePath])
+
+  const getTabFromUrl = () => {
+    const segments = window.location.pathname.split('/').filter(Boolean)
+    const tournamentsIdx = segments.indexOf('tournaments')
+    if (tournamentsIdx >= 0) {
+      const maybeTab = segments[tournamentsIdx + 2] || null
+      if (isTabType(maybeTab)) {
+        return maybeTab
+      }
+    }
+
+    // Backward compatibility for older query links
+    const urlTab = new URLSearchParams(window.location.search).get('tab')
+    return isTabType(urlTab) ? urlTab : 'weight-categories'
+  }
+
+  const [activeTab, setActiveTab] = useState<TabType>(getTabFromUrl)
 
   const [teams, setTeams] = useState<Team[]>([])
   const [teamsLoading, setTeamsLoading] = useState(false)
@@ -196,18 +234,17 @@ export function TournamentDetail({
   const openTeamDetail = useCallback(async (team: { id: string; name: string }) => {
     const params = new URLSearchParams(window.location.search)
     params.set('team', team.id)
-    window.history.pushState({}, '', `?${params.toString()}`)
+    pushCurrentPathWithQuery(params)
     await openTeamDetailWithoutHistory(team)
-  }, [openTeamDetailWithoutHistory])
+  }, [openTeamDetailWithoutHistory, pushCurrentPathWithQuery])
 
   const closeTeamDetail = useCallback(() => {
     const params = new URLSearchParams(window.location.search)
     params.delete('team')
-    const newUrl = params.toString() ? `?${params.toString()}` : window.location.pathname
-    window.history.pushState({}, '', newUrl)
+    pushCurrentPathWithQuery(params)
     setSelectedTeam(null)
     setTeamAthletes([])
-  }, [])
+  }, [pushCurrentPathWithQuery])
 
   // --- Weight category detail ---
 
@@ -229,35 +266,38 @@ export function TournamentDetail({
   const openWeightCategoryDetail = useCallback(async (wc: { id: number; name: string; sport_name: string; audience_name: string }) => {
     const params = new URLSearchParams(window.location.search)
     params.set('wc', wc.id.toString())
-    window.history.pushState({}, '', `?${params.toString()}`)
+    pushCurrentPathWithQuery(params)
     await openWeightCategoryDetailWithoutHistory(wc)
-  }, [openWeightCategoryDetailWithoutHistory])
+  }, [openWeightCategoryDetailWithoutHistory, pushCurrentPathWithQuery])
 
   const closeWeightCategoryDetail = useCallback(() => {
     const params = new URLSearchParams(window.location.search)
     params.delete('wc')
-    const newUrl = params.toString() ? `?${params.toString()}` : window.location.pathname
-    window.history.pushState({}, '', newUrl)
+    pushCurrentPathWithQuery(params)
     setSelectedWeightCategory(null)
     setWeightCategoryAthletes([])
-  }, [])
+  }, [pushCurrentPathWithQuery])
 
   // --- Results weight category detail ---
 
   const openWeightCategoryResultsDetail = useCallback((wc: { id: number; name: string; sport_name: string; audience_name: string }) => {
     const params = new URLSearchParams(window.location.search)
     params.set('results_wc', wc.id.toString())
-    window.history.pushState({}, '', `?${params.toString()}`)
+    pushCurrentPathWithQuery(params)
     setSelectedWeightCategoryForResults(wc)
-  }, [])
+  }, [pushCurrentPathWithQuery])
 
   const closeWeightCategoryResultsDetail = useCallback(() => {
     const params = new URLSearchParams(window.location.search)
     params.delete('results_wc')
-    const newUrl = params.toString() ? `?${params.toString()}` : window.location.pathname
-    window.history.pushState({}, '', newUrl)
+    pushCurrentPathWithQuery(params)
     setSelectedWeightCategoryForResults(null)
-  }, [])
+  }, [pushCurrentPathWithQuery])
+
+  const handleTabChange = useCallback((tab: TabType) => {
+    setActiveTab(tab)
+    pushPathWithCurrentQuery(getTabPath(tab))
+  }, [getTabPath, pushPathWithCurrentQuery])
 
   // --- Effects ---
 
@@ -266,6 +306,10 @@ export function TournamentDetail({
       const params = new URLSearchParams(window.location.search)
       const teamId = params.get('team')
       const wcId = params.get('wc')
+      const tab = getTabFromUrl()
+
+      setActiveTab(tab)
+
       if (teamId && teams.length > 0) {
         const team = teams.find(t => t.id === parseInt(teamId))
         if (team) openTeamDetailWithoutHistory({ id: team.id.toString(), name: team.name })
@@ -282,6 +326,14 @@ export function TournamentDetail({
     window.addEventListener('popstate', handlePopState)
     return () => window.removeEventListener('popstate', handlePopState)
   }, [teams, weightCategories, openTeamDetailWithoutHistory, openWeightCategoryDetailWithoutHistory])
+
+  useEffect(() => {
+    const tab = getTabFromUrl()
+    setActiveTab(tab)
+    if (window.location.pathname !== getTabPath(tab)) {
+      window.history.replaceState({}, '', getTabPath(tab))
+    }
+  }, [tournamentId])
 
   useEffect(() => {
     if (activeTab === "teams") loadTeams()
@@ -348,7 +400,7 @@ export function TournamentDetail({
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               className={`pb-4 px-1 font-medium transition-all ${
                 activeTab === tab.id
                   ? isDarkMode ? 'text-blue-400' : 'text-blue-600'
