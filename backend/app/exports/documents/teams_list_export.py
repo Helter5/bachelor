@@ -1,82 +1,107 @@
 """Teams list PDF export"""
 from io import BytesIO
 from typing import List, Dict, Any
+from datetime import datetime
 
-from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, HRFlowable, Paragraph, Table, TableStyle
 
 from ..utils.font_manager import font_manager
+from ..utils.styling import ColorPalette
+from ..builders.pdf_builder import (
+    PDFTableBuilder,
+    PDFFooterBuilder,
+    PDFSpacerBuilder,
+)
 
 
 def generate_teams_list_pdf(event_name: str, teams: List[Dict[str, Any]]) -> bytes:
     """Generate teams list PDF and return raw bytes."""
-    font_name = font_manager.default_font
-    font_bold = font_manager.bold_font
-
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5 * inch, bottomMargin=0.5 * inch)
-    styles = getSampleStyleSheet()
-    for style in styles.byName.values():
-        style.fontName = font_name
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        topMargin=0.6 * inch,
+        bottomMargin=0.6 * inch,
+        leftMargin=0.75 * inch,
+        rightMargin=0.75 * inch,
+    )
+    font_manager._register_fonts()
 
     elements = []
 
-    header_table = Table([[
-        Paragraph(f"<b>{event_name}</b>", styles["Normal"]),
-        Paragraph("<b>TEAMS LIST</b>", styles["Normal"]),
-    ]], colWidths=[4.5 * inch, 2 * inch])
-    header_table.setStyle(TableStyle([
+    # Title
+    title_style = ParagraphStyle(
+        "ExportTitle",
+        fontName=font_manager.bold_font,
+        fontSize=18,
+        leading=22,
+        textColor=ColorPalette.DARK_GRAY,
+        spaceAfter=4,
+    )
+    subtitle_style = ParagraphStyle(
+        "ExportSubtitle",
+        fontName=font_manager.default_font,
+        fontSize=11,
+        leading=14,
+        textColor=ColorPalette.MEDIUM_GRAY,
+        spaceAfter=6,
+    )
+    elements.append(Paragraph(event_name, title_style))
+    elements.append(Paragraph("Zoznam tímov", subtitle_style))
+    elements.append(PDFSpacerBuilder.create(0.1))
+    elements.append(HRFlowable(width="100%", thickness=2, color=ColorPalette.PRIMARY_BLUE, spaceAfter=10))
+    elements.append(PDFSpacerBuilder.create(0.15))
+
+    # Table
+    total_athletes = sum(t.get("athleteCount", 0) for t in teams)
+    table_data = [["#", "ISO", "Krajina", "Atlétov"]]
+    for idx, team in enumerate(teams, 1):
+        table_data.append([
+            str(idx),
+            team.get("alternateName", ""),
+            team.get("name", ""),
+            str(team.get("athleteCount", 0)),
+        ])
+
+    data_table = (
+        PDFTableBuilder(table_data, col_widths=[0.5, 0.9, 4.2, 0.9])
+        .with_header(bg_color=ColorPalette.DARK_GRAY, font_size=9)
+        .with_body(font_size=9)
+        .with_grid(line_width=0.3, color=ColorPalette.LIGHT_GRAY)
+        .with_column_alignment(0, "CENTER")
+        .with_column_alignment(1, "CENTER")
+        .with_column_alignment(2, "LEFT")
+        .with_column_alignment(3, "CENTER")
+        .build()
+    )
+    data_table.repeatRows = 1
+    elements.append(data_table)
+
+    elements.append(PDFSpacerBuilder.create(0.25))
+    elements.append(HRFlowable(width="100%", thickness=0.5, color=ColorPalette.LIGHT_GRAY))
+    elements.append(PDFSpacerBuilder.create(0.12))
+
+    # Summary row
+    summary = Table(
+        [[f"Tímov celkom: {len(teams)}", f"Atlétov celkom: {total_athletes}"]],
+        colWidths=[3.25 * inch, 3.25 * inch],
+    )
+    summary.setStyle(TableStyle([
+        ("FONTNAME", (0, 0), (-1, -1), font_manager.bold_font),
+        ("FONTSIZE", (0, 0), (-1, -1), 9),
+        ("TEXTCOLOR", (0, 0), (-1, -1), ColorPalette.DARK_GRAY),
         ("ALIGN", (0, 0), (0, 0), "LEFT"),
         ("ALIGN", (1, 0), (1, 0), "RIGHT"),
-        ("FONTSIZE", (0, 0), (-1, -1), 12),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 12),
+        ("TOPPADDING", (0, 0), (-1, -1), 0),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
     ]))
-    elements.append(header_table)
-    elements.append(Spacer(1, 0.2 * inch))
+    elements.append(summary)
 
-    table_data = [["#", "ISO", "Krajina", "Počet atlétov"]]
-    total_athletes = 0
-    for idx, team in enumerate(teams, 1):
-        count = team.get("athleteCount", 0)
-        total_athletes += count
-        table_data.append([str(idx), team.get("alternateName", ""), team.get("name", ""), str(count)])
-
-    data_table = Table(
-        table_data,
-        colWidths=[0.5 * inch, 0.8 * inch, 3.9 * inch, 1.3 * inch],
-        repeatRows=1,
-    )
-    data_table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-        ("ALIGN", (0, 0), (-1, 0), "CENTER"),
-        ("FONTNAME", (0, 0), (-1, 0), font_bold),
-        ("FONTSIZE", (0, 0), (-1, 0), 10),
-        ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
-        ("FONTNAME", (0, 1), (-1, -1), font_name),
-        ("FONTSIZE", (0, 1), (-1, -1), 9),
-        ("ALIGN", (0, 1), (0, -1), "CENTER"),
-        ("ALIGN", (1, 1), (1, -1), "CENTER"),
-        ("ALIGN", (2, 1), (2, -1), "LEFT"),
-        ("ALIGN", (3, 1), (3, -1), "CENTER"),
-        ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
-        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.lightgrey]),
-    ]))
-    elements.append(data_table)
-    elements.append(Spacer(1, 0.3 * inch))
-
-    footer_table = Table(
-        [[Paragraph(f"<b>Celkový počet atlétov: {total_athletes}</b>", styles["Normal"])]],
-        colWidths=[6.5 * inch],
-    )
-    footer_table.setStyle(TableStyle([
-        ("ALIGN", (0, 0), (0, 0), "CENTER"),
-        ("FONTSIZE", (0, 0), (0, 0), 12),
-    ]))
-    elements.append(footer_table)
+    elements.append(PDFSpacerBuilder.create(0.3))
+    elements.append(PDFFooterBuilder(width=6.5).build())
 
     doc.build(elements)
     buffer.seek(0)
