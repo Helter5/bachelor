@@ -5,7 +5,8 @@ from typing import List, Optional, Tuple, Union
 from datetime import datetime
 
 from reportlab.lib.units import inch
-from reportlab.platypus import Table, TableStyle, Spacer, Image
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.platypus import Table, TableStyle, Spacer, Image, Paragraph, HRFlowable
 from reportlab.lib import colors
 
 from ..utils.font_manager import font_manager
@@ -341,3 +342,34 @@ class PDFStatisticsBoxBuilder:
         ]))
 
         return table
+
+
+def build_export_header(event_name: str, subtitle: str) -> List:
+    """
+    Build a standard page header used across all PDF exports.
+
+    Returns a list of flowables: large event name, grey subtitle,
+    blue accent line, and a small spacer — ready to extend into elements.
+    """
+    title_style = ParagraphStyle(
+        "ExportHeaderTitle",
+        fontName=font_manager.bold_font,
+        fontSize=18,
+        leading=22,
+        textColor=ColorPalette.DARK_GRAY,
+        spaceAfter=4,
+    )
+    subtitle_style = ParagraphStyle(
+        "ExportHeaderSubtitle",
+        fontName=font_manager.default_font,
+        fontSize=11,
+        leading=14,
+        textColor=ColorPalette.MEDIUM_GRAY,
+        spaceAfter=6,
+    )
+    return [
+        Paragraph(event_name, title_style),
+        Paragraph(subtitle, subtitle_style),
+        HRFlowable(width="100%", thickness=2, color=ColorPalette.PRIMARY_BLUE, spaceAfter=10),
+        PDFSpacerBuilder.create(0.15),
+    ]

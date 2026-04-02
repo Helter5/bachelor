@@ -4,8 +4,7 @@ Results Summary PDF Export
 from typing import List, Dict, Any
 from datetime import datetime
 
-from reportlab.lib.styles import ParagraphStyle
-from reportlab.platypus import Flowable, Paragraph
+from reportlab.platypus import Flowable
 from sqlmodel import Session, select
 
 from ..base.pdf_base import BasePDFExport
@@ -14,7 +13,8 @@ from ..builders.pdf_builder import (
     PDFTitleBuilder,
     PDFFooterBuilder,
     PDFSpacerBuilder,
-    PDFStatisticsBoxBuilder
+    PDFStatisticsBoxBuilder,
+    build_export_header,
 )
 from ..utils.formatters import formatter
 from ..utils.styling import ColorPalette
@@ -107,26 +107,8 @@ class ResultsSummaryExport(BasePDFExport):
         person_map = self.metadata['person_map']
 
         # Main title
-        from ..utils.font_manager import font_manager
-        title_style = ParagraphStyle(
-            "RSTitle",
-            fontName=font_manager.bold_font,
-            fontSize=18,
-            leading=22,
-            textColor=ColorPalette.DARK_GRAY,
-            spaceAfter=4,
-        )
-        subtitle_style = ParagraphStyle(
-            "RSSubtitle",
-            fontName=font_manager.default_font,
-            fontSize=13,
-            leading=16,
-            textColor=ColorPalette.MEDIUM_GRAY,
-            spaceAfter=8,
-        )
-        elements.append(Paragraph(event.name or "Sport Event", title_style))
-        elements.append(Paragraph("Súhrnné výsledky", subtitle_style))
-        elements.append(PDFSpacerBuilder.create(0.2))
+        elements.extend(build_export_header(event.name or "Sport Event", "Súhrnné výsledky"))
+        elements.append(PDFSpacerBuilder.create(0.05))
 
         # Event info
         locality = formatter.text.clean_locality(event.address_locality)

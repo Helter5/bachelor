@@ -1,11 +1,9 @@
 """Athletes list PDF export"""
-from io import BytesIO
 from typing import List, Dict, Any
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
-from reportlab.lib.styles import ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, HRFlowable, Paragraph, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 
 from ..utils.font_manager import font_manager
 from ..utils.styling import ColorPalette
@@ -13,11 +11,13 @@ from ..builders.pdf_builder import (
     PDFTableBuilder,
     PDFFooterBuilder,
     PDFSpacerBuilder,
+    build_export_header,
 )
 
 
 def generate_athletes_list_pdf(event_name: str, athletes: List[Dict[str, Any]]) -> bytes:
     """Generate athletes list PDF and return raw bytes."""
+    from io import BytesIO
     buffer = BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -29,32 +29,8 @@ def generate_athletes_list_pdf(event_name: str, athletes: List[Dict[str, Any]]) 
     )
     font_manager._register_fonts()
 
-    elements = []
+    elements = build_export_header(event_name, "Zoznam atlétov")
 
-    # Title
-    title_style = ParagraphStyle(
-        "ExportTitle",
-        fontName=font_manager.bold_font,
-        fontSize=18,
-        leading=22,
-        textColor=ColorPalette.DARK_GRAY,
-        spaceAfter=4,
-    )
-    subtitle_style = ParagraphStyle(
-        "ExportSubtitle",
-        fontName=font_manager.default_font,
-        fontSize=11,
-        leading=14,
-        textColor=ColorPalette.MEDIUM_GRAY,
-        spaceAfter=6,
-    )
-    elements.append(Paragraph(event_name, title_style))
-    elements.append(Paragraph("Zoznam atlétov", subtitle_style))
-    elements.append(PDFSpacerBuilder.create(0.1))
-    elements.append(HRFlowable(width="100%", thickness=2, color=ColorPalette.PRIMARY_BLUE, spaceAfter=10))
-    elements.append(PDFSpacerBuilder.create(0.15))
-
-    # Table
     table_data = [["#", "Meno atlétа", "Tím"]]
     for idx, athlete in enumerate(athletes, 1):
         table_data.append([
@@ -77,10 +53,7 @@ def generate_athletes_list_pdf(event_name: str, athletes: List[Dict[str, Any]]) 
     elements.append(data_table)
 
     elements.append(PDFSpacerBuilder.create(0.25))
-    elements.append(HRFlowable(width="100%", thickness=0.5, color=ColorPalette.LIGHT_GRAY))
-    elements.append(PDFSpacerBuilder.create(0.12))
 
-    # Summary row
     summary = Table(
         [[f"Atlétov celkom: {len(athletes)}", ""]],
         colWidths=[3.25 * inch, 3.25 * inch],
