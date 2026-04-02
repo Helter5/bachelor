@@ -4,7 +4,6 @@ import { API_ENDPOINTS } from "@/config/api"
 
 export interface Event {
   id: number
-  uuid: string
   name: string
   full_name?: string
   start_date: string

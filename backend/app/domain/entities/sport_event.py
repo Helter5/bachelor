@@ -1,13 +1,11 @@
 """Sport Event entity - synced from Arena API"""
 from datetime import datetime, timezone
 from typing import Optional
-from uuid import UUID
 from sqlmodel import Field, SQLModel, UniqueConstraint
 
 
 class SportEventBase(SQLModel):
     """Base SportEvent fields shared across schemas"""
-    arena_uuid: UUID = Field(index=True)  # UUID from Arena API (not unique across instances)
     name: str
     start_date: Optional[str] = None
     end_date: Optional[str] = None
@@ -28,11 +26,9 @@ class SportEvent(SportEventBase, table=True):
     """
     Sport Event model - synced from Arena API
 
-    Natural key matching: Events are identified by (name, start_date, country_iso_code)
-    to handle distributed Arena instances with different UUIDs for the same event.
-
-    arena_uuid: Stores the Arena API UUID for reference, but NOT used as primary matcher
-                since different Arena instances generate different UUIDs for same event.
+    Identified by natural key (name, start_date, country_iso_code).
+    Multiple Arena instances may have different UUIDs for the same event —
+    UUIDs are resolved at sync-time from the Arena source and never persisted.
     """
     __tablename__ = "sport_events"
     __table_args__ = (
@@ -41,7 +37,6 @@ class SportEvent(SportEventBase, table=True):
     )
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    arena_uuid: UUID = Field(index=True)  # Not unique - multiple Arena instances
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

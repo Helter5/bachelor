@@ -11,16 +11,16 @@ router = APIRouter(prefix="/results")
 logger = logging.getLogger(__name__)
 
 
-@router.get("/{event_uuid}", response_model=List[Any])
-async def get_results(event_uuid: str, session: Session = Depends(get_session)):
+@router.get("/{event_id}", response_model=List[Any])
+async def get_results(event_id: int, session: Session = Depends(get_session)):
     """
     Get fight results for an event from the local database.
 
     Path parameters:
-    - **event_uuid**: UUID of the event in Arena system
+    - **event_id**: Local database ID of the event
     """
     try:
-        logger.info(f"Fetching results from DB for event: {event_uuid}")
+        logger.info(f"Fetching results from DB for event: {event_id}")
 
         rows = session.execute(text("""
             SELECT
@@ -57,9 +57,9 @@ async def get_results(event_uuid: str, session: Session = Depends(get_session)):
             LEFT JOIN teams t2 ON t2.id = a2.team_id
             LEFT JOIN athletes aw ON aw.id = f.winner_id
             LEFT JOIN victory_types vt ON vt.code = f.victory_type
-            WHERE se.arena_uuid = :event_uuid
+            WHERE se.id = :event_id
             ORDER BY f.fight_number NULLS LAST, f.id
-        """), {"event_uuid": event_uuid}).fetchall()
+        """), {"event_id": event_id}).fetchall()
 
         results = []
         for row in rows:
@@ -101,11 +101,11 @@ async def get_results(event_uuid: str, session: Session = Depends(get_session)):
                 "roundScores": [],
             })
 
-        logger.info(f"Returned {len(results)} results from DB for event {event_uuid}")
+        logger.info(f"Returned {len(results)} results from DB for event {event_id}")
         return results
 
     except Exception as e:
-        logger.error(f"Failed to fetch results for event {event_uuid}: {str(e)}", exc_info=True)
+        logger.error(f"Failed to fetch results for event {event_id}: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to fetch results: {str(e)}"

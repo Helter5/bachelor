@@ -119,7 +119,7 @@ export function FightersList({ isDarkMode }: FightersListProps) {
 
   const getSportEventUuid = (sportEventId: number) => {
     const event = sportEvents.find(e => e.id === sportEventId)
-    return event?.uuid || 'N/A'
+    return event ? String(event.id) : 'N/A'
   }
 
   const getTeamName = (teamId: string | null) => {

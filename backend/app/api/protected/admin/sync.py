@@ -73,16 +73,26 @@ def _get_user_arena_source(user: User, session: Session) -> ArenaSource:
     return source
 
 
-def _get_source_event_uuid(session: Session, event: SportEvent, source: ArenaSource) -> str:
-    """Return the Arena UUID this source uses for the given event."""
-    from ....domain.entities.sport_event_source_uid import SportEventSourceUid
-    mapping = session.exec(
-        select(SportEventSourceUid).where(
-            SportEventSourceUid.sport_event_id == event.id,
-            SportEventSourceUid.arena_source_id == source.id,
-        )
-    ).first()
-    return str(mapping.source_uuid) if mapping else str(event.arena_uuid)
+async def _resolve_event_uuid_from_source(event: SportEvent, source: ArenaSource) -> str:
+    """Fetch event list from Arena source and resolve UUID for the given event by natural key."""
+    from ....services.arena_auth import get_access_token_for_source
+    from ....services.arena_request import call_arena_api
+
+    token = await get_access_token_for_source(source)
+    url = f"http://{source.host}:{source.port}/api/json/sport-event/"
+    data = await call_arena_api(url, token)
+    items = data.get("events", {}).get("items", [])
+
+    for item in items:
+        if (item.get("name") == event.name and
+                item.get("startDate") == str(event.start_date) and
+                item.get("countryIsoCode") == event.country_iso_code):
+            return str(item["id"])
+
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Event '{event.name}' not found in your Arena source. Make sure to sync events first."
+    )
 
 
 @router.post("/events")
@@ -185,7 +195,7 @@ async def sync_events(
                     event_data['country_iso_code'] = event_data['countryIsoCode']
 
                 event_base = SportEventBase(**event_data)
-                sync_result = await service.sync_event(event_base, source=source)
+                sync_result = await service.sync_event(event_base)
                 total_synced_events.append(sync_result)
 
                 if sync_result.get("matched_by") == "new":
@@ -288,8 +298,8 @@ async def sync_teams(
         service = TeamService(session)
 
         try:
-            event_uuid = _get_source_event_uuid(session, event, source)
-            teams = await service.sync_teams_for_event(event_uuid, source=source)
+            event_uuid = await _resolve_event_uuid_from_source(event, source)
+            teams = await service.sync_teams_for_event(event_uuid, event_id=event_id, source=source)
             result = {
                 "message": f"Successfully synced teams for event {event.name}",
                 "count": teams.get('synced_count', 0) if isinstance(teams, dict) else 0,
@@ -357,8 +367,8 @@ async def sync_athletes(
         service = AthleteService(session)
 
         try:
-            event_uuid = _get_source_event_uuid(session, event, source)
-            athletes = await service.sync_athletes_for_event(event_uuid, source=source)
+            event_uuid = await _resolve_event_uuid_from_source(event, source)
+            athletes = await service.sync_athletes_for_event(event_uuid, event_id=event_id, source=source)
             result = {
                 "message": f"Successfully synced athletes for event {event.name}",
                 "count": athletes.get('synced_count', 0) if isinstance(athletes, dict) else 0,
@@ -426,8 +436,8 @@ async def sync_categories(
         service = WeightCategoryService(session)
 
         try:
-            event_uuid = _get_source_event_uuid(session, event, source)
-            categories = await service.sync_weight_categories_for_event(event_uuid, source=source)
+            event_uuid = await _resolve_event_uuid_from_source(event, source)
+            categories = await service.sync_weight_categories_for_event(event_uuid, event_id=event_id, source=source)
             result = {
                 "message": f"Successfully synced categories for event {event.name}",
                 "count": categories.get('synced_count', 0) if isinstance(categories, dict) else 0,
@@ -506,8 +516,8 @@ async def sync_fights(
         service = FightService(session)
 
         try:
-            event_uuid = _get_source_event_uuid(session, event, source)
-            fights = await service.sync_fights_for_event(event_uuid, source=source)
+            event_uuid = await _resolve_event_uuid_from_source(event, source)
+            fights = await service.sync_fights_for_event(event_uuid, event_id=event_id, source=source)
             result = {
                 "message": f"Successfully synced fights for event {event.name}",
                 "count": fights.get('synced_count', 0) if isinstance(fights, dict) else 0,

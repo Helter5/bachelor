@@ -20,7 +20,7 @@ interface PersonSuggestion {
 
 interface TournamentsListProps {
   isDarkMode: boolean
-  onSelectTournament: (tournament: { id: number; uuid: string; name: string; start_date: string; end_date?: string }) => void
+  onSelectTournament: (tournament: { id: number; name: string; start_date: string; end_date?: string }) => void
 }
 
 export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsListProps) {
@@ -438,7 +438,6 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
               key={event.id}
               onClick={() => onSelectTournament({
                 id: event.id,
-                uuid: event.uuid,
                 name: event.full_name || event.name,
                 start_date: event.start_date,
                 end_date: event.end_date

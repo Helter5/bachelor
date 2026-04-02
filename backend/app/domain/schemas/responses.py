@@ -34,10 +34,9 @@ class TokenResponse(BaseModel):
 
 class SportEventOut(BaseModel):
     """Public competition/event data"""
-    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+    model_config = ConfigDict(from_attributes=True)
 
     id: int
-    uuid: UUID = Field(alias="arena_uuid", serialization_alias="uuid")
     name: str
     start_date: Optional[date] = None
     end_date: Optional[date] = None

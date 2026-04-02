@@ -2,7 +2,6 @@
 
 export interface Tournament {
   id: number
-  uuid: string
   name: string
   full_name?: string
   start_date: string

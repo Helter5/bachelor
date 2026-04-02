@@ -12,7 +12,6 @@ interface ExportPdfModalProps {
 }
 interface Tournament {
   id: number
-  uuid: string
   name: string
   start_date: string
   end_date?: string
@@ -212,10 +211,10 @@ export function ExportPdfModal({ isDarkMode, isOpen, onClose, exportType }: Expo
               <div className="space-y-2">
                 {filteredTournaments.map((tournament) => (
                   <button
-                    key={tournament.uuid}
-                    onClick={() => setSelectedTournament(tournament.uuid)}
+                    key={String(tournament.id)}
+                    onClick={() => setSelectedTournament(String(tournament.id))}
                     className={`w-full text-left p-4 rounded-lg transition-all ${
-                      selectedTournament === tournament.uuid
+                      selectedTournament === String(tournament.id)
                         ? isDarkMode
                           ? 'bg-blue-500/20 shadow-lg ring-2 ring-blue-500/50'
                           : 'bg-blue-50 shadow-md ring-2 ring-blue-500/50'
@@ -225,14 +224,14 @@ export function ExportPdfModal({ isDarkMode, isOpen, onClose, exportType }: Expo
                     }`}
                   >
                     <h4 className={`font-semibold mb-1 ${
-                      selectedTournament === tournament.uuid
+                      selectedTournament === String(tournament.id)
                         ? isDarkMode ? 'text-blue-300' : 'text-blue-900'
                         : isDarkMode ? 'text-white' : 'text-gray-900'
                     }`}>
                       {tournament.name}
                     </h4>
                     <div className="flex items-center gap-3 text-sm">
-                      <span className={selectedTournament === tournament.uuid
+                      <span className={selectedTournament === String(tournament.id)
                         ? isDarkMode ? 'text-blue-400' : 'text-blue-700'
                         : isDarkMode ? 'text-gray-400' : 'text-gray-600'
                       }>

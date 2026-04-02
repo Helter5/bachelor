@@ -35,7 +35,6 @@ class SportEventService(BaseService[SportEvent]):
         return [
             {
                 "id": event.id,
-                "arena_uuid": event.arena_uuid,
                 "name": event.name,
                 "start_date": event.start_date,
                 "end_date": event.end_date,
@@ -102,19 +101,6 @@ class SportEventService(BaseService[SportEvent]):
         """
         return await fetch_arena_data(f"session/{event_id}")
 
-    def get_by_arena_uuid(self, arena_uuid: str) -> Optional[SportEvent]:
-        """
-        Get sport event by Arena UUID
-
-        Args:
-            arena_uuid: Sport event UUID from Arena API
-
-        Returns:
-            SportEvent if found, None otherwise
-        """
-        statement = select(SportEvent).where(SportEvent.arena_uuid == arena_uuid)
-        return self.session.exec(statement).first()
-
     def get_by_natural_key(self, name: str, start_date: str, country_iso_code: str) -> Optional[SportEvent]:
         """
         Get sport event by natural key (name, start_date, country_iso_code)
@@ -134,22 +120,21 @@ class SportEventService(BaseService[SportEvent]):
         )
         return self.session.exec(statement).first()
 
-    async def sync_event(self, event_data: SportEventBase, source: Optional["ArenaSource"] = None) -> Dict[str, Any]:
+    async def sync_event(self, event_data: SportEventBase) -> Dict[str, Any]:
         """
-        Sync sport event from Arena to database using natural key matching
+        Sync sport event from Arena to database using natural key matching.
 
         Matches events by (name, start_date, country_iso_code) to handle
         distributed Arena instances with different UUIDs for the same event.
+        UUIDs are ephemeral — resolved at sync-time from the Arena source, never stored.
 
         Args:
             event_data: Sport event data to sync
-            source: Optional ArenaSource — when provided, records the source UUID mapping
 
         Returns:
             Dict with sync result
         """
         try:
-            # Check if event already exists using natural key
             existing_event = self.get_by_natural_key(
                 event_data.name,
                 event_data.start_date or "",
@@ -157,16 +142,12 @@ class SportEventService(BaseService[SportEvent]):
             )
 
             if existing_event:
-                # Check if any field actually changed before updating
                 new_data = event_data.model_dump(exclude_unset=True)
-                # Exclude arena_uuid from comparison — it can differ across Arena instances
-                # for the same event (matched by natural key)
-                changes = self.has_changes(existing_event, new_data, exclude_fields={"arena_uuid"})
+                changes = self.has_changes(existing_event, new_data)
 
                 if changes:
                     for key, value in new_data.items():
-                        if key != "arena_uuid":
-                            setattr(existing_event, key, value)
+                        setattr(existing_event, key, value)
                     existing_event.updated_at = datetime.now(timezone.utc)
                     self.session.commit()
                     self.session.refresh(existing_event)
@@ -178,36 +159,18 @@ class SportEventService(BaseService[SportEvent]):
 
                 event = existing_event
             else:
-                # Create new event
                 new_event = SportEvent(**event_data.model_dump())
                 self.session.add(new_event)
                 self.session.commit()
                 self.session.refresh(new_event)
 
-                logger.info(f"Created new sport event: {new_event.name} (arena_uuid: {new_event.arena_uuid})")
+                logger.info(f"Created new sport event: {new_event.name}")
                 matched_by = "new"
                 event = new_event
-
-            if source:
-                from ..domain.entities.sport_event_source_uid import SportEventSourceUid
-                existing_map = self.session.exec(
-                    select(SportEventSourceUid).where(
-                        SportEventSourceUid.arena_source_id == source.id,
-                        SportEventSourceUid.source_uuid == event_data.arena_uuid,
-                    )
-                ).first()
-                if not existing_map:
-                    self.session.add(SportEventSourceUid(
-                        sport_event_id=event.id,
-                        arena_source_id=source.id,
-                        source_uuid=event_data.arena_uuid,
-                    ))
-                    self.session.flush()
 
             return {
                 "success": True,
                 "id": event.id,
-                "arena_uuid": str(event.arena_uuid),
                 "name": event.name,
                 "message": "Event updated successfully" if matched_by == "updated" else ("Event created successfully" if matched_by == "new" else "No changes"),
                 "matched_by": matched_by

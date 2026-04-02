@@ -8,7 +8,6 @@ const VALID_SECTIONS = new Set(['home', 'tournaments', 'athletes', 'stats', 'fig
 
 interface TournamentDetail {
   id: number
-  uuid: string
   name: string
   start_date: string
   end_date?: string

@@ -130,7 +130,7 @@ export function Dashboard({ onLogout, userData }: DashboardProps) {
                 <TournamentDetail
                   isDarkMode={isDarkMode}
                   tournamentId={dashboardState.selectedTournament.id}
-                  tournamentUuid={dashboardState.selectedTournament.uuid}
+                  tournamentUuid={String(dashboardState.selectedTournament.id)}
                   tournamentName={dashboardState.selectedTournament.name}
                   tournamentStartDate={dashboardState.selectedTournament.start_date}
                   tournamentEndDate={dashboardState.selectedTournament.end_date}

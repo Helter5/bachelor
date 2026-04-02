@@ -110,12 +110,13 @@ class AthleteService(BaseService[Athlete]):
         
         return athletes_with_teams
 
-    async def sync_athletes_for_event(self, sport_event_uuid: str, source: Optional["ArenaSource"] = None) -> Dict[str, Any]:
+    async def sync_athletes_for_event(self, sport_event_uuid: str, event_id: int, source: Optional["ArenaSource"] = None) -> Dict[str, Any]:
         """
         Sync athletes for a sport event from Arena API to database
 
         Args:
-            sport_event_uuid: Sport event UUID from Arena API
+            sport_event_uuid: Sport event UUID from Arena API (used for API call)
+            event_id: Local database ID of the sport event
 
         Returns:
             Dict with sync results
@@ -124,18 +125,17 @@ class AthleteService(BaseService[Athlete]):
             HTTPException: If event not found or sync fails
         """
         try:
-            # Find the sport event by Arena UUID to get its database ID
             event = self.session.exec(
-                select(SportEvent).where(SportEvent.arena_uuid == sport_event_uuid)
+                select(SportEvent).where(SportEvent.id == event_id)
             ).first()
 
             if not event:
                 raise HTTPException(
                     status_code=404,
-                    detail=f"Sport event {sport_event_uuid} not found"
+                    detail=f"Sport event {event_id} not found"
                 )
 
-            logger.info(f"Syncing athletes for event: {event.arena_uuid} - {event.name}")
+            logger.info(f"Syncing athletes for event: {event.name}")
 
             # Fetch athletes from Arena API
             try:

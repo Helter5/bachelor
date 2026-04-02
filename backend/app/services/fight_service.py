@@ -29,20 +29,19 @@ class FightService(BaseService[Fight]):
     def __init__(self, session: Session):
         super().__init__(session, Fight)
 
-    async def sync_fights_for_event(self, sport_event_uuid: str, source: Optional["ArenaSource"] = None) -> Dict[str, Any]:
+    async def sync_fights_for_event(self, sport_event_uuid: str, event_id: int, source: Optional["ArenaSource"] = None) -> Dict[str, Any]:
         """
         Sync fights for a sport event from Arena API to database
         """
         try:
-            # Find the sport event by Arena UUID
             event = self.session.exec(
-                select(SportEvent).where(SportEvent.arena_uuid == sport_event_uuid)
+                select(SportEvent).where(SportEvent.id == event_id)
             ).first()
 
             if not event:
                 raise HTTPException(
                     status_code=404,
-                    detail=f"Sport event {sport_event_uuid} not found"
+                    detail=f"Sport event {event_id} not found"
                 )
 
             logger.info(f"Syncing fights for event: {event.name}")

@@ -47,3 +47,4 @@ pnpm-debug.log*
 dist/
 .next/
 .nuxt/
+TODO.md

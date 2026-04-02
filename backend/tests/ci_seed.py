@@ -48,17 +48,16 @@ async def seed() -> None:
         # ── 2. Sport events ───────────────────────────────────────────────
         events = session.exec(select(SportEvent)).all()
 
+        event_service = SportEventService(session)
+        arena_data = await event_service.get_all_from_arena_source(source)
+        events_list = arena_data.get("events", {}).get("items", [])
+
         if not events:
             print("[seed] Syncujem eventy...")
-            event_service = SportEventService(session)
-            arena_data = await event_service.get_all_from_arena_source(source)
-            events_list = arena_data.get("events", {}).get("items", [])
             print(f"[seed]   Nájdených {len(events_list)} eventov z Arény")
 
             for event_data in events_list:
-                # Mapovanie camelCase → snake_case (rovnaké ako v sync.py)
                 mappings = {
-                    "id": "arena_uuid",
                     "startDate": "start_date",
                     "endDate": "end_date",
                     "addressLocality": "address_locality",
@@ -86,6 +85,19 @@ async def seed() -> None:
         else:
             print(f"[seed] DB už má {len(events)} eventov, preskakujem sync eventov")
 
+        # Build UUID map: event.id → Arena UUID (needed for sub-entity sync calls)
+        uuid_map: dict[int, str] = {}
+        for item in events_list:
+            arena_uuid = item.get("id")
+            if not arena_uuid:
+                continue
+            for event in events:
+                if (event.name == item.get("name") and
+                        str(event.start_date) == str(item.get("startDate", "")) and
+                        event.country_iso_code == item.get("countryIsoCode")):
+                    uuid_map[event.id] = arena_uuid
+                    break
+
         # ── 3. Kategórie + tímy + atléti pre každý event ─────────────────
         from app.domain.entities.athlete import Athlete
         has_athletes = session.exec(select(Athlete)).first() is not None
@@ -94,22 +106,27 @@ async def seed() -> None:
             print("[seed] DB má atléti, preskakujem sync kategórií/tímov/atlétov")
         else:
             for event in events:
+                arena_uuid = uuid_map.get(event.id)
+                if not arena_uuid:
+                    print(f"\n[seed] Preskakujem event '{event.name}' — UUID nenájdené v Arena source")
+                    continue
+
                 print(f"\n[seed] Event: {event.name}")
 
                 wc_service = WeightCategoryService(session)
-                r = await wc_service.sync_weight_categories_for_event(str(event.arena_uuid))
+                r = await wc_service.sync_weight_categories_for_event(arena_uuid, event_id=event.id)
                 print(f"[seed]   Kategórie: {r.get('synced_count', 0)} synced")
 
                 team_service = TeamService(session)
-                r = await team_service.sync_teams_for_event(str(event.arena_uuid))
+                r = await team_service.sync_teams_for_event(arena_uuid, event_id=event.id)
                 print(f"[seed]   Tímy: {r.get('synced_count', 0)} synced")
 
                 athlete_service = AthleteService(session)
-                r = await athlete_service.sync_athletes_for_event(str(event.arena_uuid))
+                r = await athlete_service.sync_athletes_for_event(arena_uuid, event_id=event.id)
                 print(f"[seed]   Atléti: {r.get('synced_count', 0)} synced")
 
                 fight_service = FightService(session)
-                r = await fight_service.sync_fights_for_event(str(event.arena_uuid))
+                r = await fight_service.sync_fights_for_event(arena_uuid, event_id=event.id)
                 print(f"[seed]   Zápasy: {r.get('synced_count', 0)} synced")
 
     print("\n[seed] Hotovo.")

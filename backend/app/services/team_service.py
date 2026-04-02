@@ -50,12 +50,13 @@ class TeamService(BaseService[Team]):
         statement = select(Team).where(Team.sport_event_id == sport_event_id)
         return list(self.session.exec(statement).all())
 
-    async def sync_teams_for_event(self, sport_event_uuid: str, source: Optional["ArenaSource"] = None) -> Dict[str, Any]:
+    async def sync_teams_for_event(self, sport_event_uuid: str, event_id: int, source: Optional["ArenaSource"] = None) -> Dict[str, Any]:
         """
         Sync teams for a sport event from Arena API to database
 
         Args:
-            sport_event_uuid: Sport event UUID from Arena API
+            sport_event_uuid: Sport event UUID from Arena API (used for API call)
+            event_id: Local database ID of the sport event
 
         Returns:
             Dict with sync results
@@ -64,18 +65,17 @@ class TeamService(BaseService[Team]):
             HTTPException: If event not found or sync fails
         """
         try:
-            # Find the sport event by Arena UUID to get its database ID
             event = self.session.exec(
-                select(SportEvent).where(SportEvent.arena_uuid == sport_event_uuid)
+                select(SportEvent).where(SportEvent.id == event_id)
             ).first()
 
             if not event:
                 raise HTTPException(
                     status_code=404,
-                    detail=f"Sport event {sport_event_uuid} not found"
+                    detail=f"Sport event {event_id} not found"
                 )
 
-            logger.info(f"Syncing teams for event: {event.arena_uuid} - {event.name}")
+            logger.info(f"Syncing teams for event: {event.name}")
 
             # Fetch teams from Arena API
             try:

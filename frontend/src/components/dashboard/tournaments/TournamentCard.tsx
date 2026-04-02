@@ -4,7 +4,7 @@ import { formatDate } from "@/utils/dateFormatter"
 interface TournamentCardProps {
   event: Event
   isDarkMode: boolean
-  onSelect: (tournament: { id: number; uuid: string; name: string; start_date: string; end_date?: string }) => void
+  onSelect: (tournament: { id: number; name: string; start_date: string; end_date?: string }) => void
 }
 
 export function TournamentCard({ event, isDarkMode, onSelect }: TournamentCardProps) {
@@ -12,7 +12,6 @@ export function TournamentCard({ event, isDarkMode, onSelect }: TournamentCardPr
     <div
       onClick={() => onSelect({
         id: event.id,
-        uuid: event.uuid,
         name: event.full_name || event.name,
         start_date: event.start_date,
         end_date: event.end_date
