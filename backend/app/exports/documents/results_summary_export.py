@@ -4,7 +4,8 @@ Results Summary PDF Export
 from typing import List, Dict, Any
 from datetime import datetime
 
-from reportlab.platypus import Flowable
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.platypus import Flowable, Paragraph
 from sqlmodel import Session, select
 
 from ..base.pdf_base import BasePDFExport
@@ -106,18 +107,26 @@ class ResultsSummaryExport(BasePDFExport):
         person_map = self.metadata['person_map']
 
         # Main title
-        title = PDFTitleBuilder(event.name or "Sport Event", width=6.5) \
-            .with_size(18) \
-            .build()
-        elements.append(title)
-        elements.append(PDFSpacerBuilder.create(0.1))
-
-        # Subtitle
-        subtitle = PDFTitleBuilder("Súhrnné výsledky", width=6.5) \
-            .with_size(14) \
-            .build()
-        elements.append(subtitle)
-        elements.append(PDFSpacerBuilder.create(0.3))
+        from ..utils.font_manager import font_manager
+        title_style = ParagraphStyle(
+            "RSTitle",
+            fontName=font_manager.bold_font,
+            fontSize=18,
+            leading=22,
+            textColor=ColorPalette.DARK_GRAY,
+            spaceAfter=4,
+        )
+        subtitle_style = ParagraphStyle(
+            "RSSubtitle",
+            fontName=font_manager.default_font,
+            fontSize=13,
+            leading=16,
+            textColor=ColorPalette.MEDIUM_GRAY,
+            spaceAfter=8,
+        )
+        elements.append(Paragraph(event.name or "Sport Event", title_style))
+        elements.append(Paragraph("Súhrnné výsledky", subtitle_style))
+        elements.append(PDFSpacerBuilder.create(0.2))
 
         # Event info
         locality = formatter.text.clean_locality(event.address_locality)
@@ -189,7 +198,7 @@ class ResultsSummaryExport(BasePDFExport):
         person_map: dict
     ) -> Flowable:
         """Build winners table"""
-        winners_data = [['Kategória', 'Pohlavie', 'Víťaz', 'Krajina']]
+        winners_data = [['Kategória', 'Víťaz', 'Krajina']]
 
         # Group athletes by weight category
         category_athletes = {}
@@ -211,7 +220,6 @@ class ResultsSummaryExport(BasePDFExport):
                 winner_person = person_map.get(winner.person_id)
                 winners_data.append([
                     wc.name or 'N/A',
-                    wc.audience_name or 'N/A',
                     winner_person.full_name if winner_person else 'N/A',
                     team.name if team else 'N/A'
                 ])
@@ -219,14 +227,13 @@ class ResultsSummaryExport(BasePDFExport):
         if len(winners_data) <= 1:
             return None
 
-        return PDFTableBuilder(winners_data, col_widths=[1.8, 1.2, 2, 1.5]) \
+        return PDFTableBuilder(winners_data, col_widths=[1.5, 3.0, 2.0]) \
             .with_header(font_size=9) \
             .with_body(font_size=8) \
             .with_grid() \
             .with_column_alignment(0, 'CENTER') \
-            .with_column_alignment(1, 'CENTER') \
+            .with_column_alignment(1, 'LEFT') \
             .with_column_alignment(2, 'LEFT') \
-            .with_column_alignment(3, 'LEFT') \
             .with_custom_style(('ROWBACKGROUNDS', (0, 1), (-1, -1),
                                [ColorPalette.WHITE, ColorPalette.VERY_LIGHT_GRAY])) \
             .build()

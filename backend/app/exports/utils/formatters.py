@@ -1,7 +1,7 @@
 """
 Data formatting utilities for exports
 """
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional, Union
 
 
@@ -28,6 +28,8 @@ class DateFormatter:
                 dt = datetime.fromisoformat(date_input.replace('Z', '+00:00'))
             elif isinstance(date_input, datetime):
                 dt = date_input
+            elif isinstance(date_input, date):
+                dt = datetime(date_input.year, date_input.month, date_input.day)
             else:
                 return "N/A"
 
