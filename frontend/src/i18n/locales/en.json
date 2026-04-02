@@ -246,7 +246,14 @@
       "teamsDesc": "Export all teams in the tournament ({{count}} teams)",
       "athletesDesc": "Export all athletes in the tournament ({{count}} athletes)",
       "showPdf": "Preview",
-      "downloadPdf": "Download PDF"
+      "downloadPdf": "Download PDF",
+      "medalStandingsTitle": "Medal standings",
+      "medalStandingsDesc": "Country medal standings by final placement",
+      "resultsSummaryTitle": "Results summary",
+      "resultsSummaryDesc": "Comprehensive tournament results overview",
+      "statisticsTitle": "Detailed statistics",
+      "statisticsDesc": "Detailed tournament statistics in Excel format",
+      "downloadExcel": "Download Excel"
     }
   },
   "draw": {

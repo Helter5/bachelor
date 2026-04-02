@@ -246,7 +246,14 @@
       "teamsDesc": "Export všetkých tímov turnaja ({{count}} tímov)",
       "athletesDesc": "Export všetkých atlétov turnaja ({{count}} atlétov)",
       "showPdf": "Zobraziť",
-      "downloadPdf": "Stiahnuť PDF"
+      "downloadPdf": "Stiahnuť PDF",
+      "medalStandingsTitle": "Medailové poradie",
+      "medalStandingsDesc": "Medailové poradie krajín podľa umiestnení",
+      "resultsSummaryTitle": "Súhrnné výsledky",
+      "resultsSummaryDesc": "Súhrnný prehľad výsledkov turnaja",
+      "statisticsTitle": "Detailné štatistiky",
+      "statisticsDesc": "Podrobné štatistiky turnaja vo formáte Excel",
+      "downloadExcel": "Stiahnuť Excel"
     }
   },
   "draw": {

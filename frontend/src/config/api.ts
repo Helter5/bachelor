@@ -26,8 +26,6 @@ export const API_ENDPOINTS = {
   SPORT_EVENT_DATABASE: '/api/v1/events',
   SPORT_EVENT_SYNC: '/api/v1/admin/sync/events',
   SPORT_EVENT_DETAILS: (id: string) => `/api/v1/events/${id}`,
-  SPORT_EVENT_START_LIST: (eventId: string) => `/api/v1/events/${eventId}/start-list`,
-  SPORT_EVENT_START_LIST_PRINT: (eventId: string) => `/api/v1/events/${eventId}/start-list/print`,
 
   // Team endpoints (PUBLIC)
   TEAM_SYNC: (eventId: number) => `/api/v1/admin/sync/teams/${eventId}`,
@@ -78,6 +76,11 @@ export const API_ENDPOINTS = {
 
   // Event Statistics endpoints (PUBLIC)
   EVENT_STATISTICS: (eventId: number) => `/api/v1/events/${eventId}/statistics`,
+
+  // Event Export endpoints (PUBLIC)
+  EVENT_EXPORT_MEDAL_STANDINGS: (eventUuid: string) => `/api/v1/events/${eventUuid}/exports/medal-standings`,
+  EVENT_EXPORT_RESULTS_SUMMARY: (eventUuid: string) => `/api/v1/events/${eventUuid}/exports/results-summary`,
+  EVENT_EXPORT_STATISTICS: (eventUuid: string) => `/api/v1/events/${eventUuid}/exports/statistics`,
 
   // Draw/seeding endpoints (PUBLIC)
   DRAW: (eventId: number, weightCategoryId: number, lastN: number = 3) =>
