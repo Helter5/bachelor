@@ -111,8 +111,8 @@ jobs:
           docker compose logs wf-api
           docker compose -f arena/docker-compose.yaml logs nginx php-fpm
 
-      - name: Stop services
+      - name: Stop and clean up services
         if: always()
         run: |
-          docker compose down
-          docker compose -f arena/docker-compose.yaml down
+          docker compose down -v --remove-orphans || true
+          docker compose -f arena/docker-compose.yaml down -v --remove-orphans || true   
