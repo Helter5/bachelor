@@ -115,8 +115,4 @@ jobs:
         if: always()
         run: |
           docker compose down -v --remove-orphans || true
-<<<<<<< HEAD
-          docker compose -f arena/docker-compose.yaml down -v --remove-orphans || true   
-=======
-          docker compose -f arena/docker-compose.yaml down -v --remove-orphans || true   
->>>>>>> 4fad32eff95b3dd1dc7889914aacc6a491baca90
+          docker compose -f arena/docker-compose.yaml down -v --remove-orphans || true
