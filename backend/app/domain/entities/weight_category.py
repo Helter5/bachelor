@@ -1,13 +1,11 @@
 """Weight Category entity - synced from Arena API"""
 from datetime import datetime, timezone
 from typing import Optional
-from uuid import UUID
 from sqlmodel import Field, SQLModel, UniqueConstraint
 
 
 class WeightCategoryBase(SQLModel):
     """Base WeightCategory fields shared across schemas"""
-    uid: UUID = Field(index=True)
     discipline_id: Optional[int] = None
     max_weight: Optional[int] = None
     count_fighters: Optional[int] = None
@@ -24,7 +22,6 @@ class WeightCategory(WeightCategoryBase, table=True):
     )
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    uid: UUID = Field(index=True)
     discipline_id: Optional[int] = Field(default=None, foreign_key="disciplines.id")
     sport_event_id: Optional[int] = Field(default=None, foreign_key="sport_events.id")
     sync_timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

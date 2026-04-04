@@ -1,7 +1,8 @@
 """
 Sync validácia: tabuľka weight_categories
 Porovnáva váhové kategórie v DB voči Arena API
-pre každé synchronizované podujatie (/weight-category/{event_uuid}).
+pre každé synchronizované podujatie.
+Matching: natural key (max_weight, sport_id) v rámci eventu — UUID sa nepoužíva.
 """
 from sqlmodel import select
 from app.domain.entities.weight_category import WeightCategory
@@ -10,20 +11,32 @@ from tests.conftest import arena_fetch
 from tests.utils import check, section, result
 
 
-# ─────────────────────────────────────────────
-# Pomocné funkcie
-# ─────────────────────────────────────────────
+def _natural_key(max_weight, sport_id) -> str:
+    return f"{max_weight}_{sport_id}"
+
 
 async def _fetch_arena_wcs(event) -> dict[str, dict]:
-    """Stiahne váhové kategórie pre daný event z Arena API."""
+    """Stiahne váhové kategórie pre daný event. Kľúč: (max_weight, sport_id)."""
+    if not event.arena_uuid:
+        return {}
     data = await arena_fetch(f"weight-category/{event.arena_uuid}")
     items = data.get("weightCategories", [])
-    return {item["id"]: item for item in items if item.get("id")}
+    return {
+        _natural_key(item.get("maxWeight"), item.get("sportId")): item
+        for item in items
+        if item.get("maxWeight") is not None
+    }
 
 
-def _db_wcs_by_uid(db, event) -> dict[str, WeightCategory]:
+def _db_wcs_by_natural_key(db, event) -> dict[str, WeightCategory]:
     wcs = db.exec(select(WeightCategory).where(WeightCategory.sport_event_id == event.id)).all()
-    return {str(wc.uid): wc for wc in wcs}
+    result_map = {}
+    for wc in wcs:
+        discipline = db.get(Discipline, wc.discipline_id) if wc.discipline_id else None
+        sport_id = discipline.sport_id if discipline else None
+        key = _natural_key(wc.max_weight, sport_id)
+        result_map[key] = wc
+    return result_map
 
 
 # ─────────────────────────────────────────────
@@ -35,7 +48,7 @@ async def test_weight_categories_count_matches_arena(db, synced_events):
     errors = []
     for event in synced_events:
         arena = await _fetch_arena_wcs(event)
-        db_wcs = _db_wcs_by_uid(db, event)
+        db_wcs = _db_wcs_by_natural_key(db, event)
         section(event.name)
         ok = check("počet kategórií", len(arena), len(db_wcs))
         if not ok:
@@ -48,18 +61,18 @@ async def test_weight_categories_count_matches_arena(db, synced_events):
 # ─────────────────────────────────────────────
 
 async def test_no_missing_weight_categories_in_db(db, synced_events):
-    """Každá váhová kategória z Arena API musí existovať v DB (podľa UID)."""
+    """Každá váhová kategória z Arena API musí existovať v DB (podľa natural key)."""
     errors = []
     for event in synced_events:
         arena = await _fetch_arena_wcs(event)
-        db_wcs = _db_wcs_by_uid(db, event)
+        db_wcs = _db_wcs_by_natural_key(db, event)
         section(event.name)
-        for uid, wc in arena.items():
-            in_db = uid in db_wcs
-            label = f"{wc.get('maxWeight', '?')} kg"
+        for key, wc in arena.items():
+            in_db = key in db_wcs
+            label = f"{wc.get('maxWeight', '?')} kg / {wc.get('sportId', '?')}"
             ok = check(label, "áno", "áno" if in_db else "CHÝBA")
             if not ok:
-                errors.append(f"  {event.name}: chýba {label} ({uid})")
+                errors.append(f"  {event.name}: chýba {label}")
     result(errors, "Váhové kategórie z Arény chýbajú v DB:")
 
 
@@ -68,11 +81,11 @@ async def test_no_extra_weight_categories_in_db(db, synced_events):
     errors = []
     for event in synced_events:
         arena = await _fetch_arena_wcs(event)
-        db_wcs = _db_wcs_by_uid(db, event)
-        extra = [wc for uid, wc in db_wcs.items() if uid not in arena]
+        db_wcs = _db_wcs_by_natural_key(db, event)
+        extra = [wc for key, wc in db_wcs.items() if key not in arena]
         section(event.name)
         check("navyše kategórie v DB", 0, len(extra))
-        errors += [f"  {event.name}: extra uid={wc.uid}" for wc in extra]
+        errors += [f"  {event.name}: {wc.max_weight} kg" for wc in extra]
     result(errors, "DB obsahuje váhové kategórie ktoré nie sú v Aréne:")
 
 
@@ -80,35 +93,15 @@ async def test_no_extra_weight_categories_in_db(db, synced_events):
 # 3. Polia
 # ─────────────────────────────────────────────
 
-async def test_weight_category_max_weight_correct(db, synced_events):
-    """`max_weight` každej kategórie zodpovedá Arena API."""
-    errors = []
-    for event in synced_events:
-        arena = await _fetch_arena_wcs(event)
-        db_wcs = _db_wcs_by_uid(db, event)
-        section(event.name)
-        for uid, wc in arena.items():
-            db_wc = db_wcs.get(uid)
-            if not db_wc:
-                continue
-            arena_val = wc.get("maxWeight")
-            if arena_val is None:
-                continue
-            ok = check(f"max_weight [{arena_val} kg]", arena_val, db_wc.max_weight)
-            if not ok:
-                errors.append(f"  {event.name} / {uid}: Arena={arena_val}, DB={db_wc.max_weight}")
-    result(errors, "Nesprávne max_weight:")
-
-
 async def test_weight_category_count_fighters_correct(db, synced_events):
     """`count_fighters` každej kategórie zodpovedá Arena API."""
     errors = []
     for event in synced_events:
         arena = await _fetch_arena_wcs(event)
-        db_wcs = _db_wcs_by_uid(db, event)
+        db_wcs = _db_wcs_by_natural_key(db, event)
         section(event.name)
-        for uid, wc in arena.items():
-            db_wc = db_wcs.get(uid)
+        for key, wc in arena.items():
+            db_wc = db_wcs.get(key)
             if not db_wc:
                 continue
             arena_val = wc.get("countFighters")
@@ -125,10 +118,10 @@ async def test_weight_category_is_started_correct(db, synced_events):
     errors = []
     for event in synced_events:
         arena = await _fetch_arena_wcs(event)
-        db_wcs = _db_wcs_by_uid(db, event)
+        db_wcs = _db_wcs_by_natural_key(db, event)
         section(event.name)
-        for uid, wc in arena.items():
-            db_wc = db_wcs.get(uid)
+        for key, wc in arena.items():
+            db_wc = db_wcs.get(key)
             if not db_wc:
                 continue
             arena_val = wc.get("isStarted")
@@ -145,10 +138,10 @@ async def test_weight_category_is_completed_correct(db, synced_events):
     errors = []
     for event in synced_events:
         arena = await _fetch_arena_wcs(event)
-        db_wcs = _db_wcs_by_uid(db, event)
+        db_wcs = _db_wcs_by_natural_key(db, event)
         section(event.name)
-        for uid, wc in arena.items():
-            db_wc = db_wcs.get(uid)
+        for key, wc in arena.items():
+            db_wc = db_wcs.get(key)
             if not db_wc:
                 continue
             arena_val = wc.get("isCompleted")
@@ -165,10 +158,10 @@ async def test_weight_category_discipline_linked_correctly(db, synced_events):
     errors = []
     for event in synced_events:
         arena = await _fetch_arena_wcs(event)
-        db_wcs = _db_wcs_by_uid(db, event)
+        db_wcs = _db_wcs_by_natural_key(db, event)
         section(event.name)
-        for uid, wc in arena.items():
-            db_wc = db_wcs.get(uid)
+        for key, wc in arena.items():
+            db_wc = db_wcs.get(key)
             if not db_wc:
                 continue
             arena_sport_id = wc.get("sportId")
@@ -186,14 +179,14 @@ async def test_weight_category_discipline_linked_correctly(db, synced_events):
 
 
 async def test_weight_category_discipline_sport_name_correct(db, synced_events):
-    """`discipline.sport_name` každej kategórie zodpovedá Arena API (napr. Freestyle)."""
+    """`discipline.sport_name` každej kategórie zodpovedá Arena API."""
     errors = []
     for event in synced_events:
         arena = await _fetch_arena_wcs(event)
-        db_wcs = _db_wcs_by_uid(db, event)
+        db_wcs = _db_wcs_by_natural_key(db, event)
         section(event.name)
-        for uid, wc in arena.items():
-            db_wc = db_wcs.get(uid)
+        for key, wc in arena.items():
+            db_wc = db_wcs.get(key)
             if not db_wc or not db_wc.discipline_id:
                 continue
             arena_val = wc.get("sportName")
@@ -208,14 +201,14 @@ async def test_weight_category_discipline_sport_name_correct(db, synced_events):
 
 
 async def test_weight_category_discipline_audience_name_correct(db, synced_events):
-    """`discipline.audience_name` každej kategórie zodpovedá Arena API (napr. Seniors)."""
+    """`discipline.audience_name` každej kategórie zodpovedá Arena API."""
     errors = []
     for event in synced_events:
         arena = await _fetch_arena_wcs(event)
-        db_wcs = _db_wcs_by_uid(db, event)
+        db_wcs = _db_wcs_by_natural_key(db, event)
         section(event.name)
-        for uid, wc in arena.items():
-            db_wc = db_wcs.get(uid)
+        for key, wc in arena.items():
+            db_wc = db_wcs.get(key)
             if not db_wc or not db_wc.discipline_id:
                 continue
             arena_val = wc.get("audienceName")
@@ -239,16 +232,6 @@ async def test_no_weight_categories_without_sport_event(db):
     section("Integrita DB")
     check("kategórie bez sport_event_id", 0, len(orphans))
     result(
-        [f"  uid={wc.uid}" for wc in orphans[:10]],
+        [f"  {wc.max_weight} kg (id={wc.id})" for wc in orphans[:10]],
         "Váhové kategórie bez sport_event_id:"
     )
-
-
-async def test_weight_category_uids_unique(db):
-    """UID každej váhovej kategórie musí byť unikátne v celej DB."""
-    wcs = db.exec(select(WeightCategory)).all()
-    uids = [str(wc.uid) for wc in wcs]
-    duplicates = {uid for uid in uids if uids.count(uid) > 1}
-    section("Integrita DB")
-    check("duplicitné UID", 0, len(duplicates))
-    result(list(duplicates), "Duplicitné UID váhových kategórií:")

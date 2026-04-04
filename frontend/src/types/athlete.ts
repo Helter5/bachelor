@@ -2,7 +2,6 @@
 
 export interface Athlete {
   id: number
-  uid?: string
   person_full_name: string
   team_id?: number | null
   sport_event_id?: number

@@ -24,18 +24,18 @@ async def get_results(event_id: int, session: Session = Depends(get_session)):
 
         rows = session.execute(text("""
             SELECT
-                f.uid::text                      AS id,
+                f.id::text                       AS id,
                 wc.max_weight,
                 wc.is_completed                  AS weight_category_completed,
                 d.sport_name,
                 d.audience_name,
-                a1.uid::text                     AS fighter1_id,
+                a1.id::text                      AS fighter1_id,
                 p1.full_name                     AS fighter1_full_name,
                 t1.name                          AS team1_name,
-                a2.uid::text                     AS fighter2_id,
+                a2.id::text                      AS fighter2_id,
                 p2.full_name                     AS fighter2_full_name,
                 t2.name                          AS team2_name,
-                aw.uid::text                     AS winner_fighter,
+                aw.id::text                      AS winner_fighter,
                 f.cp_one                         AS fighter1_ranking_point,
                 f.cp_two                         AS fighter2_ranking_point,
                 f.tp_one,

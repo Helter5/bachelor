@@ -19,8 +19,6 @@ from .domain.entities.refresh_token import RefreshToken  # noqa: F401
 from .domain.entities.password_reset_token import PasswordResetToken  # noqa: F401
 from .domain.entities.email_verification_token import EmailVerificationToken  # noqa: F401
 from .domain.entities.victory_type import VictoryType  # noqa: F401
-from .domain.entities.athlete_source_uid import AthleteSourceUid  # noqa: F401
-from .domain.entities.weight_category_source_uid import WeightCategorySourceUid  # noqa: F401
 
 # Create engine with centralized configuration
 engine = create_engine(

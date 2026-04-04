@@ -2,11 +2,13 @@
 Sync validácia: tabuľka athletes
 Porovnáva všetkých atlétov v DB voči Arena API
 pre každé synchronizované podujatie (/athlete/{event_uuid}).
+Matching: natural key (personFullName, team_name, wc_max_weight) — UUID sa nepoužíva.
 """
 from sqlmodel import select
 from app.domain.entities.athlete import Athlete
 from app.domain.entities.team import Team
 from app.domain.entities.weight_category import WeightCategory
+from app.domain.entities.discipline import Discipline
 from app.domain.entities.person import Person
 from tests.conftest import arena_fetch
 from tests.utils import check, section, result
@@ -16,37 +18,62 @@ from tests.utils import check, section, result
 # Pomocné funkcie
 # ─────────────────────────────────────────────
 
+def _athlete_natural_key(full_name: str | None, team_name: str | None, max_weight: int | None) -> str:
+    return f"{full_name}|{team_name}|{max_weight}"
+
+
 async def _fetch_arena_athletes(event) -> dict[str, dict]:
-    """Stiahne atlétov pre daný event z Arena API (/athlete/{uuid})."""
+    """Stiahne atlétov pre daný event. Kľúč: natural key."""
+    if not event.arena_uuid:
+        return {}
     data = await arena_fetch(f"athlete/{event.arena_uuid}")
     items = data.get("athletes", {}).get("items", [])
-    return {item["id"]: item for item in items if item.get("id")}
+
+    # Fetch teams for team name lookup
+    teams_data = await arena_fetch(f"team/{event.arena_uuid}")
+    arena_teams = {
+        item["id"]: item.get("name")
+        for item in teams_data.get("sportEventTeams", {}).get("items", [])
+        if item.get("id")
+    }
+
+    result_map = {}
+    for item in items:
+        team_uuid = item.get("sportEventTeamId") or item.get("teamId")
+        team_name = arena_teams.get(team_uuid) if team_uuid else None
+        wcs = item.get("weightCategories") or []
+        max_weight = wcs[0].get("maxWeight") if wcs else None
+        key = _athlete_natural_key(item.get("personFullName"), team_name, max_weight)
+        result_map[key] = item
+    return result_map
 
 
-def _db_athletes_by_uid(db, event) -> dict[str, Athlete]:
+def _db_athletes_by_natural_key(db, event) -> dict[str, Athlete]:
     athletes = db.exec(select(Athlete).where(Athlete.sport_event_id == event.id)).all()
-    return {str(a.uid): a for a in athletes}
+    result_map = {}
+    for a in athletes:
+        person = db.get(Person, a.person_id) if a.person_id else None
+        team = db.get(Team, a.team_id) if a.team_id else None
+        wc = db.get(WeightCategory, a.weight_category_id) if a.weight_category_id else None
+        key = _athlete_natural_key(
+            person.full_name if person else None,
+            team.name if team else None,
+            wc.max_weight if wc else None,
+        )
+        result_map[key] = a
+    return result_map
 
 
-def _team_uid_map(db, event) -> dict[int, str]:
-    """DB team.id → team.uid (string)."""
+def _db_team_name_map(db, event) -> dict[int, str]:
+    """DB team.id → team.name."""
     teams = db.exec(select(Team).where(Team.sport_event_id == event.id)).all()
-    return {t.id: str(t.uid) for t in teams}
+    return {t.id: t.name for t in teams}
 
 
-def _wc_uid_map(db, event) -> dict[int, str]:
-    """DB weight_category.id → weight_category.uid (string)."""
+def _db_wc_max_weight_map(db, event) -> dict[int, int]:
+    """DB weight_category.id → max_weight."""
     wcs = db.exec(select(WeightCategory).where(WeightCategory.sport_event_id == event.id)).all()
-    return {wc.id: str(wc.uid) for wc in wcs}
-
-
-def _arena_team_uid(fighter: dict) -> str | None:
-    return fighter.get("sportEventTeamId") or fighter.get("teamId")
-
-
-def _arena_wc_uid(fighter: dict) -> str | None:
-    wcs = fighter.get("weightCategories") or []
-    return wcs[0].get("id") if wcs else None
+    return {wc.id: wc.max_weight for wc in wcs}
 
 
 # ─────────────────────────────────────────────
@@ -57,12 +84,18 @@ async def test_athletes_count_matches_arena(db, synced_events):
     """Počet atlétov v DB sa zhoduje s Arena API pre každé podujatie."""
     errors = []
     for event in synced_events:
-        arena = await _fetch_arena_athletes(event)
-        db_athletes = _db_athletes_by_uid(db, event)
+        arena_data = {} if not event.arena_uuid else (
+            await arena_fetch(f"athlete/{event.arena_uuid}")
+        )
+        arena_count = len(arena_data.get("athletes", {}).get("items", []))
+        db_count = db.exec(
+            select(Athlete).where(Athlete.sport_event_id == event.id)
+        )
+        db_count = len(list(db_count.all()))
         section(event.name)
-        ok = check("počet atlétov", len(arena), len(db_athletes))
+        ok = check("počet atlétov", arena_count, db_count)
         if not ok:
-            errors.append(f"  {event.name}: Arena={len(arena)}, DB={len(db_athletes)}")
+            errors.append(f"  {event.name}: Arena={arena_count}, DB={db_count}")
     result(errors, "Nesúlad počtu atlétov:")
 
 
@@ -71,17 +104,17 @@ async def test_athletes_count_matches_arena(db, synced_events):
 # ─────────────────────────────────────────────
 
 async def test_no_missing_athletes_in_db(db, synced_events):
-    """Každý atlét z Arena API musí existovať v DB (podľa UID)."""
+    """Každý atlét z Arena API musí existovať v DB (podľa natural key)."""
     errors = []
     for event in synced_events:
         arena = await _fetch_arena_athletes(event)
-        db_athletes = _db_athletes_by_uid(db, event)
+        db_athletes = _db_athletes_by_natural_key(db, event)
         section(event.name)
-        for uid, f in arena.items():
-            in_db = uid in db_athletes
-            ok = check(f"{f.get('personFullName', uid)[:20]}", "áno", "áno" if in_db else "CHÝBA")
+        for key, f in arena.items():
+            in_db = key in db_athletes
+            ok = check(f"{f.get('personFullName', '?')[:20]}", "áno", "áno" if in_db else "CHÝBA")
             if not ok:
-                errors.append(f"  {event.name}: chýba {f.get('personFullName')} ({uid})")
+                errors.append(f"  {event.name}: chýba '{f.get('personFullName')}'")
     result(errors, "Atléti z Arény chýbajú v DB:")
 
 
@@ -90,11 +123,14 @@ async def test_no_extra_athletes_in_db(db, synced_events):
     errors = []
     for event in synced_events:
         arena = await _fetch_arena_athletes(event)
-        db_athletes = _db_athletes_by_uid(db, event)
-        extra = [a for uid, a in db_athletes.items() if uid not in arena]
+        db_athletes = _db_athletes_by_natural_key(db, event)
+        extra = [a for key, a in db_athletes.items() if key not in arena]
         section(event.name)
         check("navyše atléti v DB", 0, len(extra))
-        errors += [f"  {event.name}: extra uid={a.uid}" for a in extra]
+        for a in extra:
+            person = db.get(Person, a.person_id) if a.person_id else None
+            name = person.full_name if person else f"id={a.id}"
+            errors.append(f"  {event.name}: navyše '{name}'")
     result(errors, "DB obsahuje atlétov ktorí nie sú v Aréne:")
 
 
@@ -107,10 +143,10 @@ async def test_athlete_is_competing_correct(db, synced_events):
     errors = []
     for event in synced_events:
         arena = await _fetch_arena_athletes(event)
-        db_athletes = _db_athletes_by_uid(db, event)
+        db_athletes = _db_athletes_by_natural_key(db, event)
         section(event.name)
-        for uid, f in arena.items():
-            db_a = db_athletes.get(uid)
+        for key, f in arena.items():
+            db_a = db_athletes.get(key)
             if not db_a:
                 continue
             arena_val = f.get("isCompeting")
@@ -122,63 +158,15 @@ async def test_athlete_is_competing_correct(db, synced_events):
     result(errors, "Nesprávne is_competing:")
 
 
-async def test_athlete_team_linked_correctly(db, synced_events):
-    """Každý atlét je priradený k správnemu tímu (podľa Arena sportEventTeamId)."""
-    errors = []
-    for event in synced_events:
-        arena = await _fetch_arena_athletes(event)
-        db_athletes = _db_athletes_by_uid(db, event)
-        team_uid_map = _team_uid_map(db, event)
-        section(event.name)
-        for uid, f in arena.items():
-            db_a = db_athletes.get(uid)
-            if not db_a:
-                continue
-            arena_team_uid = _arena_team_uid(f)
-            db_team_uid = team_uid_map.get(db_a.team_id) if db_a.team_id else None
-            ok = check(f"team [{f.get('personFullName','?')[:15]}]", arena_team_uid, db_team_uid)
-            if not ok:
-                errors.append(
-                    f"  {event.name} / {f.get('personFullName')}: "
-                    f"Arena={arena_team_uid}, DB={db_team_uid}"
-                )
-    result(errors, "Nesprávne priradenie k tímu:")
-
-
-async def test_athlete_weight_category_linked_correctly(db, synced_events):
-    """Každý atlét je priradený k správnej váhovej kategórii."""
-    errors = []
-    for event in synced_events:
-        arena = await _fetch_arena_athletes(event)
-        db_athletes = _db_athletes_by_uid(db, event)
-        wc_uid_map = _wc_uid_map(db, event)
-        section(event.name)
-        for uid, f in arena.items():
-            db_a = db_athletes.get(uid)
-            if not db_a:
-                continue
-            arena_wc_uid = _arena_wc_uid(f)
-            if arena_wc_uid is None:
-                continue
-            db_wc_uid = wc_uid_map.get(db_a.weight_category_id) if db_a.weight_category_id else None
-            ok = check(f"weight_cat [{f.get('personFullName','?')[:15]}]", arena_wc_uid, db_wc_uid)
-            if not ok:
-                errors.append(
-                    f"  {event.name} / {f.get('personFullName')}: "
-                    f"Arena={arena_wc_uid}, DB={db_wc_uid}"
-                )
-    result(errors, "Nesprávne priradenie k váhovej kategórii:")
-
-
 async def test_athlete_person_name_correct(db, synced_events):
     """`person.full_name` zodpovedá Arena API `personFullName`."""
     errors = []
     for event in synced_events:
         arena = await _fetch_arena_athletes(event)
-        db_athletes = _db_athletes_by_uid(db, event)
+        db_athletes = _db_athletes_by_natural_key(db, event)
         section(event.name)
-        for uid, f in arena.items():
-            db_a = db_athletes.get(uid)
+        for key, f in arena.items():
+            db_a = db_athletes.get(key)
             if not db_a or not db_a.person_id:
                 continue
             person = db.get(Person, db_a.person_id)
@@ -200,7 +188,7 @@ async def test_no_athletes_without_person(db):
     section("Integrita DB")
     check("atléti bez person_id", 0, len(orphans))
     result(
-        [f"  uid={a.uid}" for a in orphans[:10]],
+        [f"  id={a.id}" for a in orphans[:10]],
         "Atléti bez person_id:"
     )
 
@@ -211,16 +199,6 @@ async def test_no_athletes_without_sport_event(db):
     section("Integrita DB")
     check("atléti bez sport_event_id", 0, len(orphans))
     result(
-        [f"  uid={a.uid}" for a in orphans[:10]],
+        [f"  id={a.id}" for a in orphans[:10]],
         "Atléti bez sport_event_id:"
     )
-
-
-async def test_athlete_uids_unique(db):
-    """UID každého atléta musí byť unikátne v celej DB."""
-    athletes = db.exec(select(Athlete)).all()
-    uids = [str(a.uid) for a in athletes]
-    duplicates = {uid for uid in uids if uids.count(uid) > 1}
-    section("Integrita DB")
-    check("duplicitné UID", 0, len(duplicates))
-    result(list(duplicates), "Duplicitné UID atlétov:")

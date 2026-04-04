@@ -33,7 +33,6 @@ def get_weight_categories_by_event(
     for wc, discipline in results:
         out.append(WeightCategoryOut(
             id=wc.id,
-            uid=wc.uid,
             name=wc.name,
             max_weight=wc.max_weight,
             count_fighters=wc.count_fighters,

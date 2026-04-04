@@ -57,7 +57,7 @@ async def get_teams_from_database(
         # Return array directly (frontend expects Team[] with UUID as id)
         return [
             {
-                "id": str(team.uid),  # Return UUID as string (not int primary key)
+                "id": team.id,
                 "sport_event_id": team.sport_event_id,
                 "name": team.name,
                 "alternate_name": team.alternate_name,

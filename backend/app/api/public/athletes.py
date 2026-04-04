@@ -38,7 +38,6 @@ async def list_athletes(
     for athlete, person in results:
         out.append(AthleteOut(
             id=athlete.id,
-            uid=athlete.uid,
             person_full_name=person.full_name if person else None,
             sport_event_id=athlete.sport_event_id,
             team_id=athlete.team_id,
@@ -68,7 +67,6 @@ async def get_athlete(athlete_id: int, session: Session = Depends(get_session)):
     athlete, person = result
     return AthleteOut(
         id=athlete.id,
-        uid=athlete.uid,
         person_full_name=person.full_name if person else None,
         sport_event_id=athlete.sport_event_id,
         team_id=athlete.team_id,

@@ -11,9 +11,6 @@ from .fight import Fight, FightBase
 from .person import Person, PersonBase
 from .victory_type import VictoryType
 from .discipline import Discipline
-from .athlete_source_uid import AthleteSourceUid
-from .weight_category_source_uid import WeightCategorySourceUid
-
 __all__ = [
     # Main entities
     "User",
@@ -36,6 +33,4 @@ __all__ = [
     "PersonBase",
     "VictoryType",
     "Discipline",
-    "AthleteSourceUid",
-    "WeightCategorySourceUid",
 ]

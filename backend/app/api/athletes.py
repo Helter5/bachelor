@@ -89,7 +89,7 @@ async def get_athletes_from_database(
                     "id": athlete["id"],
                     "sport_event_id": athlete["sport_event_id"],
                     "person_full_name": athlete["person_full_name"],
-                    "team_id": athlete["team_uid"],  # Return team UUID instead of integer FK
+                    "team_id": athlete["team_id"],
                     "weight_category_id": athlete["weight_category_id"],
                     "is_competing": athlete["is_competing"],
                 }

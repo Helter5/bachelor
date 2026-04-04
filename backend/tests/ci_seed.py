@@ -114,19 +114,19 @@ async def seed() -> None:
                 print(f"\n[seed] Event: {event.name}")
 
                 wc_service = WeightCategoryService(session)
-                r = await wc_service.sync_weight_categories_for_event(arena_uuid, event_id=event.id)
+                r = await wc_service.sync_weight_categories_for_event(arena_uuid, event_id=event.id, source=source)
                 print(f"[seed]   Kategórie: {r.get('synced_count', 0)} synced")
 
                 team_service = TeamService(session)
-                r = await team_service.sync_teams_for_event(arena_uuid, event_id=event.id)
+                r = await team_service.sync_teams_for_event(arena_uuid, event_id=event.id, source=source)
                 print(f"[seed]   Tímy: {r.get('synced_count', 0)} synced")
 
                 athlete_service = AthleteService(session)
-                r = await athlete_service.sync_athletes_for_event(arena_uuid, event_id=event.id)
+                r = await athlete_service.sync_athletes_for_event(arena_uuid, event_id=event.id, source=source)
                 print(f"[seed]   Atléti: {r.get('synced_count', 0)} synced")
 
                 fight_service = FightService(session)
-                r = await fight_service.sync_fights_for_event(arena_uuid, event_id=event.id)
+                r = await fight_service.sync_fights_for_event(arena_uuid, event_id=event.id, source=source)
                 print(f"[seed]   Zápasy: {r.get('synced_count', 0)} synced")
 
     print("\n[seed] Hotovo.")

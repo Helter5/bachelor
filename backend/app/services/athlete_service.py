@@ -4,8 +4,8 @@ Business logic for athlete operations
 """
 from sqlmodel import Session, select
 from typing import List, Dict, Any, Optional, TYPE_CHECKING
-from uuid import UUID
 from datetime import datetime, timezone
+
 from fastapi import HTTPException
 import logging
 
@@ -103,7 +103,7 @@ class AthleteService(BaseService[Athlete]):
                 "id": athlete.id,
                 "sport_event_id": athlete.sport_event_id,
                 "person_full_name": person.full_name if person else None,
-                "team_uid": str(team.uid) if team else None,  # Return team UUID as string
+                "team_id": team.id if team else None,
                 "weight_category_id": athlete.weight_category_id,
                 "is_competing": athlete.is_competing,
             })
@@ -165,8 +165,12 @@ class AthleteService(BaseService[Athlete]):
                     "message": "No athletes data in response"
                 }
 
+            # Build in-memory maps for FK resolution (arena uuid → local id)
+            team_uuid_to_id = await self._build_team_uuid_map(sport_event_uuid, event.id, source)
+            wc_key_to_id = self._build_wc_key_map(event.id)
+
             # Sync each athlete
-            result = self._sync_athletes_list(athletes_list, event.id, source=source)
+            result = self._sync_athletes_list(athletes_list, event.id, team_uuid_to_id, wc_key_to_id)
 
             self.session.commit()
             logger.info(f"Athletes for {event.name}: {result['created']} created, {result['updated']} updated")
@@ -229,48 +233,72 @@ class AthleteService(BaseService[Athlete]):
             return athletes_data["athletes"]["items"]
         return []
 
-    def _sync_athletes_list(self, athletes_list: List[Dict[str, Any]], event_db_id: int, source: Optional["ArenaSource"] = None) -> Dict[str, int]:
+    async def _build_team_uuid_map(self, sport_event_uuid: str, event_db_id: int, source) -> Dict[str, int]:
+        """Fetch Arena teams and build {arena_team_uuid: local_team_id} by name matching."""
+        try:
+            teams_data = await fetch_arena_data(f"team/{sport_event_uuid}", source=source)
+            arena_teams = teams_data.get("sportEventTeams", {}).get("items", [])
+        except Exception:
+            return {}
+        db_team_by_name = {
+            t.name: t.id
+            for t in self.session.exec(select(Team).where(Team.sport_event_id == event_db_id)).all()
+        }
+        result = {}
+        for t in arena_teams:
+            uuid_str = t.get("id")
+            name = t.get("name")
+            if uuid_str and name and name in db_team_by_name:
+                result[uuid_str] = db_team_by_name[name]
+        return result
+
+    def _build_wc_key_map(self, event_db_id: int) -> Dict[tuple, int]:
+        """Build {(max_weight, sport_id, audience_id): local_wc_id} from DB."""
+        from ..domain.entities.discipline import Discipline
+        disciplines = {
+            d.id: (d.sport_id, d.audience_id)
+            for d in self.session.exec(select(Discipline)).all()
+        }
+        result = {}
+        for wc in self.session.exec(select(WeightCategory).where(WeightCategory.sport_event_id == event_db_id)).all():
+            if wc.discipline_id and wc.discipline_id in disciplines:
+                sport_id, audience_id = disciplines[wc.discipline_id]
+                result[(wc.max_weight, sport_id, audience_id)] = wc.id
+        return result
+
+    def _sync_athletes_list(self, athletes_list: List[Dict[str, Any]], event_db_id: int,
+                            team_uuid_to_id: Dict[str, int], wc_key_to_id: Dict[tuple, int]) -> Dict[str, int]:
         """
-        Sync a list of athletes to the database
+        Sync a list of athletes to the database.
 
         Args:
             athletes_list: List of athlete data from Arena API
             event_db_id: Sport event database ID
-            source: Optional ArenaSource — when provided, records per-source UUID mappings
-
-        Returns:
-            Dict with created and updated counts
+            team_uuid_to_id: {arena_team_uuid: local_team_id}
+            wc_key_to_id: {(max_weight, sport_id, audience_id): local_wc_id}
         """
         created = 0
         updated = 0
 
         for athlete_data in athletes_list:
             try:
-                # Resolve team_id: look up database integer ID by uid
+                # Resolve team_id by Arena UUID → local id (built before loop)
                 team_id_db = None
-                team_id_value = athlete_data.get("sportEventTeamId") or athlete_data.get("teamId")
-                if team_id_value:
-                    team_uuid = UUID(team_id_value)
-                    team = self.session.exec(
-                        select(Team).where(Team.uid == team_uuid)
-                    ).first()
-                    if team:
-                        team_id_db = team.id
+                team_uuid_str = athlete_data.get("sportEventTeamId") or athlete_data.get("teamId")
+                if team_uuid_str:
+                    team_id_db = team_uuid_to_id.get(team_uuid_str)
 
-                # Resolve weight_category_id: look up database integer ID by uid
+                # Resolve weight_category_id from embedded WC data
                 weight_category_id_db = None
-                if athlete_data.get("weightCategories") and len(athlete_data["weightCategories"]) > 0:
-                    wc_uuid = UUID(athlete_data["weightCategories"][0]["id"])
-                    wc = self.session.exec(
-                        select(WeightCategory).where(WeightCategory.uid == wc_uuid)
-                    ).first()
-                    if wc:
-                        weight_category_id_db = wc.id
+                wcs = athlete_data.get("weightCategories") or []
+                if wcs:
+                    wc_item = wcs[0]
+                    key = (wc_item.get("maxWeight"), wc_item.get("sportId"), wc_item.get("audienceId"))
+                    weight_category_id_db = wc_key_to_id.get(key)
 
                 # Map Arena API fields to database fields
                 person_full_name = athlete_data.get("personFullName")
                 athlete_create = AthleteBase(
-                    uid=UUID(athlete_data["id"]),
                     team_id=team_id_db,
                     sport_event_id=event_db_id,
                     weight_category_id=weight_category_id_db,
@@ -289,7 +317,7 @@ class AthleteService(BaseService[Athlete]):
                 # Resolve person_id before athlete lookup (needed for natural key matching)
                 person_id = self._resolve_person(person_full_name, country_iso) if person_full_name else None
 
-                # Check if athlete already exists by natural key (sport_event + person + weight_category)
+                # Match by natural key (sport_event + person + weight_category)
                 existing_athlete = self.session.exec(
                     select(Athlete).where(
                         Athlete.sport_event_id == event_db_id,
@@ -298,53 +326,28 @@ class AthleteService(BaseService[Athlete]):
                     )
                 ).first() if person_id else None
 
-                # Fall back to uid lookup if no person match (e.g. athlete without name)
-                if not existing_athlete:
-                    existing_athlete = self.session.exec(
-                        select(Athlete).where(Athlete.uid == athlete_create.uid)
-                    ).first()
-
                 if existing_athlete:
                     new_data = athlete_create.model_dump(exclude_unset=True)
                     new_data["person_id"] = person_id
-                    if self.has_changes(existing_athlete, new_data, exclude_fields={"uid"}):
+                    if self.has_changes(existing_athlete, new_data, exclude_fields=set()):
                         for key, value in new_data.items():
-                            if key != "uid":
-                                setattr(existing_athlete, key, value)
+                            setattr(existing_athlete, key, value)
                         existing_athlete.sync_timestamp = datetime.now(timezone.utc)
                         self.session.add(existing_athlete)
                         updated += 1
-                        logger.info(f"Updated athlete: {athlete_create.uid}")
+                        logger.info(f"Updated athlete id={existing_athlete.id}")
                     elif existing_athlete.person_id != person_id:
-                        # Even if no other changes, ensure person_id is set
                         existing_athlete.person_id = person_id
                         self.session.add(existing_athlete)
                     the_athlete = existing_athlete
                 else:
-                    # Create new athlete
                     new_athlete = Athlete(**athlete_create.model_dump())
                     new_athlete.person_id = person_id
                     self.session.add(new_athlete)
                     self.session.flush()
                     created += 1
-                    logger.info(f"Created new athlete: {athlete_create.uid}")
+                    logger.info(f"Created new athlete id={new_athlete.id}")
                     the_athlete = new_athlete
-
-                if source:
-                    from ..domain.entities.athlete_source_uid import AthleteSourceUid
-                    existing_map = self.session.exec(
-                        select(AthleteSourceUid).where(
-                            AthleteSourceUid.arena_source_id == source.id,
-                            AthleteSourceUid.arena_uuid == athlete_create.uid,
-                        )
-                    ).first()
-                    if not existing_map:
-                        self.session.add(AthleteSourceUid(
-                            athlete_id=the_athlete.id,
-                            arena_source_id=source.id,
-                            arena_uuid=athlete_create.uid,
-                        ))
-                        self.session.flush()
 
             except Exception as e:
                 logger.error(f"Failed to sync athlete {athlete_data.get('id')}: {str(e)}", exc_info=True)

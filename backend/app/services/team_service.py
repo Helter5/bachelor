@@ -4,7 +4,6 @@ Business logic for team operations
 """
 from sqlmodel import Session, select
 from typing import List, Dict, Any, Optional, TYPE_CHECKING
-from uuid import UUID
 from datetime import datetime, timezone
 from fastapi import HTTPException
 import logging
@@ -106,7 +105,7 @@ class TeamService(BaseService[Team]):
                 }
 
             # Sync each team
-            result = self._sync_teams_list(teams_list, event.id)
+            result = self._sync_teams_list(teams_list, event.id, source=source)
 
             self.session.commit()
             logger.info(f"Teams for {event.name}: {result['created']} created, {result['updated']} updated")
@@ -143,13 +142,15 @@ class TeamService(BaseService[Team]):
             return teams_data["teams"]
         return []
 
-    def _sync_teams_list(self, teams_list: List[Dict[str, Any]], event_db_id: int) -> Dict[str, int]:
+    def _sync_teams_list(self, teams_list: List[Dict[str, Any]], event_db_id: int, source: Optional["ArenaSource"] = None) -> Dict[str, int]:
         """
-        Sync a list of teams to the database
+        Sync a list of teams to the database.
+        Matches by natural key (sport_event_id, name). Arena UUIDs stored in TeamSourceUid.
 
         Args:
             teams_list: List of team data from Arena API
             event_db_id: Sport event database ID
+            source: ArenaSource — when provided, records per-source UUID mappings
 
         Returns:
             Dict with created and updated counts
@@ -159,9 +160,7 @@ class TeamService(BaseService[Team]):
 
         for team_data in teams_list:
             try:
-                # Map Arena API fields to database fields
                 team_create = TeamBase(
-                    uid=UUID(team_data["id"]),
                     sport_event_id=event_db_id,
                     name=team_data.get("name", ""),
                     alternate_name=team_data.get("alternateName"),
@@ -170,7 +169,6 @@ class TeamService(BaseService[Team]):
                     country_iso_code=team_data.get("countryIsoCode"),
                 )
 
-                # Check if team already exists by natural key (sport_event + name)
                 existing_team = self.session.exec(
                     select(Team).where(
                         Team.sport_event_id == event_db_id,
@@ -186,13 +184,15 @@ class TeamService(BaseService[Team]):
                         existing_team.sync_timestamp = datetime.now(timezone.utc)
                         self.session.add(existing_team)
                         updated += 1
-                        logger.info(f"Updated team: {team_create.uid}")
+                        logger.info(f"Updated team: {existing_team.name}")
+                    the_team = existing_team
                 else:
-                    # Create new team
                     new_team = Team(**team_create.model_dump())
                     self.session.add(new_team)
+                    self.session.flush()
                     created += 1
-                    logger.info(f"Created new team: {team_create.uid}")
+                    logger.info(f"Created new team: {team_create.name}")
+                    the_team = new_team
 
             except Exception as e:
                 logger.error(f"Failed to sync team {team_data.get('id')}: {str(e)}", exc_info=True)

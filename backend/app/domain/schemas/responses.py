@@ -1,7 +1,6 @@
 """Response schemas for public and protected API endpoints"""
 from datetime import datetime, date
 from typing import Optional
-from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -58,9 +57,8 @@ class SportEventListOut(BaseModel):
 class TeamOut(BaseModel):
     """Public team data"""
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: int
-    uid: UUID
     name: str
     country_iso_code: Optional[str] = None
     sport_event_id: int
@@ -83,7 +81,6 @@ class AthleteOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    uid: UUID
     person_full_name: Optional[str] = None
     sport_event_id: Optional[int] = None
     team_id: Optional[int] = None
@@ -98,7 +95,6 @@ class AthleteWithDetails(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    uid: UUID
     sport_event_id: Optional[int] = None
     team_id: Optional[int] = None
     weight_category_id: Optional[int] = None
@@ -115,7 +111,6 @@ class WeightCategoryOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    uid: UUID
     name: Optional[str] = None
     max_weight: Optional[int] = None
     count_fighters: Optional[int] = None
