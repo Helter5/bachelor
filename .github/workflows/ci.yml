@@ -58,6 +58,10 @@ jobs:
         working-directory: arena
         run: docker compose -p arena-b -f docker-compose-b.yaml up -d
 
+      - name: Start Arena C
+        working-directory: arena
+        run: docker compose -p arena-c -f docker-compose-c.yaml up -d
+
       # ── Build backend while Arena is warming up ────────────────────────────
       - name: Build backend image
         uses: docker/build-push-action@v5
@@ -72,7 +76,7 @@ jobs:
         run: docker compose up -d wf-db wf-api
 
       # ── Wait for both stacks in sequence ──────────────────────────────────
-      - name: Wait for Arena A and B to be ready
+      - name: Wait for Arena A, B and C to be ready
         run: |
           echo "Waiting for Arena A (port 8080)..."
           timeout 120 bash -c \
@@ -82,6 +86,10 @@ jobs:
           timeout 120 bash -c \
             'until curl -sf http://localhost:8081/ > /dev/null 2>&1; do sleep 5; done'
           echo "Arena B is up"
+          echo "Waiting for Arena C (port 8082)..."
+          timeout 120 bash -c \
+            'until curl -sf http://localhost:8082/ > /dev/null 2>&1; do sleep 5; done'
+          echo "Arena C is up"
 
       - name: Import Arena A seed data
         working-directory: arena
@@ -100,6 +108,11 @@ jobs:
             docker compose -p arena-b -f docker-compose-b.yaml exec -T mysql mysql -u arena -parena arena
           docker compose -p arena-b -f docker-compose-b.yaml exec -T mysql \
             mysql -u arena -parena arena < test_two.sql
+          # Arena C: copy users+OAuth from Arena A, load events cccc...
+          docker compose exec mysql mysqldump -u arena -parena arena user oauth2_client local_client | \
+            docker compose -p arena-c -f docker-compose-c.yaml exec -T mysql mysql -u arena -parena arena
+          docker compose -p arena-c -f docker-compose-c.yaml exec -T mysql \
+            mysql -u arena -parena arena < test_three.sql
           echo "Multi-Arena test data loaded"
 
       - name: Wait for API to be healthy
@@ -129,6 +142,8 @@ jobs:
           docker compose run --rm \
             -e ARENA_B_HOST=arena-host \
             -e ARENA_B_PORT=8081 \
+            -e ARENA_C_HOST=arena-host \
+            -e ARENA_C_PORT=8082 \
             wf-tests \
             sh -c "PYTHONPATH=/app python tests/multi_arena_seed.py && \
                    pytest tests/multi_arena/ -v --tb=short"
@@ -139,6 +154,7 @@ jobs:
           docker compose logs wf-api
           docker compose -f arena/docker-compose.yaml logs nginx php-fpm
           docker compose -p arena-b -f arena/docker-compose-b.yaml logs nginx php-fpm
+          docker compose -p arena-c -f arena/docker-compose-c.yaml logs nginx php-fpm
 
       - name: Stop and clean up services
         if: always()
@@ -146,3 +162,4 @@ jobs:
           docker compose down -v --remove-orphans || true
           docker compose -f arena/docker-compose.yaml down -v --remove-orphans || true
           docker compose -p arena-b -f arena/docker-compose-b.yaml down -v --remove-orphans || true
+          docker compose -p arena-c -f arena/docker-compose-c.yaml down -v --remove-orphans || true
