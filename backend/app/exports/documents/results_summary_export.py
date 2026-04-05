@@ -19,7 +19,7 @@ from ..builders.pdf_builder import (
 from ..utils.formatters import formatter
 from ..utils.styling import ColorPalette
 from ...domain import SportEvent, Team, Athlete, WeightCategory, Person
-from ...services.arena import fetch_arena_data
+from ...domain.entities.fight import Fight
 
 
 class ResultsSummaryExport(BasePDFExport):
@@ -47,16 +47,8 @@ class ResultsSummaryExport(BasePDFExport):
         if not event:
             raise ValueError(f"Sport event {self.sport_event_id} not found")
 
-        # Get event details from Arena API
         country_name = event.country_iso_code or 'N/A'
-        try:
-            event_details = await fetch_arena_data(f"sport-event/get/{self.sport_event_id}")
-            if event_details and "event" in event_details and "country" in event_details["event"]:
-                country_name = event_details["event"]["country"].get("name", country_name)
-        except Exception:
-            pass
 
-        # Get related data
         weight_categories = self.session.exec(
             select(WeightCategory).where(WeightCategory.sport_event_id == event.id)
         ).all()
@@ -65,15 +57,10 @@ class ResultsSummaryExport(BasePDFExport):
         person_ids = [a.person_id for a in athletes if a.person_id]
         persons = self.session.exec(select(Person).where(Person.id.in_(person_ids))).all() if person_ids else []
         person_map = {p.id: p for p in persons}
+        fights = self.session.exec(
+            select(Fight).where(Fight.sport_event_id == event.id)
+        ).all()
 
-        # Fetch fights from Arena API
-        try:
-            results_data = await fetch_arena_data(f"fight/{self.sport_event_id}")
-            fights = results_data.get("fights", []) if results_data else []
-        except Exception:
-            fights = []
-
-        # Store in metadata
         self.metadata = {
             'event': event,
             'country_name': country_name,

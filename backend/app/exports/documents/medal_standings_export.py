@@ -20,7 +20,6 @@ from ..builders.pdf_builder import (
 from ..utils.styling import ColorPalette
 from ..utils.formatters import formatter
 from ...domain import SportEvent, Team
-from ...services.arena import fetch_arena_data
 
 matplotlib.use('Agg')  # Non-GUI backend
 
