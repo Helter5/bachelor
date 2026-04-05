@@ -12,6 +12,10 @@ services:
         depends_on:
             mysql:
                 condition: service_healthy
+            rabbitmq:
+                condition: service_healthy
+            redis:
+                condition: service_started
 
     nginx:
         image: ghcr.io/helter5/arena-arena-web:latest
@@ -41,6 +45,14 @@ services:
             MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!!'
             MERCURE_EXTRA_DIRECTIVES: |
                 cors_origins http://127.0.0.1:8000
+
+    rabbitmq:
+        image: ghcr.io/helter5/arena-arena-rabbitmq:latest
+        restart: always
+
+    redis:
+        image: ghcr.io/helter5/arena-arena-redis:latest
+        restart: always
 
 volumes:
   database:

@@ -20,7 +20,7 @@ VALUES
   ('aaaaaaaa-aaaa-aaaa-aaaa-000000000001',
    'Multi-Arena Test Cup',
    '2026-06-10 00:00:00', '2026-06-12 00:00:00',
-   'Bratislava', NULL,
+   'Bratislava', 48,
    'individual', 'singlebracket', 'continental-championships', 'uww', NULL,
    'Europe/Bratislava', 20, 1, 0, 2, 0, 1, 1,
    '2026-06-01 10:00:00', '2026-06-01 10:00:00', NULL,

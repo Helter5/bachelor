@@ -88,17 +88,19 @@ jobs:
         run: |
           zcat database/seed/arena_data.sql.gz | \
             docker compose exec -T mysql mysql --force -u arena -parena arena
-          echo "Arena A seed data imported"
+          echo "Seed data imported"
 
       - name: Load multi-Arena test data
         working-directory: arena
         run: |
-          docker compose exec -T mysql \
-            mysql -u arena -parena arena < test_one.sql
-          echo "test_one.sql loaded into Arena A"
+          # Arena A: event aaaa... (teams only)
+          docker compose exec -T mysql mysql -u arena -parena arena < test_one.sql
+          # Arena B: copy users+OAuth from Arena A so auth works, then load event bbbb...
+          docker compose exec mysql mysqldump -u arena -parena arena user oauth2_client local_client | \
+            docker compose -p arena-b -f docker-compose-b.yaml exec -T mysql mysql -u arena -parena arena
           docker compose -p arena-b -f docker-compose-b.yaml exec -T mysql \
             mysql -u arena -parena arena < test_two.sql
-          echo "test_two.sql loaded into Arena B"
+          echo "Multi-Arena test data loaded"
 
       - name: Wait for API to be healthy
         run: |

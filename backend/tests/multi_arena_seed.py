@@ -1,16 +1,18 @@
 """
 Multi-Arena sync seed script.
 
-Creates two ArenaSource entries (Arena A + Arena B) and syncs
-the 'Multi-Arena Test Cup' event from each source independently.
+Creates two ArenaSource entries and syncs 'Multi-Arena Test Cup' from each:
+  - Arena A (port 8080): event aaaa... — teams only, NO athletes
+  - Arena B (port 8081): event bbbb... — teams + 4 athletes (same name/date)
 
-Arena A (test_one.sql): has teams but NO athletes.
-Arena B (test_two.sql): has teams AND athletes.
+Both Arenas have independent UUIDs for the same real-world event.
+The sync logic must deduplicate them into one event in the DB.
 
-Expected result in DB: one merged event, 3 teams, 2 WCs, 4 athletes.
+Usage (local):
+    PYTHONPATH=/app python tests/multi_arena_seed.py
 
-Usage:
-    PYTHONPATH=/app ARENA_B_HOST=arena-host ARENA_B_PORT=8081 python tests/multi_arena_seed.py
+    Arena B env overrides (default: arena-host:8081):
+    ARENA_B_HOST=arena-host ARENA_B_PORT=8081
 """
 import asyncio
 import os
@@ -45,7 +47,16 @@ EVENT_FIELD_MAP = {
 async def seed() -> None:
     with Session(engine) as session:
 
-        # ── 1. Create (or reuse) the two test ArenaSources ────────────────
+        # Borrow credentials from the existing working source
+        ref = session.exec(
+            select(ArenaSource).where(ArenaSource.is_enabled == True)
+        ).first()
+        creds = {
+            "client_id":     (ref.client_id     if ref else None) or os.environ.get("ARENA_CLIENT_ID"),
+            "client_secret": (ref.client_secret if ref else None) or os.environ.get("ARENA_CLIENT_SECRET"),
+            "api_key":       (ref.api_key       if ref else None) or os.environ.get("ARENA_API_KEY"),
+        }
+
         def get_or_create_source(name: str, host: str, port: int) -> ArenaSource:
             existing = session.exec(
                 select(ArenaSource).where(ArenaSource.name == name)
@@ -53,15 +64,7 @@ async def seed() -> None:
             if existing:
                 print(f"[multi-seed] ArenaSource '{name}' exists ({host}:{port})")
                 return existing
-            source = ArenaSource(
-                name=name,
-                host=host,
-                port=port,
-                client_id=os.environ.get("ARENA_CLIENT_ID"),
-                client_secret=os.environ.get("ARENA_CLIENT_SECRET"),
-                api_key=os.environ.get("ARENA_API_KEY"),
-                is_enabled=True,
-            )
+            source = ArenaSource(name=name, host=host, port=port, is_enabled=True, **creds)
             session.add(source)
             session.commit()
             session.refresh(source)
@@ -79,11 +82,10 @@ async def seed() -> None:
             int(os.environ.get("ARENA_B_PORT", 8081)),
         )
 
-        # ── 2. Sync event + sub-entities from both sources ───────────────
+        # Sync the test event from each Arena source independently
         for source in [source_a, source_b]:
             print(f"\n[multi-seed] === {source.name} ({source.host}:{source.port}) ===")
 
-            # Fetch all events from this Arena source
             event_service = SportEventService(session)
             try:
                 arena_data = await event_service.get_all_from_arena_source(source)
@@ -95,22 +97,21 @@ async def seed() -> None:
             test_events = [e for e in events_list if e.get("name") == EVENT_NAME]
 
             if not test_events:
-                print(f"[multi-seed] WARNING: '{EVENT_NAME}' not found — was test data loaded?")
+                print(f"[multi-seed] WARNING: '{EVENT_NAME}' not found in {source.name}")
                 continue
 
-            print(f"[multi-seed] Found '{EVENT_NAME}' (Arena UUID: {test_events[0].get('id')})")
+            arena_uuid = test_events[0].get("id")
+            print(f"[multi-seed] Found '{EVENT_NAME}' (UUID: {arena_uuid})")
 
-            # Sync event (natural key dedup: name + start_date + country)
-            for event_data in test_events:
-                mapped = dict(event_data)
-                for camel, snake in EVENT_FIELD_MAP.items():
-                    if camel in mapped:
-                        mapped[snake] = mapped[camel]
-                try:
-                    event_base = SportEventBase(**mapped)
-                    await event_service.sync_event(event_base)
-                except Exception as e:
-                    print(f"[multi-seed] ERROR syncing event: {e}")
+            mapped = dict(test_events[0])
+            for camel, snake in EVENT_FIELD_MAP.items():
+                if camel in mapped:
+                    mapped[snake] = mapped[camel]
+            try:
+                await event_service.sync_event(SportEventBase(**mapped))
+            except Exception as e:
+                print(f"[multi-seed] ERROR syncing event: {e}")
+                continue
 
             session.commit()
 
@@ -120,8 +121,6 @@ async def seed() -> None:
             if not db_event:
                 print("[multi-seed] ERROR: event not in DB after sync")
                 continue
-
-            arena_uuid = test_events[0].get("id")
 
             wc_service = WeightCategoryService(session)
             r = await wc_service.sync_weight_categories_for_event(
