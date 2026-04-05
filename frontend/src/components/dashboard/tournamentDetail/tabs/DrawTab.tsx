@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useMemo, useState, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
@@ -54,6 +54,8 @@ export function DrawTab({ isDarkMode, eventId, weightCategories, weightCategorie
   const [draws, setDraws] = useState<Record<number, CategoryDraw>>({})
   const [expandedId, setExpandedId] = useState<number | null>(null)
   const [generatingAll, setGeneratingAll] = useState(false)
+  const [infoExpanded, setInfoExpanded] = useState(false)
+  const toggleInfo = useCallback(() => setInfoExpanded(v => !v), [])
 
   const lastNOptions = useMemo(
     () => [1, 2, 3, 5, 10].map((n) => ({ value: n, label: `${n} ${t("draw.tournamentCount")}` })),
@@ -136,6 +138,54 @@ export function DrawTab({ isDarkMode, eventId, weightCategories, weightCategorie
             {generatingAll ? t("draw.generating") : hasDraws ? t("draw.regenerateAll") : t("draw.generateAll")}
           </button>
         </div>
+      </div>
+
+      {/* Info panel */}
+      <div className={`rounded-lg border overflow-hidden ${isDarkMode ? 'border-white/5' : 'border-gray-200'}`}>
+        <button
+          onClick={toggleInfo}
+          className={`w-full flex items-center justify-between px-4 py-3 text-sm transition-colors ${
+            isDarkMode ? 'bg-[#1e293b] hover:bg-white/5' : 'bg-gray-50 hover:bg-gray-100'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <svg className={`w-4 h-4 flex-shrink-0 ${isDarkMode ? 'text-blue-400' : 'text-blue-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className={`font-medium ${text}`}>{t("draw.howItWorks")}</span>
+          </div>
+          <svg className={`w-4 h-4 transition-transform ${infoExpanded ? 'rotate-180' : ''} ${sub}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        {infoExpanded && (
+          <div className={`px-4 py-3 border-t ${isDarkMode ? 'bg-[#0f172a] border-white/5' : 'bg-white border-gray-100'}`}>
+            <p className={`text-sm ${sub} mb-4`}>{t("draw.howItWorksDesc")}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {(
+                [
+                  { title: "draw.infoSeeding", desc: "draw.infoSeedingDesc", icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" },
+                  { title: "draw.infoBracket", desc: "draw.infoBracketDesc", icon: "M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" },
+                  { title: "draw.infoPenalty", desc: "draw.infoPenaltyDesc", icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" },
+                  { title: "draw.infoLastN", desc: "draw.infoLastNDesc", icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" },
+                ] as const
+              ).map(({ title, desc, icon }) => (
+                <div key={title} className={`rounded-lg p-3 ${isDarkMode ? 'bg-white/5' : 'bg-gray-50'}`}>
+                  <div className="flex items-start gap-2">
+                    <svg className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDarkMode ? 'text-blue-400' : 'text-blue-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icon} />
+                    </svg>
+                    <div>
+                      <p className={`text-xs font-semibold ${text} mb-1`}>{t(title)}</p>
+                      <p className={`text-xs ${sub} leading-relaxed`}>{t(desc)}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {weightCategoriesLoading && (

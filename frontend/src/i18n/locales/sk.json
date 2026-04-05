@@ -189,6 +189,7 @@
     "searchPlaceholder": "Hľadať podľa názvu, miesta, kontinentu...",
     "athleteSearchPlaceholder": "Hľadať podľa atléta...",
     "noAthletesFound": "Žiadni atléti nenájdení",
+    "sortLabel": "Zoradiť:",
     "sortByName": "Názov",
     "sortByDate": "Dátum",
     "notFound": "Žiadne turnaje neboli nájdené"
@@ -280,7 +281,17 @@
     "tableScore": "Skóre",
     "bracketLabel": "Pavúk:",
     "byeLabel": "Voľno:",
-    "failed": "Nepodarilo sa vygenerovať"
+    "failed": "Nepodarilo sa vygenerovať",
+    "howItWorks": "Ako funguje generátor žrebu?",
+    "howItWorksDesc": "Generátor automaticky vytvorí nasadenie a losovanie pre každú váhovú kategóriu na základe historických výsledkov a minimalizácie nevýhodných prvokolových zápasov.",
+    "infoSeeding": "Nasadenie podľa výkonnosti",
+    "infoSeedingDesc": "Každý atlét dostane skóre na základe počtu výhier v posledných N turnajoch. Najnovšie výsledky majú vyššiu váhu (1. turnaj = 100%, 2. = 70%, 3. = 40%...).",
+    "infoBracket": "Štandardné rozmiestnenie",
+    "infoBracketDesc": "Nasadení č. 1 a 2 sú na opačných stranách pavúka, nasadení 3 a 4 v opačných štvrťfinálach. Ak počet atlétov nie je mocnina dvoch, doplnia sa voľné miesta (bye).",
+    "infoPenalty": "Penalizačný systém",
+    "infoPenaltyDesc": "Algoritmus sa snaží vyhnúť nevhodným dvojiciam v 1. kole. Penalizuje sa: rovnaký tím (+50), predchádzajúce stretnutia (+10 za každé), nedávne stretnutia v posledných N turnajoch (+20 za každé).",
+    "infoLastN": "Parameter «Posledných N turnajov»",
+    "infoLastNDesc": "Určuje, koľko posledných turnajov sa berie do úvahy pri výpočte skóre a penalizácií. Väčšie N = širší historický kontext, menšie N = dôraz na aktuálnu formu."
   },
   "statistics": {
     "tournamentTitle": "Štatistiky turnaja",

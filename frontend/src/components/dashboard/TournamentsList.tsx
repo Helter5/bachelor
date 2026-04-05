@@ -383,47 +383,40 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
             </div>
 
             {/* Sort Options */}
-            <div className="mt-3 flex gap-2">
-              <button
-                onClick={() => handleSort("name")}
-                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                  sortBy === "name"
-                    ? isDarkMode
-                      ? "bg-blue-500 text-white"
-                      : "bg-blue-600 text-white"
-                    : isDarkMode
-                      ? "bg-[#0f172a]/50 text-gray-300 hover:bg-white/5 shadow-inner"
-                      : "bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200"
-                }`}
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                </svg>
-                {t("tournaments.sortByName")}
-                {sortBy === "name" && (
-                  <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
-                )}
-              </button>
-              <button
-                onClick={() => handleSort("date")}
-                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                  sortBy === "date"
-                    ? isDarkMode
-                      ? "bg-blue-500 text-white"
-                      : "bg-blue-600 text-white"
-                    : isDarkMode
-                      ? "bg-[#0f172a]/50 text-gray-300 hover:bg-white/5 shadow-inner"
-                      : "bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200"
-                }`}
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                {t("tournaments.sortByDate")}
-                {sortBy === "date" && (
-                  <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
-                )}
-              </button>
+            <div className={`mt-3 flex items-center gap-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              <span className="text-xs">{t("tournaments.sortLabel")}</span>
+              <div className={`flex rounded-lg overflow-hidden border ${isDarkMode ? 'border-white/10' : 'border-gray-200'}`}>
+                {(["name", "date"] as const).map((key) => {
+                  const active = sortBy === key
+                  const icon = key === "name"
+                    ? "M7 20l4-16m2 16l4-16M6 9h14M4 15h14"
+                    : "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  const label = key === "name" ? t("tournaments.sortByName") : t("tournaments.sortByDate")
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => handleSort(key)}
+                      title={label}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${
+                        active
+                          ? isDarkMode ? 'bg-blue-500 text-white' : 'bg-blue-600 text-white'
+                          : isDarkMode ? 'bg-[#0f172a]/50 text-gray-400 hover:text-gray-200' : 'bg-white text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icon} />
+                      </svg>
+                      {label}
+                      {active && (
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
+                            d={sortOrder === "asc" ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7"} />
+                        </svg>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           </div>
         </div>

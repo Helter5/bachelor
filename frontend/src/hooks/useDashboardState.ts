@@ -143,6 +143,7 @@ export function useDashboardState() {
 
   const setActiveSection = useCallback((section: string) => {
     window.history.pushState({}, '', buildPath(section))
+    window.dispatchEvent(new CustomEvent('app:navigate', { detail: { section } }))
 
     setState(prev => ({ ...prev, activeSection: section, selectedTournament: null, selectedPerson: null }))
   }, [])

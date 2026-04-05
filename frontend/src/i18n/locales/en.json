@@ -189,6 +189,7 @@
     "searchPlaceholder": "Search by name, location, continent...",
     "athleteSearchPlaceholder": "Search by athlete...",
     "noAthletesFound": "No athletes found",
+    "sortLabel": "Sort:",
     "sortByName": "Name",
     "sortByDate": "Date",
     "notFound": "No tournaments found"
@@ -280,7 +281,17 @@
     "tableScore": "Score",
     "bracketLabel": "Bracket:",
     "byeLabel": "Bye:",
-    "failed": "Failed to generate"
+    "failed": "Failed to generate",
+    "howItWorks": "How does the draw generator work?",
+    "howItWorksDesc": "The generator automatically creates seedings and a bracket for each weight category based on historical results and minimisation of unfavourable first-round match-ups.",
+    "infoSeeding": "Performance-based seeding",
+    "infoSeedingDesc": "Each athlete receives a score based on their number of wins in the last N tournaments. More recent results carry more weight (1st tournament = 100%, 2nd = 70%, 3rd = 40%...).",
+    "infoBracket": "Standard bracket placement",
+    "infoBracketDesc": "Seeds #1 and #2 are placed on opposite sides of the bracket; seeds 3 and 4 in opposite quarters. If the athlete count is not a power of two, bye slots are added.",
+    "infoPenalty": "Penalty system",
+    "infoPenaltyDesc": "The algorithm avoids unfavourable first-round pairs. Penalties are applied for: same team (+50), previous meetings (+10 each), recent meetings within the last N tournaments (+20 each).",
+    "infoLastN": "«Last N tournaments» parameter",
+    "infoLastNDesc": "Defines how many recent tournaments are considered when calculating scores and penalties. Larger N = broader historical context; smaller N = emphasis on current form."
   },
   "statistics": {
     "tournamentTitle": "Tournament statistics",

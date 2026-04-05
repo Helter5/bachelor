@@ -84,12 +84,14 @@ export function DashboardStats({ isDarkMode, onSelectPerson }: DashboardStatsPro
   const [selectedCategory, setSelectedCategory] = useState<StatsCategory>(() => parseStatsCategoryFromUrl())
 
   useEffect(() => {
-    const handlePopState = () => {
-      setSelectedCategory(parseStatsCategoryFromUrl())
-    }
+    const syncFromUrl = () => setSelectedCategory(parseStatsCategoryFromUrl())
 
-    window.addEventListener("popstate", handlePopState)
-    return () => window.removeEventListener("popstate", handlePopState)
+    window.addEventListener("popstate", syncFromUrl)
+    window.addEventListener("app:navigate", syncFromUrl)
+    return () => {
+      window.removeEventListener("popstate", syncFromUrl)
+      window.removeEventListener("app:navigate", syncFromUrl)
+    }
   }, [])
 
   const handleSelectCategory = useCallback((category: Exclude<StatsCategory, null>) => {
