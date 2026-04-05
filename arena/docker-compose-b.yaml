@@ -1,0 +1,48 @@
+services:
+    php-fpm:
+        image: ghcr.io/helter5/arena-arena:latest
+        environment:
+            PHP_MEMORY_LIMIT: ${PHP_MEMORY_LIMIT:--1}
+            DOCKER_COMPOSE_FILE_VERSION: "1.2"
+        entrypoint: ["/bin/sh", "/entrypoint.sh", "php-fpm"]
+        volumes:
+            - public-uploads:/var/www/arena/current/public/uploads
+            - php-shared-temp-dir:/var/www/arena/phpshared
+        restart: always
+        depends_on:
+            mysql:
+                condition: service_healthy
+
+    nginx:
+        image: ghcr.io/helter5/arena-arena-web:latest
+        ports:
+            - 8081:80
+        restart: always
+        volumes:
+            - public-uploads:/var/www/arena/current/public/uploads
+        depends_on:
+            php-fpm:
+                condition: service_healthy
+            caddy:
+                condition: service_started
+
+    mysql:
+        image: ghcr.io/helter5/arena-arena-db:latest
+        restart: always
+        volumes:
+            - database:/var/lib/mysql
+
+    caddy:
+        image: ghcr.io/helter5/arena-arena-mercure:latest
+        restart: always
+        environment:
+            SERVER_NAME: ':80'
+            MERCURE_PUBLISHER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!!'
+            MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!!'
+            MERCURE_EXTRA_DIRECTIVES: |
+                cors_origins http://127.0.0.1:8000
+
+volumes:
+  database:
+  public-uploads:
+  php-shared-temp-dir:
