@@ -127,29 +127,44 @@ async def sync_athletes(
         )
 
 
-@router.get("/{sportEventId}/print")
-async def generate_athletes_list_pdf(sportEventId: str):
+@router.get("/{event_id}/print")
+async def generate_athletes_list_pdf(event_id: int, session: Session = Depends(get_session)):
     """Generate PDF with athletes list for a specific sport event."""
     from fastapi.responses import Response
-    from ..services.arena import fetch_arena_data
+    from sqlmodel import select
+    from ..domain import SportEvent, Athlete, Team, Person
     from ..exports.documents.athletes_list_export import generate_athletes_list_pdf as _make_pdf
 
     try:
-        event_data = await fetch_arena_data(f"sport-event/get/{sportEventId}")
-        if not event_data or "event" not in event_data:
-            raise HTTPException(status_code=404, detail=f"Sport event {sportEventId} not found")
+        event = session.exec(select(SportEvent).where(SportEvent.id == event_id)).first()
+        if not event:
+            raise HTTPException(status_code=404, detail=f"Sport event {event_id} not found")
 
-        athletes_data = await fetch_arena_data(f"athlete/{sportEventId}")
-        if not athletes_data or "athletes" not in athletes_data:
-            raise HTTPException(status_code=404, detail=f"Athletes not found for event {sportEventId}")
+        athletes = session.exec(select(Athlete).where(Athlete.sport_event_id == event_id)).all()
+        person_ids = [a.person_id for a in athletes if a.person_id]
+        team_ids = list({a.team_id for a in athletes if a.team_id})
 
-        event_name = event_data["event"].get("fullName", "Sport Event")
-        athletes = sorted(athletes_data["athletes"].get("items", []), key=lambda x: x.get("personFullName", ""))
+        persons = session.exec(select(Person).where(Person.id.in_(person_ids))).all() if person_ids else []
+        teams = session.exec(select(Team).where(Team.id.in_(team_ids))).all() if team_ids else []
+
+        person_map = {p.id: p for p in persons}
+        team_map = {t.id: t for t in teams}
+
+        athletes_data = sorted(
+            [
+                {
+                    "personFullName": person_map[a.person_id].full_name if a.person_id and person_map.get(a.person_id) else "",
+                    "teamName": team_map[a.team_id].name if a.team_id and team_map.get(a.team_id) else "N/A",
+                }
+                for a in athletes
+            ],
+            key=lambda x: x["personFullName"],
+        )
 
         return Response(
-            content=_make_pdf(event_name, athletes),
+            content=_make_pdf(event.name or "Sport Event", athletes_data),
             media_type="application/pdf",
-            headers={"Content-Disposition": f"inline; filename=athletes-list-{sportEventId}.pdf"},
+            headers={"Content-Disposition": f"inline; filename=athletes-list-{event_id}.pdf"},
         )
     except HTTPException:
         raise

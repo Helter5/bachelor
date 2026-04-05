@@ -98,29 +98,43 @@ async def sync_teams(
         )
 
 
-@router.get("/{sportEventId}/print")
-async def generate_teams_list_pdf(sportEventId: str):
+@router.get("/{event_id}/print")
+async def generate_teams_list_pdf(event_id: int, session: Session = Depends(get_session)):
     """Generate PDF with teams list for a specific sport event."""
     from fastapi.responses import Response
-    from ..services.arena import fetch_arena_data
+    from sqlmodel import select
+    from ..domain import SportEvent, Team, Athlete
     from ..exports.documents.teams_list_export import generate_teams_list_pdf as _make_pdf
 
     try:
-        event_data = await fetch_arena_data(f"sport-event/get/{sportEventId}")
-        if not event_data or "event" not in event_data:
-            raise HTTPException(status_code=404, detail=f"Sport event {sportEventId} not found")
+        event = session.exec(select(SportEvent).where(SportEvent.id == event_id)).first()
+        if not event:
+            raise HTTPException(status_code=404, detail=f"Sport event {event_id} not found")
 
-        teams_data = await fetch_arena_data(f"team/{sportEventId}")
-        if not teams_data or "sportEventTeams" not in teams_data:
-            raise HTTPException(status_code=404, detail=f"Teams not found for event {sportEventId}")
+        teams = session.exec(select(Team).where(Team.sport_event_id == event_id)).all()
+        athletes = session.exec(select(Athlete).where(Athlete.sport_event_id == event_id)).all()
 
-        event_name = event_data["event"].get("fullName", "Sport Event")
-        teams = sorted(teams_data["sportEventTeams"].get("items", []), key=lambda x: x.get("name", ""))
+        team_athlete_counts: dict = {}
+        for a in athletes:
+            if a.team_id is not None:
+                team_athlete_counts[a.team_id] = team_athlete_counts.get(a.team_id, 0) + 1
+
+        teams_data = sorted(
+            [
+                {
+                    "name": t.name or "",
+                    "alternateName": t.alternate_name or t.country_iso_code or "",
+                    "athleteCount": team_athlete_counts.get(t.id, 0),
+                }
+                for t in teams
+            ],
+            key=lambda x: x["name"],
+        )
 
         return Response(
-            content=_make_pdf(event_name, teams),
+            content=_make_pdf(event.name or "Sport Event", teams_data),
             media_type="application/pdf",
-            headers={"Content-Disposition": f"inline; filename=teams-list-{sportEventId}.pdf"},
+            headers={"Content-Disposition": f"inline; filename=teams-list-{event_id}.pdf"},
         )
     except HTTPException:
         raise

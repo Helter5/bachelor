@@ -27,26 +27,19 @@ matplotlib.use('Agg')  # Non-GUI backend
 class MedalStandingsExport(BasePDFExport):
     """Export for medal standings PDF"""
 
-    def __init__(self, sport_event_id: str, session: Session):
-        """
-        Initialize medal standings export
-
-        Args:
-            sport_event_id: Sport event UUID
-            session: Database session
-        """
+    def __init__(self, event_id: int, session: Session):
         super().__init__()
-        self.sport_event_id = sport_event_id
+        self.event_id = event_id
         self.session = session
 
     def fetch_data(self) -> None:
         """Fetch event, teams, and calculate medal standings"""
         event = self.session.exec(
-            select(SportEvent).where(SportEvent.arena_uuid == self.sport_event_id)
+            select(SportEvent).where(SportEvent.id == self.event_id)
         ).first()
 
         if not event:
-            raise ValueError(f"Sport event {self.sport_event_id} not found")
+            raise ValueError(f"Sport event {self.event_id} not found")
 
         teams = self.session.exec(
             select(Team).where(Team.sport_event_id == event.id)
@@ -218,4 +211,4 @@ class MedalStandingsExport(BasePDFExport):
 
     def get_filename(self) -> str:
         """Get filename for export"""
-        return f"medal-standings-{self.sport_event_id}.pdf"
+        return f"medal-standings-{self.event_id}.pdf"

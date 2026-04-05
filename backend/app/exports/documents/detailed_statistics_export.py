@@ -13,19 +13,19 @@ from ...domain import SportEvent, Team, Athlete, WeightCategory, Person, Fight, 
 class DetailedStatisticsExport(BaseExcelExport):
     """Export for detailed statistics Excel file"""
 
-    def __init__(self, sport_event_id: str, session: Session):
+    def __init__(self, event_id: int, session: Session):
         super().__init__()
-        self.sport_event_id = sport_event_id
+        self.event_id = event_id
         self.session = session
 
     async def fetch_data_async(self) -> None:
         """Fetch all required data from DB."""
         event = self.session.exec(
-            select(SportEvent).where(SportEvent.arena_uuid == self.sport_event_id)
+            select(SportEvent).where(SportEvent.id == self.event_id)
         ).first()
 
         if not event:
-            raise ValueError(f"Sport event {self.sport_event_id} not found")
+            raise ValueError(f"Sport event {self.event_id} not found")
 
         teams = self.session.exec(select(Team).where(Team.sport_event_id == event.id)).all()
         athletes = self.session.exec(select(Athlete).where(Athlete.sport_event_id == event.id)).all()
@@ -335,4 +335,4 @@ class DetailedStatisticsExport(BaseExcelExport):
             ])
 
     def get_filename(self) -> str:
-        return f"statistics-{self.sport_event_id}.xlsx"
+        return f"statistics-{self.event_id}.xlsx"
