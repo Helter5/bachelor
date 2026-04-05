@@ -13,6 +13,17 @@ from ....services.arena_auth import invalidate_source_token_cache
 router = APIRouter(prefix="/admin/arena-sources")
 
 
+def _activate_exclusively(session: Session, source: ArenaSource) -> None:
+    """Enable this source and disable all others — only one can be active at a time."""
+    for other in session.exec(
+        select(ArenaSource).where(ArenaSource.id != source.id, ArenaSource.is_enabled == True)
+    ).all():
+        other.is_enabled = False
+        session.add(other)
+        invalidate_source_token_cache(other.id)
+    source.is_enabled = True
+
+
 @router.get("", response_model=List[ArenaSourceOut])
 async def list_arena_sources(
     _: None = Depends(validate_csrf_and_origin),
@@ -41,8 +52,11 @@ async def create_arena_source(
 
     Requires: Admin role + CSRF token + Origin validation
     """
-    source = ArenaSource(**source_data.model_dump(), user_id=user.id)
+    source = ArenaSource(**source_data.model_dump(exclude={"is_enabled"}), user_id=user.id, is_enabled=False)
     session.add(source)
+    session.flush()
+    if source_data.is_enabled:
+        _activate_exclusively(session, source)
     session.commit()
     session.refresh(source)
     return source
@@ -89,12 +103,18 @@ async def update_arena_source(
             detail=f"Arena source with id {source_id} not found"
         )
 
-    # Invalidate cached token so new credentials take effect immediately
     invalidate_source_token_cache(source_id)
 
-    # Update fields
-    for key, value in source_data.model_dump(exclude_unset=True).items():
+    data = source_data.model_dump(exclude_unset=True)
+    enabling = data.pop("is_enabled", None)
+
+    for key, value in data.items():
         setattr(source, key, value)
+
+    if enabling is True:
+        _activate_exclusively(session, source)
+    elif enabling is False:
+        source.is_enabled = False
 
     session.add(source)
     session.commit()
@@ -189,7 +209,10 @@ async def toggle_arena_source(
             detail=f"Arena source with id {source_id} not found"
         )
 
-    source.is_enabled = not source.is_enabled
+    if source.is_enabled:
+        source.is_enabled = False
+    else:
+        _activate_exclusively(session, source)
     session.add(source)
     session.commit()
     session.refresh(source)

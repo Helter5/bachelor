@@ -57,13 +57,10 @@ _sync_locks: dict[str, asyncio.Lock] = {}
 _sync_results: dict[str, dict] = {}  # Store results by idempotency key
 
 
-def _get_user_arena_source(user: User, session: Session) -> ArenaSource:
-    """Return the enabled ArenaSource belonging to the requesting user."""
+def _get_active_arena_source(session: Session) -> ArenaSource:
+    """Return the single active ArenaSource. Raises 400 if none configured/enabled."""
     source = session.exec(
-        select(ArenaSource).where(
-            ArenaSource.user_id == user.id,
-            ArenaSource.is_enabled == True,
-        )
+        select(ArenaSource).where(ArenaSource.is_enabled == True)
     ).first()
     if not source:
         raise HTTPException(
@@ -73,8 +70,8 @@ def _get_user_arena_source(user: User, session: Session) -> ArenaSource:
     return source
 
 
-async def _resolve_event_uuid_from_source(event: SportEvent, source: ArenaSource) -> str:
-    """Fetch event list from Arena source and resolve UUID for the given event by natural key."""
+async def _resolve_event_uuid_for_source(event: SportEvent, source: ArenaSource) -> Optional[str]:
+    """Return the Arena UUID for the given event in the source, or None if not found."""
     from ....services.arena_auth import get_access_token_for_source
     from ....services.arena_request import call_arena_api
 
@@ -89,10 +86,7 @@ async def _resolve_event_uuid_from_source(event: SportEvent, source: ArenaSource
                 item.get("countryIsoCode") == event.country_iso_code):
             return str(item["id"])
 
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"Event '{event.name}' not found in your Arena source. Make sure to sync events first."
-    )
+    return None
 
 
 @router.post("/events")
@@ -155,22 +149,17 @@ async def sync_events(
         start_time = datetime.now(timezone.utc)
 
         try:
-            # Use the requesting user's Arena source
-            source = _get_user_arena_source(user, session)
+            from ....domain import SportEventBase
+            source = _get_active_arena_source(session)
 
-            # Fetch events from user's Arena source
             arena_data = await service.get_all_from_arena_source(source)
-            events_data = arena_data.get("events", {})
-            events_list = events_data.get("items", [])
+            events_list = arena_data.get("events", {}).get("items", [])
 
             total_synced_events = []
             events_created_total = 0
             events_updated_total = 0
 
             for event_data in events_list:
-                from ....domain import SportEventBase
-
-                # Map Arena API fields (camelCase) to database fields (snake_case)
                 if 'id' in event_data:
                     event_data['arena_uuid'] = event_data['id']
                 if 'startDate' in event_data:
@@ -203,7 +192,6 @@ async def sync_events(
                 elif sync_result.get("matched_by") == "updated":
                     events_updated_total += 1
 
-            # Update last_sync_at for the source
             source.last_sync_at = datetime.now(timezone.utc)
             session.add(source)
             session.commit()
@@ -294,11 +282,17 @@ async def sync_teams(
         if not event:
             raise HTTPException(status_code=404, detail=f"Event {event_id} not found")
 
-        source = _get_user_arena_source(user, session)
+        source = _get_active_arena_source(session)
         service = TeamService(session)
 
         try:
-            event_uuid = await _resolve_event_uuid_from_source(event, source)
+            event_uuid = await _resolve_event_uuid_for_source(event, source)
+            if event_uuid is None:
+                return {
+                    "message": f"Udalosť '{event.name}' sa nenachádza v aktívnom zdroji ({source.name}). Nie je čo synchronizovať.",
+                    "skipped": True,
+                    "event_id": event_id,
+                }
             teams = await service.sync_teams_for_event(event_uuid, event_id=event_id, source=source)
             result = {
                 "message": f"Successfully synced teams for event {event.name}",
@@ -313,6 +307,8 @@ async def sync_teams(
             _sync_results[idempotency_key] = result
             
             return result
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -363,11 +359,17 @@ async def sync_athletes(
         if not event:
             raise HTTPException(status_code=404, detail=f"Event {event_id} not found")
 
-        source = _get_user_arena_source(user, session)
+        source = _get_active_arena_source(session)
         service = AthleteService(session)
 
         try:
-            event_uuid = await _resolve_event_uuid_from_source(event, source)
+            event_uuid = await _resolve_event_uuid_for_source(event, source)
+            if event_uuid is None:
+                return {
+                    "message": f"Udalosť '{event.name}' sa nenachádza v aktívnom zdroji ({source.name}). Nie je čo synchronizovať.",
+                    "skipped": True,
+                    "event_id": event_id,
+                }
             athletes = await service.sync_athletes_for_event(event_uuid, event_id=event_id, source=source)
             result = {
                 "message": f"Successfully synced athletes for event {event.name}",
@@ -382,6 +384,8 @@ async def sync_athletes(
             _sync_results[idempotency_key] = result
             
             return result
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -432,11 +436,17 @@ async def sync_categories(
         if not event:
             raise HTTPException(status_code=404, detail=f"Event {event_id} not found")
 
-        source = _get_user_arena_source(user, session)
+        source = _get_active_arena_source(session)
         service = WeightCategoryService(session)
 
         try:
-            event_uuid = await _resolve_event_uuid_from_source(event, source)
+            event_uuid = await _resolve_event_uuid_for_source(event, source)
+            if event_uuid is None:
+                return {
+                    "message": f"Udalosť '{event.name}' sa nenachádza v aktívnom zdroji ({source.name}). Nie je čo synchronizovať.",
+                    "skipped": True,
+                    "event_id": event_id,
+                }
             categories = await service.sync_weight_categories_for_event(event_uuid, event_id=event_id, source=source)
             result = {
                 "message": f"Successfully synced categories for event {event.name}",
@@ -451,6 +461,8 @@ async def sync_categories(
             _sync_results[idempotency_key] = result
             
             return result
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -468,7 +480,7 @@ async def sync_victory_types(
     """
     Sync victory types for a specific sport from Arena API config (admin only)
     """
-    source = _get_user_arena_source(user, session)
+    source = _get_active_arena_source(session)
     service = VictoryTypeService(session)
     result = await service.sync_for_sport(sport_id, source=source)
     return {
@@ -512,11 +524,17 @@ async def sync_fights(
         if not event:
             raise HTTPException(status_code=404, detail=f"Event {event_id} not found")
 
-        source = _get_user_arena_source(user, session)
+        source = _get_active_arena_source(session)
         service = FightService(session)
 
         try:
-            event_uuid = await _resolve_event_uuid_from_source(event, source)
+            event_uuid = await _resolve_event_uuid_for_source(event, source)
+            if event_uuid is None:
+                return {
+                    "message": f"Udalosť '{event.name}' sa nenachádza v aktívnom zdroji ({source.name}). Nie je čo synchronizovať.",
+                    "skipped": True,
+                    "event_id": event_id,
+                }
             fights = await service.sync_fights_for_event(event_uuid, event_id=event_id, source=source)
             result = {
                 "message": f"Successfully synced fights for event {event.name}",
@@ -529,6 +547,8 @@ async def sync_fights(
 
             _sync_results[idempotency_key] = result
             return result
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
