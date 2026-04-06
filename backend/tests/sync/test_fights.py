@@ -12,6 +12,7 @@ from app.domain.entities.person import Person
 from app.domain.entities.team import Team
 from app.domain.entities.weight_category import WeightCategory
 from app.domain.entities.discipline import Discipline
+from app.services.arena import fetch_all_arena_items
 from tests.conftest import arena_fetch
 from tests.utils import check, section, result
 
@@ -50,7 +51,7 @@ async def _build_athlete_uuid_map(db, event) -> dict[str, int]:
     if not event.arena_uuid:
         return {}
 
-    athletes_data = await arena_fetch(f"athlete/{event.arena_uuid}")
+    arena_athletes = await fetch_all_arena_items(f"athlete/{event.arena_uuid}", "athletes")
     teams_data = await arena_fetch(f"team/{event.arena_uuid}")
     arena_team_names = {
         t["id"]: t.get("name")
@@ -79,7 +80,7 @@ async def _build_athlete_uuid_map(db, event) -> dict[str, int]:
         db_lookup[key] = athlete.id
 
     uuid_map: dict[str, int] = {}
-    for a in athletes_data.get("athletes", {}).get("items", []):
+    for a in arena_athletes:
         arena_uuid = a.get("id")
         if not arena_uuid:
             continue

@@ -75,6 +75,7 @@ async def seed_from_source(session: Session, source: ArenaSource) -> None:
         for camel, snake in EVENT_FIELD_MAP.items():
             if camel in mapped:
                 mapped[snake] = mapped[camel]
+        mapped.pop("id", None)
         try:
             await event_service.sync_event(SportEventBase(**mapped))
         except Exception as e:

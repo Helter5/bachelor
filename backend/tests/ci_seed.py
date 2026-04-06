@@ -56,7 +56,8 @@ async def seed() -> None:
             print("[seed] Syncujem eventy...")
             print(f"[seed]   Nájdených {len(events_list)} eventov z Arény")
 
-            for event_data in events_list:
+            for item in events_list:
+                event_data = dict(item)
                 mappings = {
                     "startDate": "start_date",
                     "endDate": "end_date",
@@ -74,6 +75,7 @@ async def seed() -> None:
                         event_data[snake] = event_data[camel]
 
                 try:
+                    event_data.pop("id", None)
                     event_base = SportEventBase(**event_data)
                     await event_service.sync_event(event_base)
                 except Exception as e:

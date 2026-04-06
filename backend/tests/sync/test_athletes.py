@@ -10,6 +10,7 @@ from app.domain.entities.team import Team
 from app.domain.entities.weight_category import WeightCategory
 from app.domain.entities.discipline import Discipline
 from app.domain.entities.person import Person
+from app.services.arena import fetch_all_arena_items
 from tests.conftest import arena_fetch
 from tests.utils import check, section, result
 
@@ -26,8 +27,7 @@ async def _fetch_arena_athletes(event) -> dict[str, dict]:
     """Stiahne atlétov pre daný event. Kľúč: natural key."""
     if not event.arena_uuid:
         return {}
-    data = await arena_fetch(f"athlete/{event.arena_uuid}")
-    items = data.get("athletes", {}).get("items", [])
+    items = await fetch_all_arena_items(f"athlete/{event.arena_uuid}", "athletes")
 
     # Fetch teams for team name lookup
     teams_data = await arena_fetch(f"team/{event.arena_uuid}")
@@ -84,10 +84,9 @@ async def test_athletes_count_matches_arena(db, synced_events):
     """Počet atlétov v DB sa zhoduje s Arena API pre každé podujatie."""
     errors = []
     for event in synced_events:
-        arena_data = {} if not event.arena_uuid else (
-            await arena_fetch(f"athlete/{event.arena_uuid}")
+        arena_count = 0 if not event.arena_uuid else len(
+            await fetch_all_arena_items(f"athlete/{event.arena_uuid}", "athletes")
         )
-        arena_count = len(arena_data.get("athletes", {}).get("items", []))
         db_count = db.exec(
             select(Athlete).where(Athlete.sport_event_id == event.id)
         )
