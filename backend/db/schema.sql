@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict uIyxXcIvTnK1YYRHtCgTyOGs19Oe4Dx0epcooPyXu5djb3NxE4W9oCmXLKqnevC
+\restrict BQHfCLZAf5eo2YQd2kgpWnvbKjWhVaNFU3rbYFhK3J5M9lcXNa5gTjqHFByeXcz
 
 -- Dumped from database version 16.13
 -- Dumped by pg_dump version 16.13
@@ -66,42 +66,6 @@ ALTER SEQUENCE public.arena_sources_id_seq OWNED BY public.arena_sources.id;
 
 
 --
--- Name: athlete_source_uids; Type: TABLE; Schema: public; Owner: user
---
-
-CREATE TABLE public.athlete_source_uids (
-    id integer NOT NULL,
-    athlete_id integer NOT NULL,
-    arena_source_id integer NOT NULL,
-    arena_uuid uuid NOT NULL
-);
-
-
-ALTER TABLE public.athlete_source_uids OWNER TO "user";
-
---
--- Name: athlete_source_uids_id_seq; Type: SEQUENCE; Schema: public; Owner: user
---
-
-CREATE SEQUENCE public.athlete_source_uids_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.athlete_source_uids_id_seq OWNER TO "user";
-
---
--- Name: athlete_source_uids_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
---
-
-ALTER SEQUENCE public.athlete_source_uids_id_seq OWNED BY public.athlete_source_uids.id;
-
-
---
 -- Name: athletes; Type: TABLE; Schema: public; Owner: user
 --
 
@@ -110,7 +74,6 @@ CREATE TABLE public.athletes (
     sport_event_id integer,
     weight_category_id integer,
     is_competing boolean,
-    uid uuid NOT NULL,
     person_id integer,
     id integer NOT NULL,
     sync_timestamp timestamp without time zone NOT NULL
@@ -225,7 +188,6 @@ ALTER SEQUENCE public.email_verification_tokens_id_seq OWNED BY public.email_ver
 --
 
 CREATE TABLE public.fights (
-    uid uuid NOT NULL,
     sport_event_id integer NOT NULL,
     weight_category_id integer,
     fighter_one_id integer,
@@ -536,7 +498,6 @@ ALTER SEQUENCE public.sync_logs_id_seq OWNED BY public.sync_logs.id;
 --
 
 CREATE TABLE public.teams (
-    uid uuid NOT NULL,
     sport_event_id integer NOT NULL,
     name character varying NOT NULL,
     alternate_name character varying,
@@ -638,7 +599,6 @@ ALTER TABLE public.victory_types OWNER TO "user";
 --
 
 CREATE TABLE public.weight_categories (
-    uid uuid NOT NULL,
     discipline_id integer,
     max_weight integer,
     count_fighters integer,
@@ -660,7 +620,6 @@ ALTER TABLE public.weight_categories OWNER TO "user";
 
 CREATE VIEW public.v_fights_readable AS
  SELECT f.id,
-    f.uid,
     f.sport_event_id,
     se.name AS sport_event_name,
     f.weight_category_id,
@@ -744,53 +703,10 @@ ALTER SEQUENCE public.weight_categories_id_seq OWNED BY public.weight_categories
 
 
 --
--- Name: weight_category_source_uids; Type: TABLE; Schema: public; Owner: user
---
-
-CREATE TABLE public.weight_category_source_uids (
-    id integer NOT NULL,
-    weight_category_id integer NOT NULL,
-    arena_source_id integer NOT NULL,
-    arena_uuid uuid NOT NULL
-);
-
-
-ALTER TABLE public.weight_category_source_uids OWNER TO "user";
-
---
--- Name: weight_category_source_uids_id_seq; Type: SEQUENCE; Schema: public; Owner: user
---
-
-CREATE SEQUENCE public.weight_category_source_uids_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.weight_category_source_uids_id_seq OWNER TO "user";
-
---
--- Name: weight_category_source_uids_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user
---
-
-ALTER SEQUENCE public.weight_category_source_uids_id_seq OWNED BY public.weight_category_source_uids.id;
-
-
---
 -- Name: arena_sources id; Type: DEFAULT; Schema: public; Owner: user
 --
 
 ALTER TABLE ONLY public.arena_sources ALTER COLUMN id SET DEFAULT nextval('public.arena_sources_id_seq'::regclass);
-
-
---
--- Name: athlete_source_uids id; Type: DEFAULT; Schema: public; Owner: user
---
-
-ALTER TABLE ONLY public.athlete_source_uids ALTER COLUMN id SET DEFAULT nextval('public.athlete_source_uids_id_seq'::regclass);
 
 
 --
@@ -892,26 +808,11 @@ ALTER TABLE ONLY public.weight_categories ALTER COLUMN id SET DEFAULT nextval('p
 
 
 --
--- Name: weight_category_source_uids id; Type: DEFAULT; Schema: public; Owner: user
---
-
-ALTER TABLE ONLY public.weight_category_source_uids ALTER COLUMN id SET DEFAULT nextval('public.weight_category_source_uids_id_seq'::regclass);
-
-
---
 -- Name: arena_sources arena_sources_pkey; Type: CONSTRAINT; Schema: public; Owner: user
 --
 
 ALTER TABLE ONLY public.arena_sources
     ADD CONSTRAINT arena_sources_pkey PRIMARY KEY (id);
-
-
---
--- Name: athlete_source_uids athlete_source_uids_pkey; Type: CONSTRAINT; Schema: public; Owner: user
---
-
-ALTER TABLE ONLY public.athlete_source_uids
-    ADD CONSTRAINT athlete_source_uids_pkey PRIMARY KEY (id);
 
 
 --
@@ -1019,22 +920,6 @@ ALTER TABLE ONLY public.athletes
 
 
 --
--- Name: athlete_source_uids uq_athlete_source_uuid; Type: CONSTRAINT; Schema: public; Owner: user
---
-
-ALTER TABLE ONLY public.athlete_source_uids
-    ADD CONSTRAINT uq_athlete_source_uuid UNIQUE (arena_source_id, arena_uuid);
-
-
---
--- Name: fights uq_fights_event_uid; Type: CONSTRAINT; Schema: public; Owner: user
---
-
-ALTER TABLE ONLY public.fights
-    ADD CONSTRAINT uq_fights_event_uid UNIQUE (sport_event_id, uid);
-
-
---
 -- Name: sport_events uq_sport_event_natural_key; Type: CONSTRAINT; Schema: public; Owner: user
 --
 
@@ -1056,14 +941,6 @@ ALTER TABLE ONLY public.teams
 
 ALTER TABLE ONLY public.weight_categories
     ADD CONSTRAINT uq_wc_event_weight_discipline UNIQUE (sport_event_id, max_weight, discipline_id);
-
-
---
--- Name: weight_category_source_uids uq_wc_source_uuid; Type: CONSTRAINT; Schema: public; Owner: user
---
-
-ALTER TABLE ONLY public.weight_category_source_uids
-    ADD CONSTRAINT uq_wc_source_uuid UNIQUE (arena_source_id, arena_uuid);
 
 
 --
@@ -1107,14 +984,6 @@ ALTER TABLE ONLY public.weight_categories
 
 
 --
--- Name: weight_category_source_uids weight_category_source_uids_pkey; Type: CONSTRAINT; Schema: public; Owner: user
---
-
-ALTER TABLE ONLY public.weight_category_source_uids
-    ADD CONSTRAINT weight_category_source_uids_pkey PRIMARY KEY (id);
-
-
---
 -- Name: ix_arena_sources_user_id; Type: INDEX; Schema: public; Owner: user
 --
 
@@ -1133,13 +1002,6 @@ CREATE INDEX ix_athletes_sport_event_id ON public.athletes USING btree (sport_ev
 --
 
 CREATE INDEX ix_athletes_team_id ON public.athletes USING btree (team_id);
-
-
---
--- Name: ix_athletes_uid; Type: INDEX; Schema: public; Owner: user
---
-
-CREATE INDEX ix_athletes_uid ON public.athletes USING btree (uid);
 
 
 --
@@ -1182,13 +1044,6 @@ CREATE INDEX ix_fights_fighter_two_id ON public.fights USING btree (fighter_two_
 --
 
 CREATE INDEX ix_fights_sport_event_id ON public.fights USING btree (sport_event_id);
-
-
---
--- Name: ix_fights_uid; Type: INDEX; Schema: public; Owner: user
---
-
-CREATE INDEX ix_fights_uid ON public.fights USING btree (uid);
 
 
 --
@@ -1248,13 +1103,6 @@ CREATE INDEX ix_teams_sport_event_id ON public.teams USING btree (sport_event_id
 
 
 --
--- Name: ix_teams_uid; Type: INDEX; Schema: public; Owner: user
---
-
-CREATE INDEX ix_teams_uid ON public.teams USING btree (uid);
-
-
---
 -- Name: ix_users_email; Type: INDEX; Schema: public; Owner: user
 --
 
@@ -1276,34 +1124,11 @@ CREATE INDEX ix_weight_categories_sport_event_id ON public.weight_categories USI
 
 
 --
--- Name: ix_weight_categories_uid; Type: INDEX; Schema: public; Owner: user
---
-
-CREATE INDEX ix_weight_categories_uid ON public.weight_categories USING btree (uid);
-
-
---
 -- Name: arena_sources arena_sources_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
 --
 
 ALTER TABLE ONLY public.arena_sources
     ADD CONSTRAINT arena_sources_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
-
-
---
--- Name: athlete_source_uids athlete_source_uids_arena_source_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
---
-
-ALTER TABLE ONLY public.athlete_source_uids
-    ADD CONSTRAINT athlete_source_uids_arena_source_id_fkey FOREIGN KEY (arena_source_id) REFERENCES public.arena_sources(id);
-
-
---
--- Name: athlete_source_uids athlete_source_uids_athlete_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
---
-
-ALTER TABLE ONLY public.athlete_source_uids
-    ADD CONSTRAINT athlete_source_uids_athlete_id_fkey FOREIGN KEY (athlete_id) REFERENCES public.athletes(id);
 
 
 --
@@ -1451,24 +1276,8 @@ ALTER TABLE ONLY public.weight_categories
 
 
 --
--- Name: weight_category_source_uids weight_category_source_uids_arena_source_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
---
-
-ALTER TABLE ONLY public.weight_category_source_uids
-    ADD CONSTRAINT weight_category_source_uids_arena_source_id_fkey FOREIGN KEY (arena_source_id) REFERENCES public.arena_sources(id);
-
-
---
--- Name: weight_category_source_uids weight_category_source_uids_weight_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
---
-
-ALTER TABLE ONLY public.weight_category_source_uids
-    ADD CONSTRAINT weight_category_source_uids_weight_category_id_fkey FOREIGN KEY (weight_category_id) REFERENCES public.weight_categories(id);
-
-
---
 -- PostgreSQL database dump complete
 --
 
-\unrestrict uIyxXcIvTnK1YYRHtCgTyOGs19Oe4Dx0epcooPyXu5djb3NxE4W9oCmXLKqnevC
+\unrestrict BQHfCLZAf5eo2YQd2kgpWnvbKjWhVaNFU3rbYFhK3J5M9lcXNa5gTjqHFByeXcz
 
