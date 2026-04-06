@@ -67,7 +67,9 @@ export const API_ENDPOINTS = {
   PERSONS: '/api/v1/persons',
   PERSON_DETAIL: (personId: number) => `/api/v1/persons/${personId}`,
   PERSON_FIGHTS: (personId: number) => `/api/v1/persons/${personId}/fights`,
-  PERSON_COMPARE: (person1Id: number, person2Id: number, includeCommonOpponents = false) => `/api/v1/persons/compare?person1_id=${person1Id}&person2_id=${person2Id}${includeCommonOpponents ? '&include_common_opponents=true' : ''}`,
+  PERSON_OPPONENTS: (personId: number) => `/api/v1/persons/${personId}/opponents`,
+  PERSON_COMMON_OPPONENT_CANDIDATES: (personId: number) => `/api/v1/persons/${personId}/common-opponent-candidates`,
+  PERSON_COMPARE: (person1Id: number, person2Id: number, includeFights = false, includeCommonOpponents = false) => `/api/v1/persons/compare?person1_id=${person1Id}&person2_id=${person2Id}${includeFights ? '&include_fights=true' : ''}${includeCommonOpponents ? '&include_common_opponents=true' : ''}`,
 
   // Rankings endpoints (PUBLIC)
   RANKING_CATEGORIES: '/api/v1/rankings/categories',

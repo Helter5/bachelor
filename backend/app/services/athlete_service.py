@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 from ..domain import Athlete, AthleteBase, SportEvent, Team, WeightCategory, Person
 from .base_service import BaseService
-from .arena import fetch_arena_data
+from .arena import fetch_arena_data, fetch_all_arena_items
 
 logger = logging.getLogger(__name__)
 
@@ -137,9 +137,9 @@ class AthleteService(BaseService[Athlete]):
 
             logger.info(f"Syncing athletes for event: {event.name}")
 
-            # Fetch athletes from Arena API
+            # Fetch all athletes from Arena API (handles pagination automatically)
             try:
-                athletes_data = await fetch_arena_data(f"athlete/{sport_event_uuid}", source=source)
+                athletes_list = await fetch_all_arena_items(f"athlete/{sport_event_uuid}", "athletes", source=source)
             except HTTPException as e:
                 if e.status_code == 404:
                     logger.warning(f"No athletes found for event {sport_event_uuid}")
@@ -151,9 +151,6 @@ class AthleteService(BaseService[Athlete]):
                         "message": "No athletes available for this event"
                     }
                 raise
-
-            # Extract athletes list from Arena API response
-            athletes_list = self._extract_athletes_list(athletes_data)
 
             if not athletes_list:
                 logger.warning(f"No athletes data in response for event {sport_event_uuid}")
@@ -236,8 +233,7 @@ class AthleteService(BaseService[Athlete]):
     async def _build_team_uuid_map(self, sport_event_uuid: str, event_db_id: int, source) -> Dict[str, int]:
         """Fetch Arena teams and build {arena_team_uuid: local_team_id} by name matching."""
         try:
-            teams_data = await fetch_arena_data(f"team/{sport_event_uuid}", source=source)
-            arena_teams = teams_data.get("sportEventTeams", {}).get("items", [])
+            arena_teams = await fetch_all_arena_items(f"team/{sport_event_uuid}", "sportEventTeams", source=source)
         except Exception:
             return {}
         db_team_by_name = {

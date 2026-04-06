@@ -17,7 +17,7 @@ from sqlalchemy import or_, and_
 from ..domain import Fight, FightBase, SportEvent
 from ..domain.entities.victory_type import VictoryType
 from .base_service import BaseService
-from .arena import fetch_arena_data
+from .arena import fetch_arena_data, fetch_all_arena_items
 
 logger = logging.getLogger(__name__)
 
@@ -112,12 +112,11 @@ class FightService(BaseService[Fight]):
         """Build {arena_athlete_uuid: local_athlete_id} by natural key matching."""
         from ..domain import Athlete, Person, Team, WeightCategory
         try:
-            athletes_data = await fetch_arena_data(f"athlete/{sport_event_uuid}", source=source)
-            arena_athletes = athletes_data.get("athletes", {}).get("items", [])
-            teams_data = await fetch_arena_data(f"team/{sport_event_uuid}", source=source)
+            arena_athletes = await fetch_all_arena_items(f"athlete/{sport_event_uuid}", "athletes", source=source)
+            arena_teams_list = await fetch_all_arena_items(f"team/{sport_event_uuid}", "sportEventTeams", source=source)
             arena_team_names = {
                 t["id"]: t.get("name")
-                for t in teams_data.get("sportEventTeams", {}).get("items", [])
+                for t in arena_teams_list
                 if t.get("id")
             }
         except Exception:

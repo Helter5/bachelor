@@ -5,7 +5,7 @@ export interface Person {
   id: number
   full_name: string
   country_iso_code: string | null
-  created_at: string
+  created_at?: string
 }
 
 export type PickerMode = "idle" | "browse" | "search"

@@ -98,6 +98,7 @@ async def list_persons(
 async def compare_persons(
     person1_id: int = Query(...),
     person2_id: int = Query(...),
+    include_fights: bool = Query(False),
     include_common_opponents: bool = Query(False),
     session: Session = Depends(get_session),
 ):
@@ -120,58 +121,58 @@ async def compare_persons(
             "total_fights": 0, "person1_wins": 0, "person2_wins": 0, "fights": [],
         }
 
-    fights = session.exec(
-        select(Fight).where(or_(
-            and_(Fight.fighter_one_id.in_(p1_athlete_ids), Fight.fighter_two_id.in_(p2_athlete_ids)),
-            and_(Fight.fighter_one_id.in_(p2_athlete_ids), Fight.fighter_two_id.in_(p1_athlete_ids)),
-        ))
-    ).all()
-
-    # Batch load related entities
-    event_ids = list({f.sport_event_id for f in fights})
-    wc_ids = list({f.weight_category_id for f in fights if f.weight_category_id})
-    events = _batch_events(session, event_ids)
-    wcs = _batch_weight_categories(session, wc_ids)
-
     p1_set = set(p1_athlete_ids)
     p2_set = set(p2_athlete_ids)
     person1_wins = 0
     person2_wins = 0
     fight_list = []
 
-    for fight in fights:
-        p1_is_fighter_one = fight.fighter_one_id in p1_set
-        p1_tp = fight.tp_one if p1_is_fighter_one else fight.tp_two
-        p2_tp = fight.tp_two if p1_is_fighter_one else fight.tp_one
-        p1_cp = fight.cp_one if p1_is_fighter_one else fight.cp_two
-        p2_cp = fight.cp_two if p1_is_fighter_one else fight.cp_one
+    if include_fights:
+        fights = session.exec(
+            select(Fight).where(or_(
+                and_(Fight.fighter_one_id.in_(p1_athlete_ids), Fight.fighter_two_id.in_(p2_athlete_ids)),
+                and_(Fight.fighter_one_id.in_(p2_athlete_ids), Fight.fighter_two_id.in_(p1_athlete_ids)),
+            ))
+        ).all()
 
-        winner = None
-        winner_name = None
-        if fight.winner_id:
-            if fight.winner_id in p1_set:
-                winner, winner_name = "person1", person1.full_name
-                person1_wins += 1
-            elif fight.winner_id in p2_set:
-                winner, winner_name = "person2", person2.full_name
-                person2_wins += 1
+        event_ids = list({f.sport_event_id for f in fights})
+        wc_ids = list({f.weight_category_id for f in fights if f.weight_category_id})
+        events = _batch_events(session, event_ids)
+        wcs = _batch_weight_categories(session, wc_ids)
 
-        event = events.get(fight.sport_event_id)
-        wc = wcs.get(fight.weight_category_id) if fight.weight_category_id else None
+        for fight in fights:
+            p1_is_fighter_one = fight.fighter_one_id in p1_set
+            p1_tp = fight.tp_one if p1_is_fighter_one else fight.tp_two
+            p2_tp = fight.tp_two if p1_is_fighter_one else fight.tp_one
+            p1_cp = fight.cp_one if p1_is_fighter_one else fight.cp_two
+            p2_cp = fight.cp_two if p1_is_fighter_one else fight.cp_one
 
-        fight_list.append({
-            "fight_id": fight.id,
-            "sport_event_name": event.name if event else None,
-            "discipline": f"{wc.sport_name} - {wc.audience_name}" if wc and wc.sport_name and wc.audience_name else (wc.sport_name if wc else None),
-            "weight_category": wc.name if wc else None,
-            "person1_name": person1.full_name,
-            "person2_name": person2.full_name,
-            "person1_tp": p1_tp, "person2_tp": p2_tp,
-            "person1_cp": p1_cp, "person2_cp": p2_cp,
-            "victory_type": fight.victory_type,
-            "duration": fight.duration,
-            "winner": winner, "winner_name": winner_name,
-        })
+            winner = None
+            winner_name = None
+            if fight.winner_id:
+                if fight.winner_id in p1_set:
+                    winner, winner_name = "person1", person1.full_name
+                    person1_wins += 1
+                elif fight.winner_id in p2_set:
+                    winner, winner_name = "person2", person2.full_name
+                    person2_wins += 1
+
+            event = events.get(fight.sport_event_id)
+            wc = wcs.get(fight.weight_category_id) if fight.weight_category_id else None
+
+            fight_list.append({
+                "fight_id": fight.id,
+                "sport_event_name": event.name if event else None,
+                "discipline": wc.name if wc else None,
+                "weight_category": wc.name if wc else None,
+                "person1_name": person1.full_name,
+                "person2_name": person2.full_name,
+                "person1_tp": p1_tp, "person2_tp": p2_tp,
+                "person1_cp": p1_cp, "person2_cp": p2_cp,
+                "victory_type": fight.victory_type,
+                "duration": fight.duration,
+                "winner": winner, "winner_name": winner_name,
+            })
 
     result = {
         "person1": {"id": person1.id, "name": person1.full_name, "country": person1.country_iso_code},
@@ -225,7 +226,7 @@ async def compare_persons(
             return {
                 "fight_id": fight.id,
                 "sport_event_name": ev.name if ev else None,
-                "discipline": f"{wc.sport_name} - {wc.audience_name}" if wc and wc.sport_name and wc.audience_name else (wc.sport_name if wc else None),
+                "discipline": wc.name if wc else None,
                 "weight_category": wc.name if wc else None,
                 "wrestler_name": my_person_name, "opponent_name": opp_person_name,
                 "wrestler_tp": w_tp, "opponent_tp": o_tp, "tp_diff": (w_tp or 0) - (o_tp or 0),
@@ -288,6 +289,98 @@ async def compare_persons(
         result["common_opponents"] = common_opponents
 
     return result
+
+
+@router.get("/{person_id}/opponents")
+async def get_person_opponents(person_id: int, session: Session = Depends(get_session)):
+    """Return all persons who have fought against this person (for smart picker suggestions)."""
+    person = session.get(Person, person_id)
+    if not person:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Person {person_id} not found")
+
+    athlete_ids = [a.id for a in session.exec(select(Athlete).where(Athlete.person_id == person_id)).all()]
+    if not athlete_ids:
+        return []
+
+    athlete_id_set = set(athlete_ids)
+    fights = session.exec(select(Fight).where(or_(
+        Fight.fighter_one_id.in_(athlete_ids),
+        Fight.fighter_two_id.in_(athlete_ids),
+    ))).all()
+
+    opponent_athlete_ids: set[int] = set()
+    for fight in fights:
+        if fight.fighter_one_id in athlete_id_set and fight.fighter_two_id:
+            opponent_athlete_ids.add(fight.fighter_two_id)
+        elif fight.fighter_two_id in athlete_id_set and fight.fighter_one_id:
+            opponent_athlete_ids.add(fight.fighter_one_id)
+
+    if not opponent_athlete_ids:
+        return []
+
+    opp_athletes = _batch_athletes(session, list(opponent_athlete_ids))
+    opp_person_ids = list({a.person_id for a in opp_athletes.values() if a.person_id} - {person_id})
+    opp_persons = _batch_persons(session, opp_person_ids)
+
+    return sorted(
+        [{"id": p.id, "full_name": p.full_name, "country_iso_code": p.country_iso_code} for p in opp_persons.values()],
+        key=lambda x: x["full_name"] or "",
+    )
+
+
+@router.get("/{person_id}/common-opponent-candidates")
+async def get_common_opponent_candidates(person_id: int, session: Session = Depends(get_session)):
+    """Return persons who share at least one common opponent with this person (for smart picker suggestions)."""
+    person = session.get(Person, person_id)
+    if not person:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Person {person_id} not found")
+
+    athlete_ids = [a.id for a in session.exec(select(Athlete).where(Athlete.person_id == person_id)).all()]
+    if not athlete_ids:
+        return []
+
+    athlete_id_set = set(athlete_ids)
+
+    # Step 1: find person1's direct opponent athlete IDs
+    fights = session.exec(select(Fight).where(or_(
+        Fight.fighter_one_id.in_(athlete_ids),
+        Fight.fighter_two_id.in_(athlete_ids),
+    ))).all()
+
+    opponent_athlete_ids: set[int] = set()
+    for fight in fights:
+        if fight.fighter_one_id in athlete_id_set and fight.fighter_two_id:
+            opponent_athlete_ids.add(fight.fighter_two_id)
+        elif fight.fighter_two_id in athlete_id_set and fight.fighter_one_id:
+            opponent_athlete_ids.add(fight.fighter_one_id)
+
+    if not opponent_athlete_ids:
+        return []
+
+    # Step 2: find all athletes who fought any of person1's opponents
+    fights2 = session.exec(select(Fight).where(or_(
+        Fight.fighter_one_id.in_(list(opponent_athlete_ids)),
+        Fight.fighter_two_id.in_(list(opponent_athlete_ids)),
+    ))).all()
+
+    candidate_athlete_ids: set[int] = set()
+    for fight in fights2:
+        if fight.fighter_one_id is not None and fight.fighter_one_id not in athlete_id_set:
+            candidate_athlete_ids.add(fight.fighter_one_id)
+        if fight.fighter_two_id is not None and fight.fighter_two_id not in athlete_id_set:
+            candidate_athlete_ids.add(fight.fighter_two_id)
+
+    if not candidate_athlete_ids:
+        return []
+
+    cand_athletes = _batch_athletes(session, list(candidate_athlete_ids))
+    candidate_person_ids = list({a.person_id for a in cand_athletes.values() if a.person_id} - {person_id})
+    candidate_persons = _batch_persons(session, candidate_person_ids)
+
+    return sorted(
+        [{"id": p.id, "full_name": p.full_name, "country_iso_code": p.country_iso_code} for p in candidate_persons.values()],
+        key=lambda x: x["full_name"] or "",
+    )
 
 
 @router.get("/{person_id}")

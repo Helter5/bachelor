@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 from ..domain import Team, TeamBase, SportEvent
 from .base_service import BaseService
-from .arena import fetch_arena_data
+from .arena import fetch_arena_data, fetch_all_arena_items
 
 logger = logging.getLogger(__name__)
 
@@ -76,9 +76,9 @@ class TeamService(BaseService[Team]):
 
             logger.info(f"Syncing teams for event: {event.name}")
 
-            # Fetch teams from Arena API
+            # Fetch all teams from Arena API (handles pagination automatically)
             try:
-                teams_data = await fetch_arena_data(f"team/{sport_event_uuid}", source=source)
+                teams_list = await fetch_all_arena_items(f"team/{sport_event_uuid}", "sportEventTeams", source=source)
             except HTTPException as e:
                 if e.status_code == 404:
                     logger.warning(f"No teams found for event {sport_event_uuid}")
@@ -90,9 +90,6 @@ class TeamService(BaseService[Team]):
                         "message": "No teams available for this event"
                     }
                 raise
-
-            # Extract teams list from Arena API response
-            teams_list = self._extract_teams_list(teams_data)
 
             if not teams_list:
                 logger.warning(f"No teams data in response for event {sport_event_uuid}")

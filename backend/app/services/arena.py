@@ -9,6 +9,40 @@ if TYPE_CHECKING:
     from ..domain.entities.arena_source import ArenaSource
 
 
+async def fetch_all_arena_items(endpoint: str, items_key: str, source: Optional["ArenaSource"] = None) -> list:
+    """
+    Fetch all pages from a paginated Arena endpoint.
+
+    Args:
+        endpoint: Arena API endpoint (e.g. "athlete/{uuid}")
+        items_key: Top-level key in response that contains the paginated object (e.g. "athletes")
+        source: Optional ArenaSource to use
+
+    Returns:
+        Flat list of all items across all pages
+    """
+    import math
+
+    data = await fetch_arena_data(endpoint, source=source)
+    obj = data.get(items_key, {})
+
+    if not isinstance(obj, dict):
+        return obj if isinstance(obj, list) else []
+
+    items: list = list(obj.get("items", []))
+    total = obj.get("totalCount", len(items))
+    per_page = obj.get("numItemsPerPage", len(items)) or len(items)
+
+    if total > per_page and per_page > 0:
+        sep = "&" if "?" in endpoint else "?"
+        for page in range(2, math.ceil(total / per_page) + 1):
+            page_data = await fetch_arena_data(f"{endpoint}{sep}page={page}", source=source)
+            page_items = page_data.get(items_key, {}).get("items", [])
+            items.extend(page_items)
+
+    return items
+
+
 async def fetch_arena_data(endpoint: str, source: Optional["ArenaSource"] = None):
     """
     Fetch data from Arena API.
