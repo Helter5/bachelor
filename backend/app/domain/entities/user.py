@@ -9,6 +9,7 @@ from ...constants import UserRole
 
 class UserBase(SQLModel):
     """Base user fields shared across schemas"""
+    id: Optional[int] = Field(default=None, primary_key=True)
     username: str = Field(max_length=50, index=True)
     first_name: str = Field(max_length=50)
     last_name: str = Field(max_length=50)
@@ -19,7 +20,6 @@ class User(UserBase, table=True):
     """User model for authentication and authorization"""
     __tablename__ = "users"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
     uid: UUID = Field(default_factory=uuid4, unique=True)
     username: str = Field(max_length=50, unique=True, index=True)
     email: EmailStr = Field(unique=True, index=True)

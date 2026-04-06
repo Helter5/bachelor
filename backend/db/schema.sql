@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict BQHfCLZAf5eo2YQd2kgpWnvbKjWhVaNFU3rbYFhK3J5M9lcXNa5gTjqHFByeXcz
+\restrict LRqFKBjcMeohEcVrygkKDCaD1o9Dd60pRO1l1dyjMiYNww97Cbv3S1aCKVCnwTg
 
 -- Dumped from database version 16.13
 -- Dumped by pg_dump version 16.13
@@ -27,6 +27,7 @@ SET default_table_access_method = heap;
 --
 
 CREATE TABLE public.arena_sources (
+    id integer NOT NULL,
     name character varying NOT NULL,
     host character varying NOT NULL,
     port integer NOT NULL,
@@ -34,7 +35,6 @@ CREATE TABLE public.arena_sources (
     client_secret character varying,
     api_key character varying,
     is_enabled boolean NOT NULL,
-    id integer NOT NULL,
     user_id integer,
     last_sync_at timestamp without time zone,
     created_at timestamp without time zone NOT NULL
@@ -70,12 +70,12 @@ ALTER SEQUENCE public.arena_sources_id_seq OWNED BY public.arena_sources.id;
 --
 
 CREATE TABLE public.athletes (
+    id integer NOT NULL,
     team_id integer,
     sport_event_id integer,
     weight_category_id integer,
     is_competing boolean,
     person_id integer,
-    id integer NOT NULL,
     sync_timestamp timestamp without time zone NOT NULL
 );
 
@@ -188,6 +188,7 @@ ALTER SEQUENCE public.email_verification_tokens_id_seq OWNED BY public.email_ver
 --
 
 CREATE TABLE public.fights (
+    id integer NOT NULL,
     sport_event_id integer NOT NULL,
     weight_category_id integer,
     fighter_one_id integer,
@@ -199,15 +200,9 @@ CREATE TABLE public.fights (
     cp_two integer,
     victory_type character varying,
     duration integer,
-    id integer NOT NULL,
-    sync_timestamp timestamp without time zone NOT NULL,
     round_name character varying(100),
     fight_number integer,
-    CONSTRAINT fights_cp_one_nonnegative CHECK (((cp_one IS NULL) OR (cp_one >= 0))),
-    CONSTRAINT fights_cp_two_nonnegative CHECK (((cp_two IS NULL) OR (cp_two >= 0))),
-    CONSTRAINT fights_duration_nonnegative CHECK (((duration IS NULL) OR (duration >= 0))),
-    CONSTRAINT fights_tp_one_nonnegative CHECK (((tp_one IS NULL) OR (tp_one >= 0))),
-    CONSTRAINT fights_tp_two_nonnegative CHECK (((tp_two IS NULL) OR (tp_two >= 0)))
+    sync_timestamp timestamp without time zone NOT NULL
 );
 
 
@@ -319,9 +314,9 @@ ALTER SEQUENCE public.password_reset_tokens_id_seq OWNED BY public.password_rese
 --
 
 CREATE TABLE public.persons (
+    id integer NOT NULL,
     full_name character varying NOT NULL,
     country_iso_code character varying,
-    id integer NOT NULL,
     created_at timestamp without time zone NOT NULL
 );
 
@@ -397,9 +392,10 @@ ALTER SEQUENCE public.refresh_tokens_id_seq OWNED BY public.refresh_tokens.id;
 --
 
 CREATE TABLE public.sport_events (
+    id integer NOT NULL,
     name character varying NOT NULL,
-    start_date date,
-    end_date date,
+    start_date character varying,
+    end_date character varying,
     country_iso_code character varying,
     address_locality character varying,
     is_individual_event boolean,
@@ -411,7 +407,6 @@ CREATE TABLE public.sport_events (
     timezone character varying,
     visible boolean,
     is_sync_enabled boolean,
-    id integer NOT NULL,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL
 );
@@ -446,6 +441,7 @@ ALTER SEQUENCE public.sport_events_id_seq OWNED BY public.sport_events.id;
 --
 
 CREATE TABLE public.sync_logs (
+    id integer NOT NULL,
     user_id integer NOT NULL,
     started_at timestamp without time zone NOT NULL,
     finished_at timestamp without time zone,
@@ -463,9 +459,7 @@ CREATE TABLE public.sync_logs (
     fights_updated integer NOT NULL,
     error_message character varying,
     details json,
-    ip_address character varying(45),
-    id integer NOT NULL,
-    CONSTRAINT sync_logs_duration_nonnegative CHECK (((duration_seconds IS NULL) OR (duration_seconds >= 0)))
+    ip_address character varying(45)
 );
 
 
@@ -498,16 +492,14 @@ ALTER SEQUENCE public.sync_logs_id_seq OWNED BY public.sync_logs.id;
 --
 
 CREATE TABLE public.teams (
+    id integer NOT NULL,
     sport_event_id integer NOT NULL,
     name character varying NOT NULL,
     alternate_name character varying,
     athlete_count integer,
     final_rank integer,
     country_iso_code character varying,
-    id integer NOT NULL,
-    sync_timestamp timestamp without time zone NOT NULL,
-    CONSTRAINT teams_athlete_count_nonnegative CHECK (((athlete_count IS NULL) OR (athlete_count >= 0))),
-    CONSTRAINT teams_final_rank_nonnegative CHECK (((final_rank IS NULL) OR (final_rank >= 0)))
+    sync_timestamp timestamp without time zone NOT NULL
 );
 
 
@@ -540,12 +532,12 @@ ALTER SEQUENCE public.teams_id_seq OWNED BY public.teams.id;
 --
 
 CREATE TABLE public.users (
+    id integer NOT NULL,
     first_name character varying(50) NOT NULL,
     last_name character varying(50) NOT NULL,
-    id integer NOT NULL,
-    uid uuid NOT NULL,
     username character varying(50) NOT NULL,
     email character varying NOT NULL,
+    uid uuid NOT NULL,
     password_hash character varying(255) NOT NULL,
     role character varying(20) NOT NULL,
     is_active boolean NOT NULL,
@@ -595,70 +587,6 @@ CREATE TABLE public.victory_types (
 ALTER TABLE public.victory_types OWNER TO "user";
 
 --
--- Name: weight_categories; Type: TABLE; Schema: public; Owner: user
---
-
-CREATE TABLE public.weight_categories (
-    discipline_id integer,
-    max_weight integer,
-    count_fighters integer,
-    is_started boolean,
-    is_completed boolean,
-    sport_event_id integer,
-    id integer NOT NULL,
-    sync_timestamp timestamp without time zone NOT NULL,
-    CONSTRAINT weight_categories_count_fighters_nonnegative CHECK (((count_fighters IS NULL) OR (count_fighters >= 0))),
-    CONSTRAINT weight_categories_max_weight_nonnegative CHECK (((max_weight IS NULL) OR (max_weight >= 0)))
-);
-
-
-ALTER TABLE public.weight_categories OWNER TO "user";
-
---
--- Name: v_fights_readable; Type: VIEW; Schema: public; Owner: user
---
-
-CREATE VIEW public.v_fights_readable AS
- SELECT f.id,
-    f.sport_event_id,
-    se.name AS sport_event_name,
-    f.weight_category_id,
-    wc.max_weight,
-    f.round_name,
-    f.fight_number,
-    f.fighter_one_id,
-    p1.full_name AS fighter_one_name,
-    t1.name AS fighter_one_team,
-    f.fighter_two_id,
-    p2.full_name AS fighter_two_name,
-    t2.name AS fighter_two_team,
-    f.winner_id,
-    pw.full_name AS winner_name,
-    f.victory_type,
-    vt.type AS victory_type_name,
-    f.tp_one,
-    f.tp_two,
-    f.cp_one,
-    f.cp_two,
-    f.duration,
-    f.sync_timestamp
-   FROM (((((((((((public.fights f
-     LEFT JOIN public.sport_events se ON ((se.id = f.sport_event_id)))
-     LEFT JOIN public.weight_categories wc ON ((wc.id = f.weight_category_id)))
-     LEFT JOIN public.athletes a1 ON ((a1.id = f.fighter_one_id)))
-     LEFT JOIN public.persons p1 ON ((p1.id = a1.person_id)))
-     LEFT JOIN public.teams t1 ON ((t1.id = a1.team_id)))
-     LEFT JOIN public.athletes a2 ON ((a2.id = f.fighter_two_id)))
-     LEFT JOIN public.persons p2 ON ((p2.id = a2.person_id)))
-     LEFT JOIN public.teams t2 ON ((t2.id = a2.team_id)))
-     LEFT JOIN public.athletes aw ON ((aw.id = f.winner_id)))
-     LEFT JOIN public.persons pw ON ((pw.id = aw.person_id)))
-     LEFT JOIN public.victory_types vt ON (((vt.code)::text = (f.victory_type)::text)));
-
-
-ALTER VIEW public.v_fights_readable OWNER TO "user";
-
---
 -- Name: victory_types_id_seq; Type: SEQUENCE; Schema: public; Owner: user
 --
 
@@ -679,6 +607,24 @@ ALTER SEQUENCE public.victory_types_id_seq OWNER TO "user";
 
 ALTER SEQUENCE public.victory_types_id_seq OWNED BY public.victory_types.id;
 
+
+--
+-- Name: weight_categories; Type: TABLE; Schema: public; Owner: user
+--
+
+CREATE TABLE public.weight_categories (
+    id integer NOT NULL,
+    discipline_id integer,
+    max_weight integer,
+    count_fighters integer,
+    is_started boolean,
+    is_completed boolean,
+    sport_event_id integer,
+    sync_timestamp timestamp without time zone NOT NULL
+);
+
+
+ALTER TABLE public.weight_categories OWNER TO "user";
 
 --
 -- Name: weight_categories_id_seq; Type: SEQUENCE; Schema: public; Owner: user
@@ -991,27 +937,6 @@ CREATE INDEX ix_arena_sources_user_id ON public.arena_sources USING btree (user_
 
 
 --
--- Name: ix_athletes_sport_event_id; Type: INDEX; Schema: public; Owner: user
---
-
-CREATE INDEX ix_athletes_sport_event_id ON public.athletes USING btree (sport_event_id);
-
-
---
--- Name: ix_athletes_team_id; Type: INDEX; Schema: public; Owner: user
---
-
-CREATE INDEX ix_athletes_team_id ON public.athletes USING btree (team_id);
-
-
---
--- Name: ix_athletes_weight_category_id; Type: INDEX; Schema: public; Owner: user
---
-
-CREATE INDEX ix_athletes_weight_category_id ON public.athletes USING btree (weight_category_id);
-
-
---
 -- Name: ix_email_verification_tokens_token; Type: INDEX; Schema: public; Owner: user
 --
 
@@ -1023,34 +948,6 @@ CREATE UNIQUE INDEX ix_email_verification_tokens_token ON public.email_verificat
 --
 
 CREATE INDEX ix_email_verification_tokens_user_id ON public.email_verification_tokens USING btree (user_id);
-
-
---
--- Name: ix_fights_fighter_one_id; Type: INDEX; Schema: public; Owner: user
---
-
-CREATE INDEX ix_fights_fighter_one_id ON public.fights USING btree (fighter_one_id);
-
-
---
--- Name: ix_fights_fighter_two_id; Type: INDEX; Schema: public; Owner: user
---
-
-CREATE INDEX ix_fights_fighter_two_id ON public.fights USING btree (fighter_two_id);
-
-
---
--- Name: ix_fights_sport_event_id; Type: INDEX; Schema: public; Owner: user
---
-
-CREATE INDEX ix_fights_sport_event_id ON public.fights USING btree (sport_event_id);
-
-
---
--- Name: ix_fights_weight_category_id; Type: INDEX; Schema: public; Owner: user
---
-
-CREATE INDEX ix_fights_weight_category_id ON public.fights USING btree (weight_category_id);
 
 
 --
@@ -1096,13 +993,6 @@ CREATE INDEX ix_refresh_tokens_user_id ON public.refresh_tokens USING btree (use
 
 
 --
--- Name: ix_teams_sport_event_id; Type: INDEX; Schema: public; Owner: user
---
-
-CREATE INDEX ix_teams_sport_event_id ON public.teams USING btree (sport_event_id);
-
-
---
 -- Name: ix_users_email; Type: INDEX; Schema: public; Owner: user
 --
 
@@ -1114,13 +1004,6 @@ CREATE UNIQUE INDEX ix_users_email ON public.users USING btree (email);
 --
 
 CREATE UNIQUE INDEX ix_users_username ON public.users USING btree (username);
-
-
---
--- Name: ix_weight_categories_sport_event_id; Type: INDEX; Schema: public; Owner: user
---
-
-CREATE INDEX ix_weight_categories_sport_event_id ON public.weight_categories USING btree (sport_event_id);
 
 
 --
@@ -1137,30 +1020,6 @@ ALTER TABLE ONLY public.arena_sources
 
 ALTER TABLE ONLY public.athletes
     ADD CONSTRAINT athletes_person_id_fkey FOREIGN KEY (person_id) REFERENCES public.persons(id);
-
-
---
--- Name: athletes athletes_sport_event_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
---
-
-ALTER TABLE ONLY public.athletes
-    ADD CONSTRAINT athletes_sport_event_id_fkey FOREIGN KEY (sport_event_id) REFERENCES public.sport_events(id);
-
-
---
--- Name: athletes athletes_team_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
---
-
-ALTER TABLE ONLY public.athletes
-    ADD CONSTRAINT athletes_team_id_fkey FOREIGN KEY (team_id) REFERENCES public.teams(id);
-
-
---
--- Name: athletes athletes_weight_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
---
-
-ALTER TABLE ONLY public.athletes
-    ADD CONSTRAINT athletes_weight_category_id_fkey FOREIGN KEY (weight_category_id) REFERENCES public.weight_categories(id);
 
 
 --
@@ -1279,5 +1138,5 @@ ALTER TABLE ONLY public.weight_categories
 -- PostgreSQL database dump complete
 --
 
-\unrestrict BQHfCLZAf5eo2YQd2kgpWnvbKjWhVaNFU3rbYFhK3J5M9lcXNa5gTjqHFByeXcz
+\unrestrict LRqFKBjcMeohEcVrygkKDCaD1o9Dd60pRO1l1dyjMiYNww97Cbv3S1aCKVCnwTg
 

@@ -6,6 +6,7 @@ from sqlmodel import Field, SQLModel
 
 class ArenaSourceBase(SQLModel):
     """Base ArenaSource fields shared across schemas"""
+    id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     host: str = Field(default="host.docker.internal")
     port: int = Field(default=8080)
@@ -24,7 +25,6 @@ class ArenaSource(ArenaSourceBase, table=True):
     """
     __tablename__ = "arena_sources"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
     user_id: Optional[int] = Field(default=None, foreign_key="users.id", index=True)
     last_sync_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

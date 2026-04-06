@@ -6,6 +6,7 @@ from sqlmodel import Field, SQLModel, UniqueConstraint
 
 class SportEventBase(SQLModel):
     """Base SportEvent fields shared across schemas"""
+    id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     start_date: Optional[str] = None
     end_date: Optional[str] = None
@@ -36,7 +37,6 @@ class SportEvent(SportEventBase, table=True):
                         name='uq_sport_event_natural_key'),
     )
 
-    id: Optional[int] = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

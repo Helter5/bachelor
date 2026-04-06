@@ -5,6 +5,7 @@ from sqlmodel import SQLModel, Field, Column, JSON
 
 
 class SyncLogBase(SQLModel):
+    id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="users.id")
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     finished_at: Optional[datetime] = None
@@ -28,4 +29,4 @@ class SyncLogBase(SQLModel):
 class SyncLog(SyncLogBase, table=True):
     __tablename__ = "sync_logs"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+

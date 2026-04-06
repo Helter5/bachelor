@@ -6,6 +6,7 @@ from sqlmodel import Field, SQLModel, UniqueConstraint
 
 class TeamBase(SQLModel):
     """Base Team fields shared across schemas"""
+    id: Optional[int] = Field(default=None, primary_key=True)
     sport_event_id: int
     name: str
     alternate_name: Optional[str] = None
@@ -21,7 +22,6 @@ class Team(TeamBase, table=True):
         UniqueConstraint("sport_event_id", "name", name="uq_team_event_name"),
     )
 
-    id: Optional[int] = Field(default=None, primary_key=True)
     sport_event_id: int = Field(foreign_key="sport_events.id")
     sync_timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
