@@ -17,8 +17,6 @@ interface ResultsTabProps {
   openWeightCategoryResultsDetail: (wc: { id: number; name: string; sport_name: string; audience_name: string }) => void
   closeWeightCategoryResultsDetail: () => void
   getWeightCategoryStatus: (wc: WeightCategory) => 'completed' | 'ongoing' | 'waiting'
-  onSelectPerson?: (person: { id: number; name: string }) => void
-  handleNameClick: (name: string) => void
 }
 
 export function ResultsTab({
@@ -32,8 +30,6 @@ export function ResultsTab({
   openWeightCategoryResultsDetail,
   closeWeightCategoryResultsDetail,
   getWeightCategoryStatus,
-  onSelectPerson,
-  handleNameClick,
 }: ResultsTabProps) {
   const { t } = useTranslation()
 
@@ -148,11 +144,7 @@ export function ResultsTab({
                                   ? isDarkMode ? 'text-red-400' : 'text-red-700'
                                   : isDarkMode ? 'text-gray-300' : 'text-gray-700'
                               }`}>
-                                {onSelectPerson ? (
-                                  <button onClick={() => handleNameClick(fight.fighter1FullName)} className="hover:underline text-left">
-                                    {fight.fighter1FullName}
-                                  </button>
-                                ) : fight.fighter1FullName}
+                                {fight.fighter1FullName}
                               </div>
                               <div className={`text-xs mt-0.5 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
                                 <span className={isFighter1Winner ? isDarkMode ? 'text-red-400 font-semibold' : 'text-red-600 font-semibold' : ''}>
@@ -180,11 +172,7 @@ export function ResultsTab({
                                   ? isDarkMode ? 'text-red-400' : 'text-red-700'
                                   : isDarkMode ? 'text-gray-300' : 'text-gray-700'
                               }`}>
-                                {onSelectPerson ? (
-                                  <button onClick={() => handleNameClick(fight.fighter2FullName)} className="hover:underline text-right">
-                                    {fight.fighter2FullName}
-                                  </button>
-                                ) : fight.fighter2FullName}
+                                {fight.fighter2FullName}
                               </div>
                               <div className={`text-xs mt-0.5 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
                                 <span>TP {tp2 ? String(tp2.points) : '—'}</span>

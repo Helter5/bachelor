@@ -19,8 +19,6 @@ interface AthletesTabProps {
   weightCategories: WeightCategory[]
   athletesPage: number
   setAthletesPage: (page: number) => void
-  onSelectPerson?: (person: { id: number; name: string }) => void
-  handleNameClick: (name: string) => void
 }
 
 const GlobeIcon = (
@@ -38,8 +36,6 @@ export function AthletesTab({
   weightCategories,
   athletesPage,
   setAthletesPage,
-  onSelectPerson,
-  handleNameClick,
 }: AthletesTabProps) {
   const { t } = useTranslation()
   const [filterQuery, setFilterQuery] = useState("")
@@ -141,11 +137,7 @@ export function AthletesTab({
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <h4 className={`font-semibold text-sm truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                        {onSelectPerson ? (
-                          <button onClick={() => handleNameClick(athlete.person_full_name)} className={`hover:underline text-left ${isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}>
-                            {athlete.person_full_name}
-                          </button>
-                        ) : athlete.person_full_name}
+                        {athlete.person_full_name}
                       </h4>
                       <div className="flex items-center gap-2 mt-1 text-xs flex-wrap">
                         <div className="flex items-center gap-1">

@@ -25,8 +25,7 @@ interface CategoriesTabProps {
   openWeightCategoryDetail: (wc: { id: number; name: string; sport_name: string; audience_name: string }) => void
   closeWeightCategoryDetail: () => void
   getWeightCategoryStatus: (wc: WeightCategory) => 'completed' | 'ongoing' | 'waiting'
-  onSelectPerson?: (person: { id: number; name: string }) => void
-  handleNameClick: (name: string) => void
+
 }
 
 export function CategoriesTab({
@@ -45,8 +44,7 @@ export function CategoriesTab({
   openWeightCategoryDetail,
   closeWeightCategoryDetail,
   getWeightCategoryStatus,
-  onSelectPerson,
-  handleNameClick,
+
 }: CategoriesTabProps) {
   const { t } = useTranslation()
   if (selectedWeightCategory) {
@@ -82,11 +80,7 @@ export function CategoriesTab({
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <h4 className={`font-semibold text-base ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                          {onSelectPerson ? (
-                            <button onClick={() => handleNameClick(athlete.person_full_name)} className={`hover:underline text-left ${isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}>
-                              {athlete.person_full_name}
-                            </button>
-                          ) : athlete.person_full_name}
+                          {athlete.person_full_name}
                         </h4>
                         <div className="flex items-center gap-1 text-xs mt-0.5">
                           <CountryFlag code={athleteTeam?.country_iso_code} />
