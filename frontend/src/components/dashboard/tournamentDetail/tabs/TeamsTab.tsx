@@ -24,8 +24,7 @@ interface TeamsTabProps {
   setTeamAthletesPage: (page: number) => void
   openTeamDetail: (team: { id: string; name: string }) => void
   closeTeamDetail: () => void
-  onSelectPerson?: (person: { id: number; name: string }) => void
-  handleNameClick: (name: string) => void
+
 }
 
 export function TeamsTab({
@@ -43,8 +42,7 @@ export function TeamsTab({
   setTeamAthletesPage,
   openTeamDetail,
   closeTeamDetail,
-  onSelectPerson,
-  handleNameClick,
+
 }: TeamsTabProps) {
   const { t } = useTranslation()
 
@@ -82,11 +80,7 @@ export function TeamsTab({
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <h4 className={`font-semibold text-base ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                          {onSelectPerson ? (
-                            <button onClick={() => handleNameClick(athlete.person_full_name)} className={`hover:underline text-left ${isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}>
-                              {athlete.person_full_name}
-                            </button>
-                          ) : athlete.person_full_name}
+                          {athlete.person_full_name}
                         </h4>
                         <div className={`text-xs mt-0.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                           {athleteWeightCategory?.name || t('tournamentDetail.noCategory')}

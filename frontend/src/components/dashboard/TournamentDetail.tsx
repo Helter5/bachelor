@@ -20,7 +20,6 @@ interface TournamentDetailProps {
   tournamentStartDate: string
   tournamentEndDate?: string
   onBack: () => void
-  onSelectPerson?: (person: { id: number; name: string }) => void
 }
 
 export function TournamentDetail({
@@ -31,7 +30,6 @@ export function TournamentDetail({
   tournamentStartDate,
   tournamentEndDate,
   onBack,
-  onSelectPerson
 }: TournamentDetailProps) {
   const { t } = useTranslation()
   const getLocalePrefix = useCallback(() => {
@@ -127,19 +125,6 @@ export function TournamentDetail({
     return 'waiting'
   }, [tournamentStartDate, tournamentEndDate])
 
-  const handleNameClick = useCallback(async (name: string) => {
-    if (!onSelectPerson) return
-    try {
-      const persons = await apiClient.get<{ id: number; full_name: string }[]>(
-        API_ENDPOINTS.PERSONS + `?name=${encodeURIComponent(name)}&limit=1`
-      )
-      if (persons && persons.length > 0) {
-        onSelectPerson({ id: persons[0].id, name: persons[0].full_name })
-      }
-    } catch (err) {
-      console.error('Error looking up person:', err)
-    }
-  }, [onSelectPerson])
 
   // --- Data loaders ---
 
@@ -437,8 +422,6 @@ export function TournamentDetail({
             openWeightCategoryDetail={openWeightCategoryDetail}
             closeWeightCategoryDetail={closeWeightCategoryDetail}
             getWeightCategoryStatus={getWeightCategoryStatus}
-            onSelectPerson={onSelectPerson}
-            handleNameClick={handleNameClick}
           />
         )}
 
@@ -458,8 +441,6 @@ export function TournamentDetail({
             setTeamAthletesPage={setTeamAthletesPage}
             openTeamDetail={openTeamDetail}
             closeTeamDetail={closeTeamDetail}
-            onSelectPerson={onSelectPerson}
-            handleNameClick={handleNameClick}
           />
         )}
 
@@ -473,8 +454,6 @@ export function TournamentDetail({
             weightCategories={weightCategories}
             athletesPage={athletesPage}
             setAthletesPage={setAthletesPage}
-            onSelectPerson={onSelectPerson}
-            handleNameClick={handleNameClick}
           />
         )}
 
@@ -490,8 +469,6 @@ export function TournamentDetail({
             openWeightCategoryResultsDetail={openWeightCategoryResultsDetail}
             closeWeightCategoryResultsDetail={closeWeightCategoryResultsDetail}
             getWeightCategoryStatus={getWeightCategoryStatus}
-            onSelectPerson={onSelectPerson}
-            handleNameClick={handleNameClick}
           />
         )}
 
@@ -501,7 +478,6 @@ export function TournamentDetail({
             eventStats={eventStats}
             statsLoading={statsLoading}
             statsError={statsError}
-            onSelectPerson={onSelectPerson}
           />
         )}
 

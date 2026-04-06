@@ -12,7 +12,7 @@ interface StatisticsTabProps {
   eventStats: EventStatistics | null
   statsLoading: boolean
   statsError: string | null
-  onSelectPerson?: (person: { id: number; name: string }) => void
+
 }
 
 export function StatisticsTab({
@@ -20,7 +20,7 @@ export function StatisticsTab({
   eventStats,
   statsLoading,
   statsError,
-  onSelectPerson,
+
 }: StatisticsTabProps) {
   const { t } = useTranslation()
   const tooltipStyle = useMemo(() => ({
@@ -113,14 +113,7 @@ export function StatisticsTab({
                           </span>
                         </td>
                         <td className={`py-3 px-4 text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                          {p.person_id && onSelectPerson ? (
-                            <button
-                              onClick={() => onSelectPerson({ id: p.person_id!, name: p.name })}
-                              className={`hover:underline text-left ${isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}
-                            >
-                              {p.name}
-                            </button>
-                          ) : p.name}
+                          {p.name}
                         </td>
                         <td className={`py-3 px-4 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                           {p.country && <span className={`fi fi-${p.country.toLowerCase()} rounded-sm mr-1.5`} style={{ fontSize: '0.9rem' }} />}
