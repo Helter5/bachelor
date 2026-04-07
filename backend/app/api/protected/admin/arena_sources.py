@@ -14,9 +14,13 @@ router = APIRouter(prefix="/admin/arena-sources")
 
 
 def _activate_exclusively(session: Session, source: ArenaSource) -> None:
-    """Enable this source and disable all others — only one can be active at a time."""
+    """Enable this source and disable all others of the same user — only one can be active at a time."""
     for other in session.exec(
-        select(ArenaSource).where(ArenaSource.id != source.id, ArenaSource.is_enabled == True)
+        select(ArenaSource).where(
+            ArenaSource.id != source.id,
+            ArenaSource.user_id == source.user_id,
+            ArenaSource.is_enabled == True,
+        )
     ).all():
         other.is_enabled = False
         session.add(other)
@@ -35,8 +39,7 @@ async def list_arena_sources(
 
     Requires: Admin role + CSRF token + Origin validation
     """
-    statement = select(ArenaSource)
-    sources = session.exec(statement).all()
+    sources = session.exec(select(ArenaSource).where(ArenaSource.user_id == user.id)).all()
     return sources
 
 
@@ -75,7 +78,7 @@ async def get_arena_source(
     Requires: Admin role + CSRF token + Origin validation
     """
     source = session.get(ArenaSource, source_id)
-    if not source:
+    if not source or source.user_id != user.id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Arena source with id {source_id} not found"
@@ -97,7 +100,7 @@ async def update_arena_source(
     Requires: Admin role + CSRF token + Origin validation
     """
     source = session.get(ArenaSource, source_id)
-    if not source:
+    if not source or source.user_id != user.id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Arena source with id {source_id} not found"
@@ -135,7 +138,7 @@ async def delete_arena_source(
     Requires: Admin role + CSRF token + Origin validation
     """
     source = session.get(ArenaSource, source_id)
-    if not source:
+    if not source or source.user_id != user.id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Arena source with id {source_id} not found"
@@ -160,7 +163,7 @@ async def test_arena_source(
     Requires: Admin role + CSRF token + Origin validation
     """
     source = session.get(ArenaSource, source_id)
-    if not source:
+    if not source or source.user_id != user.id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Arena source with id {source_id} not found"
@@ -203,7 +206,7 @@ async def toggle_arena_source(
     Requires: Admin role + CSRF token + Origin validation
     """
     source = session.get(ArenaSource, source_id)
-    if not source:
+    if not source or source.user_id != user.id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Arena source with id {source_id} not found"
