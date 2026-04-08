@@ -7,6 +7,7 @@ import { SearchInput } from "./SearchInput"
 import { CountryFlag } from "./CountryFlag"
 import { LoadingSpinner } from "../ui/LoadingSpinner"
 import { MultiSelect } from "../ui/MultiSelect"
+import { NumberInput } from "../ui/NumberInput"
 
 const PERSONS_LIMIT = 5000
 
@@ -29,6 +30,7 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCountries, setSelectedCountries] = useState<Set<string>>(new Set())
+  const [minFights, setMinFights] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [showAll, setShowAll] = useState(false)
   const itemsPerPage = 30
@@ -65,9 +67,10 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
     return persons.filter(p => {
       if (searchQuery && !p.full_name.toLowerCase().includes(searchQuery.toLowerCase())) return false
       if (selectedCountries.size > 0 && (!p.country_iso_code || !selectedCountries.has(p.country_iso_code))) return false
+      if (minFights && p.fight_count < parseInt(minFights)) return false
       return true
     })
-  }, [persons, searchQuery, selectedCountries])
+  }, [persons, searchQuery, selectedCountries, minFights])
 
   const currentPersons = showAll
     ? filtered
@@ -111,37 +114,53 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
 
       {!loading && !error && persons.length > 0 && (
         <>
-          {/* Search + Duplicate button */}
+          {/* Search + Filters */}
           <div className={`rounded-lg overflow-hidden ${isDarkMode ? 'bg-[#1e293b] shadow-lg' : 'bg-white border border-gray-200'}`}>
             <div className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex-1">
-                  <SearchInput
+              <div className="flex items-end gap-3 flex-wrap">
+                <div>
+                  <label className={`block text-xs font-medium mb-1.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Meno
+                  </label>
+                  <div className="w-48">
+                    <SearchInput
+                      isDarkMode={isDarkMode}
+                      value={searchQuery}
+                      onChange={(value) => { setSearchQuery(value); setCurrentPage(1) }}
+                      placeholder={t("athletes.searchPlaceholder")}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className={`block text-xs font-medium mb-1.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Krajina
+                  </label>
+                  <MultiSelect
+                    options={countryOptions}
+                    selected={selectedCountries}
+                    onToggle={(val) => {
+                      setSelectedCountries(prev => {
+                        const next = new Set(prev)
+                        next.has(val) ? next.delete(val) : next.add(val)
+                        return next
+                      })
+                      setCurrentPage(1)
+                    }}
+                    onClear={() => { setSelectedCountries(new Set()); setCurrentPage(1) }}
+                    placeholder={t("athletes.countryPlaceholder")}
                     isDarkMode={isDarkMode}
-                    value={searchQuery}
-                    onChange={(value) => { setSearchQuery(value); setCurrentPage(1) }}
-                    placeholder={t("athletes.searchPlaceholder")}
+                    buttonIcon={
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6H11l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                      </svg>
+                    }
                   />
                 </div>
-                <MultiSelect
-                  options={countryOptions}
-                  selected={selectedCountries}
-                  onToggle={(val) => {
-                    setSelectedCountries(prev => {
-                      const next = new Set(prev)
-                      next.has(val) ? next.delete(val) : next.add(val)
-                      return next
-                    })
-                    setCurrentPage(1)
-                  }}
-                  onClear={() => { setSelectedCountries(new Set()); setCurrentPage(1) }}
-                  placeholder={t("athletes.countryPlaceholder")}
+                <NumberInput
+                  value={minFights}
+                  onChange={(value) => { setMinFights(value); setCurrentPage(1) }}
+                  label="Min. zápasov"
                   isDarkMode={isDarkMode}
-                  buttonIcon={
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6H11l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
-                    </svg>
-                  }
                 />
               </div>
               <div className={`mt-2 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
