@@ -505,17 +505,31 @@
     "title": "Settings",
     "tabs": {
       "profile": "Profile",
+      "appearance": "Appearance",
       "arenaSources": "Arena Sources",
       "security": "Security"
     }
   },
+  "appearance": {
+    "themeTitle": "Theme",
+    "themeDesc": "Toggle between light and dark mode",
+    "darkMode": "Dark mode",
+    "darkModeDesc": "Use dark background across the whole application",
+    "languageTitle": "Language",
+    "languageDesc": "Application interface language",
+    "langSlovak": "Slovak",
+    "langEnglish": "English"
+  },
   "profile": {
     "personalData": "Personal data",
+    "personalDataDesc": "Name, surname and email address",
     "firstName": "First name",
     "lastName": "Last name",
     "email": "Email",
     "saveChanges": "Save changes",
+    "saving": "Saving...",
     "changePassword": "Change password",
+    "changePasswordDesc": "Regular password changes improve account security",
     "currentPassword": "Current password",
     "newPassword": "New password",
     "confirmNewPassword": "Confirm new password",

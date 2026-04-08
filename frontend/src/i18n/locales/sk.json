@@ -505,17 +505,31 @@
     "title": "Nastavenia",
     "tabs": {
       "profile": "Profil",
+      "appearance": "Vzhľad",
       "arenaSources": "Arena Zdroje",
       "security": "Zabezpečenie"
     }
   },
+  "appearance": {
+    "themeTitle": "Téma",
+    "themeDesc": "Prepínanie medzi svetlým a tmavým režimom",
+    "darkMode": "Tmavý režim",
+    "darkModeDesc": "Použiť tmavé pozadie naprieč celou aplikáciou",
+    "languageTitle": "Jazyk",
+    "languageDesc": "Jazyk rozhrania aplikácie",
+    "langSlovak": "Slovenčina",
+    "langEnglish": "Angličtina"
+  },
   "profile": {
     "personalData": "Osobné údaje",
+    "personalDataDesc": "Meno, priezvisko a e-mailová adresa",
     "firstName": "Meno",
     "lastName": "Priezvisko",
     "email": "E-mail",
     "saveChanges": "Uložiť zmeny",
+    "saving": "Ukladám...",
     "changePassword": "Zmena hesla",
+    "changePasswordDesc": "Pravidelná zmena hesla zvyšuje bezpečnosť účtu",
     "currentPassword": "Aktuálne heslo",
     "newPassword": "Nové heslo",
     "confirmNewPassword": "Potvrdiť nové heslo",
