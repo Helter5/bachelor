@@ -37,7 +37,7 @@ export function TournamentDetail({
     return first === 'en' || first === 'sk' ? `/${first}` : '/sk'
   }, [])
 
-  const tabsOrder: TabType[] = ["weight-categories", "teams", "athletes", "results", "statistics", "draw", "export"]
+  const tabsOrder: TabType[] = ["teams", "athletes", "results", "statistics", "draw", "export"]
   const isTabType = (value: string | null): value is TabType => {
     return !!value && tabsOrder.includes(value as TabType)
   }
@@ -57,7 +57,7 @@ export function TournamentDetail({
 
   const getTabPath = useCallback((tab: TabType) => {
     const basePath = getTournamentBasePath()
-    return tab === 'weight-categories' ? basePath : `${basePath}/${tab}`
+    return tab === 'teams' ? basePath : `${basePath}/${tab}`
   }, [getTournamentBasePath])
 
   const getTabFromUrl = () => {
@@ -72,7 +72,7 @@ export function TournamentDetail({
 
     // Backward compatibility for older query links
     const urlTab = new URLSearchParams(window.location.search).get('tab')
-    return isTabType(urlTab) ? urlTab : 'weight-categories'
+    return isTabType(urlTab) ? urlTab : 'teams'
   }
 
   const [activeTab, setActiveTab] = useState<TabType>(getTabFromUrl)
@@ -111,8 +111,6 @@ export function TournamentDetail({
   const [athletesPage, setAthletesPage] = useState(1)
   const [teamAthletesPage, setTeamAthletesPage] = useState(1)
   const [weightCategoryAthletesPage, setWeightCategoryAthletesPage] = useState(1)
-
-  // --- Helpers ---
 
   const getWeightCategoryStatus = useCallback((wc: WeightCategory): 'completed' | 'ongoing' | 'waiting' => {
     if (wc.is_completed) return 'completed'
@@ -322,7 +320,6 @@ export function TournamentDetail({
 
   useEffect(() => {
     if (activeTab === "teams") loadTeams()
-    else if (activeTab === "weight-categories") loadWeightCategories()
     else if (activeTab === "athletes") {
       loadAthletes()
       if (teams.length === 0) loadTeams()
@@ -352,7 +349,6 @@ export function TournamentDetail({
   // --- Render ---
 
   const tabs: { id: TabType; label: string }[] = [
-    { id: "weight-categories", label: t("tournamentDetail.tabs.weightCategories") },
     { id: "teams", label: t("tournamentDetail.tabs.teams") },
     { id: "athletes", label: t("tournamentDetail.tabs.athletes") },
     { id: "results", label: t("tournamentDetail.tabs.results") },
@@ -405,26 +401,6 @@ export function TournamentDetail({
 
       {/* Tab Content */}
       <div className={`rounded-lg p-6 ${isDarkMode ? 'bg-[#1e293b] shadow-lg' : 'bg-white border border-gray-200'}`}>
-        {activeTab === "weight-categories" && (
-          <CategoriesTab
-            isDarkMode={isDarkMode}
-            weightCategories={weightCategories}
-            weightCategoriesLoading={weightCategoriesLoading}
-            weightCategoriesError={weightCategoriesError}
-            selectedWeightCategory={selectedWeightCategory}
-            weightCategoryAthletes={weightCategoryAthletes}
-            loadingWeightCategoryAthletes={loadingWeightCategoryAthletes}
-            teams={teams}
-            weightCategoriesPage={weightCategoriesPage}
-            setWeightCategoriesPage={setWeightCategoriesPage}
-            weightCategoryAthletesPage={weightCategoryAthletesPage}
-            setWeightCategoryAthletesPage={setWeightCategoryAthletesPage}
-            openWeightCategoryDetail={openWeightCategoryDetail}
-            closeWeightCategoryDetail={closeWeightCategoryDetail}
-            getWeightCategoryStatus={getWeightCategoryStatus}
-          />
-        )}
-
         {activeTab === "teams" && (
           <TeamsTab
             isDarkMode={isDarkMode}

@@ -1,4 +1,4 @@
-export type TabType = "weight-categories" | "teams" | "athletes" | "results" | "statistics" | "draw" | "export"
+export type TabType = "teams" | "athletes" | "results" | "statistics" | "draw" | "export"
 
 export interface EventStatistics {
   event_id: number

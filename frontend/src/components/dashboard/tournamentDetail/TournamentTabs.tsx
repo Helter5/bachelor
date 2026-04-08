@@ -17,20 +17,14 @@ export function TournamentTabs({ isDarkMode, activeTab, onTabChange, tabCounts }
   const { t } = useTranslation()
 
   const tabs: { id: TabType; label: string; icon: string; count?: number }[] = [
-    { 
-      id: "weight-categories", 
-      label: t("tournamentDetail.tabs.weightCategories"), 
-      icon: "weight",
-      count: tabCounts?.weightCategories
-    },
-    { 
-      id: "teams", 
-      label: t("tournamentDetail.tabs.teams"), 
+    {
+      id: "teams",
+      label: t("tournamentDetail.tabs.teams"),
       icon: "users",
       count: tabCounts?.teams
     },
-    { 
-      id: "athletes", 
+    {
+      id: "athletes",
       label: t("tournamentDetail.tabs.athletes"),
       icon: "user",
       count: tabCounts?.athletes
@@ -55,12 +49,6 @@ export function TournamentTabs({ isDarkMode, activeTab, onTabChange, tabCounts }
 
   const getIcon = (iconType: string) => {
     switch (iconType) {
-      case "weight":
-        return (
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-          </svg>
-        )
       case "users":
         return (
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
