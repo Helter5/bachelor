@@ -72,6 +72,7 @@ services:
     volumes:
       - ./backend:/app
       - /app/__pycache__
+      - uploads_data:/app/uploads
     depends_on:
       wf-db:
         condition: service_healthy
@@ -216,6 +217,8 @@ volumes:
     name: wf-postgres-data
   pgadmin_data:
     name: wf-pgadmin-data
+  uploads_data:
+    name: wf-uploads-data
 
 networks:
   wf-network:

@@ -23,6 +23,9 @@ backend/venv/
 *.log
 *.tmp
 
+# uploaded files
+backend/uploads/
+
 # python packaging
 build/
 dist/
