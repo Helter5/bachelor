@@ -110,15 +110,10 @@ export function ResultsTab({
           })
 
           return (
-            <div className="space-y-8">
+            <div className="space-y-2">
               {sortedRounds.map(([roundName, fights]) => (
-                <div key={roundName}>
-                  <h2 className={`text-lg font-bold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {roundName}
-                  </h2>
-
-                  <div className="space-y-2">
-                    {fights.sort((a, b) => a.fightNumber - b.fightNumber).map((fight) => {
+                <div key={roundName} className="space-y-2">
+                  {fights.sort((a, b) => a.fightNumber - b.fightNumber).map((fight) => {
                       const isFighter1Winner = fight.winnerFighter === fight.fighter1Id
                       const isFighter2Winner = fight.winnerFighter === fight.fighter2Id
                       const tp1 = fight.technicalPoints?.find((tp: Record<string, unknown>) => tp.fighterId === fight.fighter1Id)
@@ -127,66 +122,65 @@ export function ResultsTab({
                         ? `${Math.floor(fight.endTime / 60)}:${String(fight.endTime % 60).padStart(2, '0')}`
                         : '—'
 
+                      const cp1 = fight.fighter1RankingPoint
+                      const cp2 = fight.fighter2RankingPoint
+                      const tp1Val = tp1 ? Number(tp1.points) : 0
+                      const tp2Val = tp2 ? Number(tp2.points) : 0
+
+                      const badgeBase = `text-xs font-medium px-2 py-0.5 rounded tabular-nums`
+                      const badgeNormal = isDarkMode ? 'bg-white/5 text-gray-400' : 'bg-gray-100 text-gray-500'
+                      const badgeHigher = 'bg-green-500/15 text-green-400'
+
                       return (
                         <div
                           key={fight.id}
-                          className={`rounded-lg p-3 ${
-                            isDarkMode
-                              ? 'bg-[#0f172a]/50 shadow-md backdrop-blur-sm'
-                              : 'bg-gray-50 border border-gray-200'
+                          className={`rounded-lg overflow-hidden ${
+                            isDarkMode ? 'bg-[#0f172a]/50' : 'bg-gray-50'
                           }`}
                         >
-                          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-                            {/* Fighter 1 */}
-                            <div>
-                              <div className={`font-semibold text-sm ${
-                                isFighter1Winner
-                                  ? isDarkMode ? 'text-red-400' : 'text-red-700'
-                                  : isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                              }`}>
-                                {fight.fighter1FullName}
-                              </div>
-                              <div className={`text-xs mt-0.5 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                <span className={isFighter1Winner ? isDarkMode ? 'text-red-400 font-semibold' : 'text-red-600 font-semibold' : ''}>
-                                  CP {fight.fighter1RankingPoint}
-                                </span>
-                                {' · '}
-                                <span>TP {tp1 ? String(tp1.points) : '—'}</span>
-                              </div>
-                            </div>
-
-                            {/* Center */}
-                            <div className="flex flex-col items-center gap-1">
-                              <StatusBadge variant="info" isDarkMode={isDarkMode}>
+                          <div className="flex px-3 py-2.5 gap-3">
+                            {/* Left: victory type vertically centered */}
+                            <div className="flex items-center justify-end w-24 shrink-0">
+                              <span
+                                className={`text-xs font-medium text-right leading-tight ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
+                                title={fight.victoryTypeName}
+                              >
                                 {fight.victoryTypeName}
-                              </StatusBadge>
-                              <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                {timeStr}
                               </span>
                             </div>
 
-                            {/* Fighter 2 */}
-                            <div className="text-right">
-                              <div className={`font-semibold text-sm ${
-                                isFighter2Winner
-                                  ? isDarkMode ? 'text-red-400' : 'text-red-700'
-                                  : isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                              }`}>
-                                {fight.fighter2FullName}
+                            {/* Vertical separator */}
+                            <div className={`w-px self-stretch ${isDarkMode ? 'bg-white/[0.08]' : 'bg-gray-300'}`} />
+
+                            {/* Right: both fighters */}
+                            <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+                              <div className="flex items-center">
+                                <span className={`flex-1 text-sm font-medium min-w-0 truncate ${
+                                  isFighter1Winner ? 'text-green-400'
+                                    : isFighter2Winner ? isDarkMode ? 'text-red-400' : 'text-red-500'
+                                    : isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                }`}>{fight.fighter1FullName}</span>
+                                <div className="flex items-center gap-1 ml-3 shrink-0">
+                                  <span className={`${badgeBase} ${cp1 > cp2 ? badgeHigher : badgeNormal}`}>CP {cp1}</span>
+                                  <span className={`${badgeBase} ${tp1Val > tp2Val ? badgeHigher : badgeNormal}`}>TP {tp1Val}</span>
+                                </div>
                               </div>
-                              <div className={`text-xs mt-0.5 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                <span>TP {tp2 ? String(tp2.points) : '—'}</span>
-                                {' · '}
-                                <span className={isFighter2Winner ? isDarkMode ? 'text-red-400 font-semibold' : 'text-red-600 font-semibold' : ''}>
-                                  CP {fight.fighter2RankingPoint}
-                                </span>
+                              <div className="flex items-center">
+                                <span className={`flex-1 text-sm font-medium min-w-0 truncate ${
+                                  isFighter2Winner ? 'text-green-400'
+                                    : isFighter1Winner ? isDarkMode ? 'text-red-400' : 'text-red-500'
+                                    : isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                }`}>{fight.fighter2FullName}</span>
+                                <div className="flex items-center gap-1 ml-3 shrink-0">
+                                  <span className={`${badgeBase} ${cp2 > cp1 ? badgeHigher : badgeNormal}`}>CP {cp2}</span>
+                                  <span className={`${badgeBase} ${tp2Val > tp1Val ? badgeHigher : badgeNormal}`}>TP {tp2Val}</span>
+                                </div>
                               </div>
                             </div>
                           </div>
                         </div>
                       )
                     })}
-                  </div>
                 </div>
               ))}
             </div>
