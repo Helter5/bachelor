@@ -5,8 +5,8 @@ import type { Team, Athlete, WeightCategory } from "../types"
 import { ITEMS_PER_PAGE } from "../types"
 import { CountryFlag } from "../../CountryFlag"
 import { MultiSelect } from "../../../ui/MultiSelect"
-import { StatusBadge } from "../../../ui/StatusBadge"
 import { EmptyState } from "../../../ui/EmptyState"
+import { AthleteCard } from "../AthleteCard"
 import { LoadingSpinner } from "../../../ui/LoadingSpinner"
 import { ErrorAlert } from "../../../ui/ErrorAlert"
 
@@ -126,37 +126,15 @@ export function AthletesTab({
               const athleteTeam = teams.find(t => t.id === athlete.team_id)
               const athleteWeightCategory = weightCategories.find(wc => wc.id === athlete.weight_category_id)
               return (
-                <div
+                <AthleteCard
                   key={athlete.id}
-                  className={`rounded-lg p-3 transition-all ${
-                    isDarkMode
-                      ? 'bg-[#0f172a]/50 hover:bg-[#1e293b] shadow-md hover:shadow-xl backdrop-blur-sm'
-                      : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <h4 className={`font-semibold text-sm truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                        {athlete.person_full_name}
-                      </h4>
-                      <div className="flex items-center gap-2 mt-1 text-xs flex-wrap">
-                        <div className="flex items-center gap-1">
-                          <CountryFlag code={athleteTeam?.country_iso_code} flagOnly />
-                          <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-                            {athleteTeam?.name || t('tournamentDetail.noTeam')}
-                          </span>
-                        </div>
-                        <span className={isDarkMode ? 'text-gray-600' : 'text-gray-300'}>•</span>
-                        <span className={`px-1.5 py-0.5 rounded text-xs ${isDarkMode ? 'bg-white/5 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
-                          {athleteWeightCategory?.name || t('tournamentDetail.noCategory')}
-                        </span>
-                      </div>
-                    </div>
-                    <StatusBadge variant={athlete.is_competing ? 'success' : 'neutral'} isDarkMode={isDarkMode}>
-                      {athlete.is_competing ? t('fighters.competing') : t('fighters.notCompeting')}
-                    </StatusBadge>
-                  </div>
-                </div>
+                  isDarkMode={isDarkMode}
+                  name={athlete.person_full_name}
+                  isCompeting={athlete.is_competing}
+                  teamName={athleteTeam?.name}
+                  countryCode={athleteTeam?.country_iso_code}
+                  weightCategoryName={athleteWeightCategory?.name}
+                />
               )
             })}
           </div>

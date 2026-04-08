@@ -3,7 +3,7 @@ import { Pagination } from "../Pagination"
 import type { Team, Athlete, WeightCategory } from "../types"
 import { ITEMS_PER_PAGE } from "../types"
 import { CountryFlag } from "../../CountryFlag"
-import { StatusBadge } from "../../../ui/StatusBadge"
+import { AthleteCard } from "../AthleteCard"
 import { EmptyState } from "../../../ui/EmptyState"
 import { LoadingSpinner } from "../../../ui/LoadingSpinner"
 import { ErrorAlert } from "../../../ui/ErrorAlert"
@@ -69,30 +69,13 @@ export function TeamsTab({
                 .map((athlete) => {
                 const athleteWeightCategory = weightCategories.find(wc => wc.id === athlete.weight_category_id)
                 return (
-                  <div
+                  <AthleteCard
                     key={athlete.id}
-                    className={`rounded-lg p-3 transition-all ${
-                      isDarkMode
-                        ? 'bg-[#0f172a]/50 hover:bg-[#1e293b] shadow-md hover:shadow-xl backdrop-blur-sm'
-                        : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <h4 className={`font-semibold text-base ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                          {athlete.person_full_name}
-                        </h4>
-                        <div className={`text-xs mt-0.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                          {athleteWeightCategory?.name || t('tournamentDetail.noCategory')}
-                        </div>
-                      </div>
-                      {athlete.is_competing ? (
-                        <StatusBadge variant="success" isDarkMode={isDarkMode}>{t('fighters.competing')}</StatusBadge>
-                      ) : (
-                        <StatusBadge variant="neutral" isDarkMode={isDarkMode}>{t('fighters.notCompeting')}</StatusBadge>
-                      )}
-                    </div>
-                  </div>
+                    isDarkMode={isDarkMode}
+                    name={athlete.person_full_name}
+                    isCompeting={athlete.is_competing}
+                    weightCategoryName={athleteWeightCategory?.name}
+                  />
                 )
               })}
             </div>
