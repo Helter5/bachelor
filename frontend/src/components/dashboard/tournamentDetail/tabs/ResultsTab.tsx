@@ -5,6 +5,7 @@ import { EmptyState } from "../../../ui/EmptyState"
 import { LoadingSpinner } from "../../../ui/LoadingSpinner"
 import { ErrorAlert } from "../../../ui/ErrorAlert"
 import { DetailHeader } from "../../../ui/DetailHeader"
+import { WeightCategoryGrid } from "../WeightCategoryGrid"
 
 interface ResultsTabProps {
   isDarkMode: boolean
@@ -205,67 +206,12 @@ export function ResultsTab({
       ) : weightCategories.length === 0 ? (
         <EmptyState icon="document" title={t('tournamentDetail.errors.noWeightCategories')} description={t('tournamentDetail.errors.syncFirst')} isDarkMode={isDarkMode} />
       ) : (
-        <div className="space-y-12">
-          {(() => {
-            const grouped = weightCategories.reduce((acc, wc) => {
-              const key = `${wc.sport_name} - ${wc.audience_name}`
-              if (!acc[key]) {
-                acc[key] = []
-              }
-              acc[key].push(wc)
-              return acc
-            }, {} as Record<string, WeightCategory[]>)
-
-            return Object.entries(grouped).map(([type, categories]) => (
-              <div key={type}>
-                <h1 className={`text-4xl font-bold mb-8 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                  {type}
-                </h1>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {categories.map((wc) => (
-                    <div
-                      key={wc.id}
-                      onClick={() => openWeightCategoryResultsDetail({ id: wc.id, name: wc.name, sport_name: wc.sport_name, audience_name: wc.audience_name })}
-                      className={`rounded-lg p-4 transition-all cursor-pointer ${
-                        isDarkMode
-                          ? 'bg-[#0f172a]/50 hover:bg-[#1e293b] shadow-md hover:shadow-xl backdrop-blur-sm'
-                          : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className={`font-bold text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                          {wc.name}
-                        </h4>
-                        <div>
-                          {(() => {
-                            const status = getWeightCategoryStatus(wc)
-                            if (status === 'completed') {
-                              return <StatusBadge variant="success" isDarkMode={isDarkMode} size="md">{t('tournamentDetail.statusCompleted')}</StatusBadge>
-                            } else if (status === 'ongoing') {
-                              return <StatusBadge variant="info" isDarkMode={isDarkMode} size="md">{t('tournamentDetail.statusOngoing')}</StatusBadge>
-                            } else {
-                              return <StatusBadge variant="neutral" isDarkMode={isDarkMode} size="md">{t('tournamentDetail.statusWaiting')}</StatusBadge>
-                            }
-                          })()}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 text-sm">
-                        <svg className={`w-4 h-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                        <span className={`font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                          {wc.count_fighters} {t('tournamentDetail.fighters')}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))
-          })()}
-        </div>
+        <WeightCategoryGrid
+          isDarkMode={isDarkMode}
+          categories={weightCategories}
+          getWeightCategoryStatus={getWeightCategoryStatus}
+          onSelect={openWeightCategoryResultsDetail}
+        />
       )}
     </div>
   )
