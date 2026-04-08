@@ -554,7 +554,7 @@
     "title": "Arena Zdroje",
     "description": "Konfigurácia Arena inštancií, z ktorých sa budú synchronizovať dáta. Môžete pridať viacero trénerských Arena Docker inštancií.",
     "loadDefault": "Načítať predvolený",
-    "addNew": "+ Pridať nový zdroj",
+    "addNew": "Pridať nový zdroj",
     "defaultName": "Lokálny Arena Server",
     "addFormTitle": "Pridať nový Arena zdroj",
     "editFormTitle": "Upraviť Arena zdroj",

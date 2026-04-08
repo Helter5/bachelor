@@ -554,7 +554,7 @@
     "title": "Arena Sources",
     "description": "Configuration of Arena instances from which data will be synchronised. You can add multiple trainer Arena Docker instances.",
     "loadDefault": "Load default",
-    "addNew": "+ Add new source",
+    "addNew": "Add new source",
     "defaultName": "Local Arena Server",
     "addFormTitle": "Add new Arena source",
     "editFormTitle": "Edit Arena source",
