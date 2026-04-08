@@ -139,13 +139,12 @@ function CommonOpponentCard({ isDarkMode, opp, person1Name, person2Name }: Commo
   const { t } = useTranslation()
   return (
     <div className={`rounded-lg p-5 ${isDarkMode ? 'bg-[#0f172a]/60 border border-white/5' : 'bg-gray-50 border border-gray-200'}`}>
-      <div className={`text-sm font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-        vs {opp.opponent.name}
+      <div className={`text-sm font-bold mb-4 flex items-center gap-1.5 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+        vs
         {opp.opponent.country && (
-          <span className={`ml-2 font-normal text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            ({opp.opponent.country})
-          </span>
+          <span className={`fi fi-${opp.opponent.country.toLowerCase()} rounded-sm`} style={{ fontSize: '0.9rem' }} />
         )}
+        {opp.opponent.name}
       </div>
       <div className="grid grid-cols-2 gap-4">
         {[
@@ -201,16 +200,68 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
   const [commonCandidates, setCommonCandidates] = useState<Person[] | null>(null)
   const [loadingCommonCandidates, setLoadingCommonCandidates] = useState(false)
   const [showAllP2, setShowAllP2] = useState(false)
+  const [opponentsOfP2, setOpponentsOfP2] = useState<Person[] | null>(null)
+  const [loadingOpponentsP2, setLoadingOpponentsP2] = useState(false)
+  const [commonCandidatesP2, setCommonCandidatesP2] = useState<Person[] | null>(null)
+  const [loadingCommonCandidatesP2, setLoadingCommonCandidatesP2] = useState(false)
+  const [showAllP1, setShowAllP1] = useState(false)
 
   const searchRef1 = useRef<HTMLInputElement>(null)
   const searchRef2 = useRef<HTMLInputElement>(null)
   const containerRef1 = useRef<HTMLDivElement>(null)
   const containerRef2 = useRef<HTMLDivElement>(null)
 
+  const anyOptionSelected = includeFights || includeCommonOpponents
+
+  // When wrestler 2 is selected (and wrestler 1 is not), fetch opponents of wrestler 2 to filter picker 1
+  useEffect(() => {
+    if (!selectedWrestler2) {
+      setOpponentsOfP2(null)
+      setCommonCandidatesP2(null)
+      setShowAllP1(false)
+      return
+    }
+    setLoadingOpponentsP2(true)
+    setLoadingCommonCandidatesP2(true)
+    setShowAllP1(false)
+    apiClient.get<{ id: number; full_name: string; country_iso_code: string | null }[]>(
+      API_ENDPOINTS.PERSON_OPPONENTS(selectedWrestler2.id)
+    )
+      .then(data => setOpponentsOfP2(data || []))
+      .catch(() => setOpponentsOfP2([]))
+      .finally(() => setLoadingOpponentsP2(false))
+    apiClient.get<{ id: number; full_name: string; country_iso_code: string | null }[]>(
+      API_ENDPOINTS.PERSON_COMMON_OPPONENT_CANDIDATES(selectedWrestler2.id)
+    )
+      .then(data => setCommonCandidatesP2(data || []))
+      .catch(() => setCommonCandidatesP2([]))
+      .finally(() => setLoadingCommonCandidatesP2(false))
+  }, [selectedWrestler2?.id])
+
+  // Filter list for picker 1 — active only when wrestler 2 is selected and wrestler 1 is not yet chosen
+  const filterListForP1 = useMemo<Person[] | null>(() => {
+    if (selectedWrestler1 || !selectedWrestler2 || !anyOptionSelected) return null
+    if (includeFights && includeCommonOpponents) {
+      if (opponentsOfP2 === null || commonCandidatesP2 === null) return null
+      const merged = [...opponentsOfP2]
+      const ids = new Set(opponentsOfP2.map(p => p.id))
+      for (const p of commonCandidatesP2) {
+        if (!ids.has(p.id)) merged.push(p)
+      }
+      return merged.sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''))
+    }
+    if (includeFights) return opponentsOfP2
+    return commonCandidatesP2
+  }, [selectedWrestler1, selectedWrestler2, anyOptionSelected, includeFights, includeCommonOpponents, opponentsOfP2, commonCandidatesP2])
+
+  const loadingFilterP1 = (includeFights && loadingOpponentsP2) || (includeCommonOpponents && loadingCommonCandidatesP2)
+  const usingOpponentsForP1 = !showAllP1 && filterListForP1 !== null && filterListForP1.length > 0
+  const basePersons1 = usingOpponentsForP1 ? filterListForP1! : persons
+
   const filteredPersons1 = useMemo(() => {
-    if (!wrestler1Search.trim()) return persons
-    return persons.filter(p => p.full_name.toLowerCase().includes(wrestler1Search.toLowerCase()))
-  }, [persons, wrestler1Search])
+    if (!wrestler1Search.trim()) return basePersons1
+    return basePersons1.filter(p => p.full_name.toLowerCase().includes(wrestler1Search.toLowerCase()))
+  }, [basePersons1, wrestler1Search])
 
   // When wrestler 1 is selected, fetch both direct opponents and common-opponent candidates in parallel
   useEffect(() => {
@@ -236,8 +287,6 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
       .catch(() => setCommonCandidates([]))
       .finally(() => setLoadingCommonCandidates(false))
   }, [selectedWrestler1?.id])
-
-  const anyOptionSelected = includeFights || includeCommonOpponents
 
   // Compute the filter list based on which checkboxes are active
   const filterList = useMemo<Person[] | null>(() => {
@@ -301,6 +350,9 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
     setOpponentsOfP1(null)
     setCommonCandidates(null)
     setShowAllP2(false)
+    setOpponentsOfP2(null)
+    setCommonCandidatesP2(null)
+    setShowAllP1(false)
     onBack()
   }
 
@@ -349,20 +401,58 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <WrestlerPicker
-            isDarkMode={isDarkMode}
-            wrestler={1}
-            selected={selectedWrestler1}
-            mode={mode1}
-            onModeChange={setMode1}
-            search={wrestler1Search}
-            onSearchChange={setWrestler1Search}
-            onSelect={setSelectedWrestler1}
-            filteredPersons={filteredPersons1}
-            allPersons={persons}
-            searchInputRef={searchRef1}
-            containerRef={containerRef1}
-          />
+          <div>
+            {selectedWrestler2 && !selectedWrestler1 && anyOptionSelected && (
+              <div className={`mb-2 flex items-center gap-1.5 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                {loadingFilterP1 ? (
+                  <span className="animate-pulse">{t("comparison.loadingOpponents")}</span>
+                ) : filterListForP1 && filterListForP1.length > 0 ? (
+                  <>
+                    <svg className={`w-3.5 h-3.5 flex-shrink-0 ${usingOpponentsForP1 ? (isDarkMode ? 'text-purple-400' : 'text-purple-500') : (isDarkMode ? 'text-gray-500' : 'text-gray-400')}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    {usingOpponentsForP1 ? (
+                      <>
+                        <span>{t("comparison.suggestedOpponents", { count: filterListForP1.length })}</span>
+                        <button
+                          onClick={() => setShowAllP1(true)}
+                          className={`ml-1 underline underline-offset-2 transition-colors ${isDarkMode ? 'hover:text-gray-200' : 'hover:text-gray-700'}`}
+                        >
+                          {t("comparison.showAll")}
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <span>{t("comparison.showingAll")}</span>
+                        <button
+                          onClick={() => setShowAllP1(false)}
+                          className={`ml-1 underline underline-offset-2 transition-colors ${isDarkMode ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-700'}`}
+                        >
+                          {t("comparison.showSuggested", { count: filterListForP1.length })}
+                        </button>
+                      </>
+                    )}
+                  </>
+                ) : filterListForP1 !== null && filterListForP1.length === 0 ? (
+                  <span>{t("comparison.noOpponentsFound")}</span>
+                ) : null}
+              </div>
+            )}
+            <WrestlerPicker
+              isDarkMode={isDarkMode}
+              wrestler={1}
+              selected={selectedWrestler1}
+              mode={mode1}
+              onModeChange={setMode1}
+              search={wrestler1Search}
+              onSearchChange={setWrestler1Search}
+              onSelect={setSelectedWrestler1}
+              filteredPersons={filteredPersons1}
+              allPersons={basePersons1}
+              searchInputRef={searchRef1}
+              containerRef={containerRef1}
+            />
+          </div>
           <div>
             {selectedWrestler1 && !selectedWrestler2 && anyOptionSelected && (
               <div className={`mb-2 flex items-center gap-1.5 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>

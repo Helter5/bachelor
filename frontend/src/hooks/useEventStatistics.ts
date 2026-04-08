@@ -6,7 +6,7 @@ export interface TeamPerformance {
   name: string
   country: string | null
   wins: number
-  losses: number
+  losses: number 
   total_fights: number
   win_rate: number
 }

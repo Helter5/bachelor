@@ -160,6 +160,7 @@ class ApiClient {
         // Refresh failed → session is invalid (revoked or expired), force logout
         sessionStorage.removeItem('csrf_token')
         window.location.href = '/'
+
       }
 
       const errorText = await response.text().catch(() => 'Unknown error')

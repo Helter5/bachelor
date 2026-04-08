@@ -12,7 +12,6 @@ from ....services.arena_auth import invalidate_source_token_cache
 
 router = APIRouter(prefix="/admin/arena-sources")
 
-
 def _activate_exclusively(session: Session, source: ArenaSource) -> None:
     """Enable this source and disable all others of the same user — only one can be active at a time."""
     for other in session.exec(

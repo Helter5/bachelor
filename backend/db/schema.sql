@@ -392,7 +392,7 @@ ALTER SEQUENCE public.refresh_tokens_id_seq OWNED BY public.refresh_tokens.id;
 --
 
 CREATE TABLE public.sport_events (
-    id integer NOT NULL,
+    id integer NOT NULL, 
     name character varying NOT NULL,
     start_date character varying,
     end_date character varying,

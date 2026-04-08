@@ -45,6 +45,7 @@ export const API_ENDPOINTS = {
   ATHLETE_DATABASE_BY_TEAM: (eventId: number, teamId: number) => `/api/v1/athletes?event_id=${eventId}&team_id=${teamId}`,
   ATHLETE_PRINT: (eventUuid: string) => `/athlete/${eventUuid}/print`,
   ATHLETE_SHOW: (eventUuid: string) => `/show/athlete/${eventUuid}`,
+  
 
   // Results endpoints (PUBLIC)
   RESULTS: (eventUuid: string) => `/api/v1/results/${eventUuid}`,
