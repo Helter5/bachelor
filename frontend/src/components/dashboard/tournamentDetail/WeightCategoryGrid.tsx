@@ -60,11 +60,11 @@ export function WeightCategoryGrid({
                       <h4 className={`font-bold text-base leading-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                         {wc.name}
                       </h4>
-                      {status === 'completed'
-                        ? <StatusBadge variant="success" isDarkMode={isDarkMode}>{t('tournamentDetail.statusCompleted')}</StatusBadge>
-                        : status === 'ongoing'
-                          ? <StatusBadge variant="info" isDarkMode={isDarkMode}>{t('tournamentDetail.statusOngoing')}</StatusBadge>
-                          : <StatusBadge variant="neutral" isDarkMode={isDarkMode}>{t('tournamentDetail.statusWaiting')}</StatusBadge>
+                      {status === 'ongoing'
+                        ? <StatusBadge variant="info" isDarkMode={isDarkMode}>{t('tournamentDetail.statusOngoing')}</StatusBadge>
+                        : status === 'waiting'
+                          ? <StatusBadge variant="neutral" isDarkMode={isDarkMode}>{t('tournamentDetail.statusWaiting')}</StatusBadge>
+                          : null
                       }
                     </div>
                     <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
