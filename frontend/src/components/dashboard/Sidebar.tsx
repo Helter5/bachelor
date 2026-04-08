@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { API_BASE_URL } from '@/config/api'
 
 interface UserData {
   id: string;
@@ -7,6 +8,7 @@ interface UserData {
   last_name: string;
   email: string;
   role: string;
+  avatar_url: string | null;
   created_at: string;
 }
 
@@ -16,7 +18,6 @@ interface SidebarProps {
   isMobileMenuOpen: boolean
   setIsMobileMenuOpen: (open: boolean) => void
   isDarkMode: boolean
-  toggleDarkMode: () => void
   onLogout: () => void
   userData: UserData | null
 }
@@ -80,7 +81,6 @@ export function Sidebar({
   isMobileMenuOpen,
   setIsMobileMenuOpen,
   isDarkMode,
-  toggleDarkMode,
   onLogout,
   userData,
 }: SidebarProps) {
@@ -88,6 +88,11 @@ export function Sidebar({
 
   // Get first letter of first name for avatar
   const avatarLetter = userData?.first_name?.charAt(0).toUpperCase() || 'U';
+  const avatarUrl = userData?.avatar_url
+    ? (userData.avatar_url.startsWith('http://') || userData.avatar_url.startsWith('https://')
+      ? userData.avatar_url
+      : `${API_BASE_URL}${userData.avatar_url}`)
+    : null;
   const displayName = userData ? `${userData.first_name} ${userData.last_name}` : 'User';
   const displayEmail = userData?.email || 'user@example.com';
   const isAdmin = userData?.role === 'admin';
@@ -137,9 +142,17 @@ export function Sidebar({
       <div className={`p-4 ${isDarkMode ? 'border-t border-white/5' : 'border-t border-gray-200'}`}>
         {/* User info */}
         <div className="flex items-center gap-3 px-2">
-          <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
-            {avatarLetter}
-          </div>
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={displayName}
+              className="w-10 h-10 rounded-full object-cover border border-blue-200/30 flex-shrink-0"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
+              {avatarLetter}
+            </div>
+          )}
           <div className="min-w-0">
             <p className={`text-sm font-medium truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{displayName}</p>
             <p className={`text-xs truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{displayEmail}</p>

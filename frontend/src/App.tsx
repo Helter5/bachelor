@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { LandingPage } from "@/components/LandingPage"
 import { Dashboard } from "@/components/Dashboard"
 import { VerifyEmail } from "@/components/VerifyEmail"
@@ -38,6 +38,8 @@ interface UserData {
   first_name: string;
   last_name: string;
   email: string;
+  role: string;
+  avatar_url: string | null;
   created_at: string;
 }
 
@@ -125,6 +127,10 @@ function App() {
     }
   };
 
+  const handleUserDataChange = useCallback((updatedUser: UserData) => {
+    setUserData(updatedUser)
+  }, [])
+
   // Show loading state
   if (isLoading) {
     return (
@@ -153,7 +159,7 @@ function App() {
       {!isLoggedIn ? (
         <LandingPage onLogin={handleLogin} />
       ) : (
-        <Dashboard onLogout={handleLogout} userData={userData} />
+        <Dashboard onLogout={handleLogout} userData={userData} onUserDataChange={handleUserDataChange} />
       )}
     </>
   );

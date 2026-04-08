@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/config/api'
@@ -8,14 +8,20 @@ import { SecuritySettings } from './settings/SecuritySettings'
 import { AppearanceSettings } from './settings/AppearanceSettings'
 
 interface User {
-  id: number
+  id: string
   username: string
+  first_name: string
+  last_name: string
+  email: string
   role: string
+  avatar_url: string | null
+  created_at: string
 }
 
 interface SettingsProps {
   isDarkMode: boolean
   toggleDarkMode: () => void
+  onUserDataChange: (user: User) => void
 }
 
 type TabType = 'profile' | 'appearance' | 'arena-sources' | 'security'
@@ -41,23 +47,23 @@ const IconShield = () => (
   </svg>
 )
 
-export function Settings({ isDarkMode, toggleDarkMode }: SettingsProps) {
+export function Settings({ isDarkMode, toggleDarkMode, onUserDataChange }: SettingsProps) {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<TabType>('profile')
   const [user, setUser] = useState<User | null>(null)
 
-  useEffect(() => {
-    loadUser()
-  }, [])
-
-  const loadUser = async () => {
+  const loadUser = useCallback(async () => {
     try {
       const data = await apiClient.get<User>(API_ENDPOINTS.PROFILE_ME)
       setUser(data)
     } catch (err) {
       console.error('Error loading user:', err)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    loadUser()
+  }, [loadUser])
 
   const isAdmin = user?.role === 'admin'
 
@@ -105,7 +111,7 @@ export function Settings({ isDarkMode, toggleDarkMode }: SettingsProps) {
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          {activeTab === 'profile' && <ProfileSettings isDarkMode={isDarkMode} />}
+          {activeTab === 'profile' && <ProfileSettings isDarkMode={isDarkMode} onUserUpdated={onUserDataChange} />}
           {activeTab === 'appearance' && <AppearanceSettings isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />}
           {activeTab === 'arena-sources' && isAdmin && <ArenaSourcesSettings isDarkMode={isDarkMode} />}
           {activeTab === 'security' && <SecuritySettings isDarkMode={isDarkMode} />}

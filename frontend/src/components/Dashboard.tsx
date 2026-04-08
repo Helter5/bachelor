@@ -22,15 +22,17 @@ interface UserData {
   last_name: string;
   email: string;
   role: string;
+  avatar_url: string | null;
   created_at: string;
 }
 
 interface DashboardProps {
   onLogout: () => void;
   userData: UserData | null;
+  onUserDataChange: (userData: UserData) => void;
 }
 
-export function Dashboard({ onLogout, userData }: DashboardProps) {
+export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardProps) {
   const { t } = useTranslation()
   // Custom hooks for state management
   const { syncState, handleSyncClick, confirmSync, cancelSync, dismissError } = useSync()
@@ -100,7 +102,6 @@ export function Dashboard({ onLogout, userData }: DashboardProps) {
         isMobileMenuOpen={dashboardState.isMobileMenuOpen}
         setIsMobileMenuOpen={closeMobileMenu}
         isDarkMode={isDarkMode}
-        toggleDarkMode={toggleDarkMode}
         onLogout={onLogout}
         userData={userData}
       />
@@ -135,7 +136,6 @@ export function Dashboard({ onLogout, userData }: DashboardProps) {
                   tournamentStartDate={dashboardState.selectedTournament.start_date}
                   tournamentEndDate={dashboardState.selectedTournament.end_date}
                   onBack={clearTournamentSelection}
-                  onSelectPerson={selectPerson}
                 />
               ) : (
                 <TournamentsList
@@ -166,7 +166,7 @@ export function Dashboard({ onLogout, userData }: DashboardProps) {
             ) : dashboardState.activeSection === 'fighters' ? (
               <FightersList isDarkMode={isDarkMode} />
             ) : dashboardState.activeSection === 'settings' ? (
-              <Settings isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
+              <Settings isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} onUserDataChange={onUserDataChange} />
             ) : dashboardState.activeSection === 'logs' ? (
               <div>
                 <h2 className={`text-3xl font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>

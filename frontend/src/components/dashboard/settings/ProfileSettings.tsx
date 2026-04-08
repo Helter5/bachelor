@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '@/services/apiClient'
-import { API_ENDPOINTS } from '@/config/api'
+import { API_BASE_URL, API_ENDPOINTS } from '@/config/api'
 import { validateRequired, validateEmail, validatePassword, validatePasswordMatch } from '@/utils/validation'
 
 interface User {
@@ -16,6 +16,7 @@ interface User {
 
 interface ProfileSettingsProps {
   isDarkMode: boolean
+  onUserUpdated: (user: User) => void
 }
 
 // --- Icons ---
@@ -117,33 +118,103 @@ function FormInput({ isDarkMode, label, type = 'text', value, onChange, onBlur, 
 
 // --- Main component ---
 
-export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
+export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsProps) {
   const { t } = useTranslation()
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [avatarUploading, setAvatarUploading] = useState(false)
   const [profileSaving, setProfileSaving] = useState(false)
   const [passwordSaving, setPasswordSaving] = useState(false)
+  const [avatarSuccess, setAvatarSuccess] = useState(false)
   const [profileSuccess, setProfileSuccess] = useState(false)
   const [passwordSuccess, setPasswordSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const avatarInputRef = useRef<HTMLInputElement | null>(null)
 
   const [profileForm, setProfileForm] = useState({ first_name: '', last_name: '', email: '' })
   const [profileErrors, setProfileErrors] = useState<Record<string, string>>({})
   const [passwordForm, setPasswordForm] = useState({ current_password: '', new_password: '', confirm_password: '' })
   const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({})
 
-  useEffect(() => { loadProfile() }, [])
-
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     try {
       setLoading(true)
       const data = await apiClient.get<User>(API_ENDPOINTS.PROFILE_ME)
       setUser(data)
       setProfileForm({ first_name: data.first_name, last_name: data.last_name, email: data.email })
+      onUserUpdated(data)
     } catch {
       setError(t('profile.loadError'))
     } finally {
       setLoading(false)
+    }
+  }, [onUserUpdated, t])
+
+  useEffect(() => {
+    loadProfile()
+  }, [loadProfile])
+
+  const getAvatarUrl = (avatarUrl: string | null) => {
+    if (!avatarUrl) return null
+    if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) return avatarUrl
+    return `${API_BASE_URL}${avatarUrl}`
+  }
+
+  const handleAvatarUpload = async (file: File) => {
+    setError(null)
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      setError(t('profile.avatarInvalidType'))
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError(t('profile.avatarTooLarge'))
+      return
+    }
+
+    try {
+      setAvatarUploading(true)
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const data = await apiClient.postForm<{ avatar_url: string }>(API_ENDPOINTS.PROFILE_UPLOAD_AVATAR, formData)
+      setUser((prev) => {
+        if (!prev) return prev
+        const updated = { ...prev, avatar_url: data.avatar_url }
+        onUserUpdated(updated)
+        return updated
+      })
+      setAvatarSuccess(true)
+      setTimeout(() => setAvatarSuccess(false), 3000)
+    } catch {
+      setError(t('profile.avatarUploadError'))
+    } finally {
+      setAvatarUploading(false)
+      if (avatarInputRef.current) {
+        avatarInputRef.current.value = ''
+      }
+    }
+  }
+
+  const handleAvatarDelete = async () => {
+    setError(null)
+    try {
+      setAvatarUploading(true)
+      await apiClient.delete(API_ENDPOINTS.PROFILE_DELETE_AVATAR)
+      setUser((prev) => {
+        if (!prev) return prev
+        const updated = { ...prev, avatar_url: null }
+        onUserUpdated(updated)
+        return updated
+      })
+      setAvatarSuccess(true)
+      setTimeout(() => setAvatarSuccess(false), 3000)
+    } catch {
+      setError(t('profile.avatarDeleteError'))
+    } finally {
+      setAvatarUploading(false)
     }
   }
 
@@ -175,6 +246,7 @@ export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
       setProfileSaving(true)
       const updated = await apiClient.put<User>(API_ENDPOINTS.PROFILE_ME, profileForm)
       setUser(updated)
+      onUserUpdated(updated)
       setProfileSuccess(true)
       setTimeout(() => setProfileSuccess(false), 3000)
     } catch {
@@ -236,6 +308,7 @@ export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
   }
 
   const avatarLetter = user?.first_name?.charAt(0).toUpperCase() || 'U'
+  const avatarUrl = getAvatarUrl(user?.avatar_url ?? null)
 
   return (
     <div className="space-y-5">
@@ -248,9 +321,17 @@ export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
 
       {/* Identity card */}
       <div className={`rounded-2xl p-5 flex items-center gap-4 ${isDarkMode ? 'bg-blue-500/8 border border-blue-500/15' : 'bg-blue-50 border border-blue-100'}`}>
-        <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-lg font-semibold select-none shrink-0">
-          {avatarLetter}
-        </div>
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt={t('profile.avatarAlt')}
+            className="w-12 h-12 rounded-full object-cover border border-blue-200/40 shrink-0"
+          />
+        ) : (
+          <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-lg font-semibold select-none shrink-0">
+            {avatarLetter}
+          </div>
+        )}
         <div>
           <p className={`font-semibold text-base ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
             {user?.first_name} {user?.last_name}
@@ -263,6 +344,49 @@ export function ProfileSettings({ isDarkMode }: ProfileSettingsProps) {
           }`}>
             {user?.role}
           </span>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) handleAvatarUpload(file)
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={avatarUploading}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                isDarkMode
+                  ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 disabled:opacity-60'
+                  : 'bg-blue-100 text-blue-700 hover:bg-blue-200 disabled:opacity-60'
+              }`}
+            >
+              {avatarUploading ? t('profile.uploadingAvatar') : t('profile.uploadAvatar')}
+            </button>
+            {user?.avatar_url && (
+              <button
+                type="button"
+                onClick={handleAvatarDelete}
+                disabled={avatarUploading}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  isDarkMode
+                    ? 'bg-red-500/20 text-red-300 hover:bg-red-500/30 disabled:opacity-60'
+                    : 'bg-red-100 text-red-700 hover:bg-red-200 disabled:opacity-60'
+                }`}
+              >
+                {t('profile.removeAvatar')}
+              </button>
+            )}
+            {avatarSuccess && (
+              <span className="flex items-center gap-1.5 text-green-400 text-xs">
+                <IconCheck />{t('profile.avatarUpdated')}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 

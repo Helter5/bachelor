@@ -68,6 +68,26 @@ class ApiClient {
   }
 
   /**
+   * Build headers for multipart/form-data requests.
+   * Note: Content-Type is intentionally omitted so browser can set boundary.
+   */
+  private buildFormHeaders(options: RequestOptions = {}): HeadersInit {
+    const headers: Record<string, string> = {
+      ...options.headers,
+    }
+
+    if (options.requireAuth !== false) {
+      const csrfToken = this.getCsrfToken()
+      if (csrfToken) {
+        headers['X-CSRF-Token'] = csrfToken
+      }
+    }
+
+    headers['X-Device-ID'] = getDeviceId()
+    return headers
+  }
+
+  /**
    * Build URL with query parameters
    */
   private buildUrl(endpoint: string, params?: Record<string, string | number>): string {
@@ -267,6 +287,53 @@ class ApiClient {
     }
 
     return response.blob()
+  }
+
+  /**
+   * POST multipart/form-data request
+   */
+  async postForm<T = any>(endpoint: string, formData: FormData, options: RequestOptions = {}): Promise<T> {
+    const url = this.buildUrl(endpoint, options.params)
+    const headers = this.buildFormHeaders(options)
+
+    const makeRequest = async (retryHeaders: HeadersInit) => {
+      return fetch(url, {
+        method: 'POST',
+        headers: retryHeaders,
+        body: formData,
+        credentials: 'include',
+      })
+    }
+
+    let response = await makeRequest(headers)
+
+    if (!response.ok) {
+      if (response.status === 401 && this.getCsrfToken()) {
+        const refreshed = await this.tryRefreshToken()
+        if (refreshed) {
+          response = await makeRequest(this.buildFormHeaders(options))
+        } else {
+          sessionStorage.removeItem('csrf_token')
+          window.location.href = '/'
+        }
+      }
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Unknown error')
+        throw new ApiError(
+          response.status,
+          response.statusText,
+          errorText || `HTTP ${response.status}: ${response.statusText}`
+        )
+      }
+    }
+
+    const contentType = response.headers.get('content-type')
+    if (!contentType || !contentType.includes('application/json')) {
+      return {} as T
+    }
+
+    return response.json()
   }
 }
 
