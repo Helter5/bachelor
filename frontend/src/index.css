@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source inline("text-emerald-300 text-emerald-400 text-emerald-600 text-emerald-700 bg-emerald-100 bg-emerald-500/15 bg-emerald-500/20");
 
 @theme {
   --color-background: 0 0% 100%;
