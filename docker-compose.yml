@@ -143,6 +143,47 @@ services:
       - wf-network
     command: ["sh", "-c", "PYTHONPATH=/app python tests/ci_seed.py && pytest tests/sync/ tests/statistics/ -v --tb=short"]
 
+  # Cron — periodic cleanup of expired tokens (runs every hour)
+  wf-cron:
+    image: postgres:16-alpine
+    container_name: wf-cron
+    restart: unless-stopped
+    environment:
+      PGPASSWORD: ${DATABASE_PASSWORD}
+      PGUSER: ${DATABASE_USER}
+      PGDATABASE: ${DATABASE_NAME}
+    depends_on:
+      wf-db:
+        condition: service_healthy
+    networks:
+      - wf-network
+    command:
+      - sh
+      - -c
+      - |
+        cat > /cleanup.sh << 'SCRIPT'
+        #!/bin/sh
+        echo ""
+        echo " [INFO] Running Cron Task: Delete expired tokens"
+        echo ""
+        echo " // Executing command 'cleanup:expired-tokens' ..."
+        echo ""
+        R=$$(psql -h wf-db -U $$PGUSER -d $$PGDATABASE -tAc "WITH d AS (DELETE FROM refresh_tokens WHERE expires_at < NOW() RETURNING 1) SELECT count(*) FROM d;")
+        P=$$(psql -h wf-db -U $$PGUSER -d $$PGDATABASE -tAc "WITH d AS (DELETE FROM password_reset_tokens WHERE expires_at < NOW() RETURNING 1) SELECT count(*) FROM d;")
+        E=$$(psql -h wf-db -U $$PGUSER -d $$PGDATABASE -tAc "WITH d AS (DELETE FROM email_verification_tokens WHERE expires_at < NOW() RETURNING 1) SELECT count(*) FROM d;")
+        echo " refresh_tokens:            $$R deleted"
+        echo " password_reset_tokens:     $$P deleted"
+        echo " email_verification_tokens: $$E deleted"
+        echo ""
+        echo " [INFO] SUCCESS"
+        echo ""
+        echo " // Done!"
+        echo ""
+        SCRIPT
+        chmod +x /cleanup.sh
+        echo "0 * * * * /cleanup.sh" | crontab -
+        crond -f
+
   # pgAdmin - Database Management GUI
   wf-pgadmin:
     image: dpage/pgadmin4:latest
