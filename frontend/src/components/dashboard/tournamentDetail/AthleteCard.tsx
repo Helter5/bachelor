@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next"
-import { CountryFlag } from "../../CountryFlag"
-import { StatusBadge } from "../../../ui/StatusBadge"
+import { CountryFlag } from "../CountryFlag"
+import { StatusBadge } from "../../ui/StatusBadge"
 
 interface AthleteCardProps {
   isDarkMode: boolean
