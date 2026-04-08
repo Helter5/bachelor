@@ -295,8 +295,30 @@ class AthleteService(BaseService[Athlete]):
                     weight_category_id_db = wc_key_to_id.get(key)
 
                 # Map Arena API fields to database fields
+                # athlete/{eventId} endpoint only provides personFullName (not personGivenName/personFamilyName)
+                # person/{id}/athletes endpoint provides all three — prefer atomic fields when available
                 person_first_name = athlete_data.get("personGivenName") or ""
                 person_last_name = athlete_data.get("personFamilyName") or ""
+                if not person_first_name and not person_last_name:
+                    full = (athlete_data.get("personFullName") or "").strip()
+                    if full:
+                        # Arena format: "GivenName(s) FAMILYNAME(S)" — family name is all-caps at end
+                        parts = full.split()
+                        caps_idx = next(
+                            (i for i in range(len(parts) - 1, -1, -1) if not parts[i].isupper()),
+                            -1
+                        )
+                        if caps_idx == -1:
+                            # All parts are caps — last word = last name, rest = first name
+                            person_first_name = " ".join(parts[:-1])
+                            person_last_name = parts[-1]
+                        elif caps_idx == len(parts) - 1:
+                            # No caps parts found at end — use last word as last name
+                            person_first_name = " ".join(parts[:-1])
+                            person_last_name = parts[-1]
+                        else:
+                            person_first_name = " ".join(parts[:caps_idx + 1])
+                            person_last_name = " ".join(parts[caps_idx + 1:])
                 athlete_create = AthleteBase(
                     team_id=team_id_db,
                     sport_event_id=event_db_id,

@@ -57,10 +57,13 @@ _sync_locks: dict[str, asyncio.Lock] = {}
 _sync_results: dict[str, dict] = {}  # Store results by idempotency key
 
 
-def _get_active_arena_source(session: Session) -> ArenaSource:
-    """Return the single active ArenaSource. Raises 400 if none configured/enabled."""
+def _get_active_arena_source(session: Session, user_id: int) -> ArenaSource:
+    """Return the single active ArenaSource for the given user. Raises 400 if none configured/enabled."""
     source = session.exec(
-        select(ArenaSource).where(ArenaSource.is_enabled == True)
+        select(ArenaSource).where(
+            ArenaSource.is_enabled == True,
+            ArenaSource.user_id == user_id,
+        ).order_by(ArenaSource.id)
     ).first()
     if not source:
         raise HTTPException(
@@ -150,7 +153,7 @@ async def sync_events(
 
         try:
             from ....domain import SportEventBase
-            source = _get_active_arena_source(session)
+            source = _get_active_arena_source(session, user.id)
 
             arena_data = await service.get_all_from_arena_source(source)
             events_list = arena_data.get("events", {}).get("items", [])
@@ -161,7 +164,7 @@ async def sync_events(
 
             for event_data in events_list:
                 if 'id' in event_data:
-                    event_data['arena_uuid'] = event_data['id']
+                    event_data.pop('id')
                 if 'startDate' in event_data:
                     event_data['start_date'] = event_data['startDate']
                 if 'endDate' in event_data:
@@ -282,7 +285,7 @@ async def sync_teams(
         if not event:
             raise HTTPException(status_code=404, detail=f"Event {event_id} not found")
 
-        source = _get_active_arena_source(session)
+        source = _get_active_arena_source(session, user.id)
         service = TeamService(session)
 
         try:
@@ -359,7 +362,7 @@ async def sync_athletes(
         if not event:
             raise HTTPException(status_code=404, detail=f"Event {event_id} not found")
 
-        source = _get_active_arena_source(session)
+        source = _get_active_arena_source(session, user.id)
         service = AthleteService(session)
 
         try:
@@ -436,7 +439,7 @@ async def sync_categories(
         if not event:
             raise HTTPException(status_code=404, detail=f"Event {event_id} not found")
 
-        source = _get_active_arena_source(session)
+        source = _get_active_arena_source(session, user.id)
         service = WeightCategoryService(session)
 
         try:
@@ -480,7 +483,7 @@ async def sync_victory_types(
     """
     Sync victory types for a specific sport from Arena API config (admin only)
     """
-    source = _get_active_arena_source(session)
+    source = _get_active_arena_source(session, user.id)
     service = VictoryTypeService(session)
     result = await service.sync_for_sport(sport_id, source=source)
     return {
@@ -524,7 +527,7 @@ async def sync_fights(
         if not event:
             raise HTTPException(status_code=404, detail=f"Event {event_id} not found")
 
-        source = _get_active_arena_source(session)
+        source = _get_active_arena_source(session, user.id)
         service = FightService(session)
 
         try:
