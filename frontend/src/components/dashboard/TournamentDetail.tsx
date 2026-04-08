@@ -160,10 +160,6 @@ export function TournamentDetail({
     setAthletesLoading(true)
     setAthletesError(null)
     try {
-      const promises = []
-      if (teams.length === 0) promises.push(loadTeams())
-      if (weightCategories.length === 0) promises.push(loadWeightCategories())
-      await Promise.all(promises)
       const data = await apiClient.get<Athlete[]>(API_ENDPOINTS.ATHLETE_DATABASE(tournamentId))
       setAthletes(data || [])
     } catch (error) {
@@ -172,13 +168,12 @@ export function TournamentDetail({
     } finally {
       setAthletesLoading(false)
     }
-  }, [teams, weightCategories, tournamentId, loadTeams, loadWeightCategories])
+  }, [tournamentId])
 
   const loadResults = useCallback(async () => {
     setResultsLoading(true)
     setResultsError(null)
     try {
-      if (weightCategories.length === 0) await loadWeightCategories()
       const data = await apiClient.get<FightResult[]>(API_ENDPOINTS.RESULTS(tournamentUuid))
       setResults(data || [])
     } catch (error) {
@@ -187,7 +182,7 @@ export function TournamentDetail({
     } finally {
       setResultsLoading(false)
     }
-  }, [tournamentUuid, weightCategories, loadWeightCategories])
+  }, [tournamentUuid])
 
   const loadStatistics = useCallback(async () => {
     setStatsLoading(true)
@@ -328,7 +323,11 @@ export function TournamentDetail({
   useEffect(() => {
     if (activeTab === "teams") loadTeams()
     else if (activeTab === "weight-categories") loadWeightCategories()
-    else if (activeTab === "athletes") loadAthletes()
+    else if (activeTab === "athletes") {
+      loadAthletes()
+      if (teams.length === 0) loadTeams()
+      if (weightCategories.length === 0) loadWeightCategories()
+    }
     else if (activeTab === "results") loadResults()
     else if (activeTab === "statistics") loadStatistics()
     else if (activeTab === "draw") {
@@ -338,6 +337,7 @@ export function TournamentDetail({
       if (teams.length === 0) loadTeams()
       if (athletes.length === 0) loadAthletes()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, tournamentId, loadTeams, loadWeightCategories, loadAthletes, loadResults, loadStatistics])
 
   useEffect(() => {
