@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts"
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts"
 import type { EventStatistics } from "../types"
 import { CHART_COLORS } from "../types"
 import { ErrorAlert } from "../../../ui/ErrorAlert"
@@ -63,21 +63,29 @@ export function StatisticsTab({
           {Object.keys(eventStats.victory_type_distribution).length > 0 && (
             <div className={`rounded-xl p-6 ${isDarkMode ? 'bg-[#0f172a]/50' : 'bg-gray-50 border border-gray-200'}`}>
               <h4 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t('statistics.victoryTypes')}</h4>
-              <ResponsiveContainer width="100%" height={280}>
+              <ResponsiveContainer width="100%" height={320}>
                 <PieChart>
                   <Pie
                     data={Object.entries(eventStats.victory_type_distribution).map(([name, value]) => ({ name, value }))}
                     cx="50%"
-                    cy="50%"
-                    outerRadius={100}
+                    cy="45%"
+                    outerRadius={90}
                     dataKey="value"
-                    label={({ name, value }) => `${name}: ${value}`}
+                    label={({ percent }) => percent > 0.04 ? `${(percent * 100).toFixed(0)}%` : ''}
+                    labelLine={false}
                   >
                     {Object.keys(eventStats.victory_type_distribution).map((_, i) => (
                       <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={tooltipStyle} />
+                  <Tooltip
+                    contentStyle={tooltipStyle}
+                    formatter={(value: number, name: string) => [value, name]}
+                  />
+                  <Legend
+                    formatter={(value, entry: any) => `${value}: ${entry.payload.value}`}
+                    wrapperStyle={{ fontSize: '12px', color: isDarkMode ? '#cbd5e1' : '#374151' }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
