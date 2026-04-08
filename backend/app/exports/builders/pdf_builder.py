@@ -3,6 +3,7 @@ Builder classes for creating PDF elements
 """
 from typing import List, Optional, Tuple, Union
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from reportlab.lib.units import inch
 from reportlab.lib.styles import ParagraphStyle
@@ -233,7 +234,7 @@ class PDFFooterBuilder:
             width: Width in inches
         """
         self.width = width * inch
-        self.timestamp = datetime.now()
+        self.timestamp = datetime.now(ZoneInfo("Europe/Berlin"))
         self.text_template = "Vygenerované: {timestamp}"
         self.font_size = 8
 
