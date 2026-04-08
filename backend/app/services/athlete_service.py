@@ -188,7 +188,7 @@ class AthleteService(BaseService[Athlete]):
             self.session.rollback()
             raise HTTPException(status_code=500, detail=f"Failed to sync athletes: {str(e)}")
 
-    def _resolve_person(self, full_name: str, country_iso_code: Optional[str]) -> int:
+    def _resolve_person(self, first_name: str, last_name: str, country_iso_code: Optional[str]) -> int:
         """
         Find or create a Person record for the given name + country.
         Returns the person.id.
@@ -198,7 +198,8 @@ class AthleteService(BaseService[Athlete]):
 
         # Try to find existing person
         statement = select(Person).where(
-            Person.full_name == full_name,
+            Person.first_name == first_name,
+            Person.last_name == last_name,
             Person.country_iso_code == (country if country else None)
         )
         person = self.session.exec(statement).first()
@@ -208,12 +209,13 @@ class AthleteService(BaseService[Athlete]):
 
         # Create new person
         person = Person(
-            full_name=full_name,
+            first_name=first_name,
+            last_name=last_name,
             country_iso_code=country if country else None,
         )
         self.session.add(person)
         self.session.flush()  # Get the ID without committing
-        logger.info(f"Created new person: {full_name} ({country or 'N/A'})")
+        logger.info(f"Created new person: {first_name} {last_name} ({country or 'N/A'})")
         return person.id
 
     def _extract_athletes_list(self, athletes_data: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -293,7 +295,8 @@ class AthleteService(BaseService[Athlete]):
                     weight_category_id_db = wc_key_to_id.get(key)
 
                 # Map Arena API fields to database fields
-                person_full_name = athlete_data.get("personFullName")
+                person_first_name = athlete_data.get("personGivenName") or ""
+                person_last_name = athlete_data.get("personFamilyName") or ""
                 athlete_create = AthleteBase(
                     team_id=team_id_db,
                     sport_event_id=event_db_id,
@@ -311,7 +314,7 @@ class AthleteService(BaseService[Athlete]):
                                       (team_obj.alternate_name or "").strip() or None
 
                 # Resolve person_id before athlete lookup (needed for natural key matching)
-                person_id = self._resolve_person(person_full_name, country_iso) if person_full_name else None
+                person_id = self._resolve_person(person_first_name, person_last_name, country_iso) if (person_first_name or person_last_name) else None
 
                 # Match by natural key (sport_event + person + weight_category)
                 existing_athlete = self.session.exec(

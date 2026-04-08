@@ -1,7 +1,7 @@
 """Response schemas for public and protected API endpoints"""
 from datetime import datetime, date
 from typing import Optional
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 # ==================== User/Auth Responses ====================
@@ -136,10 +136,18 @@ class PersonOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    full_name: str
+    first_name: str
+    last_name: str
+    full_name: str = ""
     country_iso_code: Optional[str] = None
     created_at: datetime
     fight_count: int = 0
+
+    @model_validator(mode="after")
+    def set_full_name(self) -> "PersonOut":
+        if not self.full_name:
+            self.full_name = f"{self.first_name} {self.last_name}"
+        return self
 
 
 class PersonWithEventsOut(BaseModel):
@@ -147,10 +155,18 @@ class PersonWithEventsOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    full_name: str
+    first_name: str
+    last_name: str
+    full_name: str = ""
     country_iso_code: Optional[str] = None
     created_at: datetime
     events: list[dict] = []
+
+    @model_validator(mode="after")
+    def set_full_name(self) -> "PersonWithEventsOut":
+        if not self.full_name:
+            self.full_name = f"{self.first_name} {self.last_name}"
+        return self
 
 
 # ==================== Admin Responses ====================

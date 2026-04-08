@@ -78,11 +78,16 @@ async def list_persons(
     )
 
     if name:
-        statement = statement.where(Person.full_name.ilike(f"%{name}%"))
+        statement = statement.where(
+            or_(
+                Person.first_name.ilike(f"%{name}%"),
+                Person.last_name.ilike(f"%{name}%"),
+            )
+        )
     if country:
         statement = statement.where(Person.country_iso_code == country.upper())
 
-    statement = statement.order_by(Person.full_name).offset(skip).limit(limit)
+    statement = statement.order_by(Person.last_name, Person.first_name).offset(skip).limit(limit)
     rows = session.exec(statement).all()
 
     result = []

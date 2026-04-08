@@ -166,7 +166,7 @@
     "loading": "Loading athletes...",
     "loadError": "Error loading athletes",
     "empty": "No athletes",
-    "emptyDesc": "No athletes have been synchronised yet.",
+    "emptyDesc": "No athletes have been synchronised yet. Use the \"Synchronise\" button to load data.",
     "searchPlaceholder": "Search by name...",
     "countryPlaceholder": "Country",
     "countOf": "{{count}} of {{total}} athletes",

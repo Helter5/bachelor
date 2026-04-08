@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict LRqFKBjcMeohEcVrygkKDCaD1o9Dd60pRO1l1dyjMiYNww97Cbv3S1aCKVCnwTg
+\restrict wjpKQIXxZRBnP1UZm2dT3XlGdfoRawii6wQentd00DfSON6Rf1JkTA8YEEJXzTw
 
 -- Dumped from database version 16.13
 -- Dumped by pg_dump version 16.13
@@ -315,7 +315,8 @@ ALTER SEQUENCE public.password_reset_tokens_id_seq OWNED BY public.password_rese
 
 CREATE TABLE public.persons (
     id integer NOT NULL,
-    full_name character varying NOT NULL,
+    first_name character varying NOT NULL,
+    last_name character varying NOT NULL,
     country_iso_code character varying,
     created_at timestamp without time zone NOT NULL
 );
@@ -392,7 +393,7 @@ ALTER SEQUENCE public.refresh_tokens_id_seq OWNED BY public.refresh_tokens.id;
 --
 
 CREATE TABLE public.sport_events (
-    id integer NOT NULL, 
+    id integer NOT NULL,
     name character varying NOT NULL,
     start_date character varying,
     end_date character varying,
@@ -972,10 +973,17 @@ CREATE INDEX ix_password_reset_tokens_user_id ON public.password_reset_tokens US
 
 
 --
--- Name: ix_persons_full_name; Type: INDEX; Schema: public; Owner: user
+-- Name: ix_persons_first_name; Type: INDEX; Schema: public; Owner: user
 --
 
-CREATE INDEX ix_persons_full_name ON public.persons USING btree (full_name);
+CREATE INDEX ix_persons_first_name ON public.persons USING btree (first_name);
+
+
+--
+-- Name: ix_persons_last_name; Type: INDEX; Schema: public; Owner: user
+--
+
+CREATE INDEX ix_persons_last_name ON public.persons USING btree (last_name);
 
 
 --
@@ -1138,5 +1146,5 @@ ALTER TABLE ONLY public.weight_categories
 -- PostgreSQL database dump complete
 --
 
-\unrestrict LRqFKBjcMeohEcVrygkKDCaD1o9Dd60pRO1l1dyjMiYNww97Cbv3S1aCKVCnwTg
+\unrestrict wjpKQIXxZRBnP1UZm2dT3XlGdfoRawii6wQentd00DfSON6Rf1JkTA8YEEJXzTw
 

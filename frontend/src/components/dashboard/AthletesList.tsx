@@ -98,9 +98,12 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
       )}
 
       {!loading && !error && persons.length === 0 && (
-        <div className={`p-8 rounded-lg text-center ${isDarkMode ? 'bg-[#1e293b]' : 'bg-white'}`}>
-          <p className={`text-lg font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}>{t("athletes.empty")}</p>
-          <p className={`mt-1 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+        <div className={`rounded-xl p-12 text-center ${isDarkMode ? 'bg-[#1e293b]' : 'bg-white border border-gray-200'}`}>
+          <svg className={`mx-auto h-12 w-12 mb-4 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <p className={`text-lg font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>{t("athletes.empty")}</p>
+          <p className={`mt-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
             {t("athletes.emptyDesc")}
           </p>
         </div>

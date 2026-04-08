@@ -166,7 +166,7 @@
     "loading": "Načítavam atlétov...",
     "loadError": "Chyba pri načítaní atlétov",
     "empty": "Žiadni atléti",
-    "emptyDesc": "Zatiaľ neboli synchronizovaní žiadni atléti.",
+    "emptyDesc": "Zatiaľ neboli synchronizovaní žiadni atléti. Použite tlačidlo \"Synchronizovať\" na načítanie dát.",
     "searchPlaceholder": "Hľadať podľa mena...",
     "countryPlaceholder": "Krajina",
     "countOf": "{{count}} z {{total}} atlétov",
