@@ -395,6 +395,7 @@ export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsPr
             <FormInput
               isDarkMode={isDarkMode}
               label={t('profile.firstName')}
+              placeholder={t('profile.firstNamePlaceholder')}
               value={profileForm.first_name}
               onChange={(v) => handleProfileChange('first_name', v)}
               onBlur={() => handleProfileBlur('first_name')}
@@ -404,6 +405,7 @@ export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsPr
             <FormInput
               isDarkMode={isDarkMode}
               label={t('profile.lastName')}
+              placeholder={t('profile.lastNamePlaceholder')}
               value={profileForm.last_name}
               onChange={(v) => handleProfileChange('last_name', v)}
               onBlur={() => handleProfileBlur('last_name')}
@@ -415,6 +417,7 @@ export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsPr
             isDarkMode={isDarkMode}
             label={t('profile.email')}
             type="email"
+            placeholder={t('profile.emailPlaceholder')}
             value={profileForm.email}
             onChange={(v) => handleProfileChange('email', v)}
             onBlur={() => handleProfileBlur('email')}
@@ -453,6 +456,7 @@ export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsPr
             isDarkMode={isDarkMode}
             label={t('profile.currentPassword')}
             type="password"
+            placeholder={t('profile.currentPasswordPlaceholder')}
             value={passwordForm.current_password}
             onChange={(v) => handlePasswordChange('current_password', v)}
             onBlur={() => handlePasswordBlur('current_password')}
@@ -465,6 +469,7 @@ export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsPr
                 isDarkMode={isDarkMode}
                 label={t('profile.newPassword')}
                 type="password"
+                placeholder={t('profile.newPasswordPlaceholder')}
                 value={passwordForm.new_password}
                 onChange={(v) => handlePasswordChange('new_password', v)}
                 onBlur={() => handlePasswordBlur('new_password')}
@@ -475,6 +480,7 @@ export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsPr
                 isDarkMode={isDarkMode}
                 label={t('profile.confirmNewPassword')}
                 type="password"
+                placeholder={t('profile.confirmPasswordPlaceholder')}
                 value={passwordForm.confirm_password}
                 onChange={(v) => handlePasswordChange('confirm_password', v)}
                 onBlur={() => handlePasswordBlur('confirm_password')}
