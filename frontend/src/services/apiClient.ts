@@ -178,11 +178,12 @@ class ApiClient {
       }
 
       const errorText = await response.text().catch(() => 'Unknown error')
-      throw new ApiError(
-        response.status,
-        response.statusText,
-        errorText || `HTTP ${response.status}: ${response.statusText}`
-      )
+      let errorMessage = errorText || `HTTP ${response.status}: ${response.statusText}`
+      try {
+        const parsed = JSON.parse(errorText)
+        if (typeof parsed?.detail === 'string') errorMessage = parsed.detail
+      } catch { /* not JSON */ }
+      throw new ApiError(response.status, response.statusText, errorMessage)
     }
 
     // Handle empty responses (204 No Content, etc.)
@@ -273,11 +274,12 @@ class ApiClient {
       }
 
       const errorText = await response.text().catch(() => 'Unknown error')
-      throw new ApiError(
-        response.status,
-        response.statusText,
-        errorText || `HTTP ${response.status}: ${response.statusText}`
-      )
+      let errorMessage = errorText || `HTTP ${response.status}: ${response.statusText}`
+      try {
+        const parsed = JSON.parse(errorText)
+        if (typeof parsed?.detail === 'string') errorMessage = parsed.detail
+      } catch { /* not JSON */ }
+      throw new ApiError(response.status, response.statusText, errorMessage)
     }
 
     return response.blob()
