@@ -186,6 +186,12 @@ async def upload_avatar(
             detail="File size must not exceed 5MB"
         )
 
+    # Delete old avatar file if exists
+    if user.avatar_url:
+        old_path = user.avatar_url.lstrip("/")
+        if os.path.exists(old_path):
+            os.remove(old_path)
+
     # Create uploads directory if it doesn't exist
     upload_dir = "uploads/avatars"
     os.makedirs(upload_dir, exist_ok=True)
