@@ -141,8 +141,17 @@ async def generate_athletes_list_pdf(event_id: int, session: Session = Depends(g
             raise HTTPException(status_code=404, detail=f"Sport event {event_id} not found")
 
         athletes = session.exec(select(Athlete).where(Athlete.sport_event_id == event_id)).all()
-        person_ids = [a.person_id for a in athletes if a.person_id]
-        team_ids = list({a.team_id for a in athletes if a.team_id})
+
+        # Deduplicate by person_id — same athlete can appear in multiple weight categories
+        seen_persons: set[int] = set()
+        unique_athletes = []
+        for a in athletes:
+            if a.person_id and a.person_id not in seen_persons:
+                seen_persons.add(a.person_id)
+                unique_athletes.append(a)
+
+        person_ids = [a.person_id for a in unique_athletes if a.person_id]
+        team_ids = list({a.team_id for a in unique_athletes if a.team_id})
 
         persons = session.exec(select(Person).where(Person.id.in_(person_ids))).all() if person_ids else []
         teams = session.exec(select(Team).where(Team.id.in_(team_ids))).all() if team_ids else []
@@ -156,7 +165,7 @@ async def generate_athletes_list_pdf(event_id: int, session: Session = Depends(g
                     "personFullName": person_map[a.person_id].full_name if a.person_id and person_map.get(a.person_id) else "",
                     "teamName": team_map[a.team_id].name if a.team_id and team_map.get(a.team_id) else "N/A",
                 }
-                for a in athletes
+                for a in unique_athletes
             ],
             key=lambda x: x["personFullName"],
         )
