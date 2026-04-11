@@ -132,67 +132,39 @@ def create_access_token(user_id: int, role: str, session_id: int = None) -> tupl
     return token, expires_at
 
 
-def create_refresh_token(user_id: int, session: Session, ip_address: Optional[str] = None, user_agent: Optional[str] = None, mac_address: Optional[str] = None) -> tuple[str, str, datetime, int]:
+def create_refresh_token(user_id: int, session: Session, ip_address: Optional[str] = None, user_agent: Optional[str] = None) -> tuple[str, str, datetime, int]:
     """
-    Create a long-lived refresh token and store HASHED version in database
-
-    If a session with the same mac_address already exists for this user,
-    it will be updated instead of creating a new one (prevents duplicate sessions).
+    Create a long-lived refresh token and store HASHED version in database.
 
     Args:
         user_id: User ID
         session: Database session
         ip_address: IP address of the client
         user_agent: User agent string of the client
-        mac_address: Device fingerprint ID
 
     Returns:
         tuple[str, str, datetime, int]: (plain_token, token_hash, expiration_time, session_id)
     """
     from ..domain.entities.refresh_token import RefreshToken
 
-    # Generate secure random token
     plain_token = secrets.token_urlsafe(32)
-    token_hash = hash_token(plain_token)  # Store hash, not plaintext!
+    token_hash = hash_token(plain_token)
     expires_at = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
 
-    # Check if there's an existing session with the same mac_address
-    existing_session = None
-    if mac_address:
-        statement = select(RefreshToken).where(
-            RefreshToken.user_id == user_id,
-            RefreshToken.mac_address == mac_address,
-            RefreshToken.is_revoked == False
-        )
-        existing_session = session.exec(statement).first()
-
-    if existing_session:
-        # Update existing session instead of creating new one
-        existing_session.token = token_hash
-        existing_session.expires_at = expires_at
-        existing_session.ip_address = ip_address
-        existing_session.user_agent = user_agent
-        existing_session.last_used_at = datetime.now(timezone.utc)
-        session.add(existing_session)
-        session.commit()
-        return plain_token, token_hash, expires_at, existing_session.id
-    else:
-        # Store HASH in database (security best practice)
-        refresh_token = RefreshToken(
-            token=token_hash,  # HASH, not plaintext
-            user_id=user_id,
-            expires_at=expires_at,
-            created_at=datetime.now(timezone.utc),
-            is_revoked=False,
-            ip_address=ip_address,
-            user_agent=user_agent,
-            mac_address=mac_address,
-            last_used_at=datetime.now(timezone.utc),
-        )
-        session.add(refresh_token)
-        session.commit()
-        session.refresh(refresh_token)  # Get auto-generated ID
-        return plain_token, token_hash, expires_at, refresh_token.id
+    refresh_token = RefreshToken(
+        token=token_hash,
+        user_id=user_id,
+        expires_at=expires_at,
+        created_at=datetime.now(timezone.utc),
+        is_revoked=False,
+        ip_address=ip_address,
+        user_agent=user_agent,
+        last_used_at=datetime.now(timezone.utc),
+    )
+    session.add(refresh_token)
+    session.commit()
+    session.refresh(refresh_token)
+    return plain_token, token_hash, expires_at, refresh_token.id
 
 
 def verify_refresh_token(token: str, session: Session) -> Optional[tuple[int, int]]:

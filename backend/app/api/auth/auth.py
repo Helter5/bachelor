@@ -41,12 +41,11 @@ COOKIE_PATH_AUTH = "/"
 
 
 def _record_login(session: Session, user_id: int, ip_address: Optional[str],
-                  user_agent: Optional[str], mac_address: Optional[str],
-                  success: bool, method: str, failure_reason: Optional[str] = None) -> None:
+                  user_agent: Optional[str], success: bool, method: str,
+                  failure_reason: Optional[str] = None) -> None:
     session.add(LoginHistory(
         user_id=user_id, ip_address=ip_address, user_agent=user_agent,
-        mac_address=mac_address, success=success, login_method=method,
-        failure_reason=failure_reason,
+        success=success, login_method=method, failure_reason=failure_reason,
     ))
     session.commit()
 
@@ -113,7 +112,6 @@ async def login(
     """Login with username/email + password. Returns CSRF token; sets HttpOnly cookies."""
     ip_address = get_client_ip(request)
     user_agent = request.headers.get("user-agent")
-    mac_address = request.headers.get("X-Device-ID")
 
     user = session.exec(
         select(User).where((User.username == credentials.username) | (User.email == credentials.username))
@@ -127,7 +125,7 @@ async def login(
         )
 
     if not verify_password(credentials.password, user.password_hash):
-        _record_login(session, user.id, ip_address, user_agent, mac_address, False, "local", "Invalid password")
+        _record_login(session, user.id, ip_address, user_agent, False, "local", "Invalid password")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -135,20 +133,20 @@ async def login(
         )
 
     if not user.is_active:
-        _record_login(session, user.id, ip_address, user_agent, mac_address, False, "local", "Account inactive")
+        _record_login(session, user.id, ip_address, user_agent, False, "local", "Account inactive")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User account is inactive")
 
     if not user.is_verified:
-        _record_login(session, user.id, ip_address, user_agent, mac_address, False, "local", "Email not verified")
+        _record_login(session, user.id, ip_address, user_agent, False, "local", "Email not verified")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Please verify your email address before logging in. Check your inbox for the verification link."
         )
 
-    _record_login(session, user.id, ip_address, user_agent, mac_address, True, "local")
+    _record_login(session, user.id, ip_address, user_agent, True, "local")
 
     refresh_token_plain, _, _, session_id = create_refresh_token(
-        user.id, session, ip_address=ip_address, user_agent=user_agent, mac_address=mac_address
+        user.id, session, ip_address=ip_address, user_agent=user_agent
     )
     access_token, _ = create_access_token(user.id, user.role, session_id=session_id)
     csrf_token = generate_csrf_token()
@@ -191,10 +189,9 @@ async def refresh(
 
     ip_address = get_client_ip(request)
     user_agent = request.headers.get("user-agent")
-    mac_address = request.headers.get("X-Device-ID")
 
     new_refresh_plain, _, _, new_session_id = create_refresh_token(
-        user.id, session, ip_address=ip_address, user_agent=user_agent, mac_address=mac_address
+        user.id, session, ip_address=ip_address, user_agent=user_agent
     )
     new_access_token, _ = create_access_token(user.id, user.role, session_id=new_session_id)
     new_csrf_token = generate_csrf_token()
@@ -332,7 +329,6 @@ async def google_login(
 
     ip_address = get_client_ip(request)
     user_agent = request.headers.get("user-agent")
-    mac_address = request.headers.get("X-Device-ID")
 
     user = session.exec(select(User).where(User.email == user_info["email"])).first()
 
@@ -362,10 +358,10 @@ async def google_login(
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User account is inactive")
 
-    _record_login(session, user.id, ip_address, user_agent, mac_address, True, "google")
+    _record_login(session, user.id, ip_address, user_agent, True, "google")
 
     refresh_token_plain, _, _, session_id = create_refresh_token(
-        user.id, session, ip_address=ip_address, user_agent=user_agent, mac_address=mac_address
+        user.id, session, ip_address=ip_address, user_agent=user_agent
     )
     access_token, _ = create_access_token(user.id, user.role, session_id=session_id)
     csrf_token = generate_csrf_token()

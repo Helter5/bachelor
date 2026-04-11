@@ -5,7 +5,6 @@
  */
 
 import { API_BASE_URL, API_ENDPOINTS } from '@/config/api'
-import { getDeviceId } from '@/utils/deviceId'
 
 export class ApiError extends Error {
   status: number
@@ -61,9 +60,6 @@ class ApiClient {
       }
     }
 
-    // Add Device ID header for device tracking
-    headers['X-Device-ID'] = getDeviceId()
-
     return headers
   }
 
@@ -83,7 +79,6 @@ class ApiClient {
       }
     }
 
-    headers['X-Device-ID'] = getDeviceId()
     return headers
   }
 
@@ -130,7 +125,6 @@ class ApiClient {
         headers: {
           'Content-Type': 'application/json',
           'X-CSRF-Token': this.getCsrfToken() || '',
-          'X-Device-ID': getDeviceId(),
         },
         credentials: 'include',
       })

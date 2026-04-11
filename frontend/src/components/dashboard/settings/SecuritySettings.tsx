@@ -9,7 +9,6 @@ interface ActiveSession {
   last_used_at: string
   ip_address: string | null
   user_agent: string | null
-  mac_address: string | null
   is_current: boolean
 }
 
@@ -18,7 +17,6 @@ interface LoginHistoryEntry {
   login_at: string
   ip_address: string | null
   user_agent: string | null
-  mac_address: string | null
   success: boolean
   failure_reason: string | null
   login_method: string | null

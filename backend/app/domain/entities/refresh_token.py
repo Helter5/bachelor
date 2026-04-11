@@ -16,5 +16,4 @@ class RefreshToken(SQLModel, table=True):
     is_revoked: bool = Field(default=False)
     ip_address: Optional[str] = Field(default=None, max_length=45)
     user_agent: Optional[str] = None
-    mac_address: Optional[str] = Field(default=None, max_length=255)
     last_used_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

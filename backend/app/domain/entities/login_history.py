@@ -17,7 +17,6 @@ class LoginHistory(SQLModel, table=True):
     login_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     ip_address: Optional[str] = Field(default=None, max_length=45)
     user_agent: Optional[str] = None
-    mac_address: Optional[str] = Field(default=None, max_length=255)
     success: bool
     failure_reason: Optional[str] = Field(default=None, max_length=100)
     login_method: Optional[str] = Field(default="local", max_length=20)

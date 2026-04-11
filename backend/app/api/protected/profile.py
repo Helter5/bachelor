@@ -42,7 +42,6 @@ class ActiveSessionOut(BaseModel):
     last_used_at: datetime
     ip_address: Optional[str] = None
     user_agent: Optional[str] = None
-    mac_address: Optional[str] = None
     is_current: bool  # True if this is the current session
 
 
@@ -52,7 +51,6 @@ class LoginHistoryOut(BaseModel):
     login_at: datetime
     ip_address: Optional[str] = None
     user_agent: Optional[str] = None
-    mac_address: Optional[str] = None
     success: bool
     failure_reason: Optional[str] = None
     login_method: Optional[str] = "local"
@@ -271,7 +269,6 @@ async def get_active_sessions(
             last_used_at=token.last_used_at,
             ip_address=token.ip_address,
             user_agent=token.user_agent,
-            mac_address=token.mac_address,
             is_current=(token.token == current_token)
         )
         for token in tokens
@@ -364,7 +361,6 @@ async def get_login_history(
             login_at=entry.login_at,
             ip_address=entry.ip_address,
             user_agent=entry.user_agent,
-            mac_address=entry.mac_address,
             success=entry.success,
             failure_reason=entry.failure_reason,
             login_method=entry.login_method
