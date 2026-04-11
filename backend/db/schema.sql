@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict vDWxmgkAtcVCJkBB95nztbLBCKAqPuFXGYmBYq5AiPGdJzc862rgkuWQFvA2BJj
+\restrict l1UE8SoMRtyecRu41e2MrhaMgHnC2UgYZDZ1uetHOcV3QHkSLayNyFMfnVccmrC
 
 -- Dumped from database version 16.13
 -- Dumped by pg_dump version 16.13
@@ -1144,5 +1144,5 @@ ALTER TABLE ONLY public.weight_categories
 -- PostgreSQL database dump complete
 --
 
-\unrestrict vDWxmgkAtcVCJkBB95nztbLBCKAqPuFXGYmBYq5AiPGdJzc862rgkuWQFvA2BJj
+\unrestrict l1UE8SoMRtyecRu41e2MrhaMgHnC2UgYZDZ1uetHOcV3QHkSLayNyFMfnVccmrC
 
