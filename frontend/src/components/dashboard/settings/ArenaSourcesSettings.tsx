@@ -192,7 +192,7 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
               disabled={formOpen}
               className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              + {t("arenaSources.addNew")}
+              {t("arenaSources.addNew")}
             </button>
           </div>
         </div>
