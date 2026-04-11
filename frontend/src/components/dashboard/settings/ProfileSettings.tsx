@@ -155,7 +155,7 @@ export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsPr
   }, [loadProfile])
 
   const getAvatarUrl = (avatarUrl: string | null) => {
-    if (!avatarUrl) return null
+    if (!avatarUrl) return user?.role === 'admin' ? '/avatars/default-admin.png' : '/avatars/default-user.png'
     if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) return avatarUrl
     return `${API_BASE_URL}${avatarUrl}`
   }
@@ -307,7 +307,6 @@ export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsPr
     )
   }
 
-  const avatarLetter = user?.first_name?.charAt(0).toUpperCase() || 'U'
   const avatarUrl = getAvatarUrl(user?.avatar_url ?? null)
 
   return (
@@ -321,17 +320,11 @@ export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsPr
 
       {/* Identity card */}
       <div className={`rounded-2xl p-5 flex items-center gap-4 ${isDarkMode ? 'bg-blue-500/8 border border-blue-500/15' : 'bg-blue-50 border border-blue-100'}`}>
-        {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt={t('profile.avatarAlt')}
-            className="w-12 h-12 rounded-full object-cover border border-blue-200/40 shrink-0"
-          />
-        ) : (
-          <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-lg font-semibold select-none shrink-0">
-            {avatarLetter}
-          </div>
-        )}
+        <img
+          src={avatarUrl}
+          alt={t('profile.avatarAlt')}
+          className="w-12 h-12 rounded-full object-cover border border-blue-200/40 shrink-0"
+        />
         <div>
           <p className={`font-semibold text-base ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
             {user?.first_name} {user?.last_name}
