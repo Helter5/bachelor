@@ -34,6 +34,7 @@ interface DashboardProps {
 
 export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardProps) {
   const { t } = useTranslation()
+  const isAdmin = userData?.role === 'admin'
   // Custom hooks for state management
   const { syncState, handleSyncClick, confirmSync, cancelSync, dismissError } = useSync()
   const { isDarkMode, toggleDarkMode } = useDarkMode()
@@ -184,49 +185,51 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
                       <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>{t("dashboard.welcome")}</p>
                     </div>
 
-                    {/* Sync Button */}
-                    <div className="flex items-center gap-3">
-                      {syncState.isSyncing && (
-                        <span className="text-sm text-blue-600 animate-pulse">{t("dashboard.syncing")}</span>
-                      )}
-                      <div className="flex flex-col items-end gap-2">
-                        <button
-                          onClick={handleSyncClick}
-                          disabled={syncState.isSyncing}
-                          className={`
-                            flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all
-                            ${syncState.isSyncing
-                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                              : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95'
-                            }
-                          `}
-                          title={t("dashboard.syncTooltip")}
-                          aria-label={t("dashboard.syncAriaLabel")}
-                        >
-                          <svg
-                            className={`w-5 h-5 ${syncState.isSyncing ? 'animate-spin' : ''}`}
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                            />
-                          </svg>
-                          <span className="hidden sm:inline">
-                            {syncState.isSyncing ? t("dashboard.syncButtonActive") : t("dashboard.syncButton")}
-                          </span>
-                        </button>
-                        {syncState.lastSyncDate && (
-                          <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                            {t("dashboard.lastSync", { date: syncState.lastSyncDate })}
-                          </span>
+                    {/* Sync Button — admin only */}
+                    {isAdmin && (
+                      <div className="flex items-center gap-3">
+                        {syncState.isSyncing && (
+                          <span className="text-sm text-blue-600 animate-pulse">{t("dashboard.syncing")}</span>
                         )}
+                        <div className="flex flex-col items-end gap-2">
+                          <button
+                            onClick={handleSyncClick}
+                            disabled={syncState.isSyncing}
+                            className={`
+                              flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all
+                              ${syncState.isSyncing
+                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95'
+                              }
+                            `}
+                            title={t("dashboard.syncTooltip")}
+                            aria-label={t("dashboard.syncAriaLabel")}
+                          >
+                            <svg
+                              className={`w-5 h-5 ${syncState.isSyncing ? 'animate-spin' : ''}`}
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                              />
+                            </svg>
+                            <span className="hidden sm:inline">
+                              {syncState.isSyncing ? t("dashboard.syncButtonActive") : t("dashboard.syncButton")}
+                            </span>
+                          </button>
+                          {syncState.lastSyncDate && (
+                            <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                              {t("dashboard.lastSync", { date: syncState.lastSyncDate })}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
 
