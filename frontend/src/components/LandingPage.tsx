@@ -342,7 +342,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
               </p>
             </div>
 
-            <Card className="border-white/10 bg-[#1e293b]/80 backdrop-blur-xl shadow-2xl shadow-blue-500/10 relative overflow-hidden">
+            <Card className="border-transparent bg-[#1e293b]/80 backdrop-blur-xl shadow-2xl shadow-blue-500/10 relative overflow-hidden">
               {/* Top gradient reflection */}
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
 
@@ -372,7 +372,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                         id="forgot-email"
                         type="email"
                         placeholder="vas.email@example.com"
-                        className="h-11 bg-[#0f172a] border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500"
+                        className="h-11 bg-[#0f172a] border-transparent text-white placeholder:text-gray-500 focus:border-blue-500"
                         value={forgotPasswordEmail}
                         onChange={(e) => setForgotPasswordEmail(e.target.value)}
                       />
@@ -412,7 +412,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                         id="resend-email"
                         type="email"
                         placeholder="vas.email@example.com"
-                        className="h-11 bg-[#0f172a] border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500"
+                        className="h-11 bg-[#0f172a] border-transparent text-white placeholder:text-gray-500 focus:border-blue-500"
                         value={resendEmail}
                         onChange={(e) => setResendEmail(e.target.value)}
                       />
@@ -442,7 +442,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                         const btn = googleButtonRef.current?.querySelector('div[role="button"]') as HTMLElement;
                         btn?.click();
                       }}
-                      className="w-full h-11 bg-white hover:bg-gray-100 text-gray-700 font-medium rounded-lg flex items-center justify-center gap-3 transition-colors border border-white/20"
+                      className="w-full h-11 bg-white/10 hover:bg-white/15 text-white font-medium rounded-lg flex items-center justify-center gap-3 transition-colors"
                     >
                       <svg className="w-5 h-5" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -473,7 +473,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                           id="username"
                           type="text"
                           placeholder="uzivatelske_meno"
-                          className={`h-11 bg-[#0f172a] border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.loginUsername ? 'border-red-500' : ''}`}
+                          className={`h-11 bg-[#0f172a] border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.loginUsername ? 'border-red-500' : ''}`}
                           value={loginData.username}
                           onChange={(e) => {
                             setLoginData(prev => ({ ...prev, username: e.target.value }))
@@ -504,7 +504,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                           id="password"
                           type="password"
                           placeholder="••••••••"
-                          className={`h-11 bg-[#0f172a] border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.loginPassword ? 'border-red-500' : ''}`}
+                          className={`h-11 bg-[#0f172a] border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.loginPassword ? 'border-red-500' : ''}`}
                           value={loginData.password}
                           onChange={(e) => {
                             setLoginData(prev => ({ ...prev, password: e.target.value }))
@@ -542,7 +542,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                         id="username"
                         type="text"
                         placeholder="pouzivatel123"
-                        className={`h-11 bg-[#0f172a] border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.username ? 'border-red-500' : ''}`}
+                        className={`h-11 bg-[#0f172a] border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.username ? 'border-red-500' : ''}`}
                         value={formData.username}
                         onChange={(e) => handleInputChange('username', e.target.value)}
                         onBlur={() => handleRegisterBlur('username')}
@@ -561,7 +561,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                           id="firstName"
                           type="text"
                           placeholder="Ján"
-                          className={`h-11 bg-[#0f172a] border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.firstName ? 'border-red-500' : ''}`}
+                          className={`h-11 bg-[#0f172a] border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.firstName ? 'border-red-500' : ''}`}
                           value={formData.firstName}
                           onChange={(e) => handleInputChange('firstName', e.target.value)}
                           onBlur={() => handleRegisterBlur('firstName')}
@@ -579,7 +579,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                           id="lastName"
                           type="text"
                           placeholder="Novák"
-                          className={`h-11 bg-[#0f172a] border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.lastName ? 'border-red-500' : ''}`}
+                          className={`h-11 bg-[#0f172a] border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.lastName ? 'border-red-500' : ''}`}
                           value={formData.lastName}
                           onChange={(e) => handleInputChange('lastName', e.target.value)}
                           onBlur={() => handleRegisterBlur('lastName')}
@@ -598,7 +598,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                         id="reg-email"
                         type="email"
                         placeholder="vas.email@example.com"
-                        className={`h-11 bg-[#0f172a] border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.email ? 'border-red-500' : ''}`}
+                        className={`h-11 bg-[#0f172a] border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.email ? 'border-red-500' : ''}`}
                         value={formData.email}
                         onChange={(e) => handleInputChange('email', e.target.value)}
                         onBlur={() => handleRegisterBlur('email')}
@@ -616,7 +616,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                         id="reg-password"
                         type="password"
                         placeholder="••••••••"
-                        className={`h-11 bg-[#0f172a] border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.password ? 'border-red-500' : ''}`}
+                        className={`h-11 bg-[#0f172a] border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.password ? 'border-red-500' : ''}`}
                         value={formData.password}
                         onChange={(e) => handleInputChange('password', e.target.value)}
                         onBlur={() => handleRegisterBlur('password')}
@@ -634,7 +634,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                         id="confirmPassword"
                         type="password"
                         placeholder="••••••••"
-                        className={`h-11 bg-[#0f172a] border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.confirmPassword ? 'border-red-500' : ''}`}
+                        className={`h-11 bg-[#0f172a] border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.confirmPassword ? 'border-red-500' : ''}`}
                         value={formData.confirmPassword}
                         onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                         onBlur={() => handleRegisterBlur('confirmPassword')}
