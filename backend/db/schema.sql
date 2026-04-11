@@ -2,6 +2,8 @@
 -- PostgreSQL database dump
 --
 
+\restrict vDWxmgkAtcVCJkBB95nztbLBCKAqPuFXGYmBYq5AiPGdJzc862rgkuWQFvA2BJj
+
 -- Dumped from database version 16.13
 -- Dumped by pg_dump version 16.13
 
@@ -238,7 +240,6 @@ CREATE TABLE public.login_history (
     login_at timestamp without time zone NOT NULL,
     ip_address character varying(45),
     user_agent character varying,
-    mac_address character varying(255),
     success boolean NOT NULL,
     failure_reason character varying(100),
     login_method character varying(20)
@@ -357,7 +358,6 @@ CREATE TABLE public.refresh_tokens (
     is_revoked boolean NOT NULL,
     ip_address character varying(45),
     user_agent character varying,
-    mac_address character varying(255),
     last_used_at timestamp without time zone NOT NULL
 );
 
@@ -1144,5 +1144,5 @@ ALTER TABLE ONLY public.weight_categories
 -- PostgreSQL database dump complete
 --
 
-\unrestrict Yil8cd8Nqysxeq0xsk1dz6Qeobd06qcDxAI7aekkxYxSl4wy7kHt13dl5MCSUqm
+\unrestrict vDWxmgkAtcVCJkBB95nztbLBCKAqPuFXGYmBYq5AiPGdJzc862rgkuWQFvA2BJj
 
