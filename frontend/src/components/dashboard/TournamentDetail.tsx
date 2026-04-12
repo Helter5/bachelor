@@ -20,6 +20,7 @@ interface TournamentDetailProps {
   tournamentStartDate: string
   tournamentEndDate?: string
   onBack: () => void
+  onSelectPerson?: (id: number, name: string) => void
 }
 
 export function TournamentDetail({
@@ -30,6 +31,7 @@ export function TournamentDetail({
   tournamentStartDate,
   tournamentEndDate,
   onBack,
+  onSelectPerson,
 }: TournamentDetailProps) {
   const { t } = useTranslation()
   const getLocalePrefix = useCallback(() => {
@@ -206,7 +208,13 @@ export function TournamentDetail({
         API_ENDPOINTS.ATHLETE_DATABASE_BY_TEAM(tournamentId, Number(team.id))
       )
       const teamAthleteList = Array.isArray(data) ? data : (data as { athletes?: Athlete[] }).athletes || []
-      setTeamAthletes(teamAthleteList)
+      const seen = new Set<number>()
+      const unique = teamAthleteList.filter(a => {
+        if (!a.person_id || seen.has(a.person_id)) return false
+        seen.add(a.person_id)
+        return true
+      })
+      setTeamAthletes(unique)
     } catch (error) {
       console.error('Error loading team athletes:', error)
     } finally {
@@ -417,6 +425,7 @@ export function TournamentDetail({
             setTeamAthletesPage={setTeamAthletesPage}
             openTeamDetail={openTeamDetail}
             closeTeamDetail={closeTeamDetail}
+            onSelectPerson={onSelectPerson}
           />
         )}
 
@@ -430,6 +439,7 @@ export function TournamentDetail({
             weightCategories={weightCategories}
             athletesPage={athletesPage}
             setAthletesPage={setAthletesPage}
+            onSelectPerson={onSelectPerson}
           />
         )}
 
@@ -454,6 +464,7 @@ export function TournamentDetail({
             eventStats={eventStats}
             statsLoading={statsLoading}
             statsError={statsError}
+            onSelectPerson={onSelectPerson}
           />
         )}
 

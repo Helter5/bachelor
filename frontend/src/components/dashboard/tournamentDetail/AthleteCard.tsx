@@ -9,16 +9,20 @@ interface AthleteCardProps {
   teamName?: string
   countryCode?: string
   weightCategoryName?: string
+  personId?: number | null
+  onSelectPerson?: (id: number, name: string) => void
 }
 
-export function AthleteCard({ isDarkMode, name, isCompeting, teamName, countryCode, weightCategoryName }: AthleteCardProps) {
+export function AthleteCard({ isDarkMode, name, isCompeting, teamName, countryCode, weightCategoryName, personId, onSelectPerson }: AthleteCardProps) {
   const { t } = useTranslation()
   const hasTeam = teamName !== undefined
   const hasWeightCategory = weightCategoryName !== undefined
+  const isClickable = !!onSelectPerson && !!personId
 
   return (
     <div
-      className={`rounded-lg p-3 transition-all ${
+      onClick={isClickable ? () => onSelectPerson!(personId!, name) : undefined}
+      className={`rounded-lg p-3 transition-all ${isClickable ? 'cursor-pointer' : ''} ${
         isDarkMode
           ? 'bg-[#0f172a]/50 hover:bg-[#1e293b] shadow-md hover:shadow-xl backdrop-blur-sm'
           : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'

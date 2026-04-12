@@ -137,6 +137,7 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
                   tournamentStartDate={dashboardState.selectedTournament.start_date}
                   tournamentEndDate={dashboardState.selectedTournament.end_date}
                   onBack={clearTournamentSelection}
+                  onSelectPerson={(id, name) => selectPerson({ id, name })}
                 />
               ) : (
                 <TournamentsList

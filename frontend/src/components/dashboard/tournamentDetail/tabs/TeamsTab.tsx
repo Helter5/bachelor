@@ -24,7 +24,7 @@ interface TeamsTabProps {
   setTeamAthletesPage: (page: number) => void
   openTeamDetail: (team: { id: string; name: string }) => void
   closeTeamDetail: () => void
-
+  onSelectPerson?: (id: number, name: string) => void
 }
 
 export function TeamsTab({
@@ -42,7 +42,7 @@ export function TeamsTab({
   setTeamAthletesPage,
   openTeamDetail,
   closeTeamDetail,
-
+  onSelectPerson,
 }: TeamsTabProps) {
   const { t } = useTranslation()
 
@@ -75,6 +75,8 @@ export function TeamsTab({
                     name={athlete.person_full_name}
                     isCompeting={athlete.is_competing}
                     weightCategoryName={athleteWeightCategory?.name}
+                    personId={athlete.person_id}
+                    onSelectPerson={onSelectPerson}
                   />
                 )
               })}

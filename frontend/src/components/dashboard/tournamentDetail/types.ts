@@ -49,6 +49,7 @@ export interface WeightCategory {
 export interface Athlete {
   id: number
   person_full_name: string
+  person_id: number | null
   team_id: number | null
   sport_event_id: number
   weight_category_id: number | null

@@ -19,6 +19,7 @@ interface AthletesTabProps {
   weightCategories: WeightCategory[]
   athletesPage: number
   setAthletesPage: (page: number) => void
+  onSelectPerson?: (id: number, name: string) => void
 }
 
 const GlobeIcon = (
@@ -36,6 +37,7 @@ export function AthletesTab({
   weightCategories,
   athletesPage,
   setAthletesPage,
+  onSelectPerson,
 }: AthletesTabProps) {
   const { t } = useTranslation()
   const [filterQuery, setFilterQuery] = useState("")
@@ -134,6 +136,8 @@ export function AthletesTab({
                   teamName={athleteTeam?.name}
                   countryCode={athleteTeam?.country_iso_code}
                   weightCategoryName={athleteWeightCategory?.name}
+                  personId={athlete.person_id}
+                  onSelectPerson={onSelectPerson}
                 />
               )
             })}

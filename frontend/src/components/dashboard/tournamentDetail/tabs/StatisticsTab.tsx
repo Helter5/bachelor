@@ -12,7 +12,7 @@ interface StatisticsTabProps {
   eventStats: EventStatistics | null
   statsLoading: boolean
   statsError: string | null
-
+  onSelectPerson?: (id: number, name: string) => void
 }
 
 export function StatisticsTab({
@@ -20,7 +20,7 @@ export function StatisticsTab({
   eventStats,
   statsLoading,
   statsError,
-
+  onSelectPerson,
 }: StatisticsTabProps) {
   const { t } = useTranslation()
   const tooltipStyle = useMemo(() => ({
@@ -109,7 +109,11 @@ export function StatisticsTab({
                   </thead>
                   <tbody>
                     {eventStats.top_performers.map((p, idx) => (
-                      <tr key={p.name} className={`border-b last:border-b-0 ${isDarkMode ? 'border-white/5 hover:bg-white/5' : 'border-gray-100 hover:bg-gray-50'}`}>
+                      <tr
+                        key={p.name}
+                        onClick={onSelectPerson && p.person_id ? () => onSelectPerson(p.person_id!, p.name) : undefined}
+                        className={`border-b last:border-b-0 ${onSelectPerson && p.person_id ? 'cursor-pointer' : ''} ${isDarkMode ? 'border-white/5 hover:bg-white/5' : 'border-gray-100 hover:bg-gray-50'}`}
+                      >
                         <td className="py-3 px-3 text-center">
                           <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${
                             idx === 0 ? 'bg-yellow-500/20 text-yellow-500' :

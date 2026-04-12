@@ -404,8 +404,12 @@ async def get_person_detail(person_id: int, session: Session = Depends(get_sessi
     teams = _batch_teams(session, team_ids)
     wcs = _batch_weight_categories(session, wc_ids)
 
+    seen_event_ids: set[int] = set()
     events_list = []
     for athlete in athletes:
+        if athlete.sport_event_id in seen_event_ids:
+            continue
+        seen_event_ids.add(athlete.sport_event_id)
         event = events.get(athlete.sport_event_id)
         team = teams.get(athlete.team_id) if athlete.team_id else None
         wc = wcs.get(athlete.weight_category_id) if athlete.weight_category_id else None
