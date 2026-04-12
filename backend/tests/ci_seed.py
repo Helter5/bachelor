@@ -95,7 +95,6 @@ async def seed() -> None:
                 continue
             for event in events:
                 if (event.name == item.get("name") and
-                        str(event.start_date) == str(item.get("startDate", "")) and
                         event.country_iso_code == item.get("countryIsoCode")):
                     uuid_map[event.id] = arena_uuid
                     break

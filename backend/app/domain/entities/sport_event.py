@@ -33,7 +33,7 @@ class SportEvent(SportEventBase, table=True):
     """
     __tablename__ = "sport_events"
     __table_args__ = (
-        UniqueConstraint('name', 'start_date', 'country_iso_code',
+        UniqueConstraint('name', 'country_iso_code',
                         name='uq_sport_event_natural_key'),
     )
 

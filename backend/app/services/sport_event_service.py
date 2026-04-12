@@ -101,13 +101,12 @@ class SportEventService(BaseService[SportEvent]):
         """
         return await fetch_arena_data(f"session/{event_id}")
 
-    def get_by_natural_key(self, name: str, start_date: str, country_iso_code: str) -> Optional[SportEvent]:
+    def get_by_natural_key(self, name: str, country_iso_code: str) -> Optional[SportEvent]:
         """
-        Get sport event by natural key (name, start_date, country_iso_code)
+        Get sport event by natural key (name, country_iso_code)
 
         Args:
             name: Event name
-            start_date: Event start date
             country_iso_code: Country ISO code
 
         Returns:
@@ -115,7 +114,6 @@ class SportEventService(BaseService[SportEvent]):
         """
         statement = select(SportEvent).where(
             SportEvent.name == name,
-            SportEvent.start_date == start_date,
             SportEvent.country_iso_code == country_iso_code
         )
         return self.session.exec(statement).first()
@@ -137,7 +135,6 @@ class SportEventService(BaseService[SportEvent]):
         try:
             existing_event = self.get_by_natural_key(
                 event_data.name,
-                event_data.start_date or "",
                 event_data.country_iso_code or ""
             )
 

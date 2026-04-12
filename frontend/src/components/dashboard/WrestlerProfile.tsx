@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
@@ -59,6 +59,11 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [chartMetric, setChartMetric] = useState<"tp" | "cp">("tp")
+  const [eventsPage, setEventsPage] = useState(1)
+  const [selectedEvent, setSelectedEvent] = useState<string | null>(null)
+  const fightsRef = useRef<HTMLDivElement>(null)
+
+  const EVENTS_PER_PAGE = 6
 
   useEffect(() => {
     setLoading(true)
@@ -315,46 +320,98 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
       <div className={`rounded-xl p-6 ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
         <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>{t("wrestlerProfile.tournamentsSection")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {person.events.map((event) => (
-            <div
-              key={event.athlete_id}
-              className={`flex items-center gap-3 rounded-lg px-4 py-3 ${isDarkMode ? "bg-white/5" : "bg-gray-50 border border-gray-200"}`}
-            >
-              {event.team_country ? (
-                <span className={`fi fi-${event.team_country.toLowerCase()} fis rounded-sm flex-shrink-0`} style={{ fontSize: "1.5rem" }} title={event.team_name ?? undefined} />
-              ) : (
-                <div className={`w-6 h-6 rounded-sm flex-shrink-0 ${isDarkMode ? "bg-white/10" : "bg-gray-200"}`} />
-              )}
-              <div className="min-w-0 flex-1">
-                <p className={`text-sm font-medium truncate ${isDarkMode ? "text-white" : "text-gray-900"}`}>{event.event_name || "-"}</p>
-                {event.team_name && (
-                  <p className={`text-xs truncate ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>{event.team_name}</p>
-                )}
-              </div>
-              {event.weight_category && (
-                <span className={`text-xs font-medium px-2 py-1 rounded-full flex-shrink-0 ${isDarkMode ? "bg-purple-900/40 text-purple-300" : "bg-purple-100 text-purple-700"}`}>
-                  {event.weight_category}
-                </span>
-              )}
-            </div>
-          ))}
+          {person.events
+            .slice((eventsPage - 1) * EVENTS_PER_PAGE, eventsPage * EVENTS_PER_PAGE)
+            .map((event) => {
+              const isActive = selectedEvent === event.event_name
+              return (
+                <div
+                  key={event.athlete_id}
+                  onClick={() => {
+                    setSelectedEvent(isActive ? null : (event.event_name ?? null))
+                    fightsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+                  }}
+                  className={`flex items-center gap-3 rounded-lg px-4 py-3 cursor-pointer transition-all ${
+                    isActive
+                      ? isDarkMode ? "bg-blue-600/30 ring-1 ring-blue-500" : "bg-blue-50 ring-1 ring-blue-400"
+                      : isDarkMode ? "bg-white/5 hover:bg-white/10" : "bg-gray-50 hover:bg-gray-100 border border-gray-200"
+                  }`}
+                >
+                  {event.team_country ? (
+                    <span className={`fi fi-${event.team_country.toLowerCase()} fis rounded-sm flex-shrink-0`} style={{ fontSize: "1.5rem" }} title={event.team_name ?? undefined} />
+                  ) : (
+                    <div className={`w-6 h-6 rounded-sm flex-shrink-0 ${isDarkMode ? "bg-white/10" : "bg-gray-200"}`} />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className={`text-sm font-medium truncate ${isDarkMode ? "text-white" : "text-gray-900"}`}>{event.event_name || "-"}</p>
+                    {event.team_name && (
+                      <p className={`text-xs truncate ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>{event.team_name}</p>
+                    )}
+                  </div>
+                  {event.weight_category && (
+                    <span className={`text-xs font-medium px-2 py-1 rounded-full flex-shrink-0 ${isDarkMode ? "bg-purple-900/40 text-purple-300" : "bg-purple-100 text-purple-700"}`}>
+                      {event.weight_category}
+                    </span>
+                  )}
+                </div>
+              )
+            })}
         </div>
+
+        {/* Events pagination */}
+        {person.events.length > EVENTS_PER_PAGE && (
+          <div className="flex items-center justify-center gap-2 mt-4">
+            <button
+              onClick={() => setEventsPage(p => Math.max(1, p - 1))}
+              disabled={eventsPage === 1}
+              className={`px-3 py-1 rounded text-sm transition-all disabled:opacity-40 ${isDarkMode ? "bg-white/5 hover:bg-white/10 text-gray-300" : "bg-gray-100 hover:bg-gray-200 text-gray-700"}`}
+            >
+              ←
+            </button>
+            <span className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+              {eventsPage} / {Math.ceil(person.events.length / EVENTS_PER_PAGE)}
+            </span>
+            <button
+              onClick={() => setEventsPage(p => Math.min(Math.ceil(person.events.length / EVENTS_PER_PAGE), p + 1))}
+              disabled={eventsPage === Math.ceil(person.events.length / EVENTS_PER_PAGE)}
+              className={`px-3 py-1 rounded text-sm transition-all disabled:opacity-40 ${isDarkMode ? "bg-white/5 hover:bg-white/10 text-gray-300" : "bg-gray-100 hover:bg-gray-200 text-gray-700"}`}
+            >
+              →
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Fights grouped by event */}
-      <div className={`rounded-xl p-6 ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
-        <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>{t("wrestlerProfile.fightsSection", { count: stats.totalFights })}</h3>
+      <div ref={fightsRef} className={`rounded-xl p-6 ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
+        <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
+          <h3 className={`text-lg font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+            {t("wrestlerProfile.fightsSection", { count: stats.totalFights })}
+          </h3>
+          {selectedEvent && (
+            <button
+              onClick={() => setSelectedEvent(null)}
+              className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full transition-all ${isDarkMode ? "bg-blue-600/30 text-blue-300 hover:bg-blue-600/50" : "bg-blue-100 text-blue-700 hover:bg-blue-200"}`}
+            >
+              <span className="truncate max-w-[180px]">{selectedEvent}</span>
+              <svg className="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          )}
+        </div>
+
         <div className="space-y-4">
           {Object.entries(
-            fightsData.fights.reduce<Record<string, PersonFight[]>>((acc, fight) => {
-              const key = fight.event_name || t("wrestlerProfile.unknownTournament")
-              if (!acc[key]) acc[key] = []
-              acc[key].push(fight)
-              return acc
-            }, {})
+            fightsData.fights
+              .filter(f => !selectedEvent || f.event_name === selectedEvent)
+              .reduce<Record<string, PersonFight[]>>((acc, fight) => {
+                const key = fight.event_name || t("wrestlerProfile.unknownTournament")
+                if (!acc[key]) acc[key] = []
+                acc[key].push(fight)
+                return acc
+              }, {})
           ).map(([eventName, fights]) => (
             <div key={eventName}>
-              <div className={`flex items-center gap-2 mb-2`}>
+              <div className="flex items-center gap-2 mb-2">
                 <span className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>{eventName}</span>
                 <div className={`flex-1 h-px ${isDarkMode ? "bg-white/10" : "bg-gray-200"}`} />
                 <span className={`text-xs ${isDarkMode ? "text-gray-500" : "text-gray-400"}`}>{fights[0].weight_category}</span>
