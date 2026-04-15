@@ -258,4 +258,78 @@ VALUES
    '2026-06-01 10:00:00', '2026-06-01 10:00:00', NULL,
    NULL, 0, 0, 0);   -- Hans FISCHER / 86 kg GR
 
+
+-- ============================================================
+-- EVENT 3: [EC] - Athletes Without Fighters (intentional edge-case)
+-- ============================================================
+
+INSERT INTO `sport_event`
+  (`id`, `name`, `start_date`, `end_date`, `address_locality`, `country_id`,
+   `ranking_type`, `tournament_type`, `event_type`, `scoreboard_type`, `image`,
+   `timezone`, `rest_time`, `countdown`, `light_scoresheet`, `copy_scoresheet`,
+   `bulk_scoresheet`, `mat_assignment`, `visible`, `created`, `updated`, `deleted_at`,
+   `odf_code`, `uww_ranking_type`, `local_client_id`, `remote_id`, `continent`,
+   `session_type`, `remote_status`, `forbid_sync_after`, `secure`, `nb_seeds`,
+   `athena_competition_id`, `video_checksum`, `scoreboard_operator`, `draw_manager_id`)
+VALUES
+  ('cccccccc-cccc-cccc-cccc-000000000101',
+   '[EC] - Athletes Without Fighters',
+   '2026-09-05 00:00:00', '2026-09-06 00:00:00',
+   'Bratislava', 48,
+   'individual', 'singlebracket', 'continental-championships', 'uww', NULL,
+   'Europe/Bratislava', 20, 1, 0, 2, 0, 1, 1,
+   '2026-06-01 10:00:00', '2026-06-01 10:00:00', NULL,
+   NULL, NULL, NULL, NULL, 'world', '1day', NULL, 0, 0, 0, NULL, NULL, 'volunteer', NULL);
+
+INSERT INTO `sport_event_weight_category`
+  (`id`, `name`, `min_weight`, `max_weight`, `average_duration`, `rounds_number`,
+   `round_duration`, `overtime`, `color`, `tournament_type`, `odf_code`,
+   `created`, `updated`, `deleted_at`, `sport_event_id`,
+   `audience`, `sport`, `fighters_updated`, `uww_ranking`, `blockchain_ids`,
+   `session_start_day`, `mat_assignment`, `visible`, `athena_finalized`, `medal_ceremony`)
+VALUES
+  ('cccccccc-cccc-cccc-cccc-000000000110',
+   '79 kg', 74, 79, 420, 2, 180, 0, '#8a2be2', 'singlebracket', NULL,
+   '2026-06-01 10:00:00', '2026-06-01 10:00:00', NULL,
+   'cccccccc-cccc-cccc-cccc-000000000101',
+   'seniors', 'fs', '2026-06-01 10:00:00', 0, NULL, 1, 0, 1, 0, 0);
+
+INSERT INTO `sport_event_team`
+  (`id`, `country_cio_id`, `name`, `alternate_name`, `logo`, `sport_event_id`,
+   `sport_event_pool_id`, `draw_number`, `continent`, `created`, `updated`, `deleted_at`)
+VALUES
+  ('cccccccc-cccc-cccc-cccc-000000000120',
+   NULL, 'SERBIA', 'SRB', NULL, 'cccccccc-cccc-cccc-cccc-000000000101',
+   NULL, NULL, 'Europe', '2026-06-01 10:00:00', '2026-06-01 10:00:00', NULL);
+
+INSERT INTO `person`
+  (`id`, `family_name`, `given_name`, `prefered_name`, `display_name`,
+   `ioc_print_name`, `ioc_print_initial_name`, `ioc_tv_name`, `ioc_tv_initial_name`,
+   `ioc_tv_family_name`, `athena_print_id`, `origins`, `languages`,
+   `created`, `updated`, `deleted_at`, `custom_id`, `odf_code`)
+VALUES
+  ('cccccccc-cccc-cccc-cccc-000000000130',
+   'DJORDJEVIC', 'Marko', 'Marko DJORDJEVIC', 'DJORDJEVIC Marko.',
+   NULL, NULL, NULL, NULL, NULL, NULL, 'a:0:{}', 'a:0:{}',
+   '2026-06-01 10:00:00', '2026-06-01 10:00:00', NULL, NULL, NULL),
+  ('cccccccc-cccc-cccc-cccc-000000000131',
+   'PETROVIC', 'Nikola', 'Nikola PETROVIC', 'PETROVIC Nikola.',
+   NULL, NULL, NULL, NULL, NULL, NULL, 'a:0:{}', 'a:0:{}',
+   '2026-06-01 10:00:00', '2026-06-01 10:00:00', NULL, NULL, NULL);
+
+INSERT INTO `athlete`
+  (`id`, `person_id`, `sport_event_id`, `sport_event_team_id`,
+   `disqualified`, `accreditation_status`, `created`, `updated`, `deleted_at`)
+VALUES
+  ('cccccccc-cccc-cccc-cccc-000000000140',
+   'cccccccc-cccc-cccc-cccc-000000000130',
+   'cccccccc-cccc-cccc-cccc-000000000101',
+   'cccccccc-cccc-cccc-cccc-000000000120',
+   0, NULL, '2026-06-01 10:00:00', '2026-06-01 10:00:00', NULL),
+  ('cccccccc-cccc-cccc-cccc-000000000141',
+   'cccccccc-cccc-cccc-cccc-000000000131',
+   'cccccccc-cccc-cccc-cccc-000000000101',
+   'cccccccc-cccc-cccc-cccc-000000000120',
+   0, NULL, '2026-06-01 10:00:00', '2026-06-01 10:00:00', NULL);
+
 SET FOREIGN_KEY_CHECKS=1;

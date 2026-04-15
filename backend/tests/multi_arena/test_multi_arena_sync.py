@@ -4,7 +4,7 @@ Multi-Arena sync validation (3 sources).
 Test data layout after multi_arena_seed.py:
 
   Arena A (8080) — test_one.sql:
-    "Multi-Arena Test Cup": 2 WCs, 3 teams (SVK/CZE/POL), 0 athletes
+        "Multi-Arena Test Cup": 2 WCs, 3 teams (SVK/CZE/POL), 4 athletes
 
   Arena B (8081) — test_two.sql:
     "Multi-Arena Test Cup": 2 WCs, 3 teams (SVK/CZE/POL), 4 athletes

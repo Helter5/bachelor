@@ -2,8 +2,8 @@
 Multi-Arena sync seed script (3 sources).
 
 Creates three ArenaSource entries and syncs test events from each:
-  - Arena A (port 8080): "Multi-Arena Test Cup" — teams only, NO athletes
-  - Arena B (port 8081): "Multi-Arena Test Cup" — teams + 4 athletes
+    - Arena A (port 8080): "Multi-Arena Test Cup" — teams + 4 athletes
+    - Arena B (port 8081): "Multi-Arena Test Cup" — teams + 4 athletes
   - Arena C (port 8082): "Multi-Arena Test Cup" — adds AUSTRIA team + 2 new athletes
                          "Arena C Exclusive Cup" — unique event, only in Arena C
 
