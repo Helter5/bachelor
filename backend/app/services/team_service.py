@@ -173,6 +173,24 @@ class TeamService(BaseService[Team]):
                     )
                 ).first()
 
+                # Fallback: different Arena sources may name the same country differently
+                # (e.g. source A: name="GERMANY", alternate_name="GER" vs source B: name="GER", alternate_name="GERMANY")
+                # If name doesn't match, check if a team already has this name as its alternate_name
+                if not existing_team and team_create.name:
+                    existing_team = self.session.exec(
+                        select(Team).where(
+                            Team.sport_event_id == event_db_id,
+                            Team.alternate_name == team_create.name,
+                        )
+                    ).first()
+                    if existing_team:
+                        # Don't rename the existing team — only absorb fields that are missing
+                        team_create.name = existing_team.name
+                        if not existing_team.country_iso_code and team_create.country_iso_code:
+                            pass  # let the update below fill it in
+                        elif existing_team.country_iso_code and not team_create.country_iso_code:
+                            team_create.country_iso_code = existing_team.country_iso_code
+
                 if existing_team:
                     new_data = team_create.model_dump(exclude_unset=True)
                     if self.has_changes(existing_team, new_data, exclude_fields=set()):

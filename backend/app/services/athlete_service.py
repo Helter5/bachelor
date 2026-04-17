@@ -238,16 +238,18 @@ class AthleteService(BaseService[Athlete]):
             arena_teams = await fetch_all_arena_items(f"team/{sport_event_uuid}", "sportEventTeams", source=source)
         except Exception:
             return {}
-        db_team_by_name = {
-            t.name: t.id
-            for t in self.session.exec(select(Team).where(Team.sport_event_id == event_db_id)).all()
-        }
+        db_teams = self.session.exec(select(Team).where(Team.sport_event_id == event_db_id)).all()
+        db_team_by_name = {t.name: t.id for t in db_teams}
+        db_team_by_alt_name = {t.alternate_name: t.id for t in db_teams if t.alternate_name}
         result = {}
         for t in arena_teams:
             uuid_str = t.get("id")
             name = t.get("name")
-            if uuid_str and name and name in db_team_by_name:
-                result[uuid_str] = db_team_by_name[name]
+            if uuid_str and name:
+                if name in db_team_by_name:
+                    result[uuid_str] = db_team_by_name[name]
+                elif name in db_team_by_alt_name:
+                    result[uuid_str] = db_team_by_alt_name[name]
         return result
 
     def _build_wc_key_map(self, event_db_id: int) -> Dict[tuple, int]:
