@@ -188,7 +188,7 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
                     >
                       {/* Flag area */}
                       <div className={`flex items-center justify-center py-5 ${isDarkMode ? 'bg-white/5' : 'bg-gray-50'}`}>
-                        {person.country_iso_code ? (
+                        {person.country_iso_code?.trim().length === 2 ? (
                           <span
                             className={`fi fi-${person.country_iso_code.toLowerCase()} fis rounded`}
                             style={{ fontSize: '3rem' }}

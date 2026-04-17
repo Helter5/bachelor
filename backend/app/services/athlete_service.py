@@ -329,13 +329,13 @@ class AthleteService(BaseService[Athlete]):
                 )
 
                 # Resolve country from team for person matching
-                # Fall back to alternate_name (e.g. "UWW") when country_iso_code is missing
+                # Only use country_iso_code (2-letter ISO); alternate_name may be a full country name
+                # or 3-letter code that would break flag rendering and person deduplication
                 country_iso = None
                 if team_id_db:
                     team_obj = self.session.get(Team, team_id_db)
                     if team_obj:
-                        country_iso = (team_obj.country_iso_code or "").strip() or \
-                                      (team_obj.alternate_name or "").strip() or None
+                        country_iso = (team_obj.country_iso_code or "").strip() or None
 
                 # Resolve person_id before athlete lookup (needed for natural key matching)
                 person_id = self._resolve_person(person_first_name, person_last_name, country_iso) if (person_first_name or person_last_name) else None
