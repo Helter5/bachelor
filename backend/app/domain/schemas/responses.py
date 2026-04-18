@@ -60,6 +60,7 @@ class TeamOut(BaseModel):
 
     id: int
     name: str
+    alternate_name: Optional[str] = None
     country_iso_code: Optional[str] = None
     sport_event_id: int
     athlete_count: Optional[int] = None

@@ -333,7 +333,10 @@ export function TournamentDetail({
       if (teams.length === 0) loadTeams()
       if (weightCategories.length === 0) loadWeightCategories()
     }
-    else if (activeTab === "results") loadResults()
+    else if (activeTab === "results") {
+      loadResults()
+      if (weightCategories.length === 0) loadWeightCategories()
+    }
     else if (activeTab === "statistics") loadStatistics()
     else if (activeTab === "draw") {
       if (weightCategories.length === 0) loadWeightCategories()

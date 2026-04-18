@@ -11,7 +11,6 @@ export interface Athlete {
   weight_category?: string
   sync_timestamp?: string
 }
-
 export interface AthleteWithDetails extends Athlete {
   team_name?: string
   weight_category_name?: string

@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS, API_BASE_URL } from "@/config/api"
 import { useTranslation } from "react-i18next"
@@ -17,6 +18,7 @@ interface ExportCardProps {
   title: string
   description: string
   format: "PDF" | "XLSX"
+  selector?: React.ReactNode
   onPreview?: () => void
   onDownload: () => void
   downloadLabel: string
@@ -29,6 +31,7 @@ function ExportCard({
   title,
   description,
   format,
+  selector,
   onPreview,
   onDownload,
   downloadLabel,
@@ -36,13 +39,13 @@ function ExportCard({
   const { t } = useTranslation()
 
   return (
-    <div className={`rounded-xl overflow-hidden transition-all ${
+    <div className={`rounded-xl overflow-hidden transition-all flex flex-col ${
       isDarkMode
         ? 'bg-[#0f172a] border border-white/[0.06] hover:border-white/10'
         : 'bg-white border border-gray-200 hover:border-gray-300 hover:shadow-md'
     }`}>
       {/* Card header */}
-      <div className="p-5 flex items-start gap-4">
+      <div className="p-5 flex items-start gap-4 flex-1">
         <div className={`shrink-0 w-11 h-11 rounded-xl flex items-center justify-center ${iconBg}`}>
           {icon}
         </div>
@@ -51,7 +54,7 @@ function ExportCard({
             <h4 className={`font-semibold text-base leading-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               {title}
             </h4>
-            <span className={`shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded ${
+            <span className={`shrink-0 text-[10px] font-bold px-2.5 py-0.5 rounded-sm ${
               format === "XLSX"
                 ? isDarkMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-700'
                 : isDarkMode ? 'bg-red-500/20 text-red-400' : 'bg-red-100 text-red-700'
@@ -62,6 +65,7 @@ function ExportCard({
           <p className={`text-sm leading-snug ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
             {description}
           </p>
+          {selector && <div className="mt-2">{selector}</div>}
         </div>
       </div>
 
@@ -122,6 +126,7 @@ export function ExportTab({
   tournamentUuid,
 }: ExportTabProps) {
   const { t } = useTranslation()
+  const [medalStandingsBy, setMedalStandingsBy] = useState<"teams" | "athletes">("teams")
 
   return (
     <div>
@@ -173,8 +178,52 @@ export function ExportTab({
           title={t("tournamentDetail.export.medalStandingsTitle")}
           description={t("tournamentDetail.export.medalStandingsDesc")}
           format="PDF"
-          onPreview={() => window.open(API_BASE_URL + API_ENDPOINTS.EVENT_EXPORT_MEDAL_STANDINGS(tournamentUuid), '_blank')}
-          onDownload={() => downloadBlob(API_ENDPOINTS.EVENT_EXPORT_MEDAL_STANDINGS(tournamentUuid), `medal-standings-${tournamentUuid}.pdf`).catch(e => console.error(e))}
+          selector={
+            <div className="flex flex-col gap-1.5">
+              <span className={`text-[11px] font-medium ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                {t("tournamentDetail.export.medalByLabel")}
+              </span>
+              <div className="flex gap-2">
+                {(["teams", "athletes"] as const).map(option => {
+                  const isSelected = medalStandingsBy === option
+                  return (
+                    <button
+                      key={option}
+                      onClick={() => setMedalStandingsBy(option)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                        isSelected
+                          ? isDarkMode
+                            ? 'bg-blue-500/15 border-blue-500/40 text-blue-400'
+                            : 'bg-blue-50 border-blue-300 text-blue-700'
+                          : isDarkMode
+                            ? 'border-white/[0.08] text-gray-400 hover:border-white/20 hover:text-gray-300'
+                            : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                      }`}
+                    >
+                      {option === "teams" ? (
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 21V5" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5c4-2 8-2 12 0v9c-4-2-8-2-12 0V5z" />
+                        </svg>
+                      ) : (
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      )}
+                      {option === "teams" ? t("tournamentDetail.export.medalByTeams") : t("tournamentDetail.export.medalByAthletes")}
+                      {isSelected && (
+                        <svg className="w-3 h-3 ml-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          }
+          onPreview={() => window.open(API_BASE_URL + API_ENDPOINTS.EVENT_EXPORT_MEDAL_STANDINGS(tournamentUuid) + `?by=${medalStandingsBy}`, '_blank')}
+          onDownload={() => downloadBlob(API_ENDPOINTS.EVENT_EXPORT_MEDAL_STANDINGS(tournamentUuid) + `?by=${medalStandingsBy}`, `medal-standings-${tournamentUuid}.pdf`).catch(e => console.error(e))}
           downloadLabel={t("tournamentDetail.export.downloadPdf")}
         />
 

@@ -14,11 +14,12 @@ router = APIRouter(prefix="/events")
 @router.get("/{event_id}/exports/medal-standings")
 async def export_medal_standings(
     event_id: int,
+    by: str = "teams",
     session: Session = Depends(get_session),
 ):
-    """Generate PDF with medal standings for a sport event."""
+    """Generate PDF with medal standings for a sport event. by=teams|athletes"""
     try:
-        export = MedalStandingsExport(event_id, session)
+        export = MedalStandingsExport(event_id, session, by=by)
         buffer = export.generate()
         return Response(
             content=buffer.read(),
