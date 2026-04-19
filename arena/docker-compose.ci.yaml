@@ -9,13 +9,5 @@ services:
     image: ghcr.io/helter5/uww-arena:latest
   nginx:
     image: ghcr.io/helter5/uww-arena-web:latest
-  mysql:
-    image: ghcr.io/helter5/uww-arena-db:latest
-  rabbitmq:
-    image: ghcr.io/helter5/uww-arena-rabbitmq:latest
-  caddy:
-    image: ghcr.io/helter5/uww-arena-mercure:latest
-  redis:
-    image: ghcr.io/helter5/uww-arena-redis:latest
   gotenberg:
     image: gotenberg/gotenberg:8
