@@ -151,21 +151,26 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Pull minimal Arena images (with retry for ECR rate limits)
+      - name: Pull minimal Arena images (with exponential backoff for ECR rate limits)
         working-directory: arena
         run: |
+          set +e
           for attempt in {1..5}; do
-            echo "Pull attempt $attempt/5..."
-            if docker compose -f docker-compose.sync.yaml pull --ignore-pull-failures; then
-              break
+            echo "[$(date)] Pull attempt $attempt/5..."
+            if docker compose -f docker-compose.sync.yaml pull; then
+              echo "[$(date)] Pull successful"
+              set -e
+              exit 0
             fi
             if [ $attempt -lt 5 ]; then
-              sleep $((attempt * 10))
-            else
-              echo "Failed to pull images after 5 attempts"
-              exit 1
+              wait_time=$((2 ** attempt))s
+              echo "[$(date)] ECR rate limit detected, waiting $wait_time before retry..."
+              sleep $wait_time
             fi
           done
+          echo "[$(date)] ERROR: Failed to pull images after 5 attempts"
+          echo "Continuing with cached images if available..."
+          set -e
 
       - name: Start minimal Arena stack
         working-directory: arena
@@ -259,33 +264,39 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Pull Arena A/B/C images (with retry for ECR rate limits)
+      - name: Pull Arena A/B/C images (with exponential backoff for ECR rate limits)
         working-directory: arena
         run: |
-          for stack in "docker-compose.yaml" "docker-compose-b.yaml" "docker-compose-c.yaml"; do
+          set +e
+          pull_stack() {
+            local stack=$1
+            local project=$2
+            local attempt
             for attempt in {1..5}; do
-              echo "Pull attempt $attempt/5 for $stack..."
-              if [ "$stack" = "docker-compose.yaml" ]; then
-                if docker compose -f "$stack" -f docker-compose.ci.yaml pull --ignore-pull-failures; then
-                  break
-                fi
-              elif [ "$stack" = "docker-compose-b.yaml" ]; then
-                if docker compose -p arena-b -f "$stack" -f docker-compose.ci.yaml pull --ignore-pull-failures; then
-                  break
-                fi
+              echo "[$(date)] Pull attempt $attempt/5 for $stack (project: $project)..."
+              if [ -z "$project" ]; then
+                docker compose -f "$stack" -f docker-compose.ci.yaml pull
               else
-                if docker compose -p arena-c -f "$stack" -f docker-compose.ci.yaml pull --ignore-pull-failures; then
-                  break
-                fi
+                docker compose -p "$project" -f "$stack" -f docker-compose.ci.yaml pull
+              fi
+              if [ $? -eq 0 ]; then
+                echo "[$(date)] Pull successful for $stack"
+                return 0
               fi
               if [ $attempt -lt 5 ]; then
-                sleep $((attempt * 10))
-              else
-                echo "Failed to pull images for $stack after 5 attempts"
-                exit 1
+                wait_time=$((2 ** attempt))s
+                echo "[$(date)] ECR rate limit detected, waiting $wait_time before retry..."
+                sleep $wait_time
               fi
             done
-          done
+            echo "[$(date)] WARNING: Failed to pull $stack after 5 attempts, continuing with cached images..."
+            return 0
+          }
+          
+          pull_stack "docker-compose.yaml" ""
+          pull_stack "docker-compose-b.yaml" "arena-b"
+          pull_stack "docker-compose-c.yaml" "arena-c"
+          set -e
 
       - name: Start Arena A
         working-directory: arena
