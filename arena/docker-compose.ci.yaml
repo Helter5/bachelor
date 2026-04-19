@@ -1,0 +1,21 @@
+# CI override — redirects all Arena images to GHCR mirror to avoid ECR Public rate limits.
+# Usage: docker compose -f docker-compose.yaml -f docker-compose.ci.yaml up -d
+services:
+  php-fpm:
+    image: ghcr.io/helter5/uww-arena:latest
+  arena-mq-processor:
+    image: ghcr.io/helter5/uww-arena:latest
+  arena-periodic-jobs:
+    image: ghcr.io/helter5/uww-arena:latest
+  nginx:
+    image: ghcr.io/helter5/uww-arena-web:latest
+  mysql:
+    image: ghcr.io/helter5/uww-arena-db:latest
+  rabbitmq:
+    image: ghcr.io/helter5/uww-arena-rabbitmq:latest
+  caddy:
+    image: ghcr.io/helter5/uww-arena-mercure:latest
+  redis:
+    image: ghcr.io/helter5/uww-arena-redis:latest
+  gotenberg:
+    image: ghcr.io/helter5/uww-gotenberg:8

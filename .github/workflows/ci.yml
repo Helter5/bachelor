@@ -162,43 +162,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Cache Arena images to avoid ECR Public rate limits on shared GitHub runners
-      - name: Cache Arena Docker images
-        id: arena-image-cache
-        uses: actions/cache@v4
-        with:
-          path: /tmp/arena-docker-images.tar
-          key: arena-docker-images-${{ hashFiles('arena/docker-compose.yaml') }}
-
-      - name: Load Arena images from cache
-        if: steps.arena-image-cache.outputs.cache-hit == 'true'
-        run: docker load -i /tmp/arena-docker-images.tar
-
-      # Start all 3 Arena stacks immediately so they warm up in background
+      # Start all 3 Arena stacks using GHCR mirror to avoid ECR Public rate limits
       - name: Start Arena A
         working-directory: arena
-        run: docker compose up -d
+        run: docker compose -f docker-compose.yaml -f docker-compose.ci.yaml up -d
 
       - name: Start Arena B
         working-directory: arena
-        run: docker compose -p arena-b -f docker-compose-b.yaml up -d
+        run: docker compose -p arena-b -f docker-compose-b.yaml -f docker-compose.ci.yaml up -d
 
       - name: Start Arena C
         working-directory: arena
-        run: docker compose -p arena-c -f docker-compose-c.yaml up -d
-
-      - name: Save Arena images to cache
-        if: steps.arena-image-cache.outputs.cache-hit != 'true'
-        run: |
-          docker save \
-            public.ecr.aws/uww/app/arena:latest \
-            public.ecr.aws/uww/app/arena-web:latest \
-            public.ecr.aws/uww/app/arena-db:latest \
-            public.ecr.aws/uww/app/arena-rabbitmq:latest \
-            public.ecr.aws/uww/app/arena-mercure:latest \
-            public.ecr.aws/uww/app/arena-redis:latest \
-            gotenberg/gotenberg:8 \
-            -o /tmp/arena-docker-images.tar
+        run: docker compose -p arena-c -f docker-compose-c.yaml -f docker-compose.ci.yaml up -d
 
       # Build backend from cache while Arenas are warming up
       - name: Build backend image from cache
