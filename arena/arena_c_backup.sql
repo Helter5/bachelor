@@ -1,0 +1,2428 @@
+/*M!999999\- enable the sandbox mode */ 
+-- MariaDB dump 10.19  Distrib 10.11.15-MariaDB, for debian-linux-gnu (aarch64)
+--
+-- Host: localhost    Database: arena
+-- ------------------------------------------------------
+-- Server version	10.11.15-MariaDB-ubu2204
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `activity`
+--
+
+DROP TABLE IF EXISTS `activity`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `activity` (
+  `id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `entity_type` varchar(255) NOT NULL,
+  `entity_id` varchar(255) NOT NULL,
+  `type` varchar(255) NOT NULL,
+  `username` varchar(255) DEFAULT NULL,
+  `comment` longtext DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  `sport_event_id` char(36) DEFAULT NULL COMMENT '(DC2Type:guid)',
+  PRIMARY KEY (`id`),
+  KEY `IDX_AC74095A47551731` (`sport_event_id`),
+  KEY `IDX_AC74095A8CDE572981257D5D` (`type`,`entity_id`),
+  CONSTRAINT `FK_AC74095A47551731` FOREIGN KEY (`sport_event_id`) REFERENCES `sport_event` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `activity`
+--
+
+LOCK TABLES `activity` WRITE;
+/*!40000 ALTER TABLE `activity` DISABLE KEYS */;
+/*!40000 ALTER TABLE `activity` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `athlete`
+--
+
+DROP TABLE IF EXISTS `athlete`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `athlete` (
+  `id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `person_id` varchar(255) DEFAULT NULL,
+  `sport_event_id` varchar(255) NOT NULL,
+  `sport_event_team_id` varchar(255) DEFAULT NULL,
+  `disqualified` tinyint(1) DEFAULT NULL,
+  `accreditation_status` smallint(6) DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_C03B8321217BBB47` (`person_id`),
+  KEY `IDX_C03B832147551731` (`sport_event_id`),
+  KEY `IDX_C03B83217BA97F3E` (`sport_event_team_id`),
+  CONSTRAINT `FK_C03B8321217BBB47` FOREIGN KEY (`person_id`) REFERENCES `person` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `FK_C03B832147551731` FOREIGN KEY (`sport_event_id`) REFERENCES `sport_event` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_C03B83217BA97F3E` FOREIGN KEY (`sport_event_team_id`) REFERENCES `sport_event_team` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `athlete`
+--
+
+LOCK TABLES `athlete` WRITE;
+/*!40000 ALTER TABLE `athlete` DISABLE KEYS */;
+INSERT INTO `athlete` VALUES
+('cccc5001-5001-5001-5001-000000000040','cccc5001-5001-5001-5001-000000000030','cccc5001-5001-5001-5001-000000000001','cccc5001-5001-5001-5001-000000000020',0,NULL,'2026-07-01 10:00:00','2026-07-01 10:00:00',NULL),
+('cccc5001-5001-5001-5001-000000000041','cccc5001-5001-5001-5001-000000000031','cccc5001-5001-5001-5001-000000000001','cccc5001-5001-5001-5001-000000000021',0,NULL,'2026-07-01 10:00:00','2026-07-01 10:00:00',NULL),
+('cccc5001-5001-5001-5001-000000000044','cccc5001-5001-5001-5001-000000000034','cccc5001-5001-5001-5001-000000000001','cccc5001-5001-5001-5001-000000000020',0,NULL,'2026-07-01 10:00:00','2026-07-01 10:00:00',NULL),
+('cccc5001-5001-5001-5001-000000000045','cccc5001-5001-5001-5001-000000000035','cccc5001-5001-5001-5001-000000000001','cccc5001-5001-5001-5001-000000000021',0,NULL,'2026-07-01 10:00:00','2026-07-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000200','cccc6001-6001-6001-6001-000000000100','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000020',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000201','cccc6001-6001-6001-6001-000000000101','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000020',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000202','cccc6001-6001-6001-6001-000000000102','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000020',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000203','cccc6001-6001-6001-6001-000000000103','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000020',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000204','cccc6001-6001-6001-6001-000000000104','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000020',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000205','cccc6001-6001-6001-6001-000000000105','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000020',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000206','cccc6001-6001-6001-6001-000000000106','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000020',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000207','cccc6001-6001-6001-6001-000000000107','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000020',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000208','cccc6001-6001-6001-6001-000000000108','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000021',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000209','cccc6001-6001-6001-6001-000000000109','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000021',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000210','cccc6001-6001-6001-6001-000000000110','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000021',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000211','cccc6001-6001-6001-6001-000000000111','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000021',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000212','cccc6001-6001-6001-6001-000000000112','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000021',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000213','cccc6001-6001-6001-6001-000000000113','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000021',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000214','cccc6001-6001-6001-6001-000000000114','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000021',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000215','cccc6001-6001-6001-6001-000000000115','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000021',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000216','cccc6001-6001-6001-6001-000000000116','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000022',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000217','cccc6001-6001-6001-6001-000000000117','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000022',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000218','cccc6001-6001-6001-6001-000000000118','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000022',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000219','cccc6001-6001-6001-6001-000000000119','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000022',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000220','cccc6001-6001-6001-6001-000000000120','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000022',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000221','cccc6001-6001-6001-6001-000000000121','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000022',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000222','cccc6001-6001-6001-6001-000000000122','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000022',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000223','cccc6001-6001-6001-6001-000000000123','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000022',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000224','cccc6001-6001-6001-6001-000000000124','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000023',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000225','cccc6001-6001-6001-6001-000000000125','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000023',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000226','cccc6001-6001-6001-6001-000000000126','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000023',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000227','cccc6001-6001-6001-6001-000000000127','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000023',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000228','cccc6001-6001-6001-6001-000000000128','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000023',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000229','cccc6001-6001-6001-6001-000000000129','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000023',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000230','cccc6001-6001-6001-6001-000000000130','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000023',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000231','cccc6001-6001-6001-6001-000000000131','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000023',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000232','cccc6001-6001-6001-6001-000000000132','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000024',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000233','cccc6001-6001-6001-6001-000000000133','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000024',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000234','cccc6001-6001-6001-6001-000000000134','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000024',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000235','cccc6001-6001-6001-6001-000000000135','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000024',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000236','cccc6001-6001-6001-6001-000000000136','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000024',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000237','cccc6001-6001-6001-6001-000000000137','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000024',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000238','cccc6001-6001-6001-6001-000000000138','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000024',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000239','cccc6001-6001-6001-6001-000000000139','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000024',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000240','cccc6001-6001-6001-6001-000000000140','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000025',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000241','cccc6001-6001-6001-6001-000000000141','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000025',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000242','cccc6001-6001-6001-6001-000000000142','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000025',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000243','cccc6001-6001-6001-6001-000000000143','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000025',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000244','cccc6001-6001-6001-6001-000000000144','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000025',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000245','cccc6001-6001-6001-6001-000000000145','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000025',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000246','cccc6001-6001-6001-6001-000000000146','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000025',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000247','cccc6001-6001-6001-6001-000000000147','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000025',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000248','cccc6001-6001-6001-6001-000000000148','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000026',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000249','cccc6001-6001-6001-6001-000000000149','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000026',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000250','cccc6001-6001-6001-6001-000000000150','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000026',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000251','cccc6001-6001-6001-6001-000000000151','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000026',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000252','cccc6001-6001-6001-6001-000000000152','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000026',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000253','cccc6001-6001-6001-6001-000000000153','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000026',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000254','cccc6001-6001-6001-6001-000000000154','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000026',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000255','cccc6001-6001-6001-6001-000000000155','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000026',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000256','cccc6001-6001-6001-6001-000000000156','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000027',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000257','cccc6001-6001-6001-6001-000000000157','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000027',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000258','cccc6001-6001-6001-6001-000000000158','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000027',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000259','cccc6001-6001-6001-6001-000000000159','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000027',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000260','cccc6001-6001-6001-6001-000000000160','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000027',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000261','cccc6001-6001-6001-6001-000000000161','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000027',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000262','cccc6001-6001-6001-6001-000000000162','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000027',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000263','cccc6001-6001-6001-6001-000000000163','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000027',0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccccccc-cccc-cccc-cccc-000000000040','cccccccc-cccc-cccc-cccc-000000000030','cccccccc-cccc-cccc-cccc-000000000001','cccccccc-cccc-cccc-cccc-000000000020',0,NULL,'2026-06-01 10:00:00','2026-06-01 10:00:00',NULL),
+('cccccccc-cccc-cccc-cccc-000000000041','cccccccc-cccc-cccc-cccc-000000000031','cccccccc-cccc-cccc-cccc-000000000001','cccccccc-cccc-cccc-cccc-000000000021',0,NULL,'2026-06-01 10:00:00','2026-06-01 10:00:00',NULL),
+('cccccccc-cccc-cccc-cccc-000000000042','cccccccc-cccc-cccc-cccc-000000000032','cccccccc-cccc-cccc-cccc-000000000001','cccccccc-cccc-cccc-cccc-000000000023',0,NULL,'2026-06-01 10:00:00','2026-06-01 10:00:00',NULL),
+('cccccccc-cccc-cccc-cccc-000000000043','cccccccc-cccc-cccc-cccc-000000000033','cccccccc-cccc-cccc-cccc-000000000001','cccccccc-cccc-cccc-cccc-000000000023',0,NULL,'2026-06-01 10:00:00','2026-06-01 10:00:00',NULL),
+('cccccccc-cccc-cccc-cccc-000000000090','cccccccc-cccc-cccc-cccc-000000000080','cccccccc-cccc-cccc-cccc-000000000002','cccccccc-cccc-cccc-cccc-000000000070',0,NULL,'2026-06-01 10:00:00','2026-06-01 10:00:00',NULL),
+('cccccccc-cccc-cccc-cccc-000000000091','cccccccc-cccc-cccc-cccc-000000000081','cccccccc-cccc-cccc-cccc-000000000002','cccccccc-cccc-cccc-cccc-000000000071',0,NULL,'2026-06-01 10:00:00','2026-06-01 10:00:00',NULL);
+/*!40000 ALTER TABLE `athlete` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `block_chain`
+--
+
+DROP TABLE IF EXISTS `block_chain`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `block_chain` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sport_event_weight_category_id` char(36) DEFAULT NULL COMMENT '(DC2Type:guid)',
+  `blockNumber` varchar(30) NOT NULL,
+  `timestamp` datetime NOT NULL,
+  `hash` varchar(64) NOT NULL,
+  `parentHash` varchar(64) NOT NULL,
+  `sha3Uncles` varchar(64) NOT NULL,
+  `nonce` varchar(64) NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UNIQ_7613DE2CDC153018` (`blockNumber`),
+  KEY `IDX_7613DE2C70341F7D` (`sport_event_weight_category_id`),
+  CONSTRAINT `FK_7613DE2C70341F7D` FOREIGN KEY (`sport_event_weight_category_id`) REFERENCES `sport_event_weight_category` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=59 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `block_chain`
+--
+
+LOCK TABLES `block_chain` WRITE;
+/*!40000 ALTER TABLE `block_chain` DISABLE KEYS */;
+/*!40000 ALTER TABLE `block_chain` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `config`
+--
+
+DROP TABLE IF EXISTS `config`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `config` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `config_key` varchar(50) NOT NULL,
+  `config_value` longtext NOT NULL COMMENT '(DC2Type:array)',
+  `enabled` tinyint(1) NOT NULL,
+  `merge` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `config`
+--
+
+LOCK TABLES `config` WRITE;
+/*!40000 ALTER TABLE `config` DISABLE KEYS */;
+/*!40000 ALTER TABLE `config` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `country_cio`
+--
+
+DROP TABLE IF EXISTS `country_cio`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `country_cio` (
+  `id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `alternate_name` varchar(3) NOT NULL,
+  `iso_code` varchar(2) NOT NULL,
+  `iso_name` varchar(3) NOT NULL,
+  `continent` varchar(100) NOT NULL,
+  `official_languages` longtext NOT NULL COMMENT '(DC2Type:array)',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `country_cio`
+--
+
+LOCK TABLES `country_cio` WRITE;
+/*!40000 ALTER TABLE `country_cio` DISABLE KEYS */;
+INSERT INTO `country_cio` VALUES
+(1,'AFGHANISTAN','AFG','AF','AFG','Asia','a:0:{}'),
+(2,'ALBANIA','ALB','AL','ALB','Europe','a:0:{}'),
+(3,'ALGERIA','ALG','DZ','DZA','Africa','a:0:{}'),
+(5,'ANGOLA','ANG','AO','AGO','Africa','a:0:{}'),
+(7,'ARGENTINA','ARG','AR','ARG','America','a:0:{}'),
+(8,'ARMENIA','ARM','AM','ARM','Europe','a:0:{}'),
+(10,'AMERICAN SAMOA','ASA','AS','ASM','Oceania','a:0:{}'),
+(11,'AUSTRALIA','AUS','AU','AUS','Oceania','a:0:{}'),
+(12,'AUSTRIA','AUT','AT','AUT','Europe','a:0:{}'),
+(13,'AZERBAIJAN','AZE','AZ','AZE','Europe','a:0:{}'),
+(14,'BAHAMAS','BAH','BS','BHS','America','a:0:{}'),
+(15,'BANGLADESH','BAN','BD','BGD','Asia','a:0:{}'),
+(16,'BARBADOS','BAR','BB','BRB','America','a:0:{}'),
+(17,'BURUNDI','BDI','BI','BDI','Africa','a:0:{}'),
+(18,'BELGIUM','BEL','BE','BEL','Europe','a:0:{}'),
+(19,'BENIN','BEN','BJ','BEN','Africa','a:0:{}'),
+(22,'BOSNIA AND HERZEGOVINA','BIH','BA','BIH','Europe','a:0:{}'),
+(24,'BELARUS','BLR','BY','BLR','Europe','a:0:{}'),
+(25,'BOLIVIA','BOL','BO','BOL','America','a:0:{}'),
+(26,'BOTSWANA','BOT','BW','BWA','Africa','a:0:{}'),
+(27,'BRAZIL','BRA','BR','BRA','America','a:0:{}'),
+(28,'BAHRAIN','BRN','BH','BHR','Asia','a:0:{}'),
+(30,'BULGARIA','BUL','BG','BGR','Europe','a:0:{}'),
+(31,'BURKINA FASO','BUR','BF','BFA','Africa','a:0:{}'),
+(32,'CENTRAL AFRICAN REPUBLIC','CAF','CF','CAF','Africa','a:0:{}'),
+(33,'CAMBODIA','CAM','KH','KHM','Asia','a:0:{}'),
+(34,'CANADA','CAN','CA','CAN','America','a:0:{}'),
+(35,'CAYMAN ISLANDS','CAY','KY','CYM','America','a:0:{}'),
+(36,'CONGO','CGO','CG','COG','Africa','a:0:{}'),
+(37,'CHAD','CHA','TD','TCD','Africa','a:0:{}'),
+(38,'CHILE','CHI','CL','CHL','America','a:0:{}'),
+(39,'CHINA','CHN','CN','CHN','Asia','a:0:{}'),
+(40,'COTE D\'IVOIRE','CIV','CI','CIV','Africa','a:0:{}'),
+(41,'CAMEROON','CMR','CM','CMR','Africa','a:0:{}'),
+(42,'CONGO DR','COD','CD','COD','Africa','a:0:{}'),
+(44,'COLOMBIA','COL','CO','COL','America','a:0:{}'),
+(45,'COMOROS','COM','KM','COM','Africa','a:0:{}'),
+(46,'CAPE VERDE','CPV','CV','CPV','Africa','a:0:{}'),
+(47,'COSTA RICA','CRC','CR','CRI','America','a:0:{}'),
+(48,'CROATIA','CRO','HR','HRV','Europe','a:0:{}'),
+(49,'CUBA','CUB','CU','CUB','America','a:0:{}'),
+(50,'CYPRUS','CYP','CY','CYP','Europe','a:0:{}'),
+(51,'CZECHIA','CZE','CZ','CZE','Europe','a:0:{}'),
+(52,'DENMARK','DEN','DK','DNK','Europe','a:0:{}'),
+(55,'DOMINICAN REPUBLIC','DOM','DO','DOM','America','a:0:{}'),
+(56,'ECUADOR','ECU','EC','ECU','America','a:0:{}'),
+(57,'EGYPT','EGY','EG','EGY','Africa','a:0:{}'),
+(58,'ERITREA','ERI','ER','ERI','Africa','a:0:{}'),
+(59,'EL SALVADOR','ESA','SV','SLV','America','a:0:{}'),
+(60,'SPAIN','ESP','ES','ESP','Europe','a:0:{}'),
+(61,'ESTONIA','EST','EE','EST','Europe','a:0:{}'),
+(64,'FINLAND','FIN','FI','FIN','Europe','a:0:{}'),
+(65,'FRANCE','FRA','FR','FRA','Europe','a:0:{}'),
+(66,'MICRONESIA, FEDERATED STATES OF','FSM','FM','FSM','Oceania','a:0:{}'),
+(67,'GABON','GAB','GA','GAB','Africa','a:0:{}'),
+(68,'GAMBIA','GAM','GM','GMB','Africa','a:0:{}'),
+(69,'GREAT BRITAIN','GBR','GB','GBR','Europe','a:0:{}'),
+(70,'GUINEA-BISSAU','GBS','GW','GNB','Africa','a:0:{}'),
+(71,'GEORGIA','GEO','GE','GEO','Europe','a:0:{}'),
+(73,'GERMANY','GER','DE','DEU','Europe','a:0:{}'),
+(74,'GHANA','GHA','GH','GHA','Africa','a:0:{}'),
+(75,'GREECE','GRE','GR','GRC','Europe','a:0:{}'),
+(77,'GUATEMALA','GUA','GT','GTM','America','a:0:{}'),
+(78,'GUINEA','GUI','GN','GIN','Africa','a:0:{}'),
+(79,'GUAM','GUM','GU','GUM','Oceania','a:0:{}'),
+(81,'HAITI','HAI','HT','HTI','America','a:0:{}'),
+(82,'HONG KONG','HKG','HK','HKG','Asia','a:0:{}'),
+(83,'HONDURAS','HON','HN','HND','America','a:0:{}'),
+(84,'HUNGARY','HUN','HU','HUN','Europe','a:0:{}'),
+(85,'INDONESIA','INA','ID','IDN','Asia','a:0:{}'),
+(86,'INDIA','IND','IN','IND','Asia','a:0:{}'),
+(88,'IRAN','IRI','IR','IRN','Asia','a:0:{}'),
+(89,'IRELAND','IRL','IE','IRL','Europe','a:0:{}'),
+(90,'IRAQ','IRQ','IQ','IRQ','Asia','a:0:{}'),
+(91,'ICELAND','ISL','IS','ISL','Europe','a:0:{}'),
+(92,'ISRAEL','ISR','IL','ISR','Europe','a:0:{}'),
+(93,'VIRGIN ISLANDS','ISV','VI','VIR','America','a:0:{}'),
+(94,'ITALY','ITA','IT','ITA','Europe','a:0:{}'),
+(96,'JAMAICA','JAM','JM','JAM','America','a:0:{}'),
+(97,'JORDAN','JOR','JO','JOR','Asia','a:0:{}'),
+(98,'JAPAN','JPN','JP','JPN','Asia','a:0:{}'),
+(99,'KAZAKHSTAN','KAZ','KZ','KAZ','Asia','a:0:{}'),
+(100,'KENYA','KEN','KE','KEN','Africa','a:0:{}'),
+(101,'KYRGYZSTAN','KGZ','KG','KGZ','Asia','a:0:{}'),
+(102,'KIRIBATI','KIR','KI','KIR','Oceania','a:0:{}'),
+(103,'KOREA','KOR','KR','KOR','Asia','a:0:{}'),
+(104,'KOSOVO','KOS','','XKO','Europe','a:0:{}'),
+(105,'SAUDI ARABIA','KSA','SA','SAU','Asia','a:0:{}'),
+(107,'LAO','LAO','LA','LAO','Asia','a:0:{}'),
+(108,'LATVIA','LAT','LV','LVA','Europe','a:0:{}'),
+(109,'LIBYA','LBA','LY','LBY','Africa','a:0:{}'),
+(110,'LIBERIA','LBR','LR','LBR','Africa','a:0:{}'),
+(113,'LEBANON','LBN','LB','LBN','Asia','a:0:{}'),
+(115,'LITHUANIA','LTU','LT','LTU','Europe','a:0:{}'),
+(116,'LUXEMBOURG','LUX','LU','LUX','Europe','a:0:{}'),
+(117,'MADAGASCAR','MAD','MG','MDG','Africa','a:0:{}'),
+(118,'MOROCCO','MAR','MA','MAR','Africa','a:0:{}'),
+(119,'MALAYSIA','MAS','MY','MYS','Asia','a:0:{}'),
+(120,'MALAWI','MAW','MW','MWI','Africa','a:0:{}'),
+(121,'MOLDOVA','MDA','MD','MDA','Europe','a:0:{}'),
+(123,'MEXICO','MEX','MX','MEX','America','a:0:{}'),
+(124,'MONGOLIA','MGL','MN','MNG','Asia','a:0:{}'),
+(125,'MARSHALL ISLANDS','MHL','MH','MHL','Oceania','a:0:{}'),
+(126,'NORTH MACEDONIA','MKD','MK','MKD','Europe','a:0:{}'),
+(127,'MALI','MLI','ML','MLI','Africa','a:0:{}'),
+(128,'MALTA','MLT','MT','MLT','Europe','a:0:{}'),
+(129,'MONTENEGRO','MNE','ME','MNE','Europe','a:0:{}'),
+(130,'MONACO','MON','MC','MCO','Europe','a:0:{}'),
+(131,'MOZAMBIQUE','MOZ','MZ','MOZ','Africa','a:0:{}'),
+(132,'MAURITIUS','MRI','MU','MUS','Africa','a:0:{}'),
+(133,'MAURITANIA','MTN','MR','MRT','Africa','a:0:{}'),
+(134,'MYANMAR','MYA','MM','MMR','Asia','a:0:{}'),
+(135,'NAMIBIA','NAM','NA','NAM','Africa','a:0:{}'),
+(136,'NICARAGUA','NCA','NI','NIC','America','a:0:{}'),
+(137,'NETHERLANDS','NED','NL','NLD','Europe','a:0:{}'),
+(138,'NEPAL','NEP','NP','NPL','Asia','a:0:{}'),
+(139,'NIGERIA','NGR','NG','NGA','Africa','a:0:{}'),
+(140,'NIGER','NIG','NE','NER','Africa','a:0:{}'),
+(141,'NORWAY','NOR','NO','NOR','Europe','a:0:{}'),
+(142,'NAURU','NRU','NR','NRU','Oceania','a:0:{}'),
+(143,'NEW ZEALAND','NZL','NZ','NZL','Oceania','a:0:{}'),
+(145,'PAKISTAN','PAK','PK','PAK','Asia','a:0:{}'),
+(146,'PANAMA','PAN','PA','PAN','America','a:0:{}'),
+(147,'PARAGUAY','PAR','PY','PRY','America','a:0:{}'),
+(148,'PERU','PER','PE','PER','America','a:0:{}'),
+(149,'PHILIPPINES','PHI','PH','PHL','Asia','a:0:{}'),
+(150,'PALESTINE','PLE','PS','PSE','Asia','a:0:{}'),
+(151,'PALAU','PLW','PW','PLW','Oceania','a:0:{}'),
+(152,'PAPUA NEW GUINEA','PNG','PG','PNG','Oceania','a:0:{}'),
+(153,'POLAND','POL','PL','POL','Europe','a:0:{}'),
+(154,'PORTUGAL','POR','PT','PRT','Europe','a:0:{}'),
+(155,'DPR KOREA','PRK','KP','PRK','Asia','a:0:{}'),
+(156,'PUERTO RICO','PUR','PR','PRI','America','a:0:{}'),
+(157,'QATAR','QAT','QA','QAT','Asia','a:0:{}'),
+(158,'ROMANIA','ROU','RO','ROU','Europe','a:0:{}'),
+(159,'SOUTH AFRICA','RSA','ZA','ZAF','Africa','a:0:{}'),
+(160,'RUSSIA','RUS','RU','RUS','Europe','a:0:{}'),
+(161,'RWANDA','RWA','RW','RWA','Africa','a:0:{}'),
+(162,'SAMOA','SAM','WS','WSM','Oceania','a:0:{}'),
+(163,'SENEGAL','SEN','SN','SEN','Africa','a:0:{}'),
+(164,'SEYCHELLES','SEY','SC','SYC','Africa','a:0:{}'),
+(165,'SINGAPORE','SGP','SG','SGP','Asia','a:0:{}'),
+(167,'SIERRA LEONE','SLE','SL','SLE','Africa','a:0:{}'),
+(168,'SLOVENIA','SLO','SI','SVN','Europe','a:0:{}'),
+(169,'SAN MARINO','SMR','SM','SMR','Europe','a:0:{}'),
+(170,'SOLOMON ISLANDS','SOL','SB','SLB','Oceania','a:0:{}'),
+(171,'SOMALIA','SOM','SO','SOM','Africa','a:0:{}'),
+(172,'SERBIA','SRB','RS','SRB','Europe','a:0:{}'),
+(173,'SRI LANKA','SRI','LK','LKA','Asia','a:0:{}'),
+(174,'SAO TOME AND PRINCIPE','STP','ST','STP','Africa','a:0:{}'),
+(175,'SUDAN','SUD','SD','SDN','Africa','a:0:{}'),
+(176,'SWITZERLAND','SUI','CH','CHE','Europe','a:0:{}'),
+(177,'SURINAME','SUR','SR','SUR','America','a:0:{}'),
+(178,'SLOVAKIA','SVK','SK','SVK','Europe','a:0:{}'),
+(179,'SWEDEN','SWE','SE','SWE','Europe','a:0:{}'),
+(181,'SYRIA','SYR','SY','SYR','Asia','a:0:{}'),
+(182,'TANZANIA','TAN','TZ','TZA','Africa','a:0:{}'),
+(183,'TONGA','TGA','TO','TON','Oceania','a:0:{}'),
+(184,'THAILAND','THA','TH','THA','Asia','a:0:{}'),
+(185,'TAJIKISTAN','TJK','TJ','TJK','Asia','a:0:{}'),
+(186,'TURKMENISTAN','TKM','TM','TKM','Asia','a:0:{}'),
+(188,'TOGO','TOG','TG','TGO','Africa','a:0:{}'),
+(189,'TAIPEI CHINESE','TPE','TW','TWN','Asia','a:0:{}'),
+(190,'TRINIDAD AND TOBAGO','TRI','TT','TTO','America','a:0:{}'),
+(191,'TUNISIA','TUN','TN','TUN','Africa','a:0:{}'),
+(192,'TURKIYE','TUR','TR','TUR','Europe','a:0:{}'),
+(193,'TUVALU','TUV','TV','TUV','Oceania','a:0:{}'),
+(194,'UNITED ARAB EMIRATES','UAE','AE','ARE','Asia','a:0:{}'),
+(195,'UGANDA','UGA','UG','UGA','Africa','a:0:{}'),
+(196,'UKRAINE','UKR','UA','UKR','Europe','a:0:{}'),
+(197,'URUGUAY','URU','UY','URY','America','a:0:{}'),
+(198,'UNITED STATES','USA','US','USA','America','a:0:{}'),
+(199,'UZBEKISTAN','UZB','UZ','UZB','Asia','a:0:{}'),
+(201,'VENEZUELA','VEN','VE','VEN','America','a:0:{}'),
+(202,'VIETNAM','VIE','VN','VNM','Asia','a:0:{}'),
+(203,'ST VINCENT AND THE GRENADINES','VIN','VC','VCT','America','a:0:{}'),
+(204,'YEMEN','YEM','YE','YEM','Asia','a:0:{}'),
+(206,'ZIMBABWE','ZIM','ZW','ZWE','Africa','a:0:{}'),
+(207,'TOKELAU','TKL','TK','TKL','Oceania','a:0:{}'),
+(208,'FRENCH POLYNESIA','PYF','PF','PYF','Oceania','a:0:{}'),
+(209,'MACAO','MAC','MO','MAC','Asia','a:0:{}'),
+(210,'RUSSIAN WRESTLING FEDERATION','RWF','RF','RWF','Europe','a:0:{}'),
+(211,'RUSSIAN OLYMPIC COMMITTEE','ROC','RG','ROC','Europe','a:0:{}'),
+(212,'DOMINICA','DMA','DM','DMA','America','a:0:{}'),
+(213,'NORTHERN MARIANA ISLANDS','MNP','MP','MNP','Oceania','a:0:{}'),
+(214,'INTERNATIONAL OLYMPIC ATHLETES','IOA','','IOA','','a:0:{}'),
+(215,'INDIVIDUAL NETURAL ATHLETES','AIN','','AIN','','a:0:{}'),
+(216,'INTERNATIONAL OLYMPIC ATHLETES','IOA','','IOA','','a:0:{}'),
+(217,'INDIVIDUAL NETURAL ATHLETES','AIN','','AIN','','a:0:{}');
+/*!40000 ALTER TABLE `country_cio` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `cron_task`
+--
+
+DROP TABLE IF EXISTS `cron_task`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `cron_task` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `commands` longtext NOT NULL COMMENT '(DC2Type:array)',
+  `interval` int(11) NOT NULL,
+  `lastrun` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `cron_task`
+--
+
+LOCK TABLES `cron_task` WRITE;
+/*!40000 ALTER TABLE `cron_task` DISABLE KEYS */;
+INSERT INTO `cron_task` VALUES
+(5,'Check every remote','a:3:{i:0;s:19:\"arena:remotes:check\";i:1;s:10:\"--env=prod\";i:2;s:10:\"--no-debug\";}',60,NULL),
+(6,'Clean expired API tokens','a:3:{i:0;s:41:\"league:oauth2-server:clear-expired-tokens\";i:1;s:10:\"--env=prod\";i:2;s:10:\"--no-debug\";}',86400,NULL);
+/*!40000 ALTER TABLE `cron_task` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `ext_log_entries`
+--
+
+DROP TABLE IF EXISTS `ext_log_entries`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ext_log_entries` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `action` varchar(8) NOT NULL,
+  `logged_at` datetime NOT NULL,
+  `object_id` varchar(64) DEFAULT NULL,
+  `object_class` varchar(191) NOT NULL,
+  `version` int(11) NOT NULL,
+  `data` longtext DEFAULT NULL COMMENT '(DC2Type:array)',
+  `username` varchar(191) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `log_class_lookup_idx` (`object_class`),
+  KEY `log_date_lookup_idx` (`logged_at`),
+  KEY `log_user_lookup_idx` (`username`),
+  KEY `log_version_lookup_idx` (`object_id`,`object_class`,`version`)
+) ENGINE=InnoDB AUTO_INCREMENT=463 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci ROW_FORMAT=DYNAMIC;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `ext_log_entries`
+--
+
+LOCK TABLES `ext_log_entries` WRITE;
+/*!40000 ALTER TABLE `ext_log_entries` DISABLE KEYS */;
+/*!40000 ALTER TABLE `ext_log_entries` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `fight`
+--
+
+DROP TABLE IF EXISTS `fight`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `fight` (
+  `id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `fighter1_id` char(36) DEFAULT NULL COMMENT '(DC2Type:guid)',
+  `fighter2_id` char(36) DEFAULT NULL COMMENT '(DC2Type:guid)',
+  `sport_event_id` varchar(255) NOT NULL,
+  `sport_event_weight_category_id` varchar(255) NOT NULL,
+  `parent_fight1_id` varchar(255) DEFAULT NULL,
+  `parent_fight2_id` varchar(255) DEFAULT NULL,
+  `fighter1_ranking_point` int(11) DEFAULT NULL,
+  `fighter2_ranking_point` int(11) DEFAULT NULL,
+  `referee_group` varchar(1) DEFAULT NULL,
+  `sport_event_team1_id` varchar(255) DEFAULT NULL,
+  `sport_event_team2_id` varchar(255) DEFAULT NULL,
+  `fight_mat_id` varchar(255) DEFAULT NULL,
+  `round` varchar(100) DEFAULT NULL,
+  `qualifying` tinyint(1) NOT NULL,
+  `team_fight_id` varchar(100) DEFAULT NULL,
+  `status` int(11) NOT NULL,
+  `ranking_check` tinyint(1) NOT NULL,
+  `technical_check` tinyint(1) NOT NULL,
+  `weight` int(11) DEFAULT NULL,
+  `fight_number` int(11) DEFAULT NULL,
+  `round_weight` int(11) DEFAULT NULL,
+  `repechage_weight` int(11) DEFAULT NULL,
+  `repechage_section` int(11) DEFAULT NULL,
+  `display_order` int(11) NOT NULL,
+  `canceled` datetime DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  `odf_code` varchar(100) DEFAULT NULL,
+  `referee_comment` varchar(1000) DEFAULT NULL,
+  `uploader_fight` longtext DEFAULT NULL COMMENT '(DC2Type:array)',
+  `loser_fight_id` char(36) DEFAULT NULL COMMENT '(DC2Type:guid)',
+  `beach_group` varchar(1) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_21AA4456D783CFD6` (`fighter1_id`),
+  KEY `IDX_21AA4456C5366038` (`fighter2_id`),
+  KEY `IDX_21AA445647551731` (`sport_event_id`),
+  KEY `IDX_21AA445670341F7D` (`sport_event_weight_category_id`),
+  KEY `IDX_21AA445680EC424B` (`parent_fight1_id`),
+  KEY `IDX_21AA44569259EDA5` (`parent_fight2_id`),
+  KEY `IDX_21AA445617769947` (`sport_event_team1_id`),
+  KEY `IDX_21AA44565C336A9` (`sport_event_team2_id`),
+  KEY `IDX_21AA4456D341F42B` (`fight_mat_id`),
+  KEY `IDX_21AA4456BA545259` (`loser_fight_id`),
+  CONSTRAINT `FK_21AA445617769947` FOREIGN KEY (`sport_event_team1_id`) REFERENCES `sport_event_team` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `FK_21AA445647551731` FOREIGN KEY (`sport_event_id`) REFERENCES `sport_event` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_21AA44565C336A9` FOREIGN KEY (`sport_event_team2_id`) REFERENCES `sport_event_team` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `FK_21AA445670341F7D` FOREIGN KEY (`sport_event_weight_category_id`) REFERENCES `sport_event_weight_category` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_21AA445680EC424B` FOREIGN KEY (`parent_fight1_id`) REFERENCES `fight` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_21AA44569259EDA5` FOREIGN KEY (`parent_fight2_id`) REFERENCES `fight` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_21AA4456BA545259` FOREIGN KEY (`loser_fight_id`) REFERENCES `fight` (`id`),
+  CONSTRAINT `FK_21AA4456D341F42B` FOREIGN KEY (`fight_mat_id`) REFERENCES `fight_mat` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `FK_E06B6B52C5366038` FOREIGN KEY (`fighter2_id`) REFERENCES `fighter` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `FK_E06B6B52D783CFD6` FOREIGN KEY (`fighter1_id`) REFERENCES `fighter` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `fight`
+--
+
+LOCK TABLES `fight` WRITE;
+/*!40000 ALTER TABLE `fight` DISABLE KEYS */;
+INSERT INTO `fight` VALUES
+('1f13be1f-9e8d-6d34-9ff9-6f43d442df0b','cccc6001-6001-6001-6001-000000000300','cccc6001-6001-6001-6001-000000000308','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000010',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000020','cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,0,1,1,NULL,NULL,1,NULL,'2026-04-19 11:21:57','2026-04-19 11:22:28',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e94-66d4-a00a-6f43d442df0b','cccc6001-6001-6001-6001-000000000316','cccc6001-6001-6001-6001-000000000324','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000010',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000022','cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,1,2,1,NULL,NULL,2,NULL,'2026-04-19 11:21:57','2026-04-19 11:22:28',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e94-6f3a-8ba4-6f43d442df0b','cccc6001-6001-6001-6001-000000000332','cccc6001-6001-6001-6001-000000000340','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000010',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000024','cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,2,3,1,NULL,NULL,3,NULL,'2026-04-19 11:21:57','2026-04-19 11:22:28',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e95-65c0-9566-6f43d442df0b','cccc6001-6001-6001-6001-000000000348','cccc6001-6001-6001-6001-000000000356','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000010',NULL,NULL,0,4,NULL,'cccc6001-6001-6001-6001-000000000026','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,3,4,1,NULL,NULL,4,NULL,'2026-04-19 11:21:57','2026-04-19 11:22:28',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e95-6cbe-9d8e-6f43d442df0b','cccc6001-6001-6001-6001-000000000301','cccc6001-6001-6001-6001-000000000309','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000011',NULL,NULL,1,4,NULL,'cccc6001-6001-6001-6001-000000000020','cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,4,5,1,NULL,NULL,5,NULL,'2026-04-19 11:21:57','2026-04-19 11:22:28',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e96-6204-b26c-6f43d442df0b','cccc6001-6001-6001-6001-000000000317','cccc6001-6001-6001-6001-000000000325','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000011',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000022','cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,5,6,1,NULL,NULL,6,NULL,'2026-04-19 11:21:57','2026-04-19 11:22:28',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e96-6984-9295-6f43d442df0b','cccc6001-6001-6001-6001-000000000333','cccc6001-6001-6001-6001-000000000341','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000011',NULL,NULL,0,4,NULL,'cccc6001-6001-6001-6001-000000000024','cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,6,7,1,NULL,NULL,7,NULL,'2026-04-19 11:21:57','2026-04-19 11:24:51',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e97-61ae-871d-6f43d442df0b','cccc6001-6001-6001-6001-000000000349','cccc6001-6001-6001-6001-000000000357','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000011',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000026','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,7,8,1,NULL,NULL,8,NULL,'2026-04-19 11:21:57','2026-04-19 11:24:51',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e97-67b2-84d4-6f43d442df0b','cccc6001-6001-6001-6001-000000000302','cccc6001-6001-6001-6001-000000000310','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000012',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000020','cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,8,9,1,NULL,NULL,9,NULL,'2026-04-19 11:21:57','2026-04-19 11:24:51',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e97-6e10-be17-6f43d442df0b','cccc6001-6001-6001-6001-000000000318','cccc6001-6001-6001-6001-000000000326','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000012',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000022','cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,9,10,1,NULL,NULL,10,NULL,'2026-04-19 11:21:57','2026-04-19 11:24:51',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e98-6626-a44a-6f43d442df0b','cccc6001-6001-6001-6001-000000000334','cccc6001-6001-6001-6001-000000000342','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000012',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000024','cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,10,11,1,NULL,NULL,11,NULL,'2026-04-19 11:21:57','2026-04-19 11:24:52',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e98-6d42-9da2-6f43d442df0b','cccc6001-6001-6001-6001-000000000350','cccc6001-6001-6001-6001-000000000358','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000012',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000026','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,11,12,1,NULL,NULL,12,NULL,'2026-04-19 11:21:57','2026-04-19 11:24:53',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e99-621a-a124-6f43d442df0b','cccc6001-6001-6001-6001-000000000303','cccc6001-6001-6001-6001-000000000311','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000013',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000020','cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,12,13,1,NULL,NULL,13,NULL,'2026-04-19 11:21:57','2026-04-19 11:26:18',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e99-6652-b5fa-6f43d442df0b','cccc6001-6001-6001-6001-000000000319','cccc6001-6001-6001-6001-000000000327','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000013',NULL,NULL,0,4,NULL,'cccc6001-6001-6001-6001-000000000022','cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,13,14,1,NULL,NULL,14,NULL,'2026-04-19 11:21:57','2026-04-19 11:26:19',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e99-6be8-9af3-6f43d442df0b','cccc6001-6001-6001-6001-000000000335','cccc6001-6001-6001-6001-000000000343','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000013',NULL,NULL,0,4,NULL,'cccc6001-6001-6001-6001-000000000024','cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,14,15,1,NULL,NULL,15,NULL,'2026-04-19 11:21:57','2026-04-19 11:26:19',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e99-6fd0-8152-6f43d442df0b','cccc6001-6001-6001-6001-000000000351','cccc6001-6001-6001-6001-000000000359','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000013',NULL,NULL,0,4,NULL,'cccc6001-6001-6001-6001-000000000026','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,15,16,1,NULL,NULL,16,NULL,'2026-04-19 11:21:57','2026-04-19 11:26:19',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e9a-63b8-a8dd-6f43d442df0b','cccc6001-6001-6001-6001-000000000304','cccc6001-6001-6001-6001-000000000312','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000014',NULL,NULL,0,4,NULL,'cccc6001-6001-6001-6001-000000000020','cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,16,17,1,NULL,NULL,17,NULL,'2026-04-19 11:21:57','2026-04-19 11:26:19',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e9a-693a-8217-6f43d442df0b','cccc6001-6001-6001-6001-000000000320','cccc6001-6001-6001-6001-000000000328','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000014',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000022','cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,17,18,1,NULL,NULL,18,NULL,'2026-04-19 11:21:57','2026-04-19 11:26:19',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e9a-6eee-9ade-6f43d442df0b','cccc6001-6001-6001-6001-000000000336','cccc6001-6001-6001-6001-000000000344','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000014',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000024','cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,18,19,1,NULL,NULL,19,NULL,'2026-04-19 11:21:57','2026-04-19 11:26:43',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e9b-6498-9abb-6f43d442df0b','cccc6001-6001-6001-6001-000000000352','cccc6001-6001-6001-6001-000000000360','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000014',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000026','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,19,20,1,NULL,NULL,20,NULL,'2026-04-19 11:21:57','2026-04-19 11:26:43',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e9b-6a56-9363-6f43d442df0b','cccc6001-6001-6001-6001-000000000305','cccc6001-6001-6001-6001-000000000313','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000015',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000020','cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,20,21,1,NULL,NULL,21,NULL,'2026-04-19 11:21:57','2026-04-19 11:26:43',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e9b-6f7e-b89a-6f43d442df0b','cccc6001-6001-6001-6001-000000000321','cccc6001-6001-6001-6001-000000000329','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000015',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000022','cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,21,22,1,NULL,NULL,22,NULL,'2026-04-19 11:21:57','2026-04-19 11:26:44',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e9c-63de-afcf-6f43d442df0b','cccc6001-6001-6001-6001-000000000337','cccc6001-6001-6001-6001-000000000345','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000015',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000024','cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,22,23,1,NULL,NULL,23,NULL,'2026-04-19 11:21:57','2026-04-19 11:26:44',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e9c-67ee-aa8e-6f43d442df0b','cccc6001-6001-6001-6001-000000000353','cccc6001-6001-6001-6001-000000000361','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000015',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000026','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,23,24,1,NULL,NULL,24,NULL,'2026-04-19 11:21:57','2026-04-19 11:26:44',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e9c-6da2-9fe4-6f43d442df0b','cccc6001-6001-6001-6001-000000000306','cccc6001-6001-6001-6001-000000000314','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000016',NULL,NULL,0,4,NULL,'cccc6001-6001-6001-6001-000000000020','cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,24,25,1,NULL,NULL,25,NULL,'2026-04-19 11:21:57','2026-04-19 11:27:28',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e9d-6432-adeb-6f43d442df0b','cccc6001-6001-6001-6001-000000000322','cccc6001-6001-6001-6001-000000000330','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000016',NULL,NULL,1,4,NULL,'cccc6001-6001-6001-6001-000000000022','cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,25,26,1,NULL,NULL,26,NULL,'2026-04-19 11:21:57','2026-04-19 11:27:29',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e9d-6afe-b05d-6f43d442df0b','cccc6001-6001-6001-6001-000000000338','cccc6001-6001-6001-6001-000000000346','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000016',NULL,NULL,0,3,NULL,'cccc6001-6001-6001-6001-000000000024','cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,26,27,1,NULL,NULL,27,NULL,'2026-04-19 11:21:57','2026-04-19 11:27:29',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e9e-6206-a585-6f43d442df0b','cccc6001-6001-6001-6001-000000000354','cccc6001-6001-6001-6001-000000000362','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000016',NULL,NULL,0,3,NULL,'cccc6001-6001-6001-6001-000000000026','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,27,28,1,NULL,NULL,28,NULL,'2026-04-19 11:21:57','2026-04-19 11:27:30',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e9e-6652-95bd-6f43d442df0b','cccc6001-6001-6001-6001-000000000307','cccc6001-6001-6001-6001-000000000315','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000017',NULL,NULL,0,3,NULL,'cccc6001-6001-6001-6001-000000000020','cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,28,29,1,NULL,NULL,29,NULL,'2026-04-19 11:21:57','2026-04-19 11:27:30',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e9e-6ab2-a82a-6f43d442df0b','cccc6001-6001-6001-6001-000000000323','cccc6001-6001-6001-6001-000000000331','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000017',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000022','cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,29,30,1,NULL,NULL,30,NULL,'2026-04-19 11:21:57','2026-04-19 11:31:26',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e9e-6f80-b651-6f43d442df0b','cccc6001-6001-6001-6001-000000000339','cccc6001-6001-6001-6001-000000000347','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000017',NULL,NULL,1,3,NULL,'cccc6001-6001-6001-6001-000000000024','cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,30,31,1,NULL,NULL,31,NULL,'2026-04-19 11:21:57','2026-04-19 11:28:37',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9e9f-6520-b1dd-6f43d442df0b','cccc6001-6001-6001-6001-000000000355','cccc6001-6001-6001-6001-000000000363','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000017',NULL,NULL,1,3,NULL,'cccc6001-6001-6001-6001-000000000026','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','1/4 Final',0,NULL,5,1,1,31,32,1,NULL,NULL,32,NULL,'2026-04-19 11:21:57','2026-04-19 11:28:37',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea0-6600-8720-6f43d442df0b','cccc6001-6001-6001-6001-000000000308','cccc6001-6001-6001-6001-000000000324','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000010','1f13be1f-9e8d-6d34-9ff9-6f43d442df0b','1f13be1f-9e94-66d4-a00a-6f43d442df0b',1,3,NULL,'cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000402','1/2 Final',0,NULL,5,1,1,32,33,2,NULL,NULL,33,NULL,'2026-04-19 11:21:57','2026-04-19 11:28:38',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea0-6ba0-bc99-6f43d442df0b','cccc6001-6001-6001-6001-000000000340','cccc6001-6001-6001-6001-000000000356','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000010','1f13be1f-9e94-6f3a-8ba4-6f43d442df0b','1f13be1f-9e95-65c0-9566-6f43d442df0b',1,3,NULL,'cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','1/2 Final',0,NULL,5,1,1,33,34,2,NULL,NULL,34,NULL,'2026-04-19 11:21:57','2026-04-19 11:28:37',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea1-6082-9ede-6f43d442df0b','cccc6001-6001-6001-6001-000000000309','cccc6001-6001-6001-6001-000000000325','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000011','1f13be1f-9e95-6cbe-9d8e-6f43d442df0b','1f13be1f-9e96-6204-b26c-6f43d442df0b',1,3,NULL,'cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000402','1/2 Final',0,NULL,5,1,1,34,35,2,NULL,NULL,35,NULL,'2026-04-19 11:21:57','2026-04-19 11:28:37',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea1-6654-a6d1-6f43d442df0b','cccc6001-6001-6001-6001-000000000341','cccc6001-6001-6001-6001-000000000357','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000011','1f13be1f-9e96-6984-9295-6f43d442df0b','1f13be1f-9e97-61ae-871d-6f43d442df0b',0,5,NULL,'cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','1/2 Final',0,NULL,5,1,1,35,36,2,NULL,NULL,36,NULL,'2026-04-19 11:21:57','2026-04-19 11:31:26',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea1-6b2c-8e27-6f43d442df0b','cccc6001-6001-6001-6001-000000000310','cccc6001-6001-6001-6001-000000000326','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000012','1f13be1f-9e97-67b2-84d4-6f43d442df0b','1f13be1f-9e97-6e10-be17-6f43d442df0b',0,5,NULL,'cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000402','1/2 Final',0,NULL,5,1,1,36,37,2,NULL,NULL,37,NULL,'2026-04-19 11:21:57','2026-04-19 11:31:27',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea2-6310-9407-6f43d442df0b','cccc6001-6001-6001-6001-000000000342','cccc6001-6001-6001-6001-000000000358','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000012','1f13be1f-9e98-6626-a44a-6f43d442df0b','1f13be1f-9e98-6d42-9da2-6f43d442df0b',0,5,NULL,'cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','1/2 Final',0,NULL,5,1,1,37,38,2,NULL,NULL,38,NULL,'2026-04-19 11:21:57','2026-04-19 11:31:27',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea2-6a18-8cb7-6f43d442df0b','cccc6001-6001-6001-6001-000000000311','cccc6001-6001-6001-6001-000000000327','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000013','1f13be1f-9e99-621a-a124-6f43d442df0b','1f13be1f-9e99-6652-b5fa-6f43d442df0b',0,5,NULL,'cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000402','1/2 Final',0,NULL,5,1,1,38,39,2,NULL,NULL,39,NULL,'2026-04-19 11:21:57','2026-04-19 11:31:27',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea3-60f8-8bc6-6f43d442df0b','cccc6001-6001-6001-6001-000000000343','cccc6001-6001-6001-6001-000000000359','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000013','1f13be1f-9e99-6be8-9af3-6f43d442df0b','1f13be1f-9e99-6fd0-8152-6f43d442df0b',0,5,NULL,'cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','1/2 Final',0,NULL,5,1,1,39,40,2,NULL,NULL,40,NULL,'2026-04-19 11:21:57','2026-04-19 11:31:28',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea3-6954-9577-6f43d442df0b','cccc6001-6001-6001-6001-000000000312','cccc6001-6001-6001-6001-000000000328','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000014','1f13be1f-9e9a-63b8-a8dd-6f43d442df0b','1f13be1f-9e9a-693a-8217-6f43d442df0b',0,5,NULL,'cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000402','1/2 Final',0,NULL,5,1,1,40,41,2,NULL,NULL,41,NULL,'2026-04-19 11:21:57','2026-04-19 11:32:42',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea3-6dfa-a293-6f43d442df0b','cccc6001-6001-6001-6001-000000000344','cccc6001-6001-6001-6001-000000000360','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000014','1f13be1f-9e9a-6eee-9ade-6f43d442df0b','1f13be1f-9e9b-6498-9abb-6f43d442df0b',0,3,NULL,'cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','1/2 Final',0,NULL,5,1,1,41,42,2,NULL,NULL,42,NULL,'2026-04-19 11:21:57','2026-04-19 11:32:24',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea4-628c-8349-6f43d442df0b','cccc6001-6001-6001-6001-000000000313','cccc6001-6001-6001-6001-000000000329','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000015','1f13be1f-9e9b-6a56-9363-6f43d442df0b','1f13be1f-9e9b-6f7e-b89a-6f43d442df0b',0,3,NULL,'cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000402','1/2 Final',0,NULL,5,1,1,42,43,2,NULL,NULL,43,NULL,'2026-04-19 11:21:57','2026-04-19 11:32:25',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea4-685e-85a6-6f43d442df0b','cccc6001-6001-6001-6001-000000000345','cccc6001-6001-6001-6001-000000000361','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000015','1f13be1f-9e9c-63de-afcf-6f43d442df0b','1f13be1f-9e9c-67ee-aa8e-6f43d442df0b',0,3,NULL,'cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','1/2 Final',0,NULL,5,1,1,43,44,2,NULL,NULL,44,NULL,'2026-04-19 11:21:57','2026-04-19 11:32:25',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea4-6ca0-8e84-6f43d442df0b','cccc6001-6001-6001-6001-000000000314','cccc6001-6001-6001-6001-000000000330','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000016','1f13be1f-9e9c-6da2-9fe4-6f43d442df0b','1f13be1f-9e9d-6432-adeb-6f43d442df0b',0,3,NULL,'cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000402','1/2 Final',0,NULL,5,1,1,44,45,2,NULL,NULL,45,NULL,'2026-04-19 11:21:57','2026-04-19 11:32:25',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea5-60ce-aa33-6f43d442df0b','cccc6001-6001-6001-6001-000000000346','cccc6001-6001-6001-6001-000000000362','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000016','1f13be1f-9e9d-6afe-b05d-6f43d442df0b','1f13be1f-9e9e-6206-a585-6f43d442df0b',0,3,NULL,'cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','1/2 Final',0,NULL,5,1,1,45,46,2,NULL,NULL,46,NULL,'2026-04-19 11:21:57','2026-04-19 11:32:25',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea5-6646-b9ad-6f43d442df0b','cccc6001-6001-6001-6001-000000000315','cccc6001-6001-6001-6001-000000000331','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000017','1f13be1f-9e9e-6652-95bd-6f43d442df0b','1f13be1f-9e9e-6ab2-a82a-6f43d442df0b',0,5,NULL,'cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000402','1/2 Final',0,NULL,5,1,1,46,47,2,NULL,NULL,47,NULL,'2026-04-19 11:21:57','2026-04-19 11:32:42',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea5-6d8a-88cb-6f43d442df0b','cccc6001-6001-6001-6001-000000000347','cccc6001-6001-6001-6001-000000000363','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000017','1f13be1f-9e9e-6f80-b651-6f43d442df0b','1f13be1f-9e9f-6520-b1dd-6f43d442df0b',0,5,NULL,'cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','1/2 Final',0,NULL,5,1,1,47,48,2,NULL,NULL,48,NULL,'2026-04-19 11:21:57','2026-04-19 11:32:43',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea6-641a-b3d7-6f43d442df0b','cccc6001-6001-6001-6001-000000000320','cccc6001-6001-6001-6001-000000000312','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000014',NULL,NULL,0,3,NULL,'cccc6001-6001-6001-6001-000000000022','cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000402','Final 3-5',0,NULL,5,1,1,48,49,4,1,NULL,49,NULL,'2026-04-19 11:21:57','2026-04-19 11:33:06',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea6-6992-90ff-6f43d442df0b','cccc6001-6001-6001-6001-000000000352','cccc6001-6001-6001-6001-000000000344','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000014',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000026','cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000402','Final 3-5',0,NULL,5,1,1,49,50,4,2,NULL,50,NULL,'2026-04-19 11:21:57','2026-04-19 11:32:43',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea7-627a-9687-6f43d442df0b','cccc6001-6001-6001-6001-000000000328','cccc6001-6001-6001-6001-000000000360','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000014','1f13be1f-9ea3-6954-9577-6f43d442df0b','1f13be1f-9ea3-6dfa-a293-6f43d442df0b',1,3,NULL,'cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','Final 1-2',0,NULL,5,1,1,50,51,5,NULL,NULL,51,NULL,'2026-04-19 11:21:57','2026-04-19 11:33:07',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea7-693c-857e-6f43d442df0b','cccc6001-6001-6001-6001-000000000321','cccc6001-6001-6001-6001-000000000313','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000015',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000022','cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000402','Final 3-5',0,NULL,5,1,1,51,52,4,1,NULL,52,NULL,'2026-04-19 11:21:57','2026-04-19 11:32:43',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea7-6fc2-9742-6f43d442df0b','cccc6001-6001-6001-6001-000000000353','cccc6001-6001-6001-6001-000000000345','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000015',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000026','cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000402','Final 3-5',0,NULL,5,1,1,52,53,4,2,NULL,53,NULL,'2026-04-19 11:21:57','2026-04-19 11:32:44',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea8-65f8-aef1-6f43d442df0b','cccc6001-6001-6001-6001-000000000329','cccc6001-6001-6001-6001-000000000361','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000015','1f13be1f-9ea4-628c-8349-6f43d442df0b','1f13be1f-9ea4-685e-85a6-6f43d442df0b',0,3,NULL,'cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','Final 1-2',0,NULL,5,1,1,53,54,5,NULL,NULL,54,NULL,'2026-04-19 11:21:57','2026-04-19 11:33:07',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea8-6af8-b46d-6f43d442df0b','cccc6001-6001-6001-6001-000000000322','cccc6001-6001-6001-6001-000000000314','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000016',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000022','cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000402','Final 3-5',0,NULL,5,1,1,54,55,4,1,NULL,55,NULL,'2026-04-19 11:21:57','2026-04-19 11:33:07',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea9-626e-be1f-6f43d442df0b','cccc6001-6001-6001-6001-000000000354','cccc6001-6001-6001-6001-000000000346','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000016',NULL,NULL,1,4,NULL,'cccc6001-6001-6001-6001-000000000026','cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000402','Final 3-5',0,NULL,5,1,1,55,56,4,2,NULL,56,NULL,'2026-04-19 11:21:57','2026-04-19 11:33:08',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ea9-6a5c-bf63-6f43d442df0b','cccc6001-6001-6001-6001-000000000330','cccc6001-6001-6001-6001-000000000362','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000016','1f13be1f-9ea4-6ca0-8e84-6f43d442df0b','1f13be1f-9ea5-60ce-aa33-6f43d442df0b',0,4,NULL,'cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','Final 1-2',0,NULL,5,1,1,56,57,5,NULL,NULL,57,NULL,'2026-04-19 11:21:57','2026-04-19 11:33:09',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9eaa-6010-8beb-6f43d442df0b','cccc6001-6001-6001-6001-000000000323','cccc6001-6001-6001-6001-000000000315','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000017',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000022','cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000402','Final 3-5',0,NULL,5,1,1,57,58,4,1,NULL,58,NULL,'2026-04-19 11:21:57','2026-04-19 11:33:24',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9eaa-656a-9bf0-6f43d442df0b','cccc6001-6001-6001-6001-000000000355','cccc6001-6001-6001-6001-000000000347','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000017',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000026','cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000402','Final 3-5',0,NULL,5,1,1,58,59,4,2,NULL,59,NULL,'2026-04-19 11:21:57','2026-04-19 11:33:24',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9eaa-69f2-83d8-6f43d442df0b','cccc6001-6001-6001-6001-000000000331','cccc6001-6001-6001-6001-000000000363','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000017','1f13be1f-9ea5-6646-b9ad-6f43d442df0b','1f13be1f-9ea5-6d8a-88cb-6f43d442df0b',0,5,NULL,'cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','Final 1-2',0,NULL,5,1,1,59,60,5,NULL,NULL,60,NULL,'2026-04-19 11:21:57','2026-04-19 11:33:25',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9eaa-6e8e-b17a-6f43d442df0b','cccc6001-6001-6001-6001-000000000316','cccc6001-6001-6001-6001-000000000308','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000010',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000022','cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000402','Final 3-5',0,NULL,5,1,1,60,61,4,1,NULL,61,NULL,'2026-04-19 11:21:57','2026-04-19 11:33:30',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9eab-64d8-8e66-6f43d442df0b','cccc6001-6001-6001-6001-000000000348','cccc6001-6001-6001-6001-000000000340','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000010',NULL,NULL,0,5,NULL,'cccc6001-6001-6001-6001-000000000026','cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000402','Final 3-5',0,NULL,5,1,1,61,62,4,2,NULL,62,NULL,'2026-04-19 11:21:57','2026-04-19 11:33:30',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9eab-6a46-b5dd-6f43d442df0b','cccc6001-6001-6001-6001-000000000324','cccc6001-6001-6001-6001-000000000356','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000010','1f13be1f-9ea0-6600-8720-6f43d442df0b','1f13be1f-9ea0-6ba0-bc99-6f43d442df0b',0,5,NULL,'cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','Final 1-2',0,NULL,5,1,1,62,63,5,NULL,NULL,63,NULL,'2026-04-19 11:21:57','2026-04-19 11:33:32',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9eac-60b8-aaa7-6f43d442df0b','cccc6001-6001-6001-6001-000000000317','cccc6001-6001-6001-6001-000000000309','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000011',NULL,NULL,1,4,NULL,'cccc6001-6001-6001-6001-000000000022','cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000402','Final 3-5',0,NULL,5,1,1,63,64,4,1,NULL,64,NULL,'2026-04-19 11:21:57','2026-04-19 11:36:02',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9eac-6784-99c7-6f43d442df0b','cccc6001-6001-6001-6001-000000000349','cccc6001-6001-6001-6001-000000000341','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000011',NULL,NULL,1,3,NULL,'cccc6001-6001-6001-6001-000000000026','cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000402','Final 3-5',0,NULL,5,1,1,64,65,4,2,NULL,65,NULL,'2026-04-19 11:21:57','2026-04-19 11:35:48',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9eac-6e78-bde3-6f43d442df0b','cccc6001-6001-6001-6001-000000000325','cccc6001-6001-6001-6001-000000000357','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000011','1f13be1f-9ea1-6082-9ede-6f43d442df0b','1f13be1f-9ea1-6654-a6d1-6f43d442df0b',1,3,NULL,'cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','Final 1-2',0,NULL,5,1,1,65,66,5,NULL,NULL,66,NULL,'2026-04-19 11:21:57','2026-04-19 11:35:48',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ead-62c4-a983-6f43d442df0b','cccc6001-6001-6001-6001-000000000318','cccc6001-6001-6001-6001-000000000310','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000012',NULL,NULL,1,3,NULL,'cccc6001-6001-6001-6001-000000000022','cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000402','Final 3-5',0,NULL,5,1,1,66,67,4,1,NULL,67,NULL,'2026-04-19 11:21:57','2026-04-19 11:35:49',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ead-66b6-adcc-6f43d442df0b','cccc6001-6001-6001-6001-000000000350','cccc6001-6001-6001-6001-000000000342','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000012',NULL,NULL,1,3,NULL,'cccc6001-6001-6001-6001-000000000026','cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000402','Final 3-5',0,NULL,5,1,1,67,68,4,2,NULL,68,NULL,'2026-04-19 11:21:57','2026-04-19 11:35:49',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ead-6b5c-bfa3-6f43d442df0b','cccc6001-6001-6001-6001-000000000326','cccc6001-6001-6001-6001-000000000358','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000012','1f13be1f-9ea1-6b2c-8e27-6f43d442df0b','1f13be1f-9ea2-6310-9407-6f43d442df0b',1,3,NULL,'cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','Final 1-2',0,NULL,5,1,1,68,69,5,NULL,NULL,69,NULL,'2026-04-19 11:21:57','2026-04-19 11:35:49',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9ead-6ff8-aca0-6f43d442df0b','cccc6001-6001-6001-6001-000000000319','cccc6001-6001-6001-6001-000000000311','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000013',NULL,NULL,0,4,NULL,'cccc6001-6001-6001-6001-000000000022','cccc6001-6001-6001-6001-000000000021','cccc6001-6001-6001-6001-000000000402','Final 3-5',0,NULL,5,1,1,69,70,4,1,NULL,70,NULL,'2026-04-19 11:21:57','2026-04-19 11:36:02',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9eae-6606-a964-6f43d442df0b','cccc6001-6001-6001-6001-000000000351','cccc6001-6001-6001-6001-000000000343','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000013',NULL,NULL,1,3,NULL,'cccc6001-6001-6001-6001-000000000026','cccc6001-6001-6001-6001-000000000025','cccc6001-6001-6001-6001-000000000402','Final 3-5',0,NULL,5,1,1,70,71,4,2,NULL,71,NULL,'2026-04-19 11:21:57','2026-04-19 11:36:14',NULL,NULL,NULL,'N;',NULL,NULL),
+('1f13be1f-9eae-6c82-bb18-6f43d442df0b','cccc6001-6001-6001-6001-000000000327','cccc6001-6001-6001-6001-000000000359','cccc6001-6001-6001-6001-000000000001','cccc6001-6001-6001-6001-000000000013','1f13be1f-9ea2-6a18-8cb7-6f43d442df0b','1f13be1f-9ea3-60f8-8bc6-6f43d442df0b',5,0,NULL,'cccc6001-6001-6001-6001-000000000023','cccc6001-6001-6001-6001-000000000027','cccc6001-6001-6001-6001-000000000402','Final 1-2',0,NULL,5,1,1,71,72,5,NULL,NULL,72,NULL,'2026-04-19 11:21:57','2026-04-19 11:36:14',NULL,NULL,NULL,'N;',NULL,NULL);
+/*!40000 ALTER TABLE `fight` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `fight_mat`
+--
+
+DROP TABLE IF EXISTS `fight_mat`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `fight_mat` (
+  `id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `sport_event_session_id` varchar(255) NOT NULL,
+  `sport_event_mat_id` varchar(255) NOT NULL,
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_58DF46079664486C` (`sport_event_session_id`),
+  KEY `IDX_58DF460771E26E80` (`sport_event_mat_id`),
+  CONSTRAINT `FK_58DF460771E26E80` FOREIGN KEY (`sport_event_mat_id`) REFERENCES `sport_event_mat` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_58DF46079664486C` FOREIGN KEY (`sport_event_session_id`) REFERENCES `sport_event_session` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `fight_mat`
+--
+
+LOCK TABLES `fight_mat` WRITE;
+/*!40000 ALTER TABLE `fight_mat` DISABLE KEYS */;
+INSERT INTO `fight_mat` VALUES
+('cccc6001-6001-6001-6001-000000000402','cccc6001-6001-6001-6001-000000000401','cccc6001-6001-6001-6001-000000000400','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL);
+/*!40000 ALTER TABLE `fight_mat` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `fight_ranking_point`
+--
+
+DROP TABLE IF EXISTS `fight_ranking_point`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `fight_ranking_point` (
+  `id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `fight_id` varchar(255) NOT NULL,
+  `fighter_id` char(36) DEFAULT NULL COMMENT '(DC2Type:guid)',
+  `second` int(11) DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  `victory_type` varchar(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_621F93C3AC6657E4` (`fight_id`),
+  KEY `IDX_621F93C334934341` (`fighter_id`),
+  CONSTRAINT `FK_621F93C334934341` FOREIGN KEY (`fighter_id`) REFERENCES `fighter` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `FK_621F93C3AC6657E4` FOREIGN KEY (`fight_id`) REFERENCES `fight` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `fight_ranking_point`
+--
+
+LOCK TABLES `fight_ranking_point` WRITE;
+/*!40000 ALTER TABLE `fight_ranking_point` DISABLE KEYS */;
+INSERT INTO `fight_ranking_point` VALUES
+('1f13be20-c6ed-60b2-ba21-61baae9e81d0','1f13be1f-9e8d-6d34-9ff9-6f43d442df0b','cccc6001-6001-6001-6001-000000000308',NULL,'2026-04-19 11:22:28','2026-04-19 11:22:28',NULL,'VIN'),
+('1f13be20-c972-633c-a70f-bf96c0e564ef','1f13be1f-9e94-66d4-a00a-6f43d442df0b','cccc6001-6001-6001-6001-000000000324',NULL,'2026-04-19 11:22:28','2026-04-19 11:22:28',NULL,'VIN'),
+('1f13be20-cacb-680a-ab35-3b52218f07d0','1f13be1f-9e94-6f3a-8ba4-6f43d442df0b','cccc6001-6001-6001-6001-000000000340',NULL,'2026-04-19 11:22:28','2026-04-19 11:22:28',NULL,'VFO'),
+('1f13be20-cbe3-658a-bd6f-13946f2a5481','1f13be1f-9e95-65c0-9566-6f43d442df0b','cccc6001-6001-6001-6001-000000000356',NULL,'2026-04-19 11:22:28','2026-04-19 11:22:28',NULL,'VSU'),
+('1f13be20-ccc6-6ad8-bf07-2fe11487ee92','1f13be1f-9e96-6204-b26c-6f43d442df0b','cccc6001-6001-6001-6001-000000000325',NULL,'2026-04-19 11:22:28','2026-04-19 11:22:28',NULL,'VFA'),
+('1f13be20-cdd6-63a6-9a59-15ad0bce9672','1f13be1f-9e95-6cbe-9d8e-6f43d442df0b','cccc6001-6001-6001-6001-000000000309',NULL,'2026-04-19 11:22:28','2026-04-19 11:22:28',NULL,'VSU1'),
+('1f13be26-1b13-64de-b369-c9a6da88e7bf','1f13be1f-9e96-6984-9295-6f43d442df0b','cccc6001-6001-6001-6001-000000000341',NULL,'2026-04-19 11:24:51','2026-04-19 11:24:51',NULL,'VSU'),
+('1f13be26-1dbf-6c5a-90de-5f19240ebb9f','1f13be1f-9e97-61ae-871d-6f43d442df0b','cccc6001-6001-6001-6001-000000000357',NULL,'2026-04-19 11:24:51','2026-04-19 11:24:51',NULL,'VFA'),
+('1f13be26-1de2-670a-861c-cfb4eea3ef5d','1f13be1f-9e97-67b2-84d4-6f43d442df0b','cccc6001-6001-6001-6001-000000000310',NULL,'2026-04-19 11:24:51','2026-04-19 11:24:51',NULL,'VFA'),
+('1f13be26-20c4-6cca-9d3d-875a17b34598','1f13be1f-9e97-6e10-be17-6f43d442df0b','cccc6001-6001-6001-6001-000000000326',NULL,'2026-04-19 11:24:51','2026-04-19 11:24:51',NULL,'VFA'),
+('1f13be26-28d2-678c-9b88-b78e51563673','1f13be1f-9e98-6626-a44a-6f43d442df0b','cccc6001-6001-6001-6001-000000000342',NULL,'2026-04-19 11:24:52','2026-04-19 11:24:53',NULL,'VFA'),
+('1f13be26-3214-6fde-95bc-e1fcd81c0f69','1f13be1f-9e98-6d42-9da2-6f43d442df0b','cccc6001-6001-6001-6001-000000000358',NULL,'2026-04-19 11:24:53','2026-04-19 11:24:53',NULL,'VFA'),
+('1f13be29-5cbc-6f18-b931-a52b391919e9','1f13be1f-9e99-621a-a124-6f43d442df0b','cccc6001-6001-6001-6001-000000000311',NULL,'2026-04-19 11:26:18','2026-04-19 11:26:19',NULL,'VIN'),
+('1f13be29-5fdf-65ba-b780-5960f0015aad','1f13be1f-9e99-6652-b5fa-6f43d442df0b','cccc6001-6001-6001-6001-000000000327',NULL,'2026-04-19 11:26:19','2026-04-19 11:26:19',NULL,'VSU'),
+('1f13be29-6222-6bd8-b9e0-079a338038ab','1f13be1f-9e99-6be8-9af3-6f43d442df0b','cccc6001-6001-6001-6001-000000000343',NULL,'2026-04-19 11:26:19','2026-04-19 11:26:19',NULL,'VSU'),
+('1f13be29-6402-6c50-b83f-77769dc9d056','1f13be1f-9e99-6fd0-8152-6f43d442df0b','cccc6001-6001-6001-6001-000000000359',NULL,'2026-04-19 11:26:19','2026-04-19 11:26:19',NULL,'VSU'),
+('1f13be29-66f6-692a-a26e-4fc837d68276','1f13be1f-9e9a-63b8-a8dd-6f43d442df0b','cccc6001-6001-6001-6001-000000000312',NULL,'2026-04-19 11:26:19','2026-04-19 11:26:20',NULL,'VSU'),
+('1f13be29-6902-6ca0-84d7-6b9138fc1fc6','1f13be1f-9e9a-693a-8217-6f43d442df0b','cccc6001-6001-6001-6001-000000000328',NULL,'2026-04-19 11:26:19','2026-04-19 11:26:20',NULL,'VFA'),
+('1f13be2a-4650-612a-b799-69eebe5357fc','1f13be1f-9e9a-6eee-9ade-6f43d442df0b','cccc6001-6001-6001-6001-000000000344',NULL,'2026-04-19 11:26:43','2026-04-19 11:26:43',NULL,'VFA'),
+('1f13be2a-48a0-67cc-8e66-8f40578a6296','1f13be1f-9e9b-6498-9abb-6f43d442df0b','cccc6001-6001-6001-6001-000000000360',NULL,'2026-04-19 11:26:43','2026-04-19 11:26:43',NULL,'VFA'),
+('1f13be2a-4d2e-6e88-b235-45a40a52f571','1f13be1f-9e9b-6a56-9363-6f43d442df0b','cccc6001-6001-6001-6001-000000000313',NULL,'2026-04-19 11:26:43','2026-04-19 11:26:44',NULL,'VFA'),
+('1f13be2a-5317-6e8a-acaa-b75b615a7189','1f13be1f-9e9b-6f7e-b89a-6f43d442df0b','cccc6001-6001-6001-6001-000000000329',NULL,'2026-04-19 11:26:44','2026-04-19 11:26:44',NULL,'VFA'),
+('1f13be2a-54b9-6ec8-9c71-cb0e289731ec','1f13be1f-9e9c-63de-afcf-6f43d442df0b','cccc6001-6001-6001-6001-000000000345',NULL,'2026-04-19 11:26:44','2026-04-19 11:26:45',NULL,'VFA'),
+('1f13be2a-5739-625c-8c7e-f36117982b50','1f13be1f-9e9c-67ee-aa8e-6f43d442df0b','cccc6001-6001-6001-6001-000000000361',NULL,'2026-04-19 11:26:44','2026-04-19 11:26:45',NULL,'VFA'),
+('1f13be2b-f845-6bb8-a25c-09e0a1cf61eb','1f13be1f-9e9c-6da2-9fe4-6f43d442df0b','cccc6001-6001-6001-6001-000000000314',NULL,'2026-04-19 11:27:28','2026-04-19 11:27:29',NULL,'VSU'),
+('1f13be2b-fe5b-649e-9400-b367fae753aa','1f13be1f-9e9d-6432-adeb-6f43d442df0b','cccc6001-6001-6001-6001-000000000330',NULL,'2026-04-19 11:27:29','2026-04-19 11:27:29',NULL,'VSU1'),
+('1f13be2b-ff21-6df6-b9d3-db8e78339230','1f13be1f-9e9d-6afe-b05d-6f43d442df0b','cccc6001-6001-6001-6001-000000000346',NULL,'2026-04-19 11:27:29','2026-04-19 11:27:30',NULL,'VPO'),
+('1f13be2c-07ee-66be-8377-4d5ddfad5263','1f13be1f-9e9e-6652-95bd-6f43d442df0b','cccc6001-6001-6001-6001-000000000315',NULL,'2026-04-19 11:27:30','2026-04-19 11:31:26',NULL,'VPO'),
+('1f13be2c-07ee-66be-b80b-9d1be254adfe','1f13be1f-9e9e-6206-a585-6f43d442df0b','cccc6001-6001-6001-6001-000000000362',NULL,'2026-04-19 11:27:30','2026-04-19 11:27:30',NULL,'VPO'),
+('1f13be2e-869f-6060-8ef4-85fb7d2dbdc8','1f13be1f-9ea0-6ba0-bc99-6f43d442df0b','cccc6001-6001-6001-6001-000000000356',NULL,'2026-04-19 11:28:37','2026-04-19 11:28:37',NULL,'VPO1'),
+('1f13be2e-894a-6c24-a235-c9474678338b','1f13be1f-9ea1-6082-9ede-6f43d442df0b','cccc6001-6001-6001-6001-000000000325',NULL,'2026-04-19 11:28:37','2026-04-19 11:28:37',NULL,'VPO1'),
+('1f13be2e-8b1b-695e-928d-2bd691a6973d','1f13be1f-9e9e-6f80-b651-6f43d442df0b','cccc6001-6001-6001-6001-000000000347',NULL,'2026-04-19 11:28:37','2026-04-19 11:28:37',NULL,'VPO1'),
+('1f13be2e-8c3b-6a50-8383-0dc884531a72','1f13be1f-9e9f-6520-b1dd-6f43d442df0b','cccc6001-6001-6001-6001-000000000363',NULL,'2026-04-19 11:28:37','2026-04-19 11:28:37',NULL,'VPO1'),
+('1f13be2e-8dc1-6776-b692-85b7c18b7bf8','1f13be1f-9ea0-6600-8720-6f43d442df0b','cccc6001-6001-6001-6001-000000000324',NULL,'2026-04-19 11:28:38','2026-04-19 11:28:38',NULL,'VPO1'),
+('1f13be34-d044-6160-ac9b-dd2d5c396b84','1f13be1f-9e9e-6ab2-a82a-6f43d442df0b','cccc6001-6001-6001-6001-000000000331',NULL,'2026-04-19 11:31:26','2026-04-19 11:31:26',NULL,'VFA'),
+('1f13be34-d1a5-61bc-9738-5334dfef851c','1f13be1f-9ea1-6654-a6d1-6f43d442df0b','cccc6001-6001-6001-6001-000000000357',NULL,'2026-04-19 11:31:26','2026-04-19 11:31:26',NULL,'VFA'),
+('1f13be34-db65-6f1c-9629-99fe95f799fa','1f13be1f-9ea1-6b2c-8e27-6f43d442df0b','cccc6001-6001-6001-6001-000000000326',NULL,'2026-04-19 11:31:27','2026-04-19 11:31:27',NULL,'VFA'),
+('1f13be34-dd80-64c8-89af-0f0f164e8fb7','1f13be1f-9ea2-6310-9407-6f43d442df0b','cccc6001-6001-6001-6001-000000000358',NULL,'2026-04-19 11:31:27','2026-04-19 11:31:27',NULL,'VFA'),
+('1f13be34-debc-6ba2-bae4-f9a76dec7bee','1f13be1f-9ea2-6a18-8cb7-6f43d442df0b','cccc6001-6001-6001-6001-000000000327',NULL,'2026-04-19 11:31:27','2026-04-19 11:31:27',NULL,'VFA'),
+('1f13be34-ea33-6c9c-ae29-9956d2018b04','1f13be1f-9ea3-60f8-8bc6-6f43d442df0b','cccc6001-6001-6001-6001-000000000359',NULL,'2026-04-19 11:31:28','2026-04-19 11:31:28',NULL,'VFA'),
+('1f13be36-ff9a-65de-b543-8dc7de0c3a66','1f13be1f-9ea3-6dfa-a293-6f43d442df0b','cccc6001-6001-6001-6001-000000000360',NULL,'2026-04-19 11:32:24','2026-04-19 11:32:24',NULL,'VPO'),
+('1f13be37-0293-651a-b434-fbb9e140f1fa','1f13be1f-9ea4-628c-8349-6f43d442df0b','cccc6001-6001-6001-6001-000000000329',NULL,'2026-04-19 11:32:25','2026-04-19 11:32:25',NULL,'VPO'),
+('1f13be37-043c-6e5c-8bce-07a4f3460f4a','1f13be1f-9ea4-685e-85a6-6f43d442df0b','cccc6001-6001-6001-6001-000000000361',NULL,'2026-04-19 11:32:25','2026-04-19 11:32:25',NULL,'VPO'),
+('1f13be37-05ef-66f0-927d-99d0a01d8276','1f13be1f-9ea4-6ca0-8e84-6f43d442df0b','cccc6001-6001-6001-6001-000000000330',NULL,'2026-04-19 11:32:25','2026-04-19 11:32:25',NULL,'VPO'),
+('1f13be37-08c3-68e0-b9fd-bfec472b2fe8','1f13be1f-9ea5-60ce-aa33-6f43d442df0b','cccc6001-6001-6001-6001-000000000362',NULL,'2026-04-19 11:32:25','2026-04-19 11:32:25',NULL,'VPO'),
+('1f13be37-a6fa-6e0a-a221-ad2f386a38a6','1f13be1f-9ea3-6954-9577-6f43d442df0b','cccc6001-6001-6001-6001-000000000328',NULL,'2026-04-19 11:32:42','2026-04-19 11:32:42',NULL,'VFA'),
+('1f13be37-a95f-6bf0-927d-93bc194ebdc3','1f13be1f-9ea5-6646-b9ad-6f43d442df0b','cccc6001-6001-6001-6001-000000000331',NULL,'2026-04-19 11:32:42','2026-04-19 11:32:42',NULL,'VFA'),
+('1f13be37-ade3-66b8-b36b-5f82b16fe20a','1f13be1f-9ea5-6d8a-88cb-6f43d442df0b','cccc6001-6001-6001-6001-000000000363',NULL,'2026-04-19 11:32:43','2026-04-19 11:32:43',NULL,'VFA'),
+('1f13be37-b3ac-61c6-8976-1714312b4d50','1f13be1f-9ea6-6992-90ff-6f43d442df0b','cccc6001-6001-6001-6001-000000000344',NULL,'2026-04-19 11:32:43','2026-04-19 11:32:43',NULL,'VFA'),
+('1f13be37-b4f1-6072-9b38-e70fc792e351','1f13be1f-9ea7-693c-857e-6f43d442df0b','cccc6001-6001-6001-6001-000000000313',NULL,'2026-04-19 11:32:43','2026-04-19 11:32:43',NULL,'VFA'),
+('1f13be37-ba64-661c-be2b-6f43be211a28','1f13be1f-9ea7-6fc2-9742-6f43d442df0b','cccc6001-6001-6001-6001-000000000345',NULL,'2026-04-19 11:32:44','2026-04-19 11:32:44',NULL,'VFA'),
+('1f13be38-8e76-6ec8-b6a8-f1f3fb7662c9','1f13be1f-9ea6-641a-b3d7-6f43d442df0b','cccc6001-6001-6001-6001-000000000312',NULL,'2026-04-19 11:33:06','2026-04-19 11:33:06',NULL,'VPO'),
+('1f13be38-92ed-65f6-a365-6303be269204','1f13be1f-9ea7-627a-9687-6f43d442df0b','cccc6001-6001-6001-6001-000000000360',NULL,'2026-04-19 11:33:07','2026-04-19 11:33:07',NULL,'VPO1'),
+('1f13be38-951c-6c28-8c6d-7f2a6241ecd8','1f13be1f-9ea8-65f8-aef1-6f43d442df0b','cccc6001-6001-6001-6001-000000000361',NULL,'2026-04-19 11:33:07','2026-04-19 11:33:07',NULL,'VPO'),
+('1f13be38-9743-6b96-a544-cfd96817f5d6','1f13be1f-9ea8-6af8-b46d-6f43d442df0b','cccc6001-6001-6001-6001-000000000314',NULL,'2026-04-19 11:33:07','2026-04-19 11:33:07',NULL,'VFA'),
+('1f13be38-a1be-60f8-a271-e31918cc70f2','1f13be1f-9ea9-626e-be1f-6f43d442df0b','cccc6001-6001-6001-6001-000000000346',NULL,'2026-04-19 11:33:08','2026-04-19 11:33:08',NULL,'VSU1'),
+('1f13be38-a86d-6b88-957b-b5ba67975580','1f13be1f-9ea9-6a5c-bf63-6f43d442df0b','cccc6001-6001-6001-6001-000000000362',NULL,'2026-04-19 11:33:09','2026-04-19 11:33:09',NULL,'VSU'),
+('1f13be39-38ba-6fd8-89fa-390e6db788d7','1f13be1f-9eaa-6010-8beb-6f43d442df0b','cccc6001-6001-6001-6001-000000000315',NULL,'2026-04-19 11:33:24','2026-04-19 11:33:24',NULL,'VFA'),
+('1f13be39-3a9c-698c-bcd9-93b1767421d8','1f13be1f-9eaa-656a-9bf0-6f43d442df0b','cccc6001-6001-6001-6001-000000000347',NULL,'2026-04-19 11:33:24','2026-04-19 11:33:24',NULL,'VFA'),
+('1f13be39-4300-6dbc-8ac2-cb9fa9d9e42d','1f13be1f-9eaa-69f2-83d8-6f43d442df0b','cccc6001-6001-6001-6001-000000000363',NULL,'2026-04-19 11:33:25','2026-04-19 11:33:25',NULL,'VFA'),
+('1f13be39-728a-67e0-904f-8b6ad4e795ed','1f13be1f-9eaa-6e8e-b17a-6f43d442df0b','cccc6001-6001-6001-6001-000000000308',NULL,'2026-04-19 11:33:30','2026-04-19 11:33:30',NULL,'VFA'),
+('1f13be39-74a3-6018-bc73-f5852477e175','1f13be1f-9eab-64d8-8e66-6f43d442df0b','cccc6001-6001-6001-6001-000000000340',NULL,'2026-04-19 11:33:30','2026-04-19 11:33:30',NULL,'VFA'),
+('1f13be39-8480-6012-bfbb-0d36f52c10f4','1f13be1f-9eab-6a46-b5dd-6f43d442df0b','cccc6001-6001-6001-6001-000000000356',NULL,'2026-04-19 11:33:32','2026-04-19 11:33:32',NULL,'VFA'),
+('1f13be3e-95ba-6e2c-87e9-6990b8b2643d','1f13be1f-9eac-6784-99c7-6f43d442df0b','cccc6001-6001-6001-6001-000000000341',NULL,'2026-04-19 11:35:48','2026-04-19 11:35:48',NULL,'VPO1'),
+('1f13be3e-983b-65fc-97fa-41d0447173fd','1f13be1f-9eac-6e78-bde3-6f43d442df0b','cccc6001-6001-6001-6001-000000000357',NULL,'2026-04-19 11:35:48','2026-04-19 11:35:48',NULL,'VPO1'),
+('1f13be3e-9c32-664c-9430-5d96af5e628f','1f13be1f-9ead-62c4-a983-6f43d442df0b','cccc6001-6001-6001-6001-000000000310',NULL,'2026-04-19 11:35:49','2026-04-19 11:35:49',NULL,'VPO1'),
+('1f13be3e-9e50-6d34-9670-eba327f8eca3','1f13be1f-9ead-66b6-adcc-6f43d442df0b','cccc6001-6001-6001-6001-000000000342',NULL,'2026-04-19 11:35:49','2026-04-19 11:35:49',NULL,'VPO1'),
+('1f13be3e-9fe7-626a-92f8-353591eff61e','1f13be1f-9ead-6b5c-bfa3-6f43d442df0b','cccc6001-6001-6001-6001-000000000358',NULL,'2026-04-19 11:35:49','2026-04-19 11:35:49',NULL,'VPO1'),
+('1f13be3f-1ac2-67fa-ab1b-53e0d111c3fd','1f13be1f-9ead-6ff8-aca0-6f43d442df0b','cccc6001-6001-6001-6001-000000000311',NULL,'2026-04-19 11:36:02','2026-04-19 11:36:02',NULL,'VSU'),
+('1f13be3f-1fe7-6730-b257-49f8515b9d16','1f13be1f-9eac-60b8-aaa7-6f43d442df0b','cccc6001-6001-6001-6001-000000000309',NULL,'2026-04-19 11:36:02','2026-04-19 11:36:02',NULL,'VSU1'),
+('1f13be3f-8a3e-625a-ab4a-43027c62fb36','1f13be1f-9eae-6c82-bb18-6f43d442df0b','cccc6001-6001-6001-6001-000000000327',NULL,'2026-04-19 11:36:14','2026-04-19 11:36:14',NULL,'VCA'),
+('1f13be3f-8f77-6370-99d2-751f43708c9f','1f13be1f-9eae-6606-a964-6f43d442df0b','cccc6001-6001-6001-6001-000000000343',NULL,'2026-04-19 11:36:14','2026-04-19 11:36:14',NULL,'VPO1');
+/*!40000 ALTER TABLE `fight_ranking_point` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `fight_referee`
+--
+
+DROP TABLE IF EXISTS `fight_referee`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `fight_referee` (
+  `id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `referee_id` varchar(255) NOT NULL,
+  `fight_id` varchar(255) NOT NULL,
+  `suggested_referee_id` varchar(255) DEFAULT NULL,
+  `referee_role` varchar(255) NOT NULL,
+  `propositions` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '(DC2Type:json)' CHECK (json_valid(`propositions`)),
+  `matching_status` varchar(255) DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  `round_score` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '[]' COMMENT '(DC2Type:json)' CHECK (json_valid(`round_score`)),
+  PRIMARY KEY (`id`),
+  KEY `IDX_C56CCD284A087CA2` (`referee_id`),
+  KEY `IDX_C56CCD28AC6657E4` (`fight_id`),
+  KEY `IDX_C56CCD28A1DE9794` (`suggested_referee_id`),
+  CONSTRAINT `FK_C56CCD284A087CA2` FOREIGN KEY (`referee_id`) REFERENCES `referee` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_C56CCD28A1DE9794` FOREIGN KEY (`suggested_referee_id`) REFERENCES `referee` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `FK_C56CCD28AC6657E4` FOREIGN KEY (`fight_id`) REFERENCES `fight` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `fight_referee`
+--
+
+LOCK TABLES `fight_referee` WRITE;
+/*!40000 ALTER TABLE `fight_referee` DISABLE KEYS */;
+/*!40000 ALTER TABLE `fight_referee` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `fighter`
+--
+
+DROP TABLE IF EXISTS `fighter`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `fighter` (
+  `id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `athlete_id` varchar(255) NOT NULL,
+  `sport_event_weight_category_id` char(36) DEFAULT NULL COMMENT '(DC2Type:guid)',
+  `weight` int(11) DEFAULT NULL,
+  `draw_number` int(11) DEFAULT NULL,
+  `seed_number` int(11) DEFAULT NULL,
+  `points` int(11) DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  `fighter_weight` decimal(5,2) DEFAULT NULL,
+  `fighter_status` int(11) NOT NULL DEFAULT 0,
+  `fighter_status_reason` int(11) NOT NULL DEFAULT 0,
+  `top_technique` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `IDX_7A08C3FCFE6BCB8B` (`athlete_id`),
+  KEY `IDX_7A08C3FC70341F7D` (`sport_event_weight_category_id`),
+  CONSTRAINT `FK_7A08C3FC70341F7D` FOREIGN KEY (`sport_event_weight_category_id`) REFERENCES `sport_event_weight_category` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_7A08C3FCFE6BCB8B` FOREIGN KEY (`athlete_id`) REFERENCES `athlete` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `fighter`
+--
+
+LOCK TABLES `fighter` WRITE;
+/*!40000 ALTER TABLE `fighter` DISABLE KEYS */;
+INSERT INTO `fighter` VALUES
+('cccc5001-5001-5001-5001-000000000050','cccc5001-5001-5001-5001-000000000040','cccc5001-5001-5001-5001-000000000010',NULL,1,0,NULL,'2026-07-01 10:00:00','2026-07-01 10:00:00',NULL,NULL,0,0,0),
+('cccc5001-5001-5001-5001-000000000051','cccc5001-5001-5001-5001-000000000041','cccc5001-5001-5001-5001-000000000010',NULL,2,0,NULL,'2026-07-01 10:00:00','2026-07-01 10:00:00',NULL,NULL,0,0,0),
+('cccc5001-5001-5001-5001-000000000054','cccc5001-5001-5001-5001-000000000044','cccc5001-5001-5001-5001-000000000011',NULL,1,0,NULL,'2026-07-01 10:00:00','2026-07-01 10:00:00',NULL,NULL,0,0,0),
+('cccc5001-5001-5001-5001-000000000055','cccc5001-5001-5001-5001-000000000045','cccc5001-5001-5001-5001-000000000011',NULL,2,0,NULL,'2026-07-01 10:00:00','2026-07-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000300','cccc6001-6001-6001-6001-000000000200','cccc6001-6001-6001-6001-000000000010',NULL,1,0,NULL,'2026-08-01 10:00:00','2026-04-19 11:22:28',NULL,NULL,3,0,0),
+('cccc6001-6001-6001-6001-000000000301','cccc6001-6001-6001-6001-000000000201','cccc6001-6001-6001-6001-000000000011',NULL,1,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000302','cccc6001-6001-6001-6001-000000000202','cccc6001-6001-6001-6001-000000000012',NULL,1,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000303','cccc6001-6001-6001-6001-000000000203','cccc6001-6001-6001-6001-000000000013',NULL,1,0,NULL,'2026-08-01 10:00:00','2026-04-19 11:26:18',NULL,NULL,3,0,0),
+('cccc6001-6001-6001-6001-000000000304','cccc6001-6001-6001-6001-000000000204','cccc6001-6001-6001-6001-000000000014',NULL,1,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000305','cccc6001-6001-6001-6001-000000000205','cccc6001-6001-6001-6001-000000000015',NULL,1,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000306','cccc6001-6001-6001-6001-000000000206','cccc6001-6001-6001-6001-000000000016',NULL,1,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000307','cccc6001-6001-6001-6001-000000000207','cccc6001-6001-6001-6001-000000000017',NULL,1,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000308','cccc6001-6001-6001-6001-000000000208','cccc6001-6001-6001-6001-000000000010',NULL,2,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000309','cccc6001-6001-6001-6001-000000000209','cccc6001-6001-6001-6001-000000000011',NULL,2,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000310','cccc6001-6001-6001-6001-000000000210','cccc6001-6001-6001-6001-000000000012',NULL,2,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000311','cccc6001-6001-6001-6001-000000000211','cccc6001-6001-6001-6001-000000000013',NULL,2,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000312','cccc6001-6001-6001-6001-000000000212','cccc6001-6001-6001-6001-000000000014',NULL,2,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000313','cccc6001-6001-6001-6001-000000000213','cccc6001-6001-6001-6001-000000000015',NULL,2,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000314','cccc6001-6001-6001-6001-000000000214','cccc6001-6001-6001-6001-000000000016',NULL,2,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000315','cccc6001-6001-6001-6001-000000000215','cccc6001-6001-6001-6001-000000000017',NULL,2,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000316','cccc6001-6001-6001-6001-000000000216','cccc6001-6001-6001-6001-000000000010',NULL,3,0,NULL,'2026-08-01 10:00:00','2026-04-19 11:22:28',NULL,NULL,3,0,0),
+('cccc6001-6001-6001-6001-000000000317','cccc6001-6001-6001-6001-000000000217','cccc6001-6001-6001-6001-000000000011',NULL,3,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000318','cccc6001-6001-6001-6001-000000000218','cccc6001-6001-6001-6001-000000000012',NULL,3,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000319','cccc6001-6001-6001-6001-000000000219','cccc6001-6001-6001-6001-000000000013',NULL,3,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000320','cccc6001-6001-6001-6001-000000000220','cccc6001-6001-6001-6001-000000000014',NULL,3,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000321','cccc6001-6001-6001-6001-000000000221','cccc6001-6001-6001-6001-000000000015',NULL,3,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000322','cccc6001-6001-6001-6001-000000000222','cccc6001-6001-6001-6001-000000000016',NULL,3,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000323','cccc6001-6001-6001-6001-000000000223','cccc6001-6001-6001-6001-000000000017',NULL,3,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000324','cccc6001-6001-6001-6001-000000000224','cccc6001-6001-6001-6001-000000000010',NULL,4,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000325','cccc6001-6001-6001-6001-000000000225','cccc6001-6001-6001-6001-000000000011',NULL,4,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000326','cccc6001-6001-6001-6001-000000000226','cccc6001-6001-6001-6001-000000000012',NULL,4,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000327','cccc6001-6001-6001-6001-000000000227','cccc6001-6001-6001-6001-000000000013',NULL,4,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000328','cccc6001-6001-6001-6001-000000000228','cccc6001-6001-6001-6001-000000000014',NULL,4,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000329','cccc6001-6001-6001-6001-000000000229','cccc6001-6001-6001-6001-000000000015',NULL,4,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000330','cccc6001-6001-6001-6001-000000000230','cccc6001-6001-6001-6001-000000000016',NULL,4,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000331','cccc6001-6001-6001-6001-000000000231','cccc6001-6001-6001-6001-000000000017',NULL,4,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000332','cccc6001-6001-6001-6001-000000000232','cccc6001-6001-6001-6001-000000000010',NULL,5,0,NULL,'2026-08-01 10:00:00','2026-04-19 11:22:28',NULL,NULL,1,0,0),
+('cccc6001-6001-6001-6001-000000000333','cccc6001-6001-6001-6001-000000000233','cccc6001-6001-6001-6001-000000000011',NULL,5,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000334','cccc6001-6001-6001-6001-000000000234','cccc6001-6001-6001-6001-000000000012',NULL,5,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000335','cccc6001-6001-6001-6001-000000000235','cccc6001-6001-6001-6001-000000000013',NULL,5,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000336','cccc6001-6001-6001-6001-000000000236','cccc6001-6001-6001-6001-000000000014',NULL,5,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000337','cccc6001-6001-6001-6001-000000000237','cccc6001-6001-6001-6001-000000000015',NULL,5,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000338','cccc6001-6001-6001-6001-000000000238','cccc6001-6001-6001-6001-000000000016',NULL,5,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000339','cccc6001-6001-6001-6001-000000000239','cccc6001-6001-6001-6001-000000000017',NULL,5,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000340','cccc6001-6001-6001-6001-000000000240','cccc6001-6001-6001-6001-000000000010',NULL,6,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000341','cccc6001-6001-6001-6001-000000000241','cccc6001-6001-6001-6001-000000000011',NULL,6,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000342','cccc6001-6001-6001-6001-000000000242','cccc6001-6001-6001-6001-000000000012',NULL,6,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000343','cccc6001-6001-6001-6001-000000000243','cccc6001-6001-6001-6001-000000000013',NULL,6,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000344','cccc6001-6001-6001-6001-000000000244','cccc6001-6001-6001-6001-000000000014',NULL,6,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000345','cccc6001-6001-6001-6001-000000000245','cccc6001-6001-6001-6001-000000000015',NULL,6,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000346','cccc6001-6001-6001-6001-000000000246','cccc6001-6001-6001-6001-000000000016',NULL,6,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000347','cccc6001-6001-6001-6001-000000000247','cccc6001-6001-6001-6001-000000000017',NULL,6,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000348','cccc6001-6001-6001-6001-000000000248','cccc6001-6001-6001-6001-000000000010',NULL,7,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000349','cccc6001-6001-6001-6001-000000000249','cccc6001-6001-6001-6001-000000000011',NULL,7,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000350','cccc6001-6001-6001-6001-000000000250','cccc6001-6001-6001-6001-000000000012',NULL,7,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000351','cccc6001-6001-6001-6001-000000000251','cccc6001-6001-6001-6001-000000000013',NULL,7,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000352','cccc6001-6001-6001-6001-000000000252','cccc6001-6001-6001-6001-000000000014',NULL,7,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000353','cccc6001-6001-6001-6001-000000000253','cccc6001-6001-6001-6001-000000000015',NULL,7,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000354','cccc6001-6001-6001-6001-000000000254','cccc6001-6001-6001-6001-000000000016',NULL,7,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000355','cccc6001-6001-6001-6001-000000000255','cccc6001-6001-6001-6001-000000000017',NULL,7,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000356','cccc6001-6001-6001-6001-000000000256','cccc6001-6001-6001-6001-000000000010',NULL,8,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000357','cccc6001-6001-6001-6001-000000000257','cccc6001-6001-6001-6001-000000000011',NULL,8,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000358','cccc6001-6001-6001-6001-000000000258','cccc6001-6001-6001-6001-000000000012',NULL,8,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000359','cccc6001-6001-6001-6001-000000000259','cccc6001-6001-6001-6001-000000000013',NULL,8,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000360','cccc6001-6001-6001-6001-000000000260','cccc6001-6001-6001-6001-000000000014',NULL,8,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000361','cccc6001-6001-6001-6001-000000000261','cccc6001-6001-6001-6001-000000000015',NULL,8,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000362','cccc6001-6001-6001-6001-000000000262','cccc6001-6001-6001-6001-000000000016',NULL,8,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccc6001-6001-6001-6001-000000000363','cccc6001-6001-6001-6001-000000000263','cccc6001-6001-6001-6001-000000000017',NULL,8,0,NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,0,0,0),
+('cccccccc-cccc-cccc-cccc-000000000050','cccccccc-cccc-cccc-cccc-000000000040','cccccccc-cccc-cccc-cccc-000000000010',NULL,1,0,NULL,'2026-06-01 10:00:00','2026-06-01 10:00:00',NULL,NULL,0,0,0),
+('cccccccc-cccc-cccc-cccc-000000000051','cccccccc-cccc-cccc-cccc-000000000041','cccccccc-cccc-cccc-cccc-000000000010',NULL,2,0,NULL,'2026-06-01 10:00:00','2026-06-01 10:00:00',NULL,NULL,0,0,0),
+('cccccccc-cccc-cccc-cccc-000000000052','cccccccc-cccc-cccc-cccc-000000000042','cccccccc-cccc-cccc-cccc-000000000010',NULL,3,0,NULL,'2026-06-01 10:00:00','2026-06-01 10:00:00',NULL,NULL,0,0,0),
+('cccccccc-cccc-cccc-cccc-000000000053','cccccccc-cccc-cccc-cccc-000000000043','cccccccc-cccc-cccc-cccc-000000000011',NULL,1,0,NULL,'2026-06-01 10:00:00','2026-06-01 10:00:00',NULL,NULL,0,0,0),
+('cccccccc-cccc-cccc-cccc-000000000092','cccccccc-cccc-cccc-cccc-000000000090','cccccccc-cccc-cccc-cccc-000000000060',NULL,1,0,NULL,'2026-06-01 10:00:00','2026-06-01 10:00:00',NULL,NULL,0,0,0),
+('cccccccc-cccc-cccc-cccc-000000000093','cccccccc-cccc-cccc-cccc-000000000091','cccccccc-cccc-cccc-cccc-000000000060',NULL,2,0,NULL,'2026-06-01 10:00:00','2026-06-01 10:00:00',NULL,NULL,0,0,0);
+/*!40000 ALTER TABLE `fighter` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `fighter_ranking_exception`
+--
+
+DROP TABLE IF EXISTS `fighter_ranking_exception`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `fighter_ranking_exception` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `fighter_id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `forced_rank` int(11) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UNIQ_739C811E34934341` (`fighter_id`),
+  CONSTRAINT `FK_739C811E34934341` FOREIGN KEY (`fighter_id`) REFERENCES `fighter` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `fighter_ranking_exception`
+--
+
+LOCK TABLES `fighter_ranking_exception` WRITE;
+/*!40000 ALTER TABLE `fighter_ranking_exception` DISABLE KEYS */;
+/*!40000 ALTER TABLE `fighter_ranking_exception` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `job_queue`
+--
+
+DROP TABLE IF EXISTS `job_queue`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `job_queue` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `status` varchar(255) NOT NULL,
+  `command` varchar(255) NOT NULL,
+  `command_params` longtext DEFAULT NULL COMMENT '(DC2Type:simple_array)',
+  `related_entity_id` int(11) DEFAULT NULL,
+  `related_entity_class_name` varchar(255) DEFAULT NULL,
+  `output` longtext DEFAULT NULL,
+  `created_at` datetime NOT NULL COMMENT '(DC2Type:datetime_immutable)',
+  `started_at` datetime DEFAULT NULL COMMENT '(DC2Type:datetime_immutable)',
+  `closed_at` datetime DEFAULT NULL COMMENT '(DC2Type:datetime_immutable)',
+  `runtime` varchar(255) DEFAULT NULL COMMENT '(DC2Type:dateinterval)',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `job_queue`
+--
+
+LOCK TABLES `job_queue` WRITE;
+/*!40000 ALTER TABLE `job_queue` DISABLE KEYS */;
+INSERT INTO `job_queue` VALUES
+(27,'planned','arena:blockchain:autodraw','cccc6001-6001-6001-6001-000000000010,--user=\'admin\'',NULL,NULL,NULL,'2026-04-19 11:21:48',NULL,NULL,NULL),
+(28,'planned','arena:blockchain:autodraw','cccc6001-6001-6001-6001-000000000014,--user=\'admin\'',NULL,NULL,NULL,'2026-04-19 11:21:53',NULL,NULL,NULL);
+/*!40000 ALTER TABLE `job_queue` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `local_client`
+--
+
+DROP TABLE IF EXISTS `local_client`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `local_client` (
+  `id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `email` varchar(100) DEFAULT NULL,
+  `name` varchar(250) DEFAULT NULL,
+  `organization` varchar(250) DEFAULT NULL,
+  `version` varchar(10) DEFAULT NULL,
+  `remote_version` varchar(10) DEFAULT NULL,
+  `deployment_type` varchar(10) DEFAULT NULL,
+  `maintenance` tinyint(1) NOT NULL,
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `trusted` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `local_client`
+--
+
+LOCK TABLES `local_client` WRITE;
+/*!40000 ALTER TABLE `local_client` DISABLE KEYS */;
+INSERT INTO `local_client` VALUES
+('3k56w7frs84kkc4o4kowwskwgccoc8c','g.kanocz2@gmail.com','Gabriel Kanocz','FEI STU','1.6.2','1.6.2',NULL,0,'2026-03-07 13:38:01','2026-03-07 18:17:10',1);
+/*!40000 ALTER TABLE `local_client` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `migration_versions`
+--
+
+DROP TABLE IF EXISTS `migration_versions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `migration_versions` (
+  `version` varchar(191) NOT NULL,
+  `executed_at` datetime DEFAULT NULL,
+  `execution_time` int(11) DEFAULT NULL,
+  PRIMARY KEY (`version`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `migration_versions`
+--
+
+LOCK TABLES `migration_versions` WRITE;
+/*!40000 ALTER TABLE `migration_versions` DISABLE KEYS */;
+INSERT INTO `migration_versions` VALUES
+('DoctrineMigrations\\Version20160513084359',NULL,NULL),
+('DoctrineMigrations\\Version20160612202535',NULL,NULL),
+('DoctrineMigrations\\Version20160614130931',NULL,NULL),
+('DoctrineMigrations\\Version20160614133021',NULL,NULL),
+('DoctrineMigrations\\Version20160617144643',NULL,NULL),
+('DoctrineMigrations\\Version20160622062505',NULL,NULL),
+('DoctrineMigrations\\Version20160622063343',NULL,NULL),
+('DoctrineMigrations\\Version20160701072622',NULL,NULL),
+('DoctrineMigrations\\Version20160826095026',NULL,NULL),
+('DoctrineMigrations\\Version20161005081732',NULL,NULL),
+('DoctrineMigrations\\Version20161129085526',NULL,NULL),
+('DoctrineMigrations\\Version20161129093954',NULL,NULL),
+('DoctrineMigrations\\Version20161129094752',NULL,NULL),
+('DoctrineMigrations\\Version20161209085915',NULL,NULL),
+('DoctrineMigrations\\Version20170124115015',NULL,NULL),
+('DoctrineMigrations\\Version20170201114208',NULL,NULL),
+('DoctrineMigrations\\Version20170201143436',NULL,NULL),
+('DoctrineMigrations\\Version20170202120838',NULL,NULL),
+('DoctrineMigrations\\Version20170220115252',NULL,NULL),
+('DoctrineMigrations\\Version20170324154811',NULL,NULL),
+('DoctrineMigrations\\Version20170421074531',NULL,NULL),
+('DoctrineMigrations\\Version20170424124833',NULL,NULL),
+('DoctrineMigrations\\Version20170502130408',NULL,NULL),
+('DoctrineMigrations\\Version20170519223527',NULL,NULL),
+('DoctrineMigrations\\Version20170621104028',NULL,NULL),
+('DoctrineMigrations\\Version20170628133403',NULL,NULL),
+('DoctrineMigrations\\Version20170706122437',NULL,NULL),
+('DoctrineMigrations\\Version20170913080659',NULL,NULL),
+('DoctrineMigrations\\Version20171130140544',NULL,NULL),
+('DoctrineMigrations\\Version20171204131852',NULL,NULL),
+('DoctrineMigrations\\Version20171212075022',NULL,NULL),
+('DoctrineMigrations\\Version20171212081828',NULL,NULL),
+('DoctrineMigrations\\Version20180129141650',NULL,NULL),
+('DoctrineMigrations\\Version20180403091410',NULL,NULL),
+('DoctrineMigrations\\Version20180412102055',NULL,NULL),
+('DoctrineMigrations\\Version20180420113045',NULL,NULL),
+('DoctrineMigrations\\Version20180822094751',NULL,NULL),
+('DoctrineMigrations\\Version20180822103952',NULL,NULL),
+('DoctrineMigrations\\Version20180822104903',NULL,NULL),
+('DoctrineMigrations\\Version20180911085216',NULL,NULL),
+('DoctrineMigrations\\Version20180928121426',NULL,NULL),
+('DoctrineMigrations\\Version20181001230518',NULL,NULL),
+('DoctrineMigrations\\Version20181206103519',NULL,NULL),
+('DoctrineMigrations\\Version20190122105057',NULL,NULL),
+('DoctrineMigrations\\Version20190327202940',NULL,NULL),
+('DoctrineMigrations\\Version20190401195021',NULL,NULL),
+('DoctrineMigrations\\Version20190617073115',NULL,NULL),
+('DoctrineMigrations\\Version20191015133651',NULL,NULL),
+('DoctrineMigrations\\Version20191121092955',NULL,NULL),
+('DoctrineMigrations\\Version20191129092240',NULL,NULL),
+('DoctrineMigrations\\Version20200124162927',NULL,NULL),
+('DoctrineMigrations\\Version20200211154443',NULL,NULL),
+('DoctrineMigrations\\Version20200305082017',NULL,NULL),
+('DoctrineMigrations\\Version20200305162037',NULL,NULL),
+('DoctrineMigrations\\Version20200325130729',NULL,NULL),
+('DoctrineMigrations\\Version20200513085827',NULL,NULL),
+('DoctrineMigrations\\Version20200630153630',NULL,NULL),
+('DoctrineMigrations\\Version20200911115854',NULL,NULL),
+('DoctrineMigrations\\Version20201014112113',NULL,NULL),
+('DoctrineMigrations\\Version20210301124100',NULL,NULL),
+('DoctrineMigrations\\Version20210316120000',NULL,NULL),
+('DoctrineMigrations\\Version20210326131251',NULL,NULL),
+('DoctrineMigrations\\Version20210428075837',NULL,NULL),
+('DoctrineMigrations\\Version20210518124008',NULL,NULL),
+('DoctrineMigrations\\Version20210622144808',NULL,NULL),
+('DoctrineMigrations\\Version20210629083145',NULL,NULL),
+('DoctrineMigrations\\Version20211001114850',NULL,NULL),
+('DoctrineMigrations\\Version20211006100000',NULL,NULL),
+('DoctrineMigrations\\Version20211102145645',NULL,NULL),
+('DoctrineMigrations\\Version20211110101319',NULL,NULL),
+('DoctrineMigrations\\Version20211110103843',NULL,NULL),
+('DoctrineMigrations\\Version20211214155526',NULL,NULL),
+('DoctrineMigrations\\Version20220104163659',NULL,NULL),
+('DoctrineMigrations\\Version20220317123408',NULL,NULL),
+('DoctrineMigrations\\Version20220318130653',NULL,NULL),
+('DoctrineMigrations\\Version20220411135037',NULL,NULL),
+('DoctrineMigrations\\Version20220509120449',NULL,NULL),
+('DoctrineMigrations\\Version20220919064644',NULL,NULL),
+('DoctrineMigrations\\Version20221004112254',NULL,NULL),
+('DoctrineMigrations\\Version20221024091245',NULL,NULL),
+('DoctrineMigrations\\Version20221026091454',NULL,NULL),
+('DoctrineMigrations\\Version20221103105003',NULL,NULL),
+('DoctrineMigrations\\Version20221115142743',NULL,NULL),
+('DoctrineMigrations\\Version20221208131228',NULL,NULL),
+('DoctrineMigrations\\Version20230104080608',NULL,NULL),
+('DoctrineMigrations\\Version20230215174307',NULL,NULL),
+('DoctrineMigrations\\Version20230309092833',NULL,NULL),
+('DoctrineMigrations\\Version20230419133647',NULL,NULL),
+('DoctrineMigrations\\Version20230503121116',NULL,NULL),
+('DoctrineMigrations\\Version20230526072404','2024-11-06 12:42:35',1),
+('DoctrineMigrations\\Version20230721143358',NULL,NULL),
+('DoctrineMigrations\\Version20230929142251','2024-11-06 12:42:35',2),
+('DoctrineMigrations\\Version20231020151553',NULL,NULL),
+('DoctrineMigrations\\Version20231105083311',NULL,NULL),
+('DoctrineMigrations\\Version20231115133212',NULL,NULL),
+('DoctrineMigrations\\Version20240222152016','2024-11-06 12:42:35',4),
+('DoctrineMigrations\\Version20240222153916','2024-11-06 12:42:35',1),
+('DoctrineMigrations\\Version20240226102215',NULL,NULL),
+('DoctrineMigrations\\Version20240307140359',NULL,NULL),
+('DoctrineMigrations\\Version20240425133405',NULL,NULL),
+('DoctrineMigrations\\Version20240513144359','2024-11-06 13:55:15',4),
+('DoctrineMigrations\\Version20240527073835',NULL,NULL),
+('DoctrineMigrations\\Version20240701090446',NULL,NULL),
+('DoctrineMigrations\\Version20240711113806','2024-11-06 13:55:15',2),
+('DoctrineMigrations\\Version20241122024016','2024-11-22 10:31:33',6),
+('DoctrineMigrations\\Version20241122024017','2026-01-29 08:45:47',25),
+('DoctrineMigrations\\Version20250320141841','2026-01-29 08:45:47',4),
+('DoctrineMigrations\\Version20250327135700','2026-01-29 08:45:47',1),
+('DoctrineMigrations\\Version20250912092404','2026-01-29 08:45:48',5),
+('DoctrineMigrations\\Version20250929111836','2026-01-29 08:45:48',2),
+('DoctrineMigrations\\Version20251006133113','2026-01-29 08:45:48',18),
+('DoctrineMigrations\\Version20251128124425','2026-01-29 08:45:48',2),
+('DoctrineMigrations\\Version20260202085816','2026-04-05 12:34:38',37);
+/*!40000 ALTER TABLE `migration_versions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `notifiable_entity`
+--
+
+DROP TABLE IF EXISTS `notifiable_entity`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `notifiable_entity` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `identifier` varchar(255) NOT NULL,
+  `class` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `notifiable_entity`
+--
+
+LOCK TABLES `notifiable_entity` WRITE;
+/*!40000 ALTER TABLE `notifiable_entity` DISABLE KEYS */;
+/*!40000 ALTER TABLE `notifiable_entity` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `notifiable_notification`
+--
+
+DROP TABLE IF EXISTS `notifiable_notification`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `notifiable_notification` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `notification_id` int(11) DEFAULT NULL,
+  `seen` tinyint(1) NOT NULL,
+  `notifiable_entity_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_ADCFE0FAEF1A9D84` (`notification_id`),
+  KEY `IDX_ADCFE0FAC3A0A4F8` (`notifiable_entity_id`),
+  CONSTRAINT `FK_ADCFE0FAC3A0A4F8` FOREIGN KEY (`notifiable_entity_id`) REFERENCES `notifiable_entity` (`id`),
+  CONSTRAINT `FK_ADCFE0FAEF1A9D84` FOREIGN KEY (`notification_id`) REFERENCES `notification` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `notifiable_notification`
+--
+
+LOCK TABLES `notifiable_notification` WRITE;
+/*!40000 ALTER TABLE `notifiable_notification` DISABLE KEYS */;
+/*!40000 ALTER TABLE `notifiable_notification` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `notification`
+--
+
+DROP TABLE IF EXISTS `notification`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `notification` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `date` datetime NOT NULL,
+  `subject` varchar(4000) NOT NULL,
+  `message` varchar(4000) DEFAULT NULL,
+  `link` varchar(4000) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `notification`
+--
+
+LOCK TABLES `notification` WRITE;
+/*!40000 ALTER TABLE `notification` DISABLE KEYS */;
+/*!40000 ALTER TABLE `notification` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `oauth2_access_token`
+--
+
+DROP TABLE IF EXISTS `oauth2_access_token`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `oauth2_access_token` (
+  `identifier` char(80) NOT NULL,
+  `client` varchar(32) NOT NULL,
+  `expiry` datetime NOT NULL COMMENT '(DC2Type:datetime_immutable)',
+  `user_identifier` varchar(128) DEFAULT NULL,
+  `scopes` text DEFAULT NULL COMMENT '(DC2Type:oauth2_scope)',
+  `revoked` tinyint(1) NOT NULL,
+  PRIMARY KEY (`identifier`),
+  KEY `IDX_454D9673C7440455` (`client`),
+  CONSTRAINT `FK_454D9673C7440455` FOREIGN KEY (`client`) REFERENCES `oauth2_client` (`identifier`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `oauth2_access_token`
+--
+
+LOCK TABLES `oauth2_access_token` WRITE;
+/*!40000 ALTER TABLE `oauth2_access_token` DISABLE KEYS */;
+INSERT INTO `oauth2_access_token` VALUES
+('05d5295e937b143db8f6be152694182a6e05bef3defffdd1e547b9888f47b4d068f647c53eef79ac','d1532eae14baf3ff798b6c7be8a8355f','2026-04-07 16:29:53','admin','email',0),
+('0ccf3d2db0abb1674836b7238421546907c6c9738e452165d98a970b8070bf092ce3f0884752fc86','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 09:27:45','admin','email',0),
+('0f0e4a5e720de00e1f6819d801d0c6c3b293fccbd06456d4e6943de28f1c2132c3746969c60cca71','d1532eae14baf3ff798b6c7be8a8355f','2026-04-09 06:11:48','admin','email',0),
+('259a996c1667b1cd3985a0cf7004a9634116adced60b9212b926734c8fb44d50d17c39dfbae52691','d1532eae14baf3ff798b6c7be8a8355f','2026-04-07 16:30:21','admin','email',0),
+('272b371c0a89db5b98a15aa2fc7d75246155246b046dfef807e0de1f8c1428965414f50c5853bfc3','d1532eae14baf3ff798b6c7be8a8355f','2026-04-06 08:37:32','admin','email',0),
+('2c8bb548089ced221b91382c91b55e4bf63a8a3a40bb24fa350abb6cdd913da84a928202f09164c7','d1532eae14baf3ff798b6c7be8a8355f','2026-04-09 06:13:48','admin','email',0),
+('34b6c41d8d508ea562926b722e14e3f38e45555693c7cec8b43b97cbc476ab82f0284fee61badf2f','d1532eae14baf3ff798b6c7be8a8355f','2026-04-09 06:11:48','admin','email',0),
+('3ef1215d001cf61a8231d199940223aa4329c0372b8e8ef4c3a30675a98ccc391eb193e5d1724ec9','d1532eae14baf3ff798b6c7be8a8355f','2026-04-06 09:23:45','admin','email',0),
+('458b2fc019537e7dd3aa6e53b11a6698fff3bde560a48b718d1774c2cd1df062639b2af298bdd27f','d1532eae14baf3ff798b6c7be8a8355f','2026-04-07 16:29:49','admin','email',0),
+('5c28680f21e2e9c802979c9a02b855949fdd276bc3db9df2d8ef81e5290d9a2bbe43f4891d1b101e','d1532eae14baf3ff798b6c7be8a8355f','2026-04-09 06:11:48','admin','email',0),
+('7a64928c2b83954481fce7c3bd1f34e9da8a26415e7355dfbdf9392ce52e2eefcac3e1e0ff56d4c5','d1532eae14baf3ff798b6c7be8a8355f','2026-04-09 06:11:48','admin','email',0),
+('9526d30e366fdae1ecd639ee735fae4e7ae2054395fcc3ecd9030cd2318f5fc23af6ea79faa4068a','d1532eae14baf3ff798b6c7be8a8355f','2026-04-06 08:37:10','admin','email',0),
+('b35245e255455c97900c47da4fd95332d0c4af7573e0dabf1a72b6033a7cc70a9d6d8ab1b62f944d','d1532eae14baf3ff798b6c7be8a8355f','2026-04-09 06:11:48','admin','email',0),
+('c197114a68ec0830373dd5b5e1d4499d38d4b172a6afbcba88102ae39f00ff64dca49d0427d6c38c','d1532eae14baf3ff798b6c7be8a8355f','2026-04-06 08:37:22','admin','email',0),
+('ca8ce05d034742beb0584fc151cd2eac26f44da7f71ed6fcb48d7d4f878c48efcf68950270f15db6','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 09:27:08','admin','email',0),
+('cae5dd2506c63d978c75550f1414fc625a73fd16506477e66d8174b57530484d5b85f185904822f4','d1532eae14baf3ff798b6c7be8a8355f','2026-04-09 06:11:48','admin','email',0),
+('cf6f4460a0becbbc984c18b7b553cea04693613ce778449b184ca72c9041eab3a58fde692c53546e','d1532eae14baf3ff798b6c7be8a8355f','2026-04-20 07:21:36','admin','email',0),
+('f35cf988ba485428e5a5d227aa7f66d15bc4c5c05367b37cb38e8aaa781254cb0785669a1688b408','d1532eae14baf3ff798b6c7be8a8355f','2026-04-07 16:30:29','admin','email',0),
+('fe905025b7dae26a547d03ff6fce051e309add760ef00eabdf0e2840fa8407d8450fee4056683c83','d1532eae14baf3ff798b6c7be8a8355f','2026-04-20 07:37:47','admin','email',0);
+/*!40000 ALTER TABLE `oauth2_access_token` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `oauth2_authorization_code`
+--
+
+DROP TABLE IF EXISTS `oauth2_authorization_code`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `oauth2_authorization_code` (
+  `identifier` char(80) NOT NULL,
+  `client` varchar(32) NOT NULL,
+  `expiry` datetime NOT NULL COMMENT '(DC2Type:datetime_immutable)',
+  `user_identifier` varchar(128) DEFAULT NULL,
+  `scopes` text DEFAULT NULL COMMENT '(DC2Type:oauth2_scope)',
+  `revoked` tinyint(1) NOT NULL,
+  PRIMARY KEY (`identifier`),
+  KEY `IDX_509FEF5FC7440455` (`client`),
+  CONSTRAINT `FK_509FEF5FC7440455` FOREIGN KEY (`client`) REFERENCES `oauth2_client` (`identifier`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `oauth2_authorization_code`
+--
+
+LOCK TABLES `oauth2_authorization_code` WRITE;
+/*!40000 ALTER TABLE `oauth2_authorization_code` DISABLE KEYS */;
+/*!40000 ALTER TABLE `oauth2_authorization_code` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `oauth2_client`
+--
+
+DROP TABLE IF EXISTS `oauth2_client`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `oauth2_client` (
+  `identifier` varchar(32) NOT NULL,
+  `name` varchar(128) NOT NULL,
+  `secret` varchar(128) DEFAULT NULL,
+  `redirect_uris` text DEFAULT NULL COMMENT '(DC2Type:oauth2_redirect_uri)',
+  `grants` text DEFAULT NULL COMMENT '(DC2Type:oauth2_grant)',
+  `scopes` text DEFAULT NULL COMMENT '(DC2Type:oauth2_scope)',
+  `active` tinyint(1) NOT NULL,
+  `allow_plain_text_pkce` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`identifier`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `oauth2_client`
+--
+
+LOCK TABLES `oauth2_client` WRITE;
+/*!40000 ALTER TABLE `oauth2_client` DISABLE KEYS */;
+INSERT INTO `oauth2_client` VALUES
+('0ce1f82e0b4b3bc9fd9b1291c2c17bf4','Scoreboard','1c572a71bfc83553fc813623c67ee66151cc3d0c8db4ba1fdd7ffe96084ba962f5eac54a8e68802a7f4258585e322251cb34a89d9b3fa69693995d930d8a26f6','http://10.0.0.100:8080','https://arena.uww.io/grants/api_key','email',1,0),
+('d1532eae14baf3ff798b6c7be8a8355f','Arena Local','2356194b47bbcb3b8d2b6e5dc06831a60e1f8248d68b7ab4b2b549d181ec0075920b1883c81caa941c00648ebafac3d23dc56e6fdaa5919b000140503d670486','http://localhost:8080','https://arena.uww.io/grants/api_key','email',1,0);
+/*!40000 ALTER TABLE `oauth2_client` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `oauth2_refresh_token`
+--
+
+DROP TABLE IF EXISTS `oauth2_refresh_token`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `oauth2_refresh_token` (
+  `identifier` char(80) NOT NULL,
+  `access_token` char(80) DEFAULT NULL,
+  `expiry` datetime NOT NULL COMMENT '(DC2Type:datetime_immutable)',
+  `revoked` tinyint(1) NOT NULL,
+  PRIMARY KEY (`identifier`),
+  KEY `IDX_4DD90732B6A2DD68` (`access_token`),
+  CONSTRAINT `FK_4DD90732B6A2DD68` FOREIGN KEY (`access_token`) REFERENCES `oauth2_access_token` (`identifier`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `oauth2_refresh_token`
+--
+
+LOCK TABLES `oauth2_refresh_token` WRITE;
+/*!40000 ALTER TABLE `oauth2_refresh_token` DISABLE KEYS */;
+/*!40000 ALTER TABLE `oauth2_refresh_token` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `person`
+--
+
+DROP TABLE IF EXISTS `person`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `person` (
+  `id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `family_name` varchar(100) DEFAULT NULL,
+  `given_name` varchar(100) DEFAULT NULL,
+  `prefered_name` varchar(100) NOT NULL,
+  `display_name` varchar(100) NOT NULL,
+  `ioc_print_name` varchar(35) DEFAULT NULL,
+  `ioc_print_initial_name` varchar(18) DEFAULT NULL,
+  `ioc_tv_name` varchar(35) DEFAULT NULL,
+  `ioc_tv_initial_name` varchar(18) DEFAULT NULL,
+  `ioc_tv_family_name` varchar(25) DEFAULT NULL,
+  `athena_print_id` int(11) DEFAULT NULL,
+  `origins` longtext NOT NULL COMMENT '(DC2Type:array)',
+  `languages` longtext NOT NULL COMMENT '(DC2Type:array)',
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  `custom_id` varchar(255) DEFAULT NULL,
+  `odf_code` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_34DCD1769BB038B` (`athena_print_id`),
+  KEY `IDX_34DCD176614A603A` (`custom_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `person`
+--
+
+LOCK TABLES `person` WRITE;
+/*!40000 ALTER TABLE `person` DISABLE KEYS */;
+INSERT INTO `person` VALUES
+('cccc5001-5001-5001-5001-000000000030','NOVAK','Jan','Jan NOVAK','NOVAK Jan.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-07-01 10:00:00','2026-07-01 10:00:00',NULL,NULL,NULL),
+('cccc5001-5001-5001-5001-000000000031','CERNY','Petr','Petr CERNY','CERNY Petr.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-07-01 10:00:00','2026-07-01 10:00:00',NULL,NULL,NULL),
+('cccc5001-5001-5001-5001-000000000034','HORVATH','Martin','Martin HORVATH','HORVATH Martin.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-07-01 10:00:00','2026-07-01 10:00:00',NULL,NULL,NULL),
+('cccc5001-5001-5001-5001-000000000035','DVORAK','Lukas','Lukas DVORAK','DVORAK Lukas.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-07-01 10:00:00','2026-07-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000100','KRAL','Adam','Adam KRAL','KRAL Adam.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000101','NOVAK','Jan','Jan NOVAK','NOVAK Jan.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000102','HORVATH','Martin','Martin HORVATH','HORVATH Martin.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000103','MATAS','Tomas','Tomas MATAS','MATAS Tomas.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000104','BLAHO','Juraj','Juraj BLAHO','BLAHO Juraj.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000105','BENES','Michal','Michal BENES','BENES Michal.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000106','POLAK','Peter','Peter POLAK','POLAK Peter.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000107','KUBICA','Stefan','Stefan KUBICA','KUBICA Stefan.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000108','KRATKY','Josef','Josef KRATKY','KRATKY Josef.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000109','CERNY','Petr','Petr CERNY','CERNY Petr.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000110','DVORAK','Lukas','Lukas DVORAK','DVORAK Lukas.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000111','SEDLAK','Karel','Karel SEDLAK','SEDLAK Karel.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000112','BLAZEK','Ondrej','Ondrej BLAZEK','BLAZEK Ondrej.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000113','HOLUB','Roman','Roman HOLUB','HOLUB Roman.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000114','KUCERA','Pavel','Pavel KUCERA','KUCERA Pavel.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000115','RUZICKA','Vaclav','Vaclav RUZICKA','RUZICKA Vaclav.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000116','SIMON','Attila','Attila SIMON','SIMON Attila.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000117','KISS','Balazs','Balazs KISS','KISS Balazs.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000118','NAGY','Tamas','Tamas NAGY','NAGY Tamas.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000119','FEKETE','Zoltan','Zoltan FEKETE','FEKETE Zoltan.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000120','VARGA','Gabor','Gabor VARGA','VARGA Gabor.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000121','TAKACS','Laszlo','Laszlo TAKACS','TAKACS Laszlo.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000122','MOLNAR','Istvan','Istvan MOLNAR','MOLNAR Istvan.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000123','SZABO','Pal','Pal SZABO','SZABO Pal.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000124','WOJCIK','Piotr','Piotr WOJCIK','WOJCIK Piotr.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000125','KOWALSKI','Marek','Marek KOWALSKI','KOWALSKI Marek.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000126','WISNIEWSKI','Pawel','Pawel WISNIEWSKI','WISNIEWSKI Pawel.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000127','LEWANDOWSKI','Tomasz','Tomasz LEWANDOWSKI','LEWANDOWSKI Tomasz.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000128','KAMINSKI','Krzysztof','Krzysztof KAMINSKI','KAMINSKI Krzysztof.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000129','WOJTYLA','Rafal','Rafal WOJTYLA','WOJTYLA Rafal.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000130','DABEK','Michal','Michal DABEK','DABEK Michal.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000131','JAWORSKI','Lukasz','Lukasz JAWORSKI','JAWORSKI Lukasz.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000132','HUBER','Thomas','Thomas HUBER','HUBER Thomas.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000133','WAGNER','Andreas','Andreas WAGNER','WAGNER Andreas.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000134','STEINER','Michael','Michael STEINER','STEINER Michael.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000135','BAUER','Georg','Georg BAUER','BAUER Georg.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000136','GRUBER','Franz','Franz GRUBER','GRUBER Franz.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000137','SCHREIBER','Markus','Markus SCHREIBER','SCHREIBER Markus.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000138','FUCHS','Wolfgang','Wolfgang FUCHS','FUCHS Wolfgang.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000139','WINTER','Klaus','Klaus WINTER','WINTER Klaus.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000140','MUELLER','Hans','Hans MUELLER','MUELLER Hans.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000141','SCHNEIDER','Kurt','Kurt SCHNEIDER','SCHNEIDER Kurt.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000142','SCHWARZ','Dieter','Dieter SCHWARZ','SCHWARZ Dieter.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000143','KRAUSE','Werner','Werner KRAUSE','KRAUSE Werner.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000144','LANGE','Fritz','Fritz LANGE','LANGE Fritz.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000145','ZIMMERMANN','Heinz','Heinz ZIMMERMANN','ZIMMERMANN Heinz.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000146','BRAUN','Bernd','Bernd BRAUN','BRAUN Bernd.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000147','SCHAFER','Otto','Otto SCHAFER','SCHAFER Otto.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000148','POPESCU','Ion','Ion POPESCU','POPESCU Ion.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000149','IONESCU','Gheorghe','Gheorghe IONESCU','IONESCU Gheorghe.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000150','POPA','Constantin','Constantin POPA','POPA Constantin.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000151','RADU','Vasile','Vasile RADU','RADU Vasile.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000152','STANCIU','Mihai','Mihai STANCIU','STANCIU Mihai.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000153','FLOREA','Dumitru','Dumitru FLOREA','FLOREA Dumitru.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000154','DIMA','Nicolae','Nicolae DIMA','DIMA Nicolae.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000155','NEAGU','Petru','Petru NEAGU','NEAGU Petru.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000156','PETROVIC','Nikola','Nikola PETROVIC','PETROVIC Nikola.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000157','JOVANOVIC','Stefan','Stefan JOVANOVIC','JOVANOVIC Stefan.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000158','MILOSEVIC','Marko','Marko MILOSEVIC','MILOSEVIC Marko.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000159','STOJANOVIC','Luka','Luka STOJANOVIC','STOJANOVIC Luka.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000160','DJORDJEVIC','Nemanja','Nemanja DJORDJEVIC','DJORDJEVIC Nemanja.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000161','NIKOLIC','Aleksa','Aleksa NIKOLIC','NIKOLIC Aleksa.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000162','PAVLOVIC','Vuk','Vuk PAVLOVIC','PAVLOVIC Vuk.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccc6001-6001-6001-6001-000000000163','ILIC','Milan','Milan ILIC','ILIC Milan.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL),
+('cccccccc-cccc-cccc-cccc-000000000030','NOVAK','Jan','Jan NOVAK','NOVAK Jan.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-06-01 10:00:00','2026-06-01 10:00:00',NULL,NULL,NULL),
+('cccccccc-cccc-cccc-cccc-000000000031','CERNY','Petr','Petr CERNY','CERNY Petr.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-06-01 10:00:00','2026-06-01 10:00:00',NULL,NULL,NULL),
+('cccccccc-cccc-cccc-cccc-000000000032','WAGNER','Karl','Karl WAGNER','WAGNER Karl.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-06-01 10:00:00','2026-06-01 10:00:00',NULL,NULL,NULL),
+('cccccccc-cccc-cccc-cccc-000000000033','BAUER','Franz','Franz BAUER','BAUER Franz.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-06-01 10:00:00','2026-06-01 10:00:00',NULL,NULL,NULL),
+('cccccccc-cccc-cccc-cccc-000000000080','KOVACS','Zoltan','Zoltan KOVACS','KOVACS Zoltan.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-06-01 10:00:00','2026-06-01 10:00:00',NULL,NULL,NULL),
+('cccccccc-cccc-cccc-cccc-000000000081','FISCHER','Hans','Hans FISCHER','FISCHER Hans.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-06-01 10:00:00','2026-06-01 10:00:00',NULL,NULL,NULL);
+/*!40000 ALTER TABLE `person` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `referee`
+--
+
+DROP TABLE IF EXISTS `referee`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `referee` (
+  `id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `person_id` varchar(255) DEFAULT NULL,
+  `sport_event_id` varchar(255) NOT NULL,
+  `sport_event_team_id` varchar(255) NOT NULL,
+  `number` int(11) DEFAULT NULL,
+  `referee_level` varchar(100) DEFAULT NULL,
+  `referee_group` varchar(1) DEFAULT NULL,
+  `delegate` tinyint(1) NOT NULL,
+  `matchairman` tinyint(1) NOT NULL,
+  `referee` tinyint(1) NOT NULL,
+  `sport_event_mat_id` varchar(255) DEFAULT NULL,
+  `deactivated` tinyint(1) NOT NULL DEFAULT 0,
+  `origins` longtext NOT NULL COMMENT '(DC2Type:array)',
+  `prefered_style` longtext DEFAULT NULL COMMENT '(DC2Type:array)',
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_D60FB342217BBB47` (`person_id`),
+  KEY `IDX_D60FB34247551731` (`sport_event_id`),
+  KEY `IDX_D60FB3427BA97F3E` (`sport_event_team_id`),
+  KEY `IDX_D60FB34271E26E80` (`sport_event_mat_id`),
+  CONSTRAINT `FK_D60FB342217BBB47` FOREIGN KEY (`person_id`) REFERENCES `person` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `FK_D60FB34247551731` FOREIGN KEY (`sport_event_id`) REFERENCES `sport_event` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_D60FB34271E26E80` FOREIGN KEY (`sport_event_mat_id`) REFERENCES `sport_event_mat` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `FK_D60FB3427BA97F3E` FOREIGN KEY (`sport_event_team_id`) REFERENCES `sport_event_team` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `referee`
+--
+
+LOCK TABLES `referee` WRITE;
+/*!40000 ALTER TABLE `referee` DISABLE KEYS */;
+/*!40000 ALTER TABLE `referee` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `referee_challenge`
+--
+
+DROP TABLE IF EXISTS `referee_challenge`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `referee_challenge` (
+  `id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `fight_id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `fighter_id` char(36) DEFAULT NULL COMMENT '(DC2Type:guid)',
+  `referee_id` char(36) DEFAULT NULL COMMENT '(DC2Type:guid)',
+  `judge_id` char(36) DEFAULT NULL COMMENT '(DC2Type:guid)',
+  `matchairman_id` char(36) DEFAULT NULL COMMENT '(DC2Type:guid)',
+  `final_comment` varchar(255) DEFAULT NULL,
+  `challenge_time` time NOT NULL,
+  `referee_decision_fighter1` varchar(20) DEFAULT NULL,
+  `referee_decision_fighter2` varchar(20) DEFAULT NULL,
+  `judge_decision_fighter1` varchar(20) DEFAULT NULL,
+  `judge_decision_fighter2` varchar(20) DEFAULT NULL,
+  `mc_decision_fighter1` varchar(20) DEFAULT NULL,
+  `mc_decision_fighter2` varchar(20) DEFAULT NULL,
+  `final_decision_fighter1` varchar(20) DEFAULT NULL,
+  `final_decision_fighter2` varchar(20) DEFAULT NULL,
+  `jury1_decision_fighter1` varchar(20) DEFAULT NULL,
+  `jury1_decision_fighter2` varchar(20) DEFAULT NULL,
+  `jury2_decision_fighter1` varchar(20) DEFAULT NULL,
+  `jury2_decision_fighter2` varchar(20) DEFAULT NULL,
+  `jury3_decision_fighter1` varchar(20) DEFAULT NULL,
+  `jury3_decision_fighter2` varchar(20) DEFAULT NULL,
+  `challenge_status` tinyint(1) NOT NULL,
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `fight_timestamp_deletedat` (`fight_id`,`challenge_time`,`deleted_at`),
+  KEY `IDX_6000275AAC6657E4` (`fight_id`),
+  KEY `IDX_6000275A4A087CA2` (`referee_id`),
+  KEY `IDX_6000275AB7D66194` (`judge_id`),
+  KEY `IDX_6000275AB839BA46` (`matchairman_id`),
+  KEY `IDX_6000275A34934341` (`fighter_id`),
+  CONSTRAINT `FK_6000275A34934341` FOREIGN KEY (`fighter_id`) REFERENCES `fighter` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_6000275A4A087CA2` FOREIGN KEY (`referee_id`) REFERENCES `referee` (`id`),
+  CONSTRAINT `FK_6000275AAC6657E4` FOREIGN KEY (`fight_id`) REFERENCES `fight` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_6000275AB7D66194` FOREIGN KEY (`judge_id`) REFERENCES `referee` (`id`),
+  CONSTRAINT `FK_6000275AB839BA46` FOREIGN KEY (`matchairman_id`) REFERENCES `referee` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `referee_challenge`
+--
+
+LOCK TABLES `referee_challenge` WRITE;
+/*!40000 ALTER TABLE `referee_challenge` DISABLE KEYS */;
+/*!40000 ALTER TABLE `referee_challenge` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `remote`
+--
+
+DROP TABLE IF EXISTS `remote`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `remote` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `api_url` varchar(255) NOT NULL,
+  `client_id` varchar(255) NOT NULL,
+  `client_secret` varchar(255) NOT NULL,
+  `api_key` varchar(255) NOT NULL,
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `available` tinyint(1) NOT NULL,
+  `paused` tinyint(1) NOT NULL,
+  `timeout` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `remote`
+--
+
+LOCK TABLES `remote` WRITE;
+/*!40000 ALTER TABLE `remote` DISABLE KEYS */;
+INSERT INTO `remote` VALUES
+(1,'https://arena.uww.org','d1532eae14baf3ff798b6c7be8a8355f','2356194b47bbcb3b8d2b6e5dc06831a60e1f8248d68b7ab4b2b549d181ec0075920b1883c81caa941c00648ebafac3d23dc56e6fdaa5919b000140503d670486','7zhCzJw6yFF2qmDTXinqnHL9Kgur7P','2019-02-10 22:33:36','2019-06-18 08:15:08',1,0,3);
+/*!40000 ALTER TABLE `remote` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `round`
+--
+
+DROP TABLE IF EXISTS `round`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `round` (
+  `id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `fight_id` varchar(255) NOT NULL,
+  `number` int(11) NOT NULL,
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_C5EEEA34AC6657E4` (`fight_id`),
+  CONSTRAINT `FK_C5EEEA34AC6657E4` FOREIGN KEY (`fight_id`) REFERENCES `fight` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `round`
+--
+
+LOCK TABLES `round` WRITE;
+/*!40000 ALTER TABLE `round` DISABLE KEYS */;
+INSERT INTO `round` VALUES
+('1f13be1f-9e93-6acc-adc8-6f43d442df0b','1f13be1f-9e8d-6d34-9ff9-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e93-6c48-87e6-6f43d442df0b','1f13be1f-9e8d-6d34-9ff9-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e94-680a-bc5a-6f43d442df0b','1f13be1f-9e94-66d4-a00a-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e94-68a0-8f71-6f43d442df0b','1f13be1f-9e94-66d4-a00a-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e95-600c-b9ae-6f43d442df0b','1f13be1f-9e94-6f3a-8ba4-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e95-6084-8f2b-6f43d442df0b','1f13be1f-9e94-6f3a-8ba4-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e95-666a-b33a-6f43d442df0b','1f13be1f-9e95-65c0-9566-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e95-66e2-87e5-6f43d442df0b','1f13be1f-9e95-65c0-9566-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e95-6d54-9e09-6f43d442df0b','1f13be1f-9e95-6cbe-9d8e-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e95-6dcc-9136-6f43d442df0b','1f13be1f-9e95-6cbe-9d8e-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e96-6290-bca2-6f43d442df0b','1f13be1f-9e96-6204-b26c-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e96-62fe-b57b-6f43d442df0b','1f13be1f-9e96-6204-b26c-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e96-6ab0-91c3-6f43d442df0b','1f13be1f-9e96-6984-9295-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e96-6b46-be2c-6f43d442df0b','1f13be1f-9e96-6984-9295-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e97-6258-81e4-6f43d442df0b','1f13be1f-9e97-61ae-871d-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e97-62c6-bf04-6f43d442df0b','1f13be1f-9e97-61ae-871d-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e97-6848-a40b-6f43d442df0b','1f13be1f-9e97-67b2-84d4-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e97-6956-8d27-6f43d442df0b','1f13be1f-9e97-67b2-84d4-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e97-6e9c-9f91-6f43d442df0b','1f13be1f-9e97-6e10-be17-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e97-6f0a-8aaa-6f43d442df0b','1f13be1f-9e97-6e10-be17-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e98-66f8-81e0-6f43d442df0b','1f13be1f-9e98-6626-a44a-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e98-6766-82b7-6f43d442df0b','1f13be1f-9e98-6626-a44a-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e98-6dc4-8ec2-6f43d442df0b','1f13be1f-9e98-6d42-9da2-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e98-6e46-bb03-6f43d442df0b','1f13be1f-9e98-6d42-9da2-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e99-629c-8933-6f43d442df0b','1f13be1f-9e99-621a-a124-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e99-630a-8f89-6f43d442df0b','1f13be1f-9e99-621a-a124-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e99-6792-b940-6f43d442df0b','1f13be1f-9e99-6652-b5fa-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e99-6800-8f62-6f43d442df0b','1f13be1f-9e99-6652-b5fa-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e99-6c74-82af-6f43d442df0b','1f13be1f-9e99-6be8-9af3-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e99-6cd8-a56b-6f43d442df0b','1f13be1f-9e99-6be8-9af3-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9a-6052-a9d1-6f43d442df0b','1f13be1f-9e99-6fd0-8152-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9a-60ac-8ed9-6f43d442df0b','1f13be1f-9e99-6fd0-8152-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9a-643a-b10a-6f43d442df0b','1f13be1f-9e9a-63b8-a8dd-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9a-6494-bfda-6f43d442df0b','1f13be1f-9e9a-63b8-a8dd-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9a-69c6-99c4-6f43d442df0b','1f13be1f-9e9a-693a-8217-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9a-6a20-b2f2-6f43d442df0b','1f13be1f-9e9a-693a-8217-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9a-6fd4-93e0-6f43d442df0b','1f13be1f-9e9a-6eee-9ade-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9b-6060-9f9f-6f43d442df0b','1f13be1f-9e9a-6eee-9ade-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9b-6542-9bb8-6f43d442df0b','1f13be1f-9e9b-6498-9abb-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9b-65c4-aa76-6f43d442df0b','1f13be1f-9e9b-6498-9abb-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9b-6aec-9f83-6f43d442df0b','1f13be1f-9e9b-6a56-9363-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9b-6b64-a8de-6f43d442df0b','1f13be1f-9e9b-6a56-9363-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9c-6014-9fa2-6f43d442df0b','1f13be1f-9e9b-6f7e-b89a-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9c-608c-b822-6f43d442df0b','1f13be1f-9e9b-6f7e-b89a-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9c-646a-966a-6f43d442df0b','1f13be1f-9e9c-63de-afcf-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9c-64d8-adad-6f43d442df0b','1f13be1f-9e9c-63de-afcf-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9c-687a-89cd-6f43d442df0b','1f13be1f-9e9c-67ee-aa8e-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9c-68de-8a70-6f43d442df0b','1f13be1f-9e9c-67ee-aa8e-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9c-6e42-9b71-6f43d442df0b','1f13be1f-9e9c-6da2-9fe4-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9c-6eb0-9e97-6f43d442df0b','1f13be1f-9e9c-6da2-9fe4-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9d-64d2-a74c-6f43d442df0b','1f13be1f-9e9d-6432-adeb-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9d-6540-abe3-6f43d442df0b','1f13be1f-9e9d-6432-adeb-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9d-6bc6-89a0-6f43d442df0b','1f13be1f-9e9d-6afe-b05d-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9d-6c48-a586-6f43d442df0b','1f13be1f-9e9d-6afe-b05d-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9e-6292-b616-6f43d442df0b','1f13be1f-9e9e-6206-a585-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9e-62f6-af92-6f43d442df0b','1f13be1f-9e9e-6206-a585-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9e-66d4-8140-6f43d442df0b','1f13be1f-9e9e-6652-95bd-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9e-6738-8ebf-6f43d442df0b','1f13be1f-9e9e-6652-95bd-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9e-6b34-9385-6f43d442df0b','1f13be1f-9e9e-6ab2-a82a-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9e-6b98-a81b-6f43d442df0b','1f13be1f-9e9e-6ab2-a82a-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9f-6034-b8bf-6f43d442df0b','1f13be1f-9e9e-6f80-b651-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9f-60a2-a3b5-6f43d442df0b','1f13be1f-9e9e-6f80-b651-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9f-65b6-959b-6f43d442df0b','1f13be1f-9e9f-6520-b1dd-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9e9f-6624-aab7-6f43d442df0b','1f13be1f-9e9f-6520-b1dd-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea0-66e6-8c8d-6f43d442df0b','1f13be1f-9ea0-6600-8720-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea0-6754-abde-6f43d442df0b','1f13be1f-9ea0-6600-8720-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea0-6c18-8f93-6f43d442df0b','1f13be1f-9ea0-6ba0-bc99-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea0-6c7c-91a7-6f43d442df0b','1f13be1f-9ea0-6ba0-bc99-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea1-6104-8323-6f43d442df0b','1f13be1f-9ea1-6082-9ede-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea1-615e-97bb-6f43d442df0b','1f13be1f-9ea1-6082-9ede-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea1-66ea-b86c-6f43d442df0b','1f13be1f-9ea1-6654-a6d1-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea1-674e-ad85-6f43d442df0b','1f13be1f-9ea1-6654-a6d1-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea1-6c62-abd8-6f43d442df0b','1f13be1f-9ea1-6b2c-8e27-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea1-6cc6-aa50-6f43d442df0b','1f13be1f-9ea1-6b2c-8e27-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea2-641e-a0fa-6f43d442df0b','1f13be1f-9ea2-6310-9407-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea2-64be-abf3-6f43d442df0b','1f13be1f-9ea2-6310-9407-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea2-6ab8-8f95-6f43d442df0b','1f13be1f-9ea2-6a18-8cb7-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea2-6b30-90c6-6f43d442df0b','1f13be1f-9ea2-6a18-8cb7-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea3-61ac-8c33-6f43d442df0b','1f13be1f-9ea3-60f8-8bc6-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea3-6224-87e2-6f43d442df0b','1f13be1f-9ea3-60f8-8bc6-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea3-69ea-8245-6f43d442df0b','1f13be1f-9ea3-6954-9577-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea3-6a58-b7cd-6f43d442df0b','1f13be1f-9ea3-6954-9577-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea3-6e86-a8cc-6f43d442df0b','1f13be1f-9ea3-6dfa-a293-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea3-6ef4-8d3e-6f43d442df0b','1f13be1f-9ea3-6dfa-a293-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea4-6318-9847-6f43d442df0b','1f13be1f-9ea4-628c-8349-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea4-637c-8aa7-6f43d442df0b','1f13be1f-9ea4-628c-8349-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea4-68ea-ba48-6f43d442df0b','1f13be1f-9ea4-685e-85a6-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea4-6958-aed1-6f43d442df0b','1f13be1f-9ea4-685e-85a6-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea4-6d22-808c-6f43d442df0b','1f13be1f-9ea4-6ca0-8e84-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea4-6d86-9bb8-6f43d442df0b','1f13be1f-9ea4-6ca0-8e84-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea5-6150-a8d1-6f43d442df0b','1f13be1f-9ea5-60ce-aa33-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea5-61b4-9279-6f43d442df0b','1f13be1f-9ea5-60ce-aa33-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea5-66f0-8325-6f43d442df0b','1f13be1f-9ea5-6646-b9ad-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea5-675e-a997-6f43d442df0b','1f13be1f-9ea5-6646-b9ad-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea5-6e7a-9f9b-6f43d442df0b','1f13be1f-9ea5-6d8a-88cb-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea5-6f06-a01e-6f43d442df0b','1f13be1f-9ea5-6d8a-88cb-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea6-64ce-a10a-6f43d442df0b','1f13be1f-9ea6-641a-b3d7-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea6-6550-b57b-6f43d442df0b','1f13be1f-9ea6-641a-b3d7-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea6-6a28-92fc-6f43d442df0b','1f13be1f-9ea6-6992-90ff-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea6-6a8c-80b4-6f43d442df0b','1f13be1f-9ea6-6992-90ff-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea7-6388-ba81-6f43d442df0b','1f13be1f-9ea7-627a-9687-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea7-6428-871e-6f43d442df0b','1f13be1f-9ea7-627a-9687-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea7-69f0-b4a6-6f43d442df0b','1f13be1f-9ea7-693c-857e-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea7-6b08-98dd-6f43d442df0b','1f13be1f-9ea7-693c-857e-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea8-6062-8782-6f43d442df0b','1f13be1f-9ea7-6fc2-9742-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea8-60e4-9c4b-6f43d442df0b','1f13be1f-9ea7-6fc2-9742-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea8-6698-9bd9-6f43d442df0b','1f13be1f-9ea8-65f8-aef1-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea8-6710-8fbc-6f43d442df0b','1f13be1f-9ea8-65f8-aef1-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea8-6b8e-b725-6f43d442df0b','1f13be1f-9ea8-6af8-b46d-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea8-6bfc-9ce2-6f43d442df0b','1f13be1f-9ea8-6af8-b46d-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea9-6354-b38d-6f43d442df0b','1f13be1f-9ea9-626e-be1f-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea9-63ea-9c44-6f43d442df0b','1f13be1f-9ea9-626e-be1f-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea9-6b1a-9df6-6f43d442df0b','1f13be1f-9ea9-6a5c-bf63-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ea9-6ba6-9e78-6f43d442df0b','1f13be1f-9ea9-6a5c-bf63-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eaa-60ba-8106-6f43d442df0b','1f13be1f-9eaa-6010-8beb-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eaa-61a0-81a7-6f43d442df0b','1f13be1f-9eaa-6010-8beb-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eaa-661e-ba9e-6f43d442df0b','1f13be1f-9eaa-656a-9bf0-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eaa-6696-9911-6f43d442df0b','1f13be1f-9eaa-656a-9bf0-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eaa-6a88-b99b-6f43d442df0b','1f13be1f-9eaa-69f2-83d8-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eaa-6b00-9861-6f43d442df0b','1f13be1f-9eaa-69f2-83d8-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eaa-6f24-8a85-6f43d442df0b','1f13be1f-9eaa-6e8e-b17a-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eaa-6fc4-adc3-6f43d442df0b','1f13be1f-9eaa-6e8e-b17a-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eab-6582-a452-6f43d442df0b','1f13be1f-9eab-64d8-8e66-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eab-65fa-ae85-6f43d442df0b','1f13be1f-9eab-64d8-8e66-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eab-6b22-8f69-6f43d442df0b','1f13be1f-9eab-6a46-b5dd-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eab-6bae-88f5-6f43d442df0b','1f13be1f-9eab-6a46-b5dd-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eac-616c-b343-6f43d442df0b','1f13be1f-9eac-60b8-aaa7-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eac-61ee-ba04-6f43d442df0b','1f13be1f-9eac-60b8-aaa7-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eac-6900-8b06-6f43d442df0b','1f13be1f-9eac-6784-99c7-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eac-69f0-a796-6f43d442df0b','1f13be1f-9eac-6784-99c7-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eac-6f0e-909b-6f43d442df0b','1f13be1f-9eac-6e78-bde3-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eac-6f7c-be59-6f43d442df0b','1f13be1f-9eac-6e78-bde3-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ead-6346-8206-6f43d442df0b','1f13be1f-9ead-62c4-a983-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ead-63b4-9e7d-6f43d442df0b','1f13be1f-9ead-62c4-a983-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ead-6738-b0da-6f43d442df0b','1f13be1f-9ead-66b6-adcc-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ead-679c-a465-6f43d442df0b','1f13be1f-9ead-66b6-adcc-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ead-6be8-a345-6f43d442df0b','1f13be1f-9ead-6b5c-bfa3-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9ead-6c4c-ba81-6f43d442df0b','1f13be1f-9ead-6b5c-bfa3-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eae-6084-ae1e-6f43d442df0b','1f13be1f-9ead-6ff8-aca0-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eae-60e8-b428-6f43d442df0b','1f13be1f-9ead-6ff8-aca0-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eae-66c4-a302-6f43d442df0b','1f13be1f-9eae-6606-a964-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eae-673c-8671-6f43d442df0b','1f13be1f-9eae-6606-a964-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eae-6d2c-8ed8-6f43d442df0b','1f13be1f-9eae-6c82-bb18-6f43d442df0b',1,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL),
+('1f13be1f-9eae-6d9a-823d-6f43d442df0b','1f13be1f-9eae-6c82-bb18-6f43d442df0b',2,'2026-04-19 11:21:57','2026-04-19 11:21:57',NULL);
+/*!40000 ALTER TABLE `round` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `round_caution`
+--
+
+DROP TABLE IF EXISTS `round_caution`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `round_caution` (
+  `id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `round_id` char(36) DEFAULT NULL COMMENT '(DC2Type:guid)',
+  `fighter_id` char(36) DEFAULT NULL COMMENT '(DC2Type:guid)',
+  `second` int(11) NOT NULL,
+  `type` char(1) NOT NULL DEFAULT 'c',
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_E1389EEFA6005CA0` (`round_id`),
+  KEY `IDX_E1389EEF34934341` (`fighter_id`),
+  CONSTRAINT `FK_E1389EEF34934341` FOREIGN KEY (`fighter_id`) REFERENCES `fighter` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_E1389EEFA6005CA0` FOREIGN KEY (`round_id`) REFERENCES `round` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `round_caution`
+--
+
+LOCK TABLES `round_caution` WRITE;
+/*!40000 ALTER TABLE `round_caution` DISABLE KEYS */;
+/*!40000 ALTER TABLE `round_caution` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `round_technical_point`
+--
+
+DROP TABLE IF EXISTS `round_technical_point`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `round_technical_point` (
+  `id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `round_id` char(36) DEFAULT NULL COMMENT '(DC2Type:guid)',
+  `fighter_id` char(36) DEFAULT NULL COMMENT '(DC2Type:guid)',
+  `points` int(11) NOT NULL,
+  `second` int(11) NOT NULL,
+  `tag` varchar(20) DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  `tag_metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`tag_metadata`)),
+  PRIMARY KEY (`id`),
+  KEY `IDX_AFE5F262A6005CA0` (`round_id`),
+  KEY `IDX_AFE5F26234934341` (`fighter_id`),
+  KEY `IDX_AFE5F262389B783` (`tag`),
+  CONSTRAINT `FK_AFE5F26234934341` FOREIGN KEY (`fighter_id`) REFERENCES `fighter` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_AFE5F262389B783` FOREIGN KEY (`tag`) REFERENCES `round_technical_point_tag` (`code`),
+  CONSTRAINT `FK_AFE5F262A6005CA0` FOREIGN KEY (`round_id`) REFERENCES `round` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `round_technical_point`
+--
+
+LOCK TABLES `round_technical_point` WRITE;
+/*!40000 ALTER TABLE `round_technical_point` DISABLE KEYS */;
+/*!40000 ALTER TABLE `round_technical_point` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `round_technical_point_live`
+--
+
+DROP TABLE IF EXISTS `round_technical_point_live`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `round_technical_point_live` (
+  `id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `round_id` char(36) DEFAULT NULL COMMENT '(DC2Type:guid)',
+  `fighter_id` char(36) DEFAULT NULL COMMENT '(DC2Type:guid)',
+  `tag` varchar(20) DEFAULT NULL,
+  `points` int(11) NOT NULL,
+  `second` int(11) NOT NULL,
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_470114D8A6005CA0` (`round_id`),
+  KEY `IDX_470114D834934341` (`fighter_id`),
+  KEY `IDX_470114D8389B783` (`tag`),
+  CONSTRAINT `FK_470114D834934341` FOREIGN KEY (`fighter_id`) REFERENCES `fighter` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `FK_470114D8389B783` FOREIGN KEY (`tag`) REFERENCES `round_technical_point_tag` (`code`),
+  CONSTRAINT `FK_470114D8A6005CA0` FOREIGN KEY (`round_id`) REFERENCES `round` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `round_technical_point_live`
+--
+
+LOCK TABLES `round_technical_point_live` WRITE;
+/*!40000 ALTER TABLE `round_technical_point_live` DISABLE KEYS */;
+/*!40000 ALTER TABLE `round_technical_point_live` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `round_technical_point_tag`
+--
+
+DROP TABLE IF EXISTS `round_technical_point_tag`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `round_technical_point_tag` (
+  `code` varchar(20) NOT NULL,
+  `name` varchar(50) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  `sport` varchar(20) NOT NULL,
+  `position` varchar(20) NOT NULL,
+  `type` varchar(20) NOT NULL,
+  `points` longtext NOT NULL COMMENT '(DC2Type:array)',
+  `deleted_at` datetime DEFAULT NULL,
+  `active_until` date DEFAULT NULL,
+  PRIMARY KEY (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `round_technical_point_tag`
+--
+
+LOCK TABLES `round_technical_point_tag` WRITE;
+/*!40000 ALTER TABLE `round_technical_point_tag` DISABLE KEYS */;
+INSERT INTO `round_technical_point_tag` VALUES
+('OPPCAFS','PARTERRE CAUTION','','fs','p','cp','a:1:{i:0;s:1:\"1\";}',NULL,NULL),
+('OPPCAGR','PARTERRE CAUTION','','gr','p','cp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('OPPCAWW','PARTERRE CAUTION','','ww','p','cp','a:1:{i:0;s:1:\"1\";}',NULL,NULL),
+('OPPCHFS','PARTERRE CHALLENGE','','fs','p','cp','a:1:{i:0;s:1:\"1\";}',NULL,NULL),
+('OPPCHGR','PARTERRE CHALLENGE','','gr','p','cp','a:1:{i:0;s:1:\"1\";}',NULL,NULL),
+('OPPCHWW','PARTERRE CHALLENGE','','ww','p','cp','a:1:{i:0;s:1:\"1\";}',NULL,NULL),
+('OPSATFS','ACTIVITY TIME','','fs','s','cp','a:1:{i:0;s:1:\"1\";}',NULL,NULL),
+('OPSATWW','ACTIVITY TIME','','ww','S','cp','a:1:{i:0;s:1:\"1\";}',NULL,NULL),
+('OPSCAFS','STANDING CAUTION','','fs','s','cp','a:1:{i:0;s:1:\"1\";}',NULL,NULL),
+('OPSCAGR','STANDING CAUTION','','gr','s','cp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('OPSCAWW','STANDING CAUTION','','ww','S','cp','a:1:{i:0;s:1:\"1\";}',NULL,NULL),
+('OPSCHFS','STANDING CHALLENGE','','fs','s','cp','a:1:{i:0;s:1:\"1\";}',NULL,NULL),
+('OPSCHGR','CHALLENGE','','gr','s','cp','a:1:{i:0;s:1:\"1\";}',NULL,NULL),
+('OPSCHWW','STANDING CHALLENGE','','ww','S','cp','a:1:{i:0;s:1:\"1\";}',NULL,NULL),
+('OPSNWFS','NEGATIVE WRESTLING','','fs','s','cp','a:1:{i:0;s:1:\"1\";}',NULL,NULL),
+('OPSNWGR','NEGATIVE WRESTLING','','gr','s','cp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('OPSNWWW','NEGATIVE WRESTLING','','ww','s','cp','a:1:{i:0;s:1:\"1\";}',NULL,NULL),
+('OPSPAGR','PASSSIVITY','','gr','s','cp','a:1:{i:0;s:1:\"1\";}',NULL,NULL),
+('OPSSOFS','STEP OUT','','fs','s','cp','a:1:{i:0;s:1:\"1\";}',NULL,NULL),
+('OPSSOGR','STEP OUT','','gr','s','cp','a:1:{i:0;s:1:\"1\";}',NULL,NULL),
+('OPSSOWW','STEP OUT','','ww','s','cp','a:1:{i:0;s:1:\"1\";}',NULL,NULL),
+('TPHLFS','HEADLOCK THROW','','fs','s','tp','a:3:{i:0;s:1:\"2\";i:1;s:1:\"4\";i:2;s:1:\"5\";}',NULL,NULL),
+('TPHLGR','HEADLOCK THROW','','gr','s','tp','a:3:{i:0;s:1:\"2\";i:1;s:1:\"4\";i:2;s:1:\"5\";}',NULL,NULL),
+('TPHLWW','HEADLOCK THROW','','ww','s','tp','a:3:{i:0;s:1:\"2\";i:1;s:1:\"4\";i:2;s:1:\"5\";}',NULL,NULL),
+('TPPALFS','ANKLE LACE','','fs','p','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPPALWW','ANKLE LACE','','ww','p','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPPCOFS','PARTERRE COUNTER','','fs','p','tp','a:2:{i:0;s:1:\"1\";i:1;s:1:\"2\";}',NULL,NULL),
+('TPPCOGR','PARTERRE COUNTER','','gr','p','tp','a:2:{i:0;s:1:\"1\";i:1;s:1:\"2\";}',NULL,NULL),
+('TPPCOWW','PARTERRE COUNTER','','ww','p','tp','a:2:{i:0;s:1:\"1\";i:1;s:1:\"2\";}',NULL,NULL),
+('TPPFBFS','FRONT HEAD LOCK','','fs','p','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPPFBGR','FRONT BODY LOCK','','gr','p','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPPFBWW','FRONT HEAD LOCK','','ww','p','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPPGWFS','GUT WRENCH','','fs','s','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPPGWGR','GUT WRENCH','','gr','p','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPPGWWW','GUT WRENCH','','ww','p','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPPLIFS','LIFTS','','fs','p','tp','a:1:{i:0;s:1:\"1\";}',NULL,'2024-12-31'),
+('TPPLIGR','LIFTS','','gr','p','tp','a:3:{i:0;s:1:\"2\";i:1;s:1:\"4\";i:2;s:1:\"5\";}',NULL,'2024-12-31'),
+('TPPLIWW','LIFTS','','ww','p','tp','a:1:{i:0;s:1:\"1\";}',NULL,'2024-12-31'),
+('TPPLRFS','LIFTS – REVERSE GRIP','','fs','p','tp','a:3:{i:0;s:1:\"2\";i:1;s:1:\"4\";i:2;s:1:\"5\";}',NULL,NULL),
+('TPPLRGR','LIFTS – REVERSE GRIP','','gr','p','tp','a:3:{i:0;s:1:\"2\";i:1;s:1:\"4\";i:2;s:1:\"5\";}',NULL,NULL),
+('TPPLRWW','LIFTS – REVERSE GRIP','','ww','p','tp','a:3:{i:0;s:1:\"2\";i:1;s:1:\"4\";i:2;s:1:\"5\";}',NULL,NULL),
+('TPPLSFS','LIFTS – SUPLEXS','','fs','p','tp','a:3:{i:0;s:1:\"2\";i:1;s:1:\"4\";i:2;s:1:\"5\";}',NULL,NULL),
+('TPPLSGR','LIFTS – SUPLEXS','','gr','p','tp','a:3:{i:0;s:1:\"2\";i:1;s:1:\"4\";i:2;s:1:\"5\";}',NULL,NULL),
+('TPPLSWW','LIFTS – SUPLEXS','','ww','p','tp','a:3:{i:0;s:1:\"2\";i:1;s:1:\"4\";i:2;s:1:\"5\";}',NULL,NULL),
+('TPPTOFS','TURN OVER','','fs','p','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPPTOGR','TURN OVER','','gr','p','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPPTOWW','TURN OVER','','ww','p','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPSCOFS','STANDING COUNTER','','fs','s','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPSCOGR','COUNTER','','gr','s','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPSCOWW','STANDING COUNTER','','ww','s','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPSDLFS','DOUBLE LEG ATTACK','','fs','s','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPSDLWW','DOUBLE LEG ATTACK','','ww','s','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPSFTFS','FORWARD BENDING THROW','','fs','s','tp','a:3:{i:0;s:1:\"2\";i:1;s:1:\"4\";i:2;s:1:\"5\";}',NULL,NULL),
+('TPSFTGR','FORWARD BENDING THROW','','gr','s','tp','a:3:{i:0;s:1:\"2\";i:1;s:1:\"4\";i:2;s:1:\"5\";}',NULL,NULL),
+('TPSFTWW','FORWARD BENDING THROW','','ww','S','tp','a:3:{i:0;s:1:\"2\";i:1;s:1:\"4\";i:2;s:1:\"5\";}',NULL,NULL),
+('TPSHHFS','TAKE DOWN HEAD TO HEAD','','fs','s','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPSHHGR','TAKE DOWN HEAD TO HEAD','','gr','s','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPSHHWW','TAKE DOWN HEAD TO HEAD','','ww','s','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPSHTFS','HIP TURNING THROW','','fs','s','tp','a:3:{i:0;s:1:\"2\";i:1;s:1:\"4\";i:2;s:1:\"5\";}',NULL,'2024-12-31'),
+('TPSHTGR','HIP TURNING THROW','','gr','s','tp','a:3:{i:0;s:1:\"2\";i:1;s:1:\"4\";i:2;s:1:\"5\";}',NULL,'2024-12-31'),
+('TPSHTWW','HIP TURNING THROW','','ww','S','tp','a:3:{i:0;s:1:\"2\";i:1;s:1:\"4\";i:2;s:1:\"5\";}',NULL,'2024-12-31'),
+('TPSLAFS','LEG ATTACS','','fs','s','tp','a:1:{i:0;s:1:\"2\";}',NULL,'2024-12-31'),
+('TPSLAWW','LEG ATTACS','','ww','s','tp','a:1:{i:0;s:1:\"2\";}',NULL,'2024-12-31'),
+('TPSSLFS','SINGLE LEG ATTACK','','fs','s','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPSSLWW','SINGLE LEG ATTACK','','ww','s','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPSSTFS','THROW SUPLEX','','fs','s','tp','a:3:{i:0;s:1:\"2\";i:1;s:1:\"4\";i:2;s:1:\"5\";}',NULL,NULL),
+('TPSSTGR','SUPLEX THROW','','gr','s','tp','a:3:{i:0;s:1:\"2\";i:1;s:1:\"4\";i:2;s:1:\"5\";}',NULL,NULL),
+('TPSSTWW','THROW SUPLEX','','ww','s','tp','a:3:{i:0;s:1:\"2\";i:1;s:1:\"4\";i:2;s:1:\"5\";}',NULL,NULL),
+('TPSTDFS','TAKE DOWN','','fs','s','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPSTDGR','TAKE DOWN','','gr','s','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPSTDWW','TAKE DOWN','','ww','S','tp','a:1:{i:0;s:1:\"2\";}',NULL,NULL),
+('TPSTTFS','SHOULDER TURNING THROW','','fs','s','tp','a:3:{i:0;s:1:\"2\";i:1;s:1:\"4\";i:2;s:1:\"5\";}',NULL,NULL),
+('TPSTTGR','SHOULDER TURNING THROW','','gr','s','tp','a:3:{i:0;s:1:\"2\";i:1;s:1:\"4\";i:2;s:1:\"5\";}',NULL,NULL),
+('TPSTTWW','SHOULDER TURNING THROW','','ww','s','tp','a:3:{i:0;s:1:\"2\";i:1;s:1:\"4\";i:2;s:1:\"5\";}',NULL,NULL);
+/*!40000 ALTER TABLE `round_technical_point_tag` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `sport_event`
+--
+
+DROP TABLE IF EXISTS `sport_event`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sport_event` (
+  `id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `name` varchar(250) NOT NULL,
+  `start_date` datetime NOT NULL,
+  `end_date` datetime NOT NULL,
+  `address_locality` varchar(100) DEFAULT NULL,
+  `country_id` int(11) DEFAULT NULL,
+  `ranking_type` varchar(255) NOT NULL,
+  `tournament_type` varchar(255) NOT NULL,
+  `event_type` varchar(255) NOT NULL,
+  `scoreboard_type` varchar(255) NOT NULL,
+  `image` varchar(250) DEFAULT NULL,
+  `timezone` varchar(250) NOT NULL,
+  `rest_time` int(11) DEFAULT NULL,
+  `countdown` tinyint(1) NOT NULL,
+  `light_scoresheet` tinyint(1) NOT NULL,
+  `copy_scoresheet` int(11) NOT NULL,
+  `bulk_scoresheet` tinyint(1) NOT NULL,
+  `mat_assignment` tinyint(1) NOT NULL,
+  `visible` tinyint(1) NOT NULL,
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  `odf_code` varchar(100) DEFAULT NULL,
+  `uww_ranking_type` varchar(255) DEFAULT NULL,
+  `local_client_id` char(36) DEFAULT NULL COMMENT '(DC2Type:guid)',
+  `remote_id` int(11) DEFAULT NULL,
+  `continent` varchar(255) NOT NULL,
+  `session_type` varchar(255) NOT NULL,
+  `remote_status` varchar(255) DEFAULT NULL,
+  `forbid_sync_after` int(11) NOT NULL DEFAULT 0,
+  `secure` tinyint(1) NOT NULL,
+  `nb_seeds` int(11) NOT NULL DEFAULT 0,
+  `athena_competition_id` varchar(100) DEFAULT NULL,
+  `video_checksum` varchar(100) DEFAULT NULL,
+  `scoreboard_operator` varchar(10) DEFAULT NULL,
+  `draw_manager_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_8FD26BBEE7ACE67D` (`local_client_id`),
+  KEY `IDX_8FD26BBE2A3E9C94` (`remote_id`),
+  KEY `IDX_8FD26BBEF92F3E70` (`country_id`),
+  KEY `IDX_UWW_RANKING_TYPE` (`uww_ranking_type`),
+  KEY `IDX_8FD26BBEE7D54AD8` (`draw_manager_id`),
+  CONSTRAINT `FK_8FD26BBE2A3E9C94` FOREIGN KEY (`remote_id`) REFERENCES `remote` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `FK_8FD26BBEE7ACE67D` FOREIGN KEY (`local_client_id`) REFERENCES `local_client` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `FK_8FD26BBEE7D54AD8` FOREIGN KEY (`draw_manager_id`) REFERENCES `user` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `FK_8FD26BBEF92F3E70` FOREIGN KEY (`country_id`) REFERENCES `country_cio` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sport_event`
+--
+
+LOCK TABLES `sport_event` WRITE;
+/*!40000 ALTER TABLE `sport_event` DISABLE KEYS */;
+INSERT INTO `sport_event` VALUES
+('cccc5001-5001-5001-5001-000000000001','Visegrád Wrestling Cup 2026','2026-07-15 00:00:00','2026-07-16 00:00:00','Bratislava',178,'individual','singlebracket','continental-championships','uww',NULL,'Europe/Bratislava',20,1,0,2,0,1,1,'2026-07-01 10:00:00','2026-07-01 10:00:00',NULL,NULL,NULL,NULL,NULL,'europe','1day',NULL,0,0,0,NULL,NULL,'volunteer',NULL),
+('cccc6001-6001-6001-6001-000000000001','Danube Open 2026','2026-09-10 00:00:00','2026-09-11 00:00:00','Budapest',84,'individual','singlebracket','continental-championships','uww',NULL,'Europe/Budapest',20,1,0,2,0,1,1,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL,NULL,NULL,NULL,NULL,'europe','1day',NULL,0,0,0,NULL,NULL,'volunteer',NULL),
+('cccccccc-cccc-cccc-cccc-000000000001','Multi-Arena Test Cup','2026-06-10 00:00:00','2026-06-12 00:00:00','Bratislava',48,'individual','singlebracket','continental-championships','uww',NULL,'Europe/Bratislava',20,1,0,2,0,1,1,'2026-06-01 10:00:00','2026-06-01 10:00:00',NULL,NULL,NULL,NULL,NULL,'world','1day',NULL,0,0,0,NULL,NULL,'volunteer',NULL),
+('cccccccc-cccc-cccc-cccc-000000000002','Arena C Exclusive Cup','2026-08-15 00:00:00','2026-08-17 00:00:00','Bratislava',48,'individual','singlebracket','continental-championships','uww',NULL,'Europe/Bratislava',20,1,0,2,0,1,1,'2026-06-01 10:00:00','2026-06-01 10:00:00',NULL,NULL,NULL,NULL,NULL,'world','1day',NULL,0,0,0,NULL,NULL,'volunteer',NULL);
+/*!40000 ALTER TABLE `sport_event` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `sport_event_mat`
+--
+
+DROP TABLE IF EXISTS `sport_event_mat`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sport_event_mat` (
+  `id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `name` varchar(100) NOT NULL,
+  `sport_event_id` varchar(255) NOT NULL,
+  `streaming` longtext DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_AE8D531C47551731` (`sport_event_id`),
+  CONSTRAINT `FK_AE8D531C47551731` FOREIGN KEY (`sport_event_id`) REFERENCES `sport_event` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sport_event_mat`
+--
+
+LOCK TABLES `sport_event_mat` WRITE;
+/*!40000 ALTER TABLE `sport_event_mat` DISABLE KEYS */;
+INSERT INTO `sport_event_mat` VALUES
+('cccc6001-6001-6001-6001-000000000400','Mat 1','cccc6001-6001-6001-6001-000000000001',NULL,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL);
+/*!40000 ALTER TABLE `sport_event_mat` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `sport_event_pool`
+--
+
+DROP TABLE IF EXISTS `sport_event_pool`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sport_event_pool` (
+  `id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `name` varchar(100) NOT NULL,
+  `sport_event_id` varchar(255) NOT NULL,
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_83727A3047551731` (`sport_event_id`),
+  CONSTRAINT `FK_83727A3047551731` FOREIGN KEY (`sport_event_id`) REFERENCES `sport_event` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sport_event_pool`
+--
+
+LOCK TABLES `sport_event_pool` WRITE;
+/*!40000 ALTER TABLE `sport_event_pool` DISABLE KEYS */;
+/*!40000 ALTER TABLE `sport_event_pool` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `sport_event_session`
+--
+
+DROP TABLE IF EXISTS `sport_event_session`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sport_event_session` (
+  `id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `name` varchar(100) NOT NULL,
+  `sport_event_id` varchar(255) NOT NULL,
+  `start_date` datetime DEFAULT NULL,
+  `end_date` datetime DEFAULT NULL,
+  `weight` int(11) DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_8281724447551731` (`sport_event_id`),
+  CONSTRAINT `FK_8281724447551731` FOREIGN KEY (`sport_event_id`) REFERENCES `sport_event` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sport_event_session`
+--
+
+LOCK TABLES `sport_event_session` WRITE;
+/*!40000 ALTER TABLE `sport_event_session` DISABLE KEYS */;
+INSERT INTO `sport_event_session` VALUES
+('cccc6001-6001-6001-6001-000000000401','Session 1','cccc6001-6001-6001-6001-000000000001','2026-09-10 09:00:00','2026-09-11 18:00:00',1,'2026-08-01 10:00:00','2026-08-01 10:00:00',NULL);
+/*!40000 ALTER TABLE `sport_event_session` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `sport_event_team`
+--
+
+DROP TABLE IF EXISTS `sport_event_team`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sport_event_team` (
+  `id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `country_cio_id` int(11) DEFAULT NULL,
+  `name` varchar(100) NOT NULL,
+  `alternate_name` varchar(20) NOT NULL,
+  `logo` varchar(250) DEFAULT NULL,
+  `sport_event_id` varchar(255) NOT NULL,
+  `sport_event_pool_id` varchar(255) DEFAULT NULL,
+  `draw_number` int(11) DEFAULT NULL,
+  `continent` varchar(100) DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_E80375A911BDD96F` (`country_cio_id`),
+  KEY `IDX_E80375A947551731` (`sport_event_id`),
+  KEY `IDX_E80375A929F1A14F` (`sport_event_pool_id`),
+  CONSTRAINT `FK_E80375A911BDD96F` FOREIGN KEY (`country_cio_id`) REFERENCES `country_cio` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `FK_E80375A929F1A14F` FOREIGN KEY (`sport_event_pool_id`) REFERENCES `sport_event_pool` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `FK_E80375A947551731` FOREIGN KEY (`sport_event_id`) REFERENCES `sport_event` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sport_event_team`
+--
+
+LOCK TABLES `sport_event_team` WRITE;
+/*!40000 ALTER TABLE `sport_event_team` DISABLE KEYS */;
+INSERT INTO `sport_event_team` VALUES
+('cccc5001-5001-5001-5001-000000000020',178,'SLOVAKIA','SVK',NULL,'cccc5001-5001-5001-5001-000000000001',NULL,NULL,'Europe','2026-07-01 10:00:00','2026-07-01 10:00:00',NULL),
+('cccc5001-5001-5001-5001-000000000021',51,'CZECHIA','CZE',NULL,'cccc5001-5001-5001-5001-000000000001',NULL,NULL,'Europe','2026-07-01 10:00:00','2026-07-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000020',178,'SLOVAKIA','SVK',NULL,'cccc6001-6001-6001-6001-000000000001',NULL,NULL,'Europe','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000021',51,'CZECHIA','CZE',NULL,'cccc6001-6001-6001-6001-000000000001',NULL,NULL,'Europe','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000022',84,'HUNGARY','HUN',NULL,'cccc6001-6001-6001-6001-000000000001',NULL,NULL,'Europe','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000023',153,'POLAND','POL',NULL,'cccc6001-6001-6001-6001-000000000001',NULL,NULL,'Europe','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000024',12,'AUSTRIA','AUT',NULL,'cccc6001-6001-6001-6001-000000000001',NULL,NULL,'Europe','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000025',73,'GERMANY','GER',NULL,'cccc6001-6001-6001-6001-000000000001',NULL,NULL,'Europe','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000026',158,'ROMANIA','ROU',NULL,'cccc6001-6001-6001-6001-000000000001',NULL,NULL,'Europe','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccc6001-6001-6001-6001-000000000027',172,'SERBIA','SRB',NULL,'cccc6001-6001-6001-6001-000000000001',NULL,NULL,'Europe','2026-08-01 10:00:00','2026-08-01 10:00:00',NULL),
+('cccccccc-cccc-cccc-cccc-000000000020',178,'SLOVAKIA','SVK',NULL,'cccccccc-cccc-cccc-cccc-000000000001',NULL,NULL,'Europe','2026-06-01 10:00:00','2026-06-01 10:00:00',NULL),
+('cccccccc-cccc-cccc-cccc-000000000021',51,'CZECHIA','CZE',NULL,'cccccccc-cccc-cccc-cccc-000000000001',NULL,NULL,'Europe','2026-06-01 10:00:00','2026-06-01 10:00:00',NULL),
+('cccccccc-cccc-cccc-cccc-000000000022',153,'POLAND','POL',NULL,'cccccccc-cccc-cccc-cccc-000000000001',NULL,NULL,'Europe','2026-06-01 10:00:00','2026-06-01 10:00:00',NULL),
+('cccccccc-cccc-cccc-cccc-000000000023',12,'AUSTRIA','AUT',NULL,'cccccccc-cccc-cccc-cccc-000000000001',NULL,NULL,'Europe','2026-06-01 10:00:00','2026-06-01 10:00:00',NULL),
+('cccccccc-cccc-cccc-cccc-000000000070',84,'HUNGARY','HUN',NULL,'cccccccc-cccc-cccc-cccc-000000000002',NULL,NULL,'Europe','2026-06-01 10:00:00','2026-06-01 10:00:00',NULL),
+('cccccccc-cccc-cccc-cccc-000000000071',12,'AUSTRIA','AUT',NULL,'cccccccc-cccc-cccc-cccc-000000000002',NULL,NULL,'Europe','2026-06-01 10:00:00','2026-06-01 10:00:00',NULL);
+/*!40000 ALTER TABLE `sport_event_team` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `sport_event_weight_category`
+--
+
+DROP TABLE IF EXISTS `sport_event_weight_category`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sport_event_weight_category` (
+  `id` char(36) NOT NULL COMMENT '(DC2Type:guid)',
+  `name` varchar(100) NOT NULL,
+  `min_weight` int(11) NOT NULL,
+  `max_weight` int(11) NOT NULL,
+  `average_duration` int(11) DEFAULT NULL,
+  `rounds_number` int(11) NOT NULL,
+  `round_duration` int(11) NOT NULL,
+  `overtime` int(11) NOT NULL DEFAULT 0,
+  `color` varchar(25) DEFAULT NULL,
+  `tournament_type` varchar(255) NOT NULL,
+  `odf_code` varchar(255) DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  `sport_event_id` varchar(255) NOT NULL,
+  `audience` varchar(20) NOT NULL,
+  `sport` varchar(20) NOT NULL,
+  `fighters_updated` datetime NOT NULL,
+  `uww_ranking` tinyint(1) NOT NULL,
+  `blockchain_ids` longtext DEFAULT NULL COMMENT '(DC2Type:array)',
+  `session_start_day` int(11) NOT NULL DEFAULT 1,
+  `mat_assignment` int(11) NOT NULL DEFAULT 0,
+  `visible` tinyint(1) NOT NULL DEFAULT 1,
+  `athena_finalized` tinyint(1) NOT NULL DEFAULT 0,
+  `medal_ceremony` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `IDX_E216320947551731` (`sport_event_id`),
+  CONSTRAINT `FK_E216320947551731` FOREIGN KEY (`sport_event_id`) REFERENCES `sport_event` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sport_event_weight_category`
+--
+
+LOCK TABLES `sport_event_weight_category` WRITE;
+/*!40000 ALTER TABLE `sport_event_weight_category` DISABLE KEYS */;
+INSERT INTO `sport_event_weight_category` VALUES
+('cccc5001-5001-5001-5001-000000000010','65 kg',0,65,420,2,180,0,'#a500ff','singlebracket',NULL,'2026-07-01 10:00:00','2026-07-01 10:00:00',NULL,'cccc5001-5001-5001-5001-000000000001','seniors','fs','2026-07-01 10:00:00',0,NULL,1,0,1,0,0),
+('cccc5001-5001-5001-5001-000000000011','74 kg',65,74,420,2,180,0,'#005aff','singlebracket',NULL,'2026-07-01 10:00:00','2026-07-01 10:00:00',NULL,'cccc5001-5001-5001-5001-000000000001','seniors','gr','2026-07-01 10:00:00',0,NULL,2,0,1,0,0),
+('cccc6001-6001-6001-6001-000000000010','57 kg',0,57,420,2,180,0,'#ff5500','singlebracket',NULL,'2026-08-01 10:00:00','2026-04-19 11:33:32',NULL,'cccc6001-6001-6001-6001-000000000001','seniors','fs','2026-08-01 10:00:00',0,NULL,1,0,1,0,0),
+('cccc6001-6001-6001-6001-000000000011','65 kg',57,65,420,2,180,0,'#a500ff','singlebracket',NULL,'2026-08-01 10:00:00','2026-04-19 11:36:02',NULL,'cccc6001-6001-6001-6001-000000000001','seniors','fs','2026-08-01 10:00:00',0,NULL,1,0,1,0,0),
+('cccc6001-6001-6001-6001-000000000012','74 kg',65,74,420,2,180,0,'#005aff','singlebracket',NULL,'2026-08-01 10:00:00','2026-04-19 11:35:49',NULL,'cccc6001-6001-6001-6001-000000000001','seniors','fs','2026-08-01 10:00:00',0,NULL,1,0,1,0,0),
+('cccc6001-6001-6001-6001-000000000013','86 kg',74,86,420,2,180,0,'#00d4ff','singlebracket',NULL,'2026-08-01 10:00:00','2026-04-19 11:36:14',NULL,'cccc6001-6001-6001-6001-000000000001','seniors','fs','2026-08-01 10:00:00',0,NULL,1,0,1,0,0),
+('cccc6001-6001-6001-6001-000000000014','60 kg',0,60,420,2,180,0,'#ff0055','singlebracket',NULL,'2026-08-01 10:00:00','2026-04-19 11:33:07',NULL,'cccc6001-6001-6001-6001-000000000001','seniors','gr','2026-08-01 10:00:00',0,NULL,1,0,1,0,0),
+('cccc6001-6001-6001-6001-000000000015','67 kg',60,67,420,2,180,0,'#00ff88','singlebracket',NULL,'2026-08-01 10:00:00','2026-04-19 11:33:07',NULL,'cccc6001-6001-6001-6001-000000000001','seniors','gr','2026-08-01 10:00:00',0,NULL,1,0,1,0,0),
+('cccc6001-6001-6001-6001-000000000016','77 kg',67,77,420,2,180,0,'#ffcc00','singlebracket',NULL,'2026-08-01 10:00:00','2026-04-19 11:33:09',NULL,'cccc6001-6001-6001-6001-000000000001','seniors','gr','2026-08-01 10:00:00',0,NULL,1,0,1,0,0),
+('cccc6001-6001-6001-6001-000000000017','87 kg',77,87,420,2,180,0,'#ff6600','singlebracket',NULL,'2026-08-01 10:00:00','2026-04-19 11:33:25',NULL,'cccc6001-6001-6001-6001-000000000001','seniors','gr','2026-08-01 10:00:00',0,NULL,1,0,1,0,0),
+('cccccccc-cccc-cccc-cccc-000000000010','65 kg',0,65,420,2,180,0,'#a500ff','singlebracket',NULL,'2026-06-01 10:00:00','2026-06-01 10:00:00',NULL,'cccccccc-cccc-cccc-cccc-000000000001','seniors','fs','2026-06-01 10:00:00',0,NULL,1,0,1,0,0),
+('cccccccc-cccc-cccc-cccc-000000000011','74 kg',65,74,420,2,180,0,'#005aff','singlebracket',NULL,'2026-06-01 10:00:00','2026-06-01 10:00:00',NULL,'cccccccc-cccc-cccc-cccc-000000000001','seniors','gr','2026-06-01 10:00:00',0,NULL,1,0,1,0,0),
+('cccccccc-cccc-cccc-cccc-000000000060','86 kg',74,86,420,2,180,0,'#ff8c00','singlebracket',NULL,'2026-06-01 10:00:00','2026-06-01 10:00:00',NULL,'cccccccc-cccc-cccc-cccc-000000000002','seniors','gr','2026-06-01 10:00:00',0,NULL,1,0,1,0,0);
+/*!40000 ALTER TABLE `sport_event_weight_category` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `sql_queue`
+--
+
+DROP TABLE IF EXISTS `sql_queue`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sql_queue` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `action` varchar(100) NOT NULL,
+  `payload` longtext NOT NULL,
+  `state` varchar(100) NOT NULL,
+  `entity_table` varchar(255) NOT NULL,
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  `sport_event_id` char(36) DEFAULT NULL COMMENT '(DC2Type:guid)',
+  `server_name` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_47CC6E7D47551731` (`sport_event_id`),
+  CONSTRAINT `FK_47CC6E7D47551731` FOREIGN KEY (`sport_event_id`) REFERENCES `sport_event` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sql_queue`
+--
+
+LOCK TABLES `sql_queue` WRITE;
+/*!40000 ALTER TABLE `sql_queue` DISABLE KEYS */;
+/*!40000 ALTER TABLE `sql_queue` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `user`
+--
+
+DROP TABLE IF EXISTS `user`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `user` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(180) NOT NULL,
+  `username_canonical` varchar(180) NOT NULL,
+  `email` varchar(180) NOT NULL,
+  `email_canonical` varchar(180) NOT NULL,
+  `enabled` tinyint(1) NOT NULL,
+  `salt` varchar(255) DEFAULT NULL,
+  `password` varchar(255) NOT NULL,
+  `last_login` datetime DEFAULT NULL,
+  `confirmation_token` varchar(180) DEFAULT NULL,
+  `password_requested_at` datetime DEFAULT NULL,
+  `roles` longtext NOT NULL COMMENT '(DC2Type:array)',
+  `name` varchar(250) DEFAULT NULL,
+  `organization` varchar(250) DEFAULT NULL,
+  `api_key` varchar(255) DEFAULT NULL,
+  `sso_id` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UNIQ_8D93D64992FC23A8` (`username_canonical`),
+  UNIQUE KEY `UNIQ_8D93D649A0D96FBF` (`email_canonical`),
+  UNIQUE KEY `UNIQ_8D93D649C05FB297` (`confirmation_token`)
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user`
+--
+
+LOCK TABLES `user` WRITE;
+/*!40000 ALTER TABLE `user` DISABLE KEYS */;
+INSERT INTO `user` VALUES
+(1,'superadmin','superadmin','it@uww.org','it@uww.org',1,NULL,'$2y$13$5sd64fmens84ssgco4ck4OlueJWzFDHpGIRRHT21pl8gFETmuwz.m',NULL,NULL,NULL,'a:1:{i:0;s:16:\"ROLE_SUPER_ADMIN\";}','Super Admin','United World Wrestling','7zhCzJw6yFF2qmDTXinqnHL9Kgur7P',NULL),
+(2,'scoreboard','scoreboard','arena.scoreboard@uww.io','arena.scoreboard@uww.io',1,NULL,'$2y$13$doIfnldu8FVYmO0OQpN1.ux9t1IbQpBSZtoFcopZYb8IXUbGWVze.',NULL,NULL,NULL,'a:1:{i:0;s:15:\"ROLE_SCOREBOARD\";}','Scoreboard','United World Wrestling','7U4YiGrWoFwp2VsHwzbQvZC2vWXp2e',NULL),
+(3,'public','public','arena.public@uww.io','arena.public@uww.io',1,'puCVUSOACLA1XH0gpiymupKLQdAJjPJt3ZPPkZbofkY','$2y$13$IYOq37Ul.CVs.1TjQDbkM.HtVfdE0W7a7vjQBprLaoewP525tKX6C',NULL,NULL,NULL,'a:1:{i:0;s:11:\"ROLE_PUBLIC\";}','Public User','United World Wrestling','67GNCCB6Q8h47QYnQyo1MdzTvqj7Hw7DMsQi2UVjfebRWiVGNt',NULL),
+(10,'admin','admin','g.kanocz2@gmail.com','g.kanocz2@gmail.com',1,NULL,'$2y$13$XsG4b.Kp/AtGUydYo6Sju.9YcdldZG5x7MUoXJeQ1Ty564m4GKyWK','2026-04-19 11:21:36',NULL,NULL,'a:1:{i:0;s:10:\"ROLE_ADMIN\";}','Gabriel Kanocz','FEI STU','2TsgJLB2CkgPRiQwLTR7bZUtBTxHUarX3Asic5Y2nP3DUj8riD',NULL);
+/*!40000 ALTER TABLE `user` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `webhook`
+--
+
+DROP TABLE IF EXISTS `webhook`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `webhook` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `url` varchar(255) NOT NULL,
+  `token` varchar(255) DEFAULT NULL,
+  `events` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '(DC2Type:json)' CHECK (json_valid(`events`)),
+  `status` int(11) NOT NULL,
+  `server_id` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `webhook`
+--
+
+LOCK TABLES `webhook` WRITE;
+/*!40000 ALTER TABLE `webhook` DISABLE KEYS */;
+/*!40000 ALTER TABLE `webhook` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2026-04-19 11:42:27
