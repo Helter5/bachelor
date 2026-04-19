@@ -9,6 +9,7 @@ interface CalendarTopBarProps {
   monthLabel: string
   onPrevMonth: () => void
   onNextMonth: () => void
+  onJumpToToday: () => void
   viewMode: CalendarViewMode
   setViewMode: (mode: CalendarViewMode) => void
   viewToggleClass: (mode: CalendarViewMode) => string
@@ -22,6 +23,7 @@ export function CalendarTopBar({
   monthLabel,
   onPrevMonth,
   onNextMonth,
+  onJumpToToday,
   viewMode,
   setViewMode,
   viewToggleClass,
@@ -80,6 +82,18 @@ export function CalendarTopBar({
           </button>
           <button onClick={() => setViewMode('day')} className={viewToggleClass('day')}>
             {t('calendar.dayView')}
+          </button>
+
+          <button
+            onClick={onJumpToToday}
+            className={`inline-flex h-9 w-9 items-center justify-center rounded-full transition-colors ${isDarkMode ? 'text-gray-300 hover:bg-white/10 hover:text-white' : 'text-gray-600 hover:bg-white hover:text-gray-900'}`}
+            aria-label={t('calendar.jumpToToday')}
+            title={t('calendar.jumpToToday')}
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 3v2m8-2v2M4 9h16M5 5h14a1 1 0 011 1v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6a1 1 0 011-1z" />
+              <circle cx="12" cy="14" r="1.75" fill="currentColor" stroke="none" />
+            </svg>
           </button>
         </div>
       </div>

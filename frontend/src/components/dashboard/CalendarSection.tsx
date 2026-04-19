@@ -219,6 +219,7 @@ export function CalendarSection({ isDarkMode }: CalendarSectionProps) {
               monthLabel={formatMonthYear(visibleMonth)}
               onPrevMonth={() => goToMonth(-1)}
               onNextMonth={() => goToMonth(1)}
+              onJumpToToday={() => selectDate(today)}
               viewMode={viewMode}
               setViewMode={setViewMode}
               viewToggleClass={viewToggleClass}
@@ -255,7 +256,6 @@ export function CalendarSection({ isDarkMode }: CalendarSectionProps) {
             visibleMonthEvents={visibleMonthEvents}
             rightPanelMode={rightPanelMode}
             setRightPanelMode={setRightPanelMode}
-            onJumpToToday={() => selectDate(today)}
             onSelectDate={selectDate}
             eventColors={eventColors}
           />
