@@ -215,19 +215,12 @@ jobs:
           timeout 300 bash -c 'until curl -sf http://localhost:8081/ > /dev/null 2>&1; do sleep 5; done'
           timeout 300 bash -c 'until curl -sf http://localhost:8082/ > /dev/null 2>&1; do sleep 5; done'
 
-      - name: Import Arena A base seed
+      - name: Load Arena A/B/C backup datasets
         working-directory: arena
         run: |
-          zcat database/seed/arena_data.sql.gz | docker compose exec -T mysql mysql --force -u arena -parena arena
-
-      - name: Load Arena A/B/C test data
-        working-directory: arena
-        run: |
-          docker compose exec -T mysql mysql -u arena -parena arena < test_one.sql
-          docker compose exec mysql mysqldump -u arena -parena arena user oauth2_client local_client | docker compose -p arena-b -f docker-compose-b.yaml exec -T mysql mysql -u arena -parena arena
-          docker compose -p arena-b -f docker-compose-b.yaml exec -T mysql mysql -u arena -parena arena < test_two.sql
-          docker compose exec mysql mysqldump -u arena -parena arena user oauth2_client local_client | docker compose -p arena-c -f docker-compose-c.yaml exec -T mysql mysql -u arena -parena arena
-          docker compose -p arena-c -f docker-compose-c.yaml exec -T mysql mysql -u arena -parena arena < test_three.sql
+          docker compose exec -T mysql mysql --force -u arena -parena arena < arena_a_backup.sql
+          docker compose -p arena-b -f docker-compose-b.yaml exec -T mysql mysql --force -u arena -parena arena < arena_b_backup.sql
+          docker compose -p arena-c -f docker-compose-c.yaml exec -T mysql mysql --force -u arena -parena arena < arena_c_backup.sql
 
       - name: Wait for API to be healthy
         run: |
