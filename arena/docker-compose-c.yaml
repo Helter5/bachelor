@@ -1,6 +1,6 @@
 services:
     php-fpm:
-        image: ghcr.io/helter5/arena-arena:latest
+        image: public.ecr.aws/uww/app/arena:latest
         environment:
             PHP_MEMORY_LIMIT: ${PHP_MEMORY_LIMIT:--1}
             DOCKER_COMPOSE_FILE_VERSION: "1.2"
@@ -18,7 +18,7 @@ services:
                 condition: service_started
 
     nginx:
-        image: ghcr.io/helter5/arena-arena-web:latest
+        image: public.ecr.aws/uww/app/arena-web:latest
         ports:
             - 8082:80
         restart: always
@@ -31,13 +31,13 @@ services:
                 condition: service_started
 
     mysql:
-        image: ghcr.io/helter5/arena-arena-db:latest
+        image: public.ecr.aws/uww/app/arena-db:latest
         restart: always
         volumes:
             - database:/var/lib/mysql
 
     caddy:
-        image: ghcr.io/helter5/arena-arena-mercure:latest
+        image: public.ecr.aws/uww/app/arena-mercure:latest
         restart: always
         environment:
             SERVER_NAME: ':80'
@@ -47,11 +47,11 @@ services:
                 cors_origins http://127.0.0.1:8000
 
     rabbitmq:
-        image: ghcr.io/helter5/arena-arena-rabbitmq:latest
+        image: public.ecr.aws/uww/app/arena-rabbitmq:latest
         restart: always
 
     redis:
-        image: ghcr.io/helter5/arena-arena-redis:latest
+        image: public.ecr.aws/uww/app/arena-redis:latest
         restart: always
 
 volumes:

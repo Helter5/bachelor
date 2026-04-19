@@ -151,6 +151,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Pull minimal Arena images (with retry for ECR rate limits)
+        working-directory: arena
+        run: |
+          for attempt in {1..5}; do
+            echo "Pull attempt $attempt/5..."
+            if docker compose -f docker-compose.sync.yaml pull --ignore-pull-failures; then
+              break
+            fi
+            if [ $attempt -lt 5 ]; then
+              sleep $((attempt * 10))
+            else
+              echo "Failed to pull images after 5 attempts"
+              exit 1
+            fi
+          done
+
       - name: Start minimal Arena stack
         working-directory: arena
         run: docker compose -f docker-compose.sync.yaml up -d
@@ -242,6 +258,34 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull Arena A/B/C images (with retry for ECR rate limits)
+        working-directory: arena
+        run: |
+          for stack in "docker-compose.yaml" "docker-compose-b.yaml" "docker-compose-c.yaml"; do
+            for attempt in {1..5}; do
+              echo "Pull attempt $attempt/5 for $stack..."
+              if [ "$stack" = "docker-compose.yaml" ]; then
+                if docker compose -f "$stack" -f docker-compose.ci.yaml pull --ignore-pull-failures; then
+                  break
+                fi
+              elif [ "$stack" = "docker-compose-b.yaml" ]; then
+                if docker compose -p arena-b -f "$stack" -f docker-compose.ci.yaml pull --ignore-pull-failures; then
+                  break
+                fi
+              else
+                if docker compose -p arena-c -f "$stack" -f docker-compose.ci.yaml pull --ignore-pull-failures; then
+                  break
+                fi
+              fi
+              if [ $attempt -lt 5 ]; then
+                sleep $((attempt * 10))
+              else
+                echo "Failed to pull images for $stack after 5 attempts"
+                exit 1
+              fi
+            done
+          done
 
       - name: Start Arena A
         working-directory: arena
