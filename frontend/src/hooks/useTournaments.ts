@@ -25,8 +25,22 @@ export function useTournaments() {
     const fetchEvents = async () => {
       try {
         setLoading(true)
-        const data = await apiClient.get<{ items: Event[] }>(API_ENDPOINTS.SPORT_EVENT_DATABASE)
-        setEvents(data.items || [])
+        const pageSize = 500
+        const firstPage = await apiClient.get<{ items: Event[]; total?: number; skip?: number; limit?: number }>(
+          `${API_ENDPOINTS.SPORT_EVENT_DATABASE}?skip=0&limit=${pageSize}`
+        )
+
+        const allEvents = [...(firstPage.items || [])]
+        const total = firstPage.total ?? allEvents.length
+
+        for (let skip = allEvents.length; skip < total; skip += pageSize) {
+          const nextPage = await apiClient.get<{ items: Event[] }>(
+            `${API_ENDPOINTS.SPORT_EVENT_DATABASE}?skip=${skip}&limit=${pageSize}`
+          )
+          allEvents.push(...(nextPage.items || []))
+        }
+
+        setEvents(allEvents)
         setError(null)
       } catch (err) {
         console.error('Error fetching events:', err)

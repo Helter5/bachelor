@@ -2,10 +2,16 @@
   "sidebar": {
     "nav": {
       "home": "Overview",
+      "calendar": "Calendar",
       "tournaments": "Tournaments",
       "athletes": "Athletes",
       "stats": "Statistics",
       "logs": "Logs"
+    },
+    "calendar": {
+      "title": "Calendar",
+      "subtitle": "Upcoming events",
+      "empty": "No near events are scheduled yet."
     },
     "actions": {
       "logout": "Log out",
@@ -13,6 +19,34 @@
       "darkMode": "Dark mode",
       "settings": "Settings"
     }
+  },
+  "calendar": {
+    "title": "Calendar",
+    "subtitle": "Overview of upcoming and recent events",
+    "monthLabel": "Month",
+    "weekLabel": "Week",
+    "dayLabel": "Day",
+    "monthView": "Month",
+    "weekView": "Week",
+    "dayView": "Day",
+    "monthSummary": "{{count}} events this month",
+    "weekSummary": "{{count}} events this week",
+    "today": "Today",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "jumpToToday": "Jump to today",
+    "daySummary": "{{count}} events on this day",
+    "dayEventSingular": "event",
+    "dayEventPlural": "events",
+    "monthEventsTitle": "Events in the month",
+    "emptyDay": "No events are scheduled for this day.",
+    "emptyMonth": "No events are scheduled in this month.",
+    "upcomingTitle": "Upcoming events",
+    "upcomingSubtitle": "What is happening first",
+    "pastTitle": "Recent events",
+    "pastSubtitle": "Recently finished events",
+    "emptyUpcoming": "No near events are scheduled yet.",
+    "emptyPast": "No past events are available yet."
   },
   "common": {
     "loading": "Loading...",

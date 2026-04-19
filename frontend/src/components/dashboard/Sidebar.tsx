@@ -34,6 +34,16 @@ const menuItems = [
     ),
   },
   {
+    id: "calendar",
+    labelKey: "sidebar.nav.calendar",
+    adminOnly: false,
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 2v4M16 2v4M3 10h18M5 6h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z" />
+      </svg>
+    ),
+  },
+  {
     id: "tournaments",
     labelKey: "sidebar.nav.tournaments",
     adminOnly: false,

@@ -4,7 +4,7 @@ import i18n from '@/i18n'
 const SUPPORTED_LOCALES = new Set(['sk', 'en'])
 const DEFAULT_LOCALE = 'sk'
 const DASHBOARD_SEGMENT = 'dashboard'
-const VALID_SECTIONS = new Set(['home', 'tournaments', 'athletes', 'stats', 'fighters', 'settings', 'logs'])
+const VALID_SECTIONS = new Set(['home', 'calendar', 'tournaments', 'athletes', 'stats', 'fighters', 'settings', 'logs'])
 const ADMIN_ONLY_SECTIONS = new Set(['logs'])
 
 interface TournamentDetail {

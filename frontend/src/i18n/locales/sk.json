@@ -2,10 +2,16 @@
   "sidebar": {
     "nav": {
       "home": "Prehľad",
+      "calendar": "Kalendár",
       "tournaments": "Turnaje",
       "athletes": "Atléti",
       "stats": "Štatistiky",
       "logs": "Logy"
+    },
+    "calendar": {
+      "title": "Kalendár",
+      "subtitle": "Najbližšie eventy",
+      "empty": "Zatiaľ nie sú naplánované žiadne blízke eventy."
     },
     "actions": {
       "logout": "Odhlásiť sa",
@@ -13,6 +19,34 @@
       "darkMode": "Tmavý režim",
       "settings": "Nastavenia"
     }
+  },
+  "calendar": {
+    "title": "Kalendár",
+    "subtitle": "Prehľad najbližších a nedávnych eventov",
+    "monthLabel": "Mesiac",
+    "weekLabel": "Týždeň",
+    "dayLabel": "Deň",
+    "monthView": "Month",
+    "weekView": "Week",
+    "dayView": "Day",
+    "monthSummary": "{{count}} eventov v tomto mesiaci",
+    "weekSummary": "{{count}} eventov v tomto týždni",
+    "today": "Dnes",
+    "previousMonth": "Predchádzajúci mesiac",
+    "nextMonth": "Nasledujúci mesiac",
+    "jumpToToday": "Na dnes",
+    "daySummary": "{{count}} eventov v tento deň",
+    "dayEventSingular": "event",
+    "dayEventPlural": "eventy",
+    "monthEventsTitle": "Eventy v mesiaci",
+    "emptyDay": "V tento deň nie sú naplánované žiadne eventy.",
+    "emptyMonth": "V tomto mesiaci nie sú žiadne eventy.",
+    "upcomingTitle": "Najbližšie eventy",
+    "upcomingSubtitle": "To, čo sa deje najskôr",
+    "pastTitle": "Nedávne eventy",
+    "pastSubtitle": "Posledné ukončené eventy",
+    "emptyUpcoming": "Zatiaľ nie sú naplánované žiadne blízke eventy.",
+    "emptyPast": "Zatiaľ nie sú dostupné žiadne minulé eventy."
   },
   "common": {
     "loading": "Načítavanie...",

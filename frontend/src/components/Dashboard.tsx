@@ -3,6 +3,7 @@ import { Sidebar } from "./dashboard/Sidebar"
 import { SyncConfirmModal } from "./dashboard/SyncConfirmModal"
 import { Toast } from "./ui/Toast"
 import { DashboardStats } from "./dashboard/DashboardStats"
+import { CalendarSection } from "./dashboard/CalendarSection"
 import { RightSidebar } from "./dashboard/RightSidebar"
 import { TournamentsList } from "./dashboard/TournamentsList"
 import { TournamentDetail } from "./dashboard/TournamentDetail"
@@ -121,7 +122,9 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
         <main className="flex-1 overflow-auto pt-16 lg:pt-0">
           <div className="p-4 md:p-8">
             {/* Conditional rendering based on active section */}
-            {dashboardState.activeSection === 'tournaments' ? (
+            {dashboardState.activeSection === 'calendar' ? (
+              <CalendarSection isDarkMode={isDarkMode} />
+            ) : dashboardState.activeSection === 'tournaments' ? (
               dashboardState.selectedPerson ? (
                 <WrestlerProfile
                   isDarkMode={isDarkMode}
@@ -258,6 +261,7 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
                     <RightSidebar isDarkMode={isDarkMode} />
                   </div>
                 )}
+
               </>
             )}
           </div>
