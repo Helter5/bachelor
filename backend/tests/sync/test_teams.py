@@ -6,7 +6,7 @@ Matching: natural key (name) v rámci eventu — UUID sa nepoužíva.
 """
 from sqlmodel import select
 from app.domain.entities.team import Team
-from tests.conftest import arena_fetch
+from tests.conftest import arena_fetch_all_items
 from tests.utils import check, section, result
 
 
@@ -14,8 +14,11 @@ async def _fetch_arena_teams(event) -> dict[str, dict]:
     """Stiahne tímy pre daný event z Arena API. Kľúč: name."""
     if not event.arena_uuid:
         return {}
-    data = await arena_fetch(f"team/{event.arena_uuid}")
-    items = data.get("sportEventTeams", {}).get("items", [])
+    items = await arena_fetch_all_items(
+        f"team/{event.arena_uuid}",
+        "sportEventTeams",
+        "items",
+    )
     return {item["name"]: item for item in items if item.get("name")}
 
 

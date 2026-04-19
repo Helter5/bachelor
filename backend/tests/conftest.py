@@ -5,6 +5,7 @@ Run inside Docker: docker compose exec wf-api pytest
 import os
 os.environ["SEND_EMAILS"] = "false"  # Disable email sending during tests
 
+import math
 import pytest
 from sqlmodel import Session, select
 
@@ -61,3 +62,25 @@ def synced_events(db):
 async def arena_fetch(endpoint: str):
     """Helper — fetchne dáta z Arena API."""
     return await fetch_arena_data(endpoint)
+
+
+async def arena_fetch_all_items(endpoint: str, items_key: str, nested_items_key: str):
+    """Fetch all paginated items from Arena API for test assertions."""
+    data = await arena_fetch(endpoint)
+    obj = data.get(items_key, {})
+
+    if not isinstance(obj, dict):
+        return []
+
+    items = list(obj.get(nested_items_key, []))
+    total = obj.get("totalCount", len(items))
+    per_page = obj.get("numItemsPerPage", len(items)) or len(items)
+
+    if total > per_page and per_page > 0:
+        sep = "&" if "?" in endpoint else "?"
+        for page in range(2, math.ceil(total / per_page) + 1):
+            page_data = await arena_fetch(f"{endpoint}{sep}page={page}")
+            page_items = page_data.get(items_key, {}).get(nested_items_key, [])
+            items.extend(page_items)
+
+    return items

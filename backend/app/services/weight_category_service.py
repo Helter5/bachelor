@@ -159,18 +159,22 @@ class WeightCategoryService(BaseService[WeightCategory]):
 
         for wc in wc_list:
             try:
-                # Resolve or create discipline based on sport_id
+                # Resolve or create discipline based on sport_id + audience_id
                 sport_id = wc.get("sportId")
+                audience_id = wc.get("audienceId")
                 discipline_id = None
                 if sport_id:
                     discipline = self.session.exec(
-                        select(Discipline).where(Discipline.sport_id == sport_id)
+                        select(Discipline).where(
+                            Discipline.sport_id == sport_id,
+                            Discipline.audience_id == audience_id,
+                        )
                     ).first()
                     if not discipline:
                         discipline = Discipline(
                             sport_id=sport_id,
                             sport_name=wc.get("sportName"),
-                            audience_id=wc.get("audienceId"),
+                            audience_id=audience_id,
                             audience_name=wc.get("audienceName"),
                             rounds_number=wc.get("roundsNumber"),
                             round_duration=wc.get("roundDuration"),
@@ -178,6 +182,14 @@ class WeightCategoryService(BaseService[WeightCategory]):
                         )
                         self.session.add(discipline)
                         self.session.flush()
+                    else:
+                        # Keep discipline metadata fresh without changing identity.
+                        discipline.sport_name = wc.get("sportName") or discipline.sport_name
+                        discipline.audience_name = wc.get("audienceName") or discipline.audience_name
+                        discipline.rounds_number = wc.get("roundsNumber")
+                        discipline.round_duration = wc.get("roundDuration")
+                        discipline.tournament_type = wc.get("tournamentType")
+                        self.session.add(discipline)
                     discipline_id = discipline.id
 
                 # Map Arena API fields to database fields
