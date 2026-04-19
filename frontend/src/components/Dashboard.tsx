@@ -48,7 +48,7 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
     toggleMobileMenu,
     closeMobileMenu,
     toggleDetailsMobile,
-  } = useDashboardState()
+  } = useDashboardState(isAdmin)
 
   return (
     <div className={`flex h-screen ${isDarkMode ? 'bg-[#0f172a]' : 'bg-gray-50'}`}>

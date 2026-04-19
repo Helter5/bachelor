@@ -5,6 +5,7 @@ const SUPPORTED_LOCALES = new Set(['sk', 'en'])
 const DEFAULT_LOCALE = 'sk'
 const DASHBOARD_SEGMENT = 'dashboard'
 const VALID_SECTIONS = new Set(['home', 'tournaments', 'athletes', 'stats', 'fighters', 'settings', 'logs'])
+const ADMIN_ONLY_SECTIONS = new Set(['logs'])
 
 interface TournamentDetail {
   id: number
@@ -108,11 +109,15 @@ function parseLocationState() {
   return { section, tournamentId, personId }
 }
 
-export function useDashboardState() {
+export function useDashboardState(isAdmin = false) {
   const [state, setState] = useState<DashboardState>(() => {
     const { section, personId } = parseLocationState()
+    const safeSection = !isAdmin && ADMIN_ONLY_SECTIONS.has(section) ? 'home' : section
+    if (safeSection !== section) {
+      window.history.replaceState({}, '', buildPath(safeSection))
+    }
     return {
-      activeSection: section,
+      activeSection: safeSection,
       isMobileMenuOpen: false,
       showDetailsMobile: false,
       selectedTournament: null,
@@ -128,10 +133,11 @@ export function useDashboardState() {
       if (locale && i18n.resolvedLanguage !== locale) {
         i18n.changeLanguage(locale)
       }
+      const safeSection = !isAdmin && ADMIN_ONLY_SECTIONS.has(section) ? 'home' : section
 
       setState(prev => ({
         ...prev,
-        activeSection: section,
+        activeSection: safeSection,
         selectedTournament: tournamentId && prev.selectedTournament?.id === tournamentId ? prev.selectedTournament : null,
         selectedPerson: personId ? { id: personId, name: '' } : null
       }))
