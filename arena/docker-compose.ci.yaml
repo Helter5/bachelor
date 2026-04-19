@@ -18,4 +18,4 @@ services:
   redis:
     image: ghcr.io/helter5/uww-arena-redis:latest
   gotenberg:
-    image: ghcr.io/helter5/uww-gotenberg:8
+    image: gotenberg/gotenberg:8

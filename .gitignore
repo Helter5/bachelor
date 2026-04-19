@@ -51,3 +51,5 @@ dist/
 .next/
 .nuxt/
 TODO.md
+
+push_arena_images.sh
