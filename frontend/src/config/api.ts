@@ -61,9 +61,6 @@ export const API_ENDPOINTS = {
   SYNC_LOG_DETAIL: (logId: number) => `/api/v1/admin/sync-logs/${logId}`,
   SYNC_LOG_UPDATE_STATS: (logId: number) => `/api/v1/admin/sync-logs/${logId}/stats`,
 
-  // Persons endpoints (ADMIN)
-  ADMIN_PERSONS_MERGE: '/api/v1/admin/persons/merge',
-
   // Persons endpoints (PUBLIC)
   PERSONS: '/api/v1/persons',
   PERSON_DETAIL: (personId: number) => `/api/v1/persons/${personId}`,

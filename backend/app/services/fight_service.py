@@ -60,6 +60,20 @@ class FightService(BaseService[Fight]):
                         "updated": 0,
                         "message": "No fights available for this event"
                     }
+                if e.status_code == 500:
+                    logger.warning(
+                        f"Arena API returned 500 for fights of event {sport_event_uuid}. "
+                        f"Skipping event to keep sync resilient."
+                    )
+                    return {
+                        "success": True,
+                        "event_id": sport_event_uuid,
+                        "event_name": event.name,
+                        "synced_count": 0,
+                        "created": 0,
+                        "updated": 0,
+                        "message": "Arena API returned 500 for fights. Event was skipped."
+                    }
                 raise
 
             fights_list = fights_data.get("fights", [])
@@ -263,6 +277,7 @@ class FightService(BaseService[Fight]):
                         select(Fight).where(
                             Fight.sport_event_id == event_db_id,
                             Fight.fight_number == fight_number,
+                            Fight.weight_category_id == weight_category_id,
                         )
                     ).first()
                 elif fighter_one_id and fighter_two_id:

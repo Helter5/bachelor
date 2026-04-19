@@ -61,16 +61,16 @@ INSERT INTO `sport_event_team`
    `sport_event_pool_id`, `draw_number`, `continent`, `created`, `updated`, `deleted_at`)
 VALUES
   ('cccccccc-cccc-cccc-cccc-000000000020',
-   NULL, 'SLOVAKIA', 'SVK', NULL, 'cccccccc-cccc-cccc-cccc-000000000001',
+  178, 'SLOVAKIA', 'SVK', NULL, 'cccccccc-cccc-cccc-cccc-000000000001',
    NULL, NULL, 'Europe', '2026-06-01 10:00:00', '2026-06-01 10:00:00', NULL),
   ('cccccccc-cccc-cccc-cccc-000000000021',
-   NULL, 'CZECHIA', 'CZE', NULL, 'cccccccc-cccc-cccc-cccc-000000000001',
+  51, 'CZECHIA', 'CZE', NULL, 'cccccccc-cccc-cccc-cccc-000000000001',
    NULL, NULL, 'Europe', '2026-06-01 10:00:00', '2026-06-01 10:00:00', NULL),
   ('cccccccc-cccc-cccc-cccc-000000000022',
-   NULL, 'POLAND', 'POL', NULL, 'cccccccc-cccc-cccc-cccc-000000000001',
+  153, 'POLAND', 'POL', NULL, 'cccccccc-cccc-cccc-cccc-000000000001',
    NULL, NULL, 'Europe', '2026-06-01 10:00:00', '2026-06-01 10:00:00', NULL),
   ('cccccccc-cccc-cccc-cccc-000000000023',
-   NULL, 'AUSTRIA', 'AUT', NULL, 'cccccccc-cccc-cccc-cccc-000000000001',
+  12, 'AUSTRIA', 'AUT', NULL, 'cccccccc-cccc-cccc-cccc-000000000001',
    NULL, NULL, 'Europe', '2026-06-01 10:00:00', '2026-06-01 10:00:00', NULL);
 
 -- Persons:
@@ -200,10 +200,10 @@ INSERT INTO `sport_event_team`
    `sport_event_pool_id`, `draw_number`, `continent`, `created`, `updated`, `deleted_at`)
 VALUES
   ('cccccccc-cccc-cccc-cccc-000000000070',
-   NULL, 'HUNGARY', 'HUN', NULL, 'cccccccc-cccc-cccc-cccc-000000000002',
+  84, 'HUNGARY', 'HUN', NULL, 'cccccccc-cccc-cccc-cccc-000000000002',
    NULL, NULL, 'Europe', '2026-06-01 10:00:00', '2026-06-01 10:00:00', NULL),
   ('cccccccc-cccc-cccc-cccc-000000000071',
-   NULL, 'AUSTRIA', 'AUT', NULL, 'cccccccc-cccc-cccc-cccc-000000000002',
+  12, 'AUSTRIA', 'AUT', NULL, 'cccccccc-cccc-cccc-cccc-000000000002',
    NULL, NULL, 'Europe', '2026-06-01 10:00:00', '2026-06-01 10:00:00', NULL);
 
 -- Persons (unique to Exclusive Cup)

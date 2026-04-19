@@ -280,8 +280,6 @@ ADMIN_ENDPOINTS = [
     ("POST", f"/api/v1/admin/sync/teams/{FAKE_ID}"),
     ("POST", f"/api/v1/admin/sync/fights/{FAKE_ID}"),
     ("POST", f"/api/v1/admin/sync/victory-types/{FAKE_ID}"),
-    # persons merge
-    ("POST", "/api/v1/admin/persons/merge"),
     # sync-logs
     ("GET", "/api/v1/admin/sync-logs"),
     ("GET", f"/api/v1/admin/sync-logs/{FAKE_ID}"),
