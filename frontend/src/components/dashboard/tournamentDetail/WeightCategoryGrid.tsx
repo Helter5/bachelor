@@ -11,6 +11,7 @@ interface WeightCategoryGridProps {
   onSelect: (wc: { id: number; name: string; sport_name: string; audience_name: string }) => void
   page?: number
   onPageChange?: (page: number) => void
+  itemsPerPage?: number
 }
 
 export function WeightCategoryGrid({
@@ -20,6 +21,7 @@ export function WeightCategoryGrid({
   onSelect,
   page,
   onPageChange,
+  itemsPerPage = ITEMS_PER_PAGE,
 }: WeightCategoryGridProps) {
   const { t } = useTranslation()
 
@@ -34,7 +36,7 @@ export function WeightCategoryGrid({
     <div className="space-y-6">
       {Object.entries(grouped).map(([type, group]) => {
         const paginated = page !== undefined
-          ? group.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
+          ? group.slice((page - 1) * itemsPerPage, page * itemsPerPage)
           : group
 
         return (
@@ -80,7 +82,7 @@ export function WeightCategoryGrid({
                 isDarkMode={isDarkMode}
                 currentPage={page}
                 totalItems={group.length}
-                itemsPerPage={ITEMS_PER_PAGE}
+                itemsPerPage={itemsPerPage}
                 onPageChange={onPageChange}
               />
             )}

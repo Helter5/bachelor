@@ -1,17 +1,21 @@
+import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import type { FightResult, WeightCategory } from "../types"
+import type { FightResult, Team, WeightCategory } from "../types"
 import { StatusBadge } from "../../../ui/StatusBadge"
 import { EmptyState } from "../../../ui/EmptyState"
 import { LoadingSpinner } from "../../../ui/LoadingSpinner"
 import { ErrorAlert } from "../../../ui/ErrorAlert"
 import { DetailHeader } from "../../../ui/DetailHeader"
 import { WeightCategoryGrid } from "../WeightCategoryGrid"
+import { Pagination } from "../Pagination"
+import { ResultsView } from "../ResultsView"
 
 interface ResultsTabProps {
   isDarkMode: boolean
   results: FightResult[]
   resultsLoading: boolean
   resultsError: string | null
+  teams: Team[]
   weightCategories: WeightCategory[]
   weightCategoriesLoading: boolean
   selectedWeightCategoryForResults: { id: number; name: string; sport_name: string; audience_name: string } | null
@@ -25,6 +29,7 @@ export function ResultsTab({
   results,
   resultsLoading,
   resultsError,
+  teams,
   weightCategories,
   weightCategoriesLoading,
   selectedWeightCategoryForResults,
@@ -33,163 +38,133 @@ export function ResultsTab({
   getWeightCategoryStatus,
 }: ResultsTabProps) {
   const { t } = useTranslation()
+  const [selectedSportType, setSelectedSportType] = useState<string | null>(null)
+  const [sportTypePage, setSportTypePage] = useState(1)
+  const [wcPage, setWcPage] = useState(1)
 
+  const normalizeTeamName = (name: string) =>
+    name
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+
+  const teamCountryByName = teams.reduce((acc, team) => {
+    if (!team.name) return acc
+    acc[normalizeTeamName(team.name)] = team.country_iso_code
+    return acc
+  }, {} as Record<string, string | null>)
+
+  useEffect(() => { setWcPage(1) }, [selectedSportType])
+
+  // ── Level 3: Fight detail ────────────────────────────────────────────────────
   if (selectedWeightCategoryForResults) {
+    const categoryFights = results.filter(r => r.weightCategoryName === selectedWeightCategoryForResults.name)
+    const validFights = categoryFights.filter(f =>
+      f.fighter1FullName?.trim() && f.fighter2FullName?.trim()
+    )
+
+    const getPriority = (name: string) => {
+      const l = name.toLowerCase()
+      if (l.includes('qualif')) return 1
+      const g = l.match(/([a-z])\s*\|\s*round\s+(\d+)/)
+      if (g) return 2 + (parseInt(g[2]) - 1) * 0.1 + (g[1].charCodeAt(0) - 97) * 0.01
+      if (l.includes('1/16') || l.includes('round of 16')) return 8
+      if (l.includes('1/8') || l.includes('round of 8')) return 9
+      if (l.includes('1/4') || l.includes('quarter')) return 10
+      if (l.includes('1/2') || l.includes('semi')) return 11
+      if (l.includes('repechage') || l.includes('repêchage')) return 12
+      if (l.includes('final 3-5') || l.includes('final3-5')) return 13
+      if (l.includes('final 3-4') || l.includes('final3-4')) return 14
+      if (l.includes('final 1-2') || l.includes('final1-2')) return 15
+      if (l.includes('final 1-3') || l.includes('final1-3')) return 16
+      if (l.includes('final')) return 17
+      return 20
+    }
+
+    const roundGroups = validFights.reduce((acc, fight) => {
+      if (!acc[fight.roundFriendlyName]) acc[fight.roundFriendlyName] = []
+      acc[fight.roundFriendlyName].push(fight)
+      return acc
+    }, {} as Record<string, FightResult[]>)
+
+    const sortedRounds = Object.entries(roundGroups).sort(([a], [b]) => {
+      const d = getPriority(a) - getPriority(b)
+      return d !== 0 ? d : a.localeCompare(b)
+    })
+
+    const wc = weightCategories.find(w => w.id === selectedWeightCategoryForResults.id)
+
     return (
       <div>
-        {/* Detail View Header */}
         <DetailHeader
           isDarkMode={isDarkMode}
-          onBack={closeWeightCategoryResultsDetail}
+          onBack={() => {
+            setSelectedSportType(`${selectedWeightCategoryForResults.sport_name} • ${selectedWeightCategoryForResults.audience_name}`)
+            closeWeightCategoryResultsDetail()
+          }}
           title={selectedWeightCategoryForResults.name}
           subtitle={`${selectedWeightCategoryForResults.sport_name} • ${selectedWeightCategoryForResults.audience_name}`}
         />
 
-        {/* Results in spider/bracket layout */}
-        {(() => {
-          const categoryFights = results.filter(r => r.weightCategoryName === selectedWeightCategoryForResults.name)
-
-          if (categoryFights.length === 0) {
-            const weightCategory = weightCategories.find(wc => wc.id === selectedWeightCategoryForResults.id)
-            const hasFighters = weightCategory && weightCategory.count_fighters > 0
-
-            return (
-              <EmptyState
-                icon="document"
-                title={hasFighters ? t('tournamentDetail.errors.noFightsYet') : t('tournamentDetail.errors.noResults')}
-                description={hasFighters ? undefined : undefined}
-                isDarkMode={isDarkMode}
-              />
-            )
-          }
-
-          const validFights = categoryFights.filter(fight =>
-            fight.fighter1FullName && fight.fighter1FullName.trim() !== '' &&
-            fight.fighter2FullName && fight.fighter2FullName.trim() !== ''
-          )
-
-          const roundGroups = validFights.reduce((acc, fight) => {
-            const roundName = fight.roundFriendlyName
-            if (!acc[roundName]) {
-              acc[roundName] = []
-            }
-            acc[roundName].push(fight)
-            return acc
-          }, {} as Record<string, FightResult[]>)
-
-          const sortedRounds = Object.entries(roundGroups).sort((a, b) => {
-            const [nameA] = a
-            const [nameB] = b
-
-            const getPriority = (name: string) => {
-              const lower = name.toLowerCase()
-
-              if (lower.includes('qualif')) return 1
-
-              const groupMatch = lower.match(/([a-z])\s*\|\s*round\s+(\d+)/)
-              if (groupMatch) {
-                const roundNum = parseInt(groupMatch[2])
-                return 2 + (roundNum - 1) * 0.1 + (groupMatch[1].charCodeAt(0) - 97) * 0.01
-              }
-
-              if (lower.includes('1/4') || lower.includes('quarter')) return 10
-              if (lower.includes('1/2') || lower.includes('semi')) return 11
-              if (lower.includes('repechage') || lower.includes('repêchage')) return 12
-              if (lower.includes('final 3-5') || lower.includes('final3-5')) return 13
-              if (lower.includes('final 3-4') || lower.includes('final3-4')) return 14
-              if (lower.includes('final 1-2') || lower.includes('final1-2')) return 15
-              if (lower.includes('final 1-3') || lower.includes('final1-3')) return 16
-              if (lower.includes('final')) return 17
-
-              return 20
-            }
-
-            const priorityDiff = getPriority(nameA) - getPriority(nameB)
-            if (priorityDiff !== 0) return priorityDiff
-
-            return nameA.localeCompare(nameB)
-          })
-
-          return (
-            <div className="space-y-2">
-              {sortedRounds.map(([roundName, fights]) => (
-                <div key={roundName} className="space-y-2">
-                  {fights.sort((a, b) => a.fightNumber - b.fightNumber).map((fight) => {
-                      const isFighter1Winner = fight.winnerFighter === fight.fighter1Id
-                      const isFighter2Winner = fight.winnerFighter === fight.fighter2Id
-                      const tp1 = fight.technicalPoints?.find((tp: Record<string, unknown>) => tp.fighterId === fight.fighter1Id)
-                      const tp2 = fight.technicalPoints?.find((tp: Record<string, unknown>) => tp.fighterId === fight.fighter2Id)
-                      const timeStr = fight.endTime > 0
-                        ? `${Math.floor(fight.endTime / 60)}:${String(fight.endTime % 60).padStart(2, '0')}`
-                        : '—'
-
-                      const cp1 = fight.fighter1RankingPoint
-                      const cp2 = fight.fighter2RankingPoint
-                      const tp1Val = tp1 ? Number(tp1.points) : 0
-                      const tp2Val = tp2 ? Number(tp2.points) : 0
-
-                      const badgeBase = `text-xs font-medium px-2 py-0.5 rounded tabular-nums`
-                      const badgeNormal = isDarkMode ? 'bg-white/5 text-gray-400' : 'bg-gray-100 text-gray-500'
-                      const badgeHigher = 'bg-green-500/15 text-green-400'
-
-                      return (
-                        <div
-                          key={fight.id}
-                          className={`rounded-lg overflow-hidden ${
-                            isDarkMode ? 'bg-[#0f172a]/50' : 'bg-gray-50'
-                          }`}
-                        >
-                          <div className="flex px-3 py-2.5 gap-3">
-                            {/* Left: victory type vertically centered */}
-                            <div className="flex items-center justify-end w-24 shrink-0">
-                              <span
-                                className={`text-xs font-medium text-right leading-tight ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
-                                title={fight.victoryTypeName}
-                              >
-                                {fight.victoryTypeName}
-                              </span>
-                            </div>
-
-                            {/* Vertical separator */}
-                            <div className={`w-px self-stretch ${isDarkMode ? 'bg-white/[0.08]' : 'bg-gray-300'}`} />
-
-                            {/* Right: both fighters */}
-                            <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-                              <div className="flex items-center">
-                                <span className={`flex-1 text-sm font-medium min-w-0 truncate ${
-                                  isFighter1Winner ? 'text-green-400'
-                                    : isFighter2Winner ? isDarkMode ? 'text-red-400' : 'text-red-500'
-                                    : isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                                }`}>{fight.fighter1FullName}</span>
-                                <div className="flex items-center gap-1 ml-3 shrink-0">
-                                  <span className={`${badgeBase} ${cp1 > cp2 ? badgeHigher : badgeNormal}`}>CP {cp1}</span>
-                                  <span className={`${badgeBase} ${tp1Val > tp2Val ? badgeHigher : badgeNormal}`}>TP {tp1Val}</span>
-                                </div>
-                              </div>
-                              <div className="flex items-center">
-                                <span className={`flex-1 text-sm font-medium min-w-0 truncate ${
-                                  isFighter2Winner ? 'text-green-400'
-                                    : isFighter1Winner ? isDarkMode ? 'text-red-400' : 'text-red-500'
-                                    : isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                                }`}>{fight.fighter2FullName}</span>
-                                <div className="flex items-center gap-1 ml-3 shrink-0">
-                                  <span className={`${badgeBase} ${cp2 > cp1 ? badgeHigher : badgeNormal}`}>CP {cp2}</span>
-                                  <span className={`${badgeBase} ${tp2Val > tp1Val ? badgeHigher : badgeNormal}`}>TP {tp2Val}</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    })}
-                </div>
-              ))}
-            </div>
-          )
-        })()}
+        {categoryFights.length === 0 ? (
+          <EmptyState
+            icon="document"
+            title={wc?.count_fighters ? t('tournamentDetail.errors.noFightsYet') : t('tournamentDetail.errors.noResults')}
+            isDarkMode={isDarkMode}
+          />
+        ) : (
+          <ResultsView
+            isDarkMode={isDarkMode}
+            sortedRounds={sortedRounds}
+            teamCountryByName={teamCountryByName}
+          />
+        )}
       </div>
     )
   }
+
+  // ── Level 2: Weight categories for selected sport type ───────────────────────
+  if (selectedSportType) {
+    const filtered = weightCategories.filter(
+      wc => `${wc.sport_name} • ${wc.audience_name}` === selectedSportType
+    )
+    return (
+      <div>
+        <DetailHeader
+          isDarkMode={isDarkMode}
+          onBack={() => setSelectedSportType(null)}
+          title={selectedSportType}
+        />
+        <WeightCategoryGrid
+          isDarkMode={isDarkMode}
+          categories={filtered}
+          getWeightCategoryStatus={getWeightCategoryStatus}
+          onSelect={openWeightCategoryResultsDetail}
+          page={wcPage}
+          onPageChange={setWcPage}
+          itemsPerPage={8}
+        />
+      </div>
+    )
+  }
+
+  // ── Level 1: Sport type cards ────────────────────────────────────────────────
+  const SPORT_TYPES_PER_PAGE = 12
+  const sportTypes = weightCategories.reduce((acc, wc) => {
+    const key = `${wc.sport_name} • ${wc.audience_name}`
+    if (!acc[key]) acc[key] = { sport_name: wc.sport_name, audience_name: wc.audience_name, total: 0, completed: 0 }
+    acc[key].total++
+    if (getWeightCategoryStatus(wc) === 'completed') acc[key].completed++
+    return acc
+  }, {} as Record<string, { sport_name: string; audience_name: string; total: number; completed: number }>)
+
+  const allSportTypes = Object.entries(sportTypes)
+  const pagedSportTypes = allSportTypes.slice(
+    (sportTypePage - 1) * SPORT_TYPES_PER_PAGE,
+    sportTypePage * SPORT_TYPES_PER_PAGE
+  )
 
   return (
     <div>
@@ -197,21 +172,64 @@ export function ResultsTab({
         {t('tournamentDetail.resultsTitle')}
       </h3>
 
-      {resultsError && (
-        <ErrorAlert message={resultsError} isDarkMode={isDarkMode} className="mb-4" />
-      )}
+      {resultsError && <ErrorAlert message={resultsError} isDarkMode={isDarkMode} className="mb-4" />}
 
       {resultsLoading || weightCategoriesLoading ? (
         <LoadingSpinner text={t('tournamentDetail.errors.loadingWeightCategories')} isDarkMode={isDarkMode} />
       ) : weightCategories.length === 0 ? (
-        <EmptyState icon="document" title={t('tournamentDetail.errors.noWeightCategories')} description={t('tournamentDetail.errors.syncFirst')} isDarkMode={isDarkMode} />
-      ) : (
-        <WeightCategoryGrid
+        <EmptyState
+          icon="document"
+          title={t('tournamentDetail.errors.noWeightCategories')}
+          description={t('tournamentDetail.errors.syncFirst')}
           isDarkMode={isDarkMode}
-          categories={weightCategories}
-          getWeightCategoryStatus={getWeightCategoryStatus}
-          onSelect={openWeightCategoryResultsDetail}
         />
+      ) : (
+        <>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {pagedSportTypes.map(([key, info]) => {
+            const allDone = info.completed === info.total
+            const anyDone = info.completed > 0
+            return (
+              <div
+                key={key}
+                onClick={() => setSelectedSportType(key)}
+                className={`rounded-xl p-5 cursor-pointer transition-all ${
+                  isDarkMode
+                    ? 'bg-[#0f172a]/60 border border-white/[0.06] hover:border-white/10 hover:bg-[#1e293b]'
+                    : 'bg-white border border-gray-200 hover:border-gray-300 hover:shadow-md'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <div>
+                    <p className={`font-bold text-base leading-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                      {info.sport_name}
+                    </p>
+                    <p className={`text-xs mt-0.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      {info.audience_name}
+                    </p>
+                  </div>
+                  {allDone
+                    ? <StatusBadge variant="success" isDarkMode={isDarkMode}>{t('tournamentDetail.statusCompleted')}</StatusBadge>
+                    : anyDone
+                      ? <StatusBadge variant="info" isDarkMode={isDarkMode}>{t('tournamentDetail.statusOngoing')}</StatusBadge>
+                      : <StatusBadge variant="neutral" isDarkMode={isDarkMode}>{t('tournamentDetail.statusWaiting')}</StatusBadge>
+                  }
+                </div>
+                <p className={`text-sm ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                  {info.total} {t('tournamentDetail.weightCategories')} · {info.completed}/{info.total} {t('tournamentDetail.statusCompleted').toLowerCase()}
+                </p>
+              </div>
+            )
+          })}
+        </div>
+        <Pagination
+          isDarkMode={isDarkMode}
+          currentPage={sportTypePage}
+          totalItems={allSportTypes.length}
+          itemsPerPage={SPORT_TYPES_PER_PAGE}
+          onPageChange={setSportTypePage}
+        />
+        </>
       )}
     </div>
   )

@@ -452,6 +452,7 @@ export function TournamentDetail({
             results={results}
             resultsLoading={resultsLoading}
             resultsError={resultsError}
+            teams={teams}
             weightCategories={weightCategories}
             weightCategoriesLoading={weightCategoriesLoading}
             selectedWeightCategoryForResults={selectedWeightCategoryForResults}
