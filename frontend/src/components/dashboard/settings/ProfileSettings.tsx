@@ -3,20 +3,11 @@ import { useTranslation } from 'react-i18next'
 import { apiClient } from '@/services/apiClient'
 import { API_BASE_URL, API_ENDPOINTS } from '@/config/api'
 import { validateRequired, validateEmail, validatePassword, validatePasswordMatch } from '@/utils/validation'
-
-interface User {
-  id: number
-  username: string
-  first_name: string
-  last_name: string
-  email: string
-  role: string
-  avatar_url: string | null
-}
+import { mapApiUserDto, type ApiUserDto, type AppUser } from '@/domain/user'
 
 interface ProfileSettingsProps {
   isDarkMode: boolean
-  onUserUpdated: (user: User) => void
+  onUserUpdated: (user: AppUser) => void
 }
 
 // --- Icons ---
@@ -166,7 +157,7 @@ function AvatarActionButton({
 
 export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsProps) {
   const { t } = useTranslation()
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<AppUser | null>(null)
   const [loading, setLoading] = useState(true)
   const [avatarUploading, setAvatarUploading] = useState(false)
   const [profileSaving, setProfileSaving] = useState(false)
@@ -185,10 +176,11 @@ export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsPr
   const loadProfile = useCallback(async () => {
     try {
       setLoading(true)
-      const data = await apiClient.get<User>(API_ENDPOINTS.PROFILE_ME)
-      setUser(data)
-      setProfileForm({ first_name: data.first_name, last_name: data.last_name, email: data.email })
-      onUserUpdated(data)
+      const data = await apiClient.get<ApiUserDto>(API_ENDPOINTS.PROFILE_ME)
+      const mappedUser = mapApiUserDto(data)
+      setUser(mappedUser)
+      setProfileForm({ first_name: mappedUser.first_name, last_name: mappedUser.last_name, email: mappedUser.email })
+      onUserUpdated(mappedUser)
     } catch {
       setError(t('profile.loadError'))
     } finally {
@@ -290,7 +282,8 @@ export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsPr
     if (Object.values(newErrors).some(e => e)) return
     try {
       setProfileSaving(true)
-      const updated = await apiClient.put<User>(API_ENDPOINTS.PROFILE_ME, profileForm)
+      const updatedDto = await apiClient.put<ApiUserDto>(API_ENDPOINTS.PROFILE_ME, profileForm)
+      const updated = mapApiUserDto(updatedDto, user?.created_at)
       setUser(updated)
       onUserUpdated(updated)
       setProfileSuccess(true)

@@ -15,22 +15,12 @@ import { SyncLogs } from "./dashboard/settings/SyncLogs"
 import { useSync } from "@/hooks/useSync"
 import { useDarkMode } from "@/hooks/useDarkMode"
 import { useDashboardState } from "@/hooks/useDashboardState"
-
-interface UserData {
-  id: string;
-  username: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  role: string;
-  avatar_url: string | null;
-  created_at: string;
-}
+import type { AppUser } from "@/domain/user"
 
 interface DashboardProps {
   onLogout: () => void;
-  userData: UserData | null;
-  onUserDataChange: (userData: UserData) => void;
+  userData: AppUser | null;
+  onUserDataChange: (userData: AppUser) => void;
 }
 
 export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardProps) {

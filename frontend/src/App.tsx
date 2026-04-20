@@ -5,6 +5,7 @@ import { VerifyEmail } from "@/components/VerifyEmail"
 import { ResetPassword } from "@/components/ResetPassword"
 import { apiClient, ApiError } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
+import { mapApiUserDto, type ApiUserDto, type AppUser } from "@/domain/user"
 
 const SUPPORTED_LOCALES = new Set(["sk", "en"])
 
@@ -32,28 +33,17 @@ function ensureLocalePrefixInPath() {
   window.history.replaceState({}, "", `${nextPath}${query}${hash}`)
 }
 
-interface UserData {
-  id: string;
-  username: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  role: string;
-  avatar_url: string | null;
-  created_at: string;
-}
-
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const [userData, setUserData] = useState<AppUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState<"landing" | "verify" | "reset" | "dashboard">("landing");
 
   // Fetch user data from API
   const fetchUserData = async () => {
     try {
-      const data = await apiClient.get<UserData>(API_ENDPOINTS.AUTH_ME);
-      setUserData(data);
+      const data = await apiClient.get<ApiUserDto>(API_ENDPOINTS.AUTH_ME);
+      setUserData(mapApiUserDto(data));
       setIsLoggedIn(true);
     } catch (error) {
       // Token is invalid, clear CSRF token from sessionStorage
@@ -127,7 +117,7 @@ function App() {
     }
   };
 
-  const handleUserDataChange = useCallback((updatedUser: UserData) => {
+  const handleUserDataChange = useCallback((updatedUser: AppUser) => {
     setUserData(updatedUser)
   }, [])
 

@@ -6,22 +6,12 @@ import { ProfileSettings } from './settings/ProfileSettings'
 import { ArenaSourcesSettings } from './settings/ArenaSourcesSettings'
 import { SecuritySettings } from './settings/SecuritySettings'
 import { AppearanceSettings } from './settings/AppearanceSettings'
-
-interface User {
-  id: string
-  username: string
-  first_name: string
-  last_name: string
-  email: string
-  role: string
-  avatar_url: string | null
-  created_at: string
-}
+import { mapApiUserDto, type ApiUserDto, type AppUser } from '@/domain/user'
 
 interface SettingsProps {
   isDarkMode: boolean
   toggleDarkMode: () => void
-  onUserDataChange: (user: User) => void
+  onUserDataChange: (user: AppUser) => void
 }
 
 type TabType = 'profile' | 'appearance' | 'arena-sources' | 'security'
@@ -50,12 +40,12 @@ const IconShield = () => (
 export function Settings({ isDarkMode, toggleDarkMode, onUserDataChange }: SettingsProps) {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<TabType>('profile')
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<AppUser | null>(null)
 
   const loadUser = useCallback(async () => {
     try {
-      const data = await apiClient.get<User>(API_ENDPOINTS.PROFILE_ME)
-      setUser(data)
+      const data = await apiClient.get<ApiUserDto>(API_ENDPOINTS.PROFILE_ME)
+      setUser(mapApiUserDto(data))
     } catch (err) {
       console.error('Error loading user:', err)
     }
@@ -115,18 +105,9 @@ export function Settings({ isDarkMode, toggleDarkMode, onUserDataChange }: Setti
             <ProfileSettings
               isDarkMode={isDarkMode}
               onUserUpdated={(updatedUser) => {
-                const mergedUser: User = {
-                  id: String(updatedUser.id),
-                  username: updatedUser.username,
-                  first_name: updatedUser.first_name,
-                  last_name: updatedUser.last_name,
-                  email: updatedUser.email,
-                  role: updatedUser.role,
-                  avatar_url: updatedUser.avatar_url,
-                  created_at: user?.created_at ?? new Date().toISOString(),
-                }
-                setUser(mergedUser)
-                onUserDataChange(mergedUser)
+                const nextUser = { ...updatedUser, created_at: updatedUser.created_at ?? user?.created_at ?? new Date().toISOString() }
+                setUser(nextUser)
+                onUserDataChange(nextUser)
               }}
             />
           )}

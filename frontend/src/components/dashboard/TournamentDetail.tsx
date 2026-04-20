@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, type Dispatch, type SetStateAction } from "react"
 import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
@@ -11,6 +11,7 @@ import { ResultsTab } from "./tournamentDetail/tabs/ResultsTab"
 import { StatisticsTab } from "./tournamentDetail/tabs/StatisticsTab"
 import { ExportTab } from "./tournamentDetail/tabs/ExportTab"
 import { DrawTab } from "./tournamentDetail/tabs/DrawTab"
+import { TournamentDetailHeader, TournamentTabs } from "./tournamentDetail/TournamentDetailChrome"
 
 const TABS_ORDER: TabType[] = ["teams", "athletes", "referees", "results", "statistics", "draw", "export"]
 
@@ -36,6 +37,41 @@ export function TournamentDetail({
   onSelectPerson,
 }: TournamentDetailProps) {
   const { t } = useTranslation()
+
+  const runLoader = useCallback(
+    async <T,>({
+      context,
+      request,
+      setLoading,
+      setError,
+      errorKey,
+      onSuccess,
+      onError,
+    }: {
+      context: string
+      request: () => Promise<T>
+      setLoading: Dispatch<SetStateAction<boolean>>
+      setError?: Dispatch<SetStateAction<string | null>>
+      errorKey?: string
+      onSuccess: (data: T) => void
+      onError?: () => void
+    }) => {
+      setLoading(true)
+      setError?.(null)
+      try {
+        const data = await request()
+        onSuccess(data)
+      } catch (error) {
+        console.error(`Error ${context}:`, error)
+        if (setError && errorKey) setError(t(errorKey))
+        onError?.()
+      } finally {
+        setLoading(false)
+      }
+    },
+    [t]
+  )
+
   const getLocalePrefix = useCallback(() => {
     const first = window.location.pathname.split('/').filter(Boolean)[0]?.toLowerCase()
     return first === 'en' || first === 'sk' ? `/${first}` : '/sk'
@@ -129,88 +165,76 @@ export function TournamentDetail({
   // --- Data loaders ---
 
   const loadTeams = useCallback(async () => {
-    setTeamsLoading(true)
-    setTeamsError(null)
-    try {
-      const data = await apiClient.get<Team[]>(API_ENDPOINTS.TEAM_DATABASE(tournamentId))
-      setTeams(data || [])
-    } catch (error) {
-      console.error('Error loading teams:', error)
-      setTeamsError(t("tournamentDetail.errors.loadTeams"))
-    } finally {
-      setTeamsLoading(false)
-    }
-  }, [tournamentId, t])
+    await runLoader<Team[]>({
+      context: 'loading teams',
+      request: () => apiClient.get<Team[]>(API_ENDPOINTS.TEAM_DATABASE(tournamentId)),
+      setLoading: setTeamsLoading,
+      setError: setTeamsError,
+      errorKey: "tournamentDetail.errors.loadTeams",
+      onSuccess: (data) => setTeams(data || []),
+      onError: () => setTeams([]),
+    })
+  }, [runLoader, tournamentId])
 
   const loadWeightCategories = useCallback(async () => {
-    setWeightCategoriesLoading(true)
-    setWeightCategoriesError(null)
-    try {
-      const data = await apiClient.get<WeightCategory[]>(API_ENDPOINTS.WEIGHT_CATEGORY_DATABASE(tournamentId))
-      setWeightCategories(data || [])
-    } catch (error) {
-      console.error('Error loading weight categories:', error)
-      setWeightCategoriesError(t("tournamentDetail.errors.loadWeightCategories"))
-    } finally {
-      setWeightCategoriesLoading(false)
-    }
-  }, [tournamentId, t])
+    await runLoader<WeightCategory[]>({
+      context: 'loading weight categories',
+      request: () => apiClient.get<WeightCategory[]>(API_ENDPOINTS.WEIGHT_CATEGORY_DATABASE(tournamentId)),
+      setLoading: setWeightCategoriesLoading,
+      setError: setWeightCategoriesError,
+      errorKey: "tournamentDetail.errors.loadWeightCategories",
+      onSuccess: (data) => setWeightCategories(data || []),
+      onError: () => setWeightCategories([]),
+    })
+  }, [runLoader, tournamentId])
 
   const loadAthletes = useCallback(async () => {
-    setAthletesLoading(true)
-    setAthletesError(null)
-    try {
-      const data = await apiClient.get<Athlete[]>(API_ENDPOINTS.ATHLETE_DATABASE(tournamentId))
-      setAthletes(data || [])
-    } catch (error) {
-      console.error('Error loading athletes:', error)
-      setAthletesError(t("tournamentDetail.errors.loadAthletes"))
-    } finally {
-      setAthletesLoading(false)
-    }
-  }, [tournamentId, t])
+    await runLoader<Athlete[]>({
+      context: 'loading athletes',
+      request: () => apiClient.get<Athlete[]>(API_ENDPOINTS.ATHLETE_DATABASE(tournamentId)),
+      setLoading: setAthletesLoading,
+      setError: setAthletesError,
+      errorKey: "tournamentDetail.errors.loadAthletes",
+      onSuccess: (data) => setAthletes(data || []),
+      onError: () => setAthletes([]),
+    })
+  }, [runLoader, tournamentId])
 
   const loadReferees = useCallback(async () => {
-    setRefereesLoading(true)
-    setRefereesError(null)
-    try {
-      const data = await apiClient.get<Referee[]>(API_ENDPOINTS.REFEREES(tournamentId))
-      setReferees(data || [])
-    } catch (error) {
-      console.error('Error loading referees:', error)
-      setRefereesError(t("tournamentDetail.errors.loadReferees"))
-    } finally {
-      setRefereesLoading(false)
-    }
-  }, [tournamentId, t])
+    await runLoader<Referee[]>({
+      context: 'loading referees',
+      request: () => apiClient.get<Referee[]>(API_ENDPOINTS.REFEREES(tournamentId)),
+      setLoading: setRefereesLoading,
+      setError: setRefereesError,
+      errorKey: "tournamentDetail.errors.loadReferees",
+      onSuccess: (data) => setReferees(data || []),
+      onError: () => setReferees([]),
+    })
+  }, [runLoader, tournamentId])
 
   const loadResults = useCallback(async () => {
-    setResultsLoading(true)
-    setResultsError(null)
-    try {
-      const data = await apiClient.get<FightResult[]>(API_ENDPOINTS.RESULTS(tournamentUuid))
-      setResults(data || [])
-    } catch (error) {
-      console.error('Error loading results:', error)
-      setResultsError(t("tournamentDetail.errors.loadResults"))
-    } finally {
-      setResultsLoading(false)
-    }
-  }, [tournamentUuid, t])
+    await runLoader<FightResult[]>({
+      context: 'loading results',
+      request: () => apiClient.get<FightResult[]>(API_ENDPOINTS.RESULTS(tournamentUuid)),
+      setLoading: setResultsLoading,
+      setError: setResultsError,
+      errorKey: "tournamentDetail.errors.loadResults",
+      onSuccess: (data) => setResults(data || []),
+      onError: () => setResults([]),
+    })
+  }, [runLoader, tournamentUuid])
 
   const loadStatistics = useCallback(async () => {
-    setStatsLoading(true)
-    setStatsError(null)
-    try {
-      const data = await apiClient.get<EventStatistics>(API_ENDPOINTS.EVENT_STATISTICS(tournamentId))
-      setEventStats(data)
-    } catch (error) {
-      console.error('Error loading statistics:', error)
-      setStatsError(t("tournamentDetail.errors.loadStatistics"))
-    } finally {
-      setStatsLoading(false)
-    }
-  }, [tournamentId, t])
+    await runLoader<EventStatistics>({
+      context: 'loading statistics',
+      request: () => apiClient.get<EventStatistics>(API_ENDPOINTS.EVENT_STATISTICS(tournamentId)),
+      setLoading: setStatsLoading,
+      setError: setStatsError,
+      errorKey: "tournamentDetail.errors.loadStatistics",
+      onSuccess: (data) => setEventStats(data),
+      onError: () => setEventStats(null),
+    })
+  }, [runLoader, tournamentId])
 
   // --- Team detail ---
 
@@ -341,45 +365,14 @@ export function TournamentDetail({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={onBack}
-          className={`p-2 rounded-lg transition-all ${
-            isDarkMode
-              ? 'hover:bg-white/5 text-gray-300 hover:text-white'
-              : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-        </button>
-        <div>
-          <h2 className={`text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            {tournamentName}
-          </h2>
-        </div>
-      </div>
+      <TournamentDetailHeader isDarkMode={isDarkMode} tournamentName={tournamentName} onBack={onBack} />
 
-      {/* Navigation Tabs */}
-      <div>
-        <nav className={`flex gap-8 border-b ${isDarkMode ? 'border-white/5' : 'border-gray-200'}`}>
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => handleTabChange(tab.id)}
-              className={`pb-4 px-1 font-medium transition-all ${
-                activeTab === tab.id
-                  ? isDarkMode ? 'text-blue-400' : 'text-blue-600'
-                  : isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-      </div>
+      <TournamentTabs
+        isDarkMode={isDarkMode}
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+      />
 
       {/* Tab Content */}
       <div className={`rounded-lg p-6 ${isDarkMode ? 'bg-[#1e293b] shadow-lg' : 'bg-white border border-gray-200'}`}>

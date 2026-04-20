@@ -3,6 +3,42 @@ import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
 
+interface ApiAthleteDto {
+  id: string | number
+  person_full_name?: string | null
+  personFullName?: string | null
+  team_id?: string | number | null
+  teamId?: string | number | null
+  sport_event_id?: number | null
+  sportEventId?: number | null
+  weight_category_id?: string | number | null
+  weightCategoryId?: string | number | null
+  is_competing?: boolean | null
+  isCompeting?: boolean | null
+  person_photo?: string | null
+  personPhoto?: string | null
+  accreditation_status?: string | null
+  accreditationStatus?: string | null
+}
+
+interface ApiSportEventDto {
+  id: number | string
+  uuid?: string | null
+  name?: string | null
+}
+
+interface ApiTeamDto {
+  id: string | number
+  name?: string | null
+}
+
+interface ApiWeightCategoryDto {
+  id: string | number
+  name?: string | null
+  max_weight?: number | null
+  maxWeight?: number | null
+}
+
 interface FighterAthlete {
   id: string
   personFullName: string
@@ -49,8 +85,52 @@ function toMapById<T extends { id: string | number }>(items: T[]): Map<T["id"], 
 }
 
 function normalizeEventsPayload(payload: unknown): FighterSportEvent[] {
-  const data = payload as { events?: FighterSportEvent[]; items?: FighterSportEvent[] }
-  return data.events ?? data.items ?? []
+  const data = payload as { events?: ApiSportEventDto[]; items?: ApiSportEventDto[] }
+  return (data.events ?? data.items ?? []).map(mapSportEventDto)
+}
+
+function toStringId(value: string | number): string {
+  return String(value)
+}
+
+function toNullableStringId(value: string | number | null | undefined): string | null {
+  return value === null || value === undefined ? null : String(value)
+}
+
+function mapAthleteDto(dto: ApiAthleteDto): FighterAthlete {
+  return {
+    id: toStringId(dto.id),
+    personFullName: dto.personFullName ?? dto.person_full_name ?? "",
+    teamId: toNullableStringId(dto.teamId ?? dto.team_id),
+    sportEventId: Number(dto.sportEventId ?? dto.sport_event_id ?? 0),
+    weightCategoryId: toNullableStringId(dto.weightCategoryId ?? dto.weight_category_id),
+    isCompeting: Boolean(dto.isCompeting ?? dto.is_competing),
+    personPhoto: dto.personPhoto ?? dto.person_photo ?? "",
+    accreditationStatus: dto.accreditationStatus ?? dto.accreditation_status ?? null,
+  }
+}
+
+function mapSportEventDto(dto: ApiSportEventDto): FighterSportEvent {
+  return {
+    id: Number(dto.id),
+    uuid: dto.uuid ?? "",
+    name: dto.name ?? "",
+  }
+}
+
+function mapTeamDto(dto: ApiTeamDto): FighterTeam {
+  return {
+    id: toStringId(dto.id),
+    name: dto.name ?? "",
+  }
+}
+
+function mapWeightCategoryDto(dto: ApiWeightCategoryDto): FighterWeightCategory {
+  return {
+    id: toStringId(dto.id),
+    name: dto.name ?? "",
+    maxWeight: Number(dto.maxWeight ?? dto.max_weight ?? 0),
+  }
 }
 
 export function useFightersData(): FightersDataState {
@@ -71,31 +151,33 @@ export function useFightersData(): FightersDataState {
         setError(null)
 
         const [athletesData, eventsPayload] = await Promise.all([
-          apiClient.get<{ athletes?: FighterAthlete[] }>(API_ENDPOINTS.ATHLETE_DATABASE_ALL),
+          apiClient.get<{ athletes?: ApiAthleteDto[] }>(API_ENDPOINTS.ATHLETE_DATABASE_ALL),
           apiClient.get<unknown>(API_ENDPOINTS.SPORT_EVENT_DATABASE),
         ])
 
         const eventsData = normalizeEventsPayload(eventsPayload)
 
         const teamsResults = await Promise.allSettled(
-          eventsData.map((event) => apiClient.get<{ teams?: FighterTeam[] }>(API_ENDPOINTS.TEAM_DATABASE(event.id)))
+          eventsData.map((event) => apiClient.get<{ teams?: ApiTeamDto[] }>(API_ENDPOINTS.TEAM_DATABASE(event.id)))
         )
         const allTeams = teamsResults.flatMap((result) =>
-          result.status === "fulfilled" ? result.value.teams ?? [] : []
+          result.status === "fulfilled" ? (result.value.teams ?? []).map(mapTeamDto) : []
         )
 
         const categoriesResults = await Promise.allSettled(
           eventsData.map((event) =>
-            apiClient.get<{ weightCategories?: FighterWeightCategory[] }>(API_ENDPOINTS.WEIGHT_CATEGORY_DATABASE(event.id))
+            apiClient.get<{ weightCategories?: ApiWeightCategoryDto[] }>(API_ENDPOINTS.WEIGHT_CATEGORY_DATABASE(event.id))
           )
         )
         const allWeightCategories = categoriesResults.flatMap((result) =>
-          result.status === "fulfilled" ? result.value.weightCategories ?? [] : []
+          result.status === "fulfilled"
+            ? (result.value.weightCategories ?? []).map(mapWeightCategoryDto)
+            : []
         )
 
         if (!isMounted) return
 
-        setAthletes(athletesData.athletes ?? [])
+        setAthletes((athletesData.athletes ?? []).map(mapAthleteDto))
         setSportEvents(uniqueById(eventsData))
         setTeams(uniqueById(allTeams))
         setWeightCategories(uniqueById(allWeightCategories))
