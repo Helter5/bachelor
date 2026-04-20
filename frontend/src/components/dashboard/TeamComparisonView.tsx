@@ -4,6 +4,7 @@ import { useEvents } from "@/hooks/useEvents"
 import { useEventStatistics } from "@/hooks/useEventStatistics"
 import type { TeamPerformance } from "@/hooks/useEventStatistics"
 import { Select } from "../ui/Select"
+import { DashboardStatsShell } from "./DashboardStatsShell"
 
 interface TeamComparisonViewProps {
   isDarkMode: boolean
@@ -85,6 +86,25 @@ function TeamSelector({
   )
 }
 
+function TeamNameBlock({
+  isDarkMode,
+  team,
+  align,
+}: {
+  isDarkMode: boolean
+  team: TeamPerformance
+  align: 'left' | 'right'
+}) {
+  return (
+    <div className={`flex-1 py-4 px-6 font-bold text-lg ${align === 'right' ? 'text-right' : 'text-left'} ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+      {team.country && (
+        <span className={`fi fi-${team.country.toLowerCase()} rounded-sm mr-2`} style={{ fontSize: '1rem' }} />
+      )}
+      {team.name}
+    </div>
+  )
+}
+
 export function TeamComparisonView({ isDarkMode, onBack }: TeamComparisonViewProps) {
   const { t } = useTranslation()
   const events = useEvents()
@@ -122,29 +142,24 @@ export function TeamComparisonView({ isDarkMode, onBack }: TeamComparisonViewPro
     setShowResults(false)
   }
 
-  return (
-    <div className="space-y-6">
-      <button
-        onClick={onBack}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-          isDarkMode
-            ? "bg-[#1e293b] hover:bg-[#334155] text-gray-300 hover:text-white"
-            : "bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900"
-        }`}
-      >
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-        {t("teamComparison.backToCategories")}
-      </button>
+  const handleTeam1Change = (value: string) => {
+    setTeam1Name(value)
+    setShowResults(false)
+  }
 
-      <div className={`rounded-xl p-8 ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-lg`}>
-        <h2 className={`text-2xl font-bold mb-2 ${isDarkMode ? "text-white" : "text-gray-900"}`}>
-          {t("teamComparison.title")}
-        </h2>
-        <p className={`text-sm mb-6 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
-          {t("teamComparison.subtitle")}
-        </p>
+  const handleTeam2Change = (value: string) => {
+    setTeam2Name(value)
+    setShowResults(false)
+  }
+
+  return (
+    <DashboardStatsShell
+      isDarkMode={isDarkMode}
+      onBack={onBack}
+      backLabel={t("teamComparison.backToCategories")}
+      title={t("teamComparison.title")}
+      subtitle={t("teamComparison.subtitle")}
+    >
 
         {/* Event selector */}
         <div className="mb-6">
@@ -182,7 +197,7 @@ export function TeamComparisonView({ isDarkMode, onBack }: TeamComparisonViewPro
                 isDarkMode={isDarkMode}
                 label={t("teamComparison.team1")}
                 value={team1Name}
-                onChange={(v) => { setTeam1Name(v); setShowResults(false) }}
+                onChange={handleTeam1Change}
                 teams={teams}
                 excludeName={team2Name}
               />
@@ -190,7 +205,7 @@ export function TeamComparisonView({ isDarkMode, onBack }: TeamComparisonViewPro
                 isDarkMode={isDarkMode}
                 label={t("teamComparison.team2")}
                 value={team2Name}
-                onChange={(v) => { setTeam2Name(v); setShowResults(false) }}
+                onChange={handleTeam2Change}
                 teams={teams}
                 excludeName={team1Name}
               />
@@ -233,21 +248,11 @@ export function TeamComparisonView({ isDarkMode, onBack }: TeamComparisonViewPro
             <div className={`rounded-xl overflow-hidden ${isDarkMode ? "bg-[#0f172a]/80 border border-white/5" : "bg-gray-50 border border-gray-200"}`}>
               {/* Team names */}
               <div className="flex items-center">
-                <div className={`flex-1 text-right py-4 px-6 font-bold text-lg ${isDarkMode ? "text-white" : "text-gray-900"}`}>
-                  {team1.country && (
-                    <span className={`fi fi-${team1.country.toLowerCase()} rounded-sm mr-2`} style={{ fontSize: "1rem" }} />
-                  )}
-                  {team1.name}
-                </div>
+                <TeamNameBlock isDarkMode={isDarkMode} team={team1} align="right" />
                 <div className={`w-40 text-center py-4 font-black text-sm ${isDarkMode ? "text-gray-500" : "text-gray-400"} uppercase tracking-widest`}>
                   vs
                 </div>
-                <div className={`flex-1 text-left py-4 px-6 font-bold text-lg ${isDarkMode ? "text-white" : "text-gray-900"}`}>
-                  {team2.country && (
-                    <span className={`fi fi-${team2.country.toLowerCase()} rounded-sm mr-2`} style={{ fontSize: "1rem" }} />
-                  )}
-                  {team2.name}
-                </div>
+                <TeamNameBlock isDarkMode={isDarkMode} team={team2} align="left" />
               </div>
 
               {/* Divider */}
@@ -271,7 +276,6 @@ export function TeamComparisonView({ isDarkMode, onBack }: TeamComparisonViewPro
             )}
           </div>
         )}
-      </div>
-    </div>
+    </DashboardStatsShell>
   )
 }

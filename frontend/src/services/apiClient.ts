@@ -149,7 +149,7 @@ class ApiClient {
   private async request<T>(
     method: string,
     endpoint: string,
-    data?: any,
+    data?: unknown,
     options: RequestOptions = {},
     isRetry: boolean = false
   ): Promise<T> {
@@ -198,16 +198,16 @@ class ApiClient {
   /**
    * GET request
    */
-  async get<T = any>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+  async get<T = unknown>(endpoint: string, options: RequestOptions = {}): Promise<T> {
     return this.request<T>('GET', endpoint, undefined, options)
   }
 
   /**
    * POST request
    */
-  async post<T = any>(
+  async post<T = unknown>(
     endpoint: string,
-    data?: any,
+    data?: unknown,
     options: RequestOptions = {}
   ): Promise<T> {
     return this.request<T>('POST', endpoint, data, options)
@@ -216,9 +216,9 @@ class ApiClient {
   /**
    * PUT request
    */
-  async put<T = any>(
+  async put<T = unknown>(
     endpoint: string,
-    data?: any,
+    data?: unknown,
     options: RequestOptions = {}
   ): Promise<T> {
     return this.request<T>('PUT', endpoint, data, options)
@@ -227,16 +227,16 @@ class ApiClient {
   /**
    * DELETE request
    */
-  async delete<T = any>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+  async delete<T = unknown>(endpoint: string, options: RequestOptions = {}): Promise<T> {
     return this.request<T>('DELETE', endpoint, undefined, options)
   }
 
   /**
    * PATCH request
    */
-  async patch<T = any>(
+  async patch<T = unknown>(
     endpoint: string,
-    data?: any,
+    data?: unknown,
     options: RequestOptions = {}
   ): Promise<T> {
     return this.request<T>('PATCH', endpoint, data, options)
@@ -288,7 +288,7 @@ class ApiClient {
   /**
    * POST multipart/form-data request
    */
-  async postForm<T = any>(endpoint: string, formData: FormData, options: RequestOptions = {}): Promise<T> {
+  async postForm<T = unknown>(endpoint: string, formData: FormData, options: RequestOptions = {}): Promise<T> {
     const url = this.buildUrl(endpoint, options.params)
     const headers = this.buildFormHeaders(options)
 
@@ -338,14 +338,14 @@ export const apiClient = new ApiClient(API_BASE_URL)
 
 // Export convenience methods for direct import
 export const { get, post, put, patch, delete: del } = {
-  get: <T = any>(endpoint: string, options?: RequestOptions) =>
+  get: <T = unknown>(endpoint: string, options?: RequestOptions) =>
     apiClient.get<T>(endpoint, options),
-  post: <T = any>(endpoint: string, data?: any, options?: RequestOptions) =>
+  post: <T = unknown>(endpoint: string, data?: unknown, options?: RequestOptions) =>
     apiClient.post<T>(endpoint, data, options),
-  put: <T = any>(endpoint: string, data?: any, options?: RequestOptions) =>
+  put: <T = unknown>(endpoint: string, data?: unknown, options?: RequestOptions) =>
     apiClient.put<T>(endpoint, data, options),
-  patch: <T = any>(endpoint: string, data?: any, options?: RequestOptions) =>
+  patch: <T = unknown>(endpoint: string, data?: unknown, options?: RequestOptions) =>
     apiClient.patch<T>(endpoint, data, options),
-  delete: <T = any>(endpoint: string, options?: RequestOptions) =>
+  delete: <T = unknown>(endpoint: string, options?: RequestOptions) =>
     apiClient.delete<T>(endpoint, options),
 }

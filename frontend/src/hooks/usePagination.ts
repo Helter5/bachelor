@@ -16,7 +16,7 @@ export function usePagination<T>({
   // Reset to page 1 when dependencies change
   useEffect(() => {
     setCurrentPage(1)
-  }, resetTriggers)
+  }, [resetTriggers])
 
   const totalPages = Math.ceil(items.length / itemsPerPage)
   

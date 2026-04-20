@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, type ReactNode } from "react"
 
 type ToastVariant = "success" | "error" | "warning"
 
@@ -16,7 +16,7 @@ const config: Record<ToastVariant, {
   bg: string
   subtitleColor: string
   hoverBg: string
-  icon: JSX.Element
+  icon: ReactNode
   position: string
   animation: string
 }> = {

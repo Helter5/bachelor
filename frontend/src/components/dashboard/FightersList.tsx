@@ -1,38 +1,11 @@
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { apiClient } from "@/services/apiClient"
-import { API_ENDPOINTS } from "@/config/api"
 import { Pagination } from "./Pagination"
 import { SearchInput } from "./SearchInput"
 import { Select } from "../ui/Select"
-
-interface Athlete {
-  id: string
-  personFullName: string
-  teamId: string | null
-  sportEventId: number
-  weightCategoryId: string | null
-  isCompeting: boolean
-  personPhoto: string
-  accreditationStatus: string | null
-}
-
-interface SportEvent {
-  id: number
-  uuid: string
-  name: string
-}
-
-interface Team {
-  id: string
-  name: string
-}
-
-interface WeightCategory {
-  id: string
-  name: string
-  maxWeight: number
-}
+import { LoadingSpinner } from "../ui/LoadingSpinner"
+import { ErrorAlert } from "../ui/ErrorAlert"
+import { useFightersData } from "@/hooks/useFightersData"
 
 interface FightersListProps {
   isDarkMode: boolean
@@ -40,12 +13,7 @@ interface FightersListProps {
 
 export function FightersList({ isDarkMode }: FightersListProps) {
   const { t } = useTranslation()
-  const [athletes, setAthletes] = useState<Athlete[]>([])
-  const [sportEvents, setSportEvents] = useState<SportEvent[]>([])
-  const [teams, setTeams] = useState<Team[]>([])
-  const [weightCategories, setWeightCategories] = useState<WeightCategory[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { athletes, sportEventsById, teamsById, weightCategoriesById, loading, error } = useFightersData()
   const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState("")
   const [competingFilter, setCompetingFilter] = useState("")
@@ -61,76 +29,21 @@ export function FightersList({ isDarkMode }: FightersListProps) {
 
   const itemsPerPage = 20
 
-  // Load all data on mount
-  useEffect(() => {
-    loadAllData()
-  }, [])
-
-  const loadAllData = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      // Load all data in parallel
-      const [athletesData, eventsData, teamsData] = await Promise.all([
-        apiClient.get<{ athletes: Athlete[] }>(API_ENDPOINTS.ATHLETE_DATABASE_ALL),
-        apiClient.get<{ events: SportEvent[] }>(API_ENDPOINTS.SPORT_EVENT_DATABASE),
-        // We need to get all teams from all events
-        (async () => {
-          const eventsData = await apiClient.get<{ events: SportEvent[] }>(API_ENDPOINTS.SPORT_EVENT_DATABASE)
-          const allTeams: Team[] = []
-
-          // For each event, fetch teams
-          for (const event of eventsData.events || []) {
-            try {
-              const teamsData = await apiClient.get<{ teams: Team[] }>(API_ENDPOINTS.TEAM_DATABASE(event.id))
-              allTeams.push(...(teamsData.teams || []))
-            } catch (err) {
-              console.error(`Failed to load teams for event ${event.id}`, err)
-            }
-          }
-          return { teams: allTeams }
-        })()
-      ])
-
-      setAthletes(athletesData.athletes || [])
-      setSportEvents(eventsData.events || [])
-      setTeams(teamsData.teams || [])
-
-      // Load weight categories for all events
-      const allWeightCategories: WeightCategory[] = []
-      for (const event of eventsData.events || []) {
-        try {
-          const wcData = await apiClient.get<{ weightCategories: WeightCategory[] }>(API_ENDPOINTS.WEIGHT_CATEGORY_DATABASE(event.id))
-          allWeightCategories.push(...(wcData.weightCategories || []))
-        } catch (err) {
-          console.error(`Failed to load weight categories for event ${event.id}`, err)
-        }
-      }
-      setWeightCategories(allWeightCategories)
-
-    } catch (err) {
-      console.error('Error loading data:', err)
-      setError(t('fighters.loadError'))
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const getSportEventUuid = (sportEventId: number) => {
-    const event = sportEvents.find(e => e.id === sportEventId)
-    return event ? String(event.id) : 'N/A'
+    const event = sportEventsById.get(sportEventId)
+    if (!event) return null
+    return event.uuid || String(event.id)
   }
 
   const getTeamName = (teamId: string | null) => {
     if (!teamId) return 'N/A'
-    const team = teams.find(t => t.id === teamId)
+    const team = teamsById.get(teamId)
     return team?.name || 'N/A'
   }
 
   const getWeightCategoryWeight = (weightCategoryId: string | null) => {
     if (!weightCategoryId) return null
-    const category = weightCategories.find(wc => wc.id === weightCategoryId)
+    const category = weightCategoriesById.get(weightCategoryId)
     return category ? category.name : null
   }
 
@@ -146,7 +59,7 @@ export function FightersList({ isDarkMode }: FightersListProps) {
 
   // Filter and sort athletes
   const filteredAndSortedAthletes = useMemo(() => {
-    let filtered = athletes.filter(athlete => {
+    const filtered = athletes.filter(athlete => {
       const matchesSearch = athlete.personFullName?.toLowerCase().includes(searchQuery.toLowerCase())
       const matchesCompeting = !competingFilter ||
         (competingFilter === "yes" && athlete.isCompeting) ||
@@ -192,21 +105,13 @@ export function FightersList({ isDarkMode }: FightersListProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className={`text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-          {t('fighters.loading')}
-        </div>
-      </div>
+      <LoadingSpinner text={t('fighters.loading')} isDarkMode={isDarkMode} variant="center" size="md" />
     )
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className={`text-lg ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
-          {error}
-        </div>
-      </div>
+      <ErrorAlert message={error} isDarkMode={isDarkMode} />
     )
   }
 
@@ -357,7 +262,7 @@ export function FightersList({ isDarkMode }: FightersListProps) {
                   <div>
                     <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('fighters.tournamentUuid')}</p>
                     <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                      {eventUuid.substring(0, 8)}...
+                      {eventUuid ? `${eventUuid.substring(0, 8)}...` : 'N/A'}
                     </p>
                   </div>
                 </div>

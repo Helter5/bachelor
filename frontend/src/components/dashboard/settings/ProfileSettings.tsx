@@ -116,6 +116,52 @@ function FormInput({ isDarkMode, label, type = 'text', value, onChange, onBlur, 
   )
 }
 
+function SuccessMessage({ isDarkMode, icon, message }: {
+  isDarkMode: boolean
+  icon: React.ReactNode
+  message: string
+}) {
+  return (
+    <span className={`flex items-center gap-1.5 text-sm ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
+      {icon}
+      {message}
+    </span>
+  )
+}
+
+function AvatarActionButton({
+  isDarkMode,
+  variant,
+  disabled,
+  onClick,
+  children,
+}: {
+  isDarkMode: boolean
+  variant: 'primary' | 'danger'
+  disabled?: boolean
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  const variantClasses = variant === 'primary'
+    ? isDarkMode
+      ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30'
+      : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+    : isDarkMode
+      ? 'bg-red-500/20 text-red-300 hover:bg-red-500/30'
+      : 'bg-red-100 text-red-700 hover:bg-red-200'
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-60 ${variantClasses}`}
+    >
+      {children}
+    </button>
+  )
+}
+
 // --- Main component ---
 
 export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsProps) {
@@ -348,36 +394,26 @@ export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsPr
                 if (file) handleAvatarUpload(file)
               }}
             />
-            <button
-              type="button"
-              onClick={() => avatarInputRef.current?.click()}
+            <AvatarActionButton
+              isDarkMode={isDarkMode}
+              variant="primary"
               disabled={avatarUploading}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                isDarkMode
-                  ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 disabled:opacity-60'
-                  : 'bg-blue-100 text-blue-700 hover:bg-blue-200 disabled:opacity-60'
-              }`}
+              onClick={() => avatarInputRef.current?.click()}
             >
               {avatarUploading ? t('profile.uploadingAvatar') : t('profile.uploadAvatar')}
-            </button>
+            </AvatarActionButton>
             {user?.avatar_url && (
-              <button
-                type="button"
-                onClick={handleAvatarDelete}
+              <AvatarActionButton
+                isDarkMode={isDarkMode}
+                variant="danger"
                 disabled={avatarUploading}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  isDarkMode
-                    ? 'bg-red-500/20 text-red-300 hover:bg-red-500/30 disabled:opacity-60'
-                    : 'bg-red-100 text-red-700 hover:bg-red-200 disabled:opacity-60'
-                }`}
+                onClick={handleAvatarDelete}
               >
                 {t('profile.removeAvatar')}
-              </button>
+              </AvatarActionButton>
             )}
             {avatarSuccess && (
-              <span className="flex items-center gap-1.5 text-green-400 text-xs">
-                <IconCheck />{t('profile.avatarUpdated')}
-              </span>
+              <SuccessMessage isDarkMode={isDarkMode} icon={<IconCheck />} message={t('profile.avatarUpdated')} />
             )}
           </div>
         </div>
@@ -436,9 +472,7 @@ export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsPr
               }
             </button>
             {profileSuccess && (
-              <span className="flex items-center gap-1.5 text-green-400 text-sm">
-                <IconCheck />{t('profile.updateSuccess')}
-              </span>
+              <SuccessMessage isDarkMode={isDarkMode} icon={<IconCheck />} message={t('profile.updateSuccess')} />
             )}
           </div>
         </form>
@@ -501,9 +535,7 @@ export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsPr
               }
             </button>
             {passwordSuccess && (
-              <span className="flex items-center gap-1.5 text-green-400 text-sm">
-                <IconCheck />{t('profile.passwordSuccess')}
-              </span>
+              <SuccessMessage isDarkMode={isDarkMode} icon={<IconCheck />} message={t('profile.passwordSuccess')} />
             )}
           </div>
         </form>

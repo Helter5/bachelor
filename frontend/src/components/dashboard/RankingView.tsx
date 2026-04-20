@@ -5,6 +5,7 @@ import type { RankingEntry } from "@/hooks/useRankingData"
 import { LoadingSpinner } from "../ui/LoadingSpinner"
 import { EmptyState } from "../ui/EmptyState"
 import { Select } from "../ui/Select"
+import { DashboardStatsShell } from "./DashboardStatsShell"
 
 interface RankingTableRowProps {
   isDarkMode: boolean
@@ -79,26 +80,7 @@ function RankingTableRow({ isDarkMode, entry, onSelectPerson }: RankingTableRowP
               </h4>
               <div className="space-y-2">
                 {entry.breakdown.map((b) => (
-                  <div
-                    key={b.event_name}
-                    className={`flex items-center justify-between rounded-lg px-4 py-2.5 text-sm ${
-                      isDarkMode ? 'bg-white/5' : 'bg-white border border-gray-100'
-                    }`}
-                  >
-                    <div className="flex-1">
-                      <span className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{b.event_name}</span>
-                      {b.start_date && (
-                        <span className={`ml-2 text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>{b.start_date}</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-4 text-xs">
-                      <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>{b.wins}/{b.total_fights} V</span>
-                      <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Perf: {b.performance_points}</span>
-                      <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Bonus: {b.victory_bonus}</span>
-                      <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>x{b.recency_weight}</span>
-                      <span className={`font-bold ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}>{b.weighted_score}b</span>
-                    </div>
-                  </div>
+                  <RankingBreakdownItem key={b.event_name} isDarkMode={isDarkMode} breakdown={b} />
                 ))}
               </div>
             </div>
@@ -106,6 +88,127 @@ function RankingTableRow({ isDarkMode, entry, onSelectPerson }: RankingTableRowP
         </tr>
       )}
     </>
+  )
+}
+
+function RankingBreakdownItem({
+  isDarkMode,
+  breakdown,
+}: {
+  isDarkMode: boolean
+  breakdown: RankingEntry["breakdown"][number]
+}) {
+  return (
+    <div className={`flex items-center justify-between rounded-lg px-4 py-2.5 text-sm ${isDarkMode ? 'bg-white/5' : 'bg-white border border-gray-100'}`}>
+      <div className="flex-1">
+        <span className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{breakdown.event_name}</span>
+        {breakdown.start_date && (
+          <span className={`ml-2 text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>{breakdown.start_date}</span>
+        )}
+      </div>
+      <div className="flex items-center gap-4 text-xs">
+        <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>{breakdown.wins}/{breakdown.total_fights} V</span>
+        <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Perf: {breakdown.performance_points}</span>
+        <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Bonus: {breakdown.victory_bonus}</span>
+        <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>x{breakdown.recency_weight}</span>
+        <span className={`font-bold ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}>{breakdown.weighted_score}b</span>
+      </div>
+    </div>
+  )
+}
+
+function RankingMethodologyModal({ isDarkMode, t, onClose }: { isDarkMode: boolean; t: (key: string) => string; onClose: () => void }) {
+  const scoreSteps = [
+    { code: 'VFA / VFA1', label: 'Tušírovanie (pád)', points: '+5b' },
+    { code: 'VSU / VSU1', label: 'Technická prevaha', points: '+3b' },
+    { code: 'VPO / VPO1', label: 'Na body', points: '+1b' },
+    { code: 'VIN, VFO, VCA, ...', label: 'Ostatné výhry', points: '+2b' },
+    { code: 'DSQ, 2DSQ, ...', label: 'Diskvalifikácie', points: '+0b' },
+  ]
+
+  const recencyWeights = [
+    { label: t("ranking.methodology.newestLabel"), weight: "x1.0" },
+    { label: "2.", weight: "x0.7" },
+    { label: "3.", weight: "x0.4" },
+    { label: "4.", weight: "x0.2" },
+    { label: "5.", weight: "x0.1" },
+  ]
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+      <div className={`relative max-w-lg w-full rounded-2xl p-6 shadow-2xl max-h-[80vh] overflow-y-auto ${isDarkMode ? 'bg-[#1e293b] border border-white/10' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+            {t("ranking.methodology.title")}
+          </h3>
+          <button
+            onClick={onClose}
+            className={`p-1 rounded-lg transition-colors ${isDarkMode ? 'hover:bg-white/10 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div className={`space-y-4 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+          <div>
+            <h4 className={`font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t("ranking.methodology.step1Title")}</h4>
+            <p>{t("ranking.methodology.step1Desc")}</p>
+            <div className={`mt-2 rounded-lg p-3 font-mono text-xs ${isDarkMode ? 'bg-black/30' : 'bg-gray-50'}`}>
+              {t("ranking.methodology.step1Formula")}
+            </div>
+          </div>
+          <div>
+            <h4 className={`font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t("ranking.methodology.step2Title")}</h4>
+            <div className={`rounded-lg p-3 font-mono text-xs ${isDarkMode ? 'bg-black/30' : 'bg-gray-50'}`}>
+              {t("ranking.methodology.step2Formula")}
+            </div>
+            <p className="mt-1">{t("ranking.methodology.step2Note")}</p>
+          </div>
+          <div>
+            <h4 className={`font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t("ranking.methodology.step3Title")}</h4>
+            <p className="mb-2">{t("ranking.methodology.step3Desc")}</p>
+            <div className={`rounded-lg overflow-hidden ${isDarkMode ? 'border border-white/10' : 'border border-gray-200'}`}>
+              <table className="w-full text-xs">
+                <tbody>
+                  {scoreSteps.map((row, index) => (
+                    <tr key={row.code} className={index < scoreSteps.length - 1 ? `border-b ${isDarkMode ? 'border-white/5' : 'border-gray-100'}` : ''}>
+                      <td className={`px-3 py-1.5 font-medium ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}>{row.code}</td>
+                      <td className="px-3 py-1.5">{row.label}</td>
+                      <td className={`px-3 py-1.5 text-right font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{row.points}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <h4 className={`font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t("ranking.methodology.step4Title")}</h4>
+            <p>{t("ranking.methodology.step4Desc")}</p>
+            <div className="flex gap-2 mt-2">
+              {recencyWeights.map((weight) => (
+                <div key={weight.label} className={`flex-1 text-center rounded-lg py-1.5 ${isDarkMode ? 'bg-black/30' : 'bg-gray-50'}`}>
+                  <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{weight.label}</div>
+                  <div className={`font-bold text-xs ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}>{weight.weight}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h4 className={`font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t("ranking.methodology.step5Title")}</h4>
+            <div className={`rounded-lg p-3 font-mono text-xs ${isDarkMode ? 'bg-black/30' : 'bg-gray-50'}`}>
+              {t("ranking.methodology.step5Formula")}
+            </div>
+          </div>
+        </div>
+
+        <button onClick={onClose} className="mt-6 w-full py-2.5 rounded-lg font-medium text-sm bg-purple-600 hover:bg-purple-700 text-white transition-all">
+          {t("ranking.methodology.confirmButton")}
+        </button>
+      </div>
+    </div>
   )
 }
 
@@ -140,145 +243,38 @@ export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewP
     if (categories.length > 0 && !selectedRankingCategory) {
       setSelectedRankingCategory(categories[0])
     }
-  }, [categories])
+  }, [categories, selectedRankingCategory])
 
   return (
-    <div className="space-y-6">
-      <button
-        onClick={onBack}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-          isDarkMode
-            ? 'bg-[#1e293b] hover:bg-[#334155] text-gray-300 hover:text-white'
-            : 'bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900'
-        }`}
-      >
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-        {t("ranking.backToCategories")}
-      </button>
+    <DashboardStatsShell
+      isDarkMode={isDarkMode}
+      onBack={onBack}
+      backLabel={t("ranking.backToCategories")}
+      title={t("ranking.title")}
+      subtitle={t("ranking.subtitle")}
+      headerAction={(
+        <button
+          onClick={() => setShowRankingExplanation(true)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+            isDarkMode
+              ? 'bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/10'
+              : 'bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-900 border border-gray-200'
+          }`}
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {t("ranking.explainButton")}
+        </button>
+      )}
+    >
 
-      <div className={`rounded-xl p-8 ${isDarkMode ? 'bg-[#1e293b]' : 'bg-white border border-gray-200'} shadow-lg`}>
-        <div className="flex items-start justify-between mb-6">
-          <div>
-            <h2 className={`text-2xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-              {t("ranking.title")}
-            </h2>
-            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              {t("ranking.subtitle")}
-            </p>
-          </div>
-          <button
-            onClick={() => setShowRankingExplanation(true)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-              isDarkMode
-                ? 'bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/10'
-                : 'bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-900 border border-gray-200'
-            }`}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            {t("ranking.explainButton")}
-          </button>
-        </div>
-
-        {/* Explanation modal */}
         {showRankingExplanation && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setShowRankingExplanation(false)}>
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-            <div
-              className={`relative max-w-lg w-full rounded-2xl p-6 shadow-2xl max-h-[80vh] overflow-y-auto ${
-                isDarkMode ? 'bg-[#1e293b] border border-white/10' : 'bg-white'
-              }`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                  {t("ranking.methodology.title")}
-                </h3>
-                <button
-                  onClick={() => setShowRankingExplanation(false)}
-                  className={`p-1 rounded-lg transition-colors ${isDarkMode ? 'hover:bg-white/10 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              <div className={`space-y-4 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                <div>
-                  <h4 className={`font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t("ranking.methodology.step1Title")}</h4>
-                  <p>{t("ranking.methodology.step1Desc")}</p>
-                  <div className={`mt-2 rounded-lg p-3 font-mono text-xs ${isDarkMode ? 'bg-black/30' : 'bg-gray-50'}`}>
-                    {t("ranking.methodology.step1Formula")}
-                  </div>
-                </div>
-                <div>
-                  <h4 className={`font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t("ranking.methodology.step2Title")}</h4>
-                  <div className={`rounded-lg p-3 font-mono text-xs ${isDarkMode ? 'bg-black/30' : 'bg-gray-50'}`}>
-                    {t("ranking.methodology.step2Formula")}
-                  </div>
-                  <p className="mt-1">{t("ranking.methodology.step2Note")}</p>
-                </div>
-                <div>
-                  <h4 className={`font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t("ranking.methodology.step3Title")}</h4>
-                  <p className="mb-2">{t("ranking.methodology.step3Desc")}</p>
-                  <div className={`rounded-lg overflow-hidden ${isDarkMode ? 'border border-white/10' : 'border border-gray-200'}`}>
-                    <table className="w-full text-xs">
-                      <tbody>
-                        {[
-                          { code: 'VFA / VFA1', label: 'Tušírovanie (pád)', points: '+5b' },
-                          { code: 'VSU / VSU1', label: 'Technická prevaha', points: '+3b' },
-                          { code: 'VPO / VPO1', label: 'Na body', points: '+1b' },
-                          { code: 'VIN, VFO, VCA, ...', label: 'Ostatné výhry', points: '+2b' },
-                          { code: 'DSQ, 2DSQ, ...', label: 'Diskvalifikácie', points: '+0b' },
-                        ].map((row, i, arr) => (
-                          <tr key={row.code} className={i < arr.length - 1 ? `border-b ${isDarkMode ? 'border-white/5' : 'border-gray-100'}` : ''}>
-                            <td className={`px-3 py-1.5 font-medium ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}>{row.code}</td>
-                            <td className="px-3 py-1.5">{row.label}</td>
-                            <td className={`px-3 py-1.5 text-right font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{row.points}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-                <div>
-                  <h4 className={`font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t("ranking.methodology.step4Title")}</h4>
-                  <p>{t("ranking.methodology.step4Desc")}</p>
-                  <div className="flex gap-2 mt-2">
-                    {[
-                      { label: t("ranking.methodology.newestLabel"), weight: "x1.0" },
-                      { label: "2.", weight: "x0.7" },
-                      { label: "3.", weight: "x0.4" },
-                      { label: "4.", weight: "x0.2" },
-                      { label: "5.", weight: "x0.1" },
-                    ].map(w => (
-                      <div key={w.label} className={`flex-1 text-center rounded-lg py-1.5 ${isDarkMode ? 'bg-black/30' : 'bg-gray-50'}`}>
-                        <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{w.label}</div>
-                        <div className={`font-bold text-xs ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}>{w.weight}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <h4 className={`font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t("ranking.methodology.step5Title")}</h4>
-                  <div className={`rounded-lg p-3 font-mono text-xs ${isDarkMode ? 'bg-black/30' : 'bg-gray-50'}`}>
-                    {t("ranking.methodology.step5Formula")}
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setShowRankingExplanation(false)}
-                className="mt-6 w-full py-2.5 rounded-lg font-medium text-sm bg-purple-600 hover:bg-purple-700 text-white transition-all"
-              >
-                {t("ranking.methodology.confirmButton")}
-              </button>
-            </div>
-          </div>
+          <RankingMethodologyModal
+            isDarkMode={isDarkMode}
+            t={t}
+            onClose={() => setShowRankingExplanation(false)}
+          />
         )}
 
         {/* Controls */}
@@ -394,7 +390,6 @@ export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewP
             </table>
           </div>
         )}
-      </div>
-    </div>
+    </DashboardStatsShell>
   )
 }

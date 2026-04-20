@@ -71,7 +71,7 @@ export function StatisticsTab({
                     cy="45%"
                     outerRadius={90}
                     dataKey="value"
-                    label={({ percent }) => percent > 0.04 ? `${(percent * 100).toFixed(0)}%` : ''}
+                    label={({ percent }) => (percent ?? 0) > 0.04 ? `${(((percent ?? 0) * 100)).toFixed(0)}%` : ''}
                     labelLine={false}
                   >
                     {Object.keys(eventStats.victory_type_distribution).map((_, i) => (
@@ -80,10 +80,13 @@ export function StatisticsTab({
                   </Pie>
                   <Tooltip
                     contentStyle={tooltipStyle}
-                    formatter={(value: number, name: string) => [value, name]}
+                    formatter={(value: number | string | undefined, name: string | undefined) => [value ?? 0, name ?? '']}
                   />
                   <Legend
-                    formatter={(value, entry: any) => `${value}: ${entry.payload.value}`}
+                    formatter={(value, entry) => {
+                      const payloadValue = (entry as { payload?: { value?: number | string } }).payload?.value
+                      return `${String(value)}: ${payloadValue ?? ''}`
+                    }}
                     wrapperStyle={{ fontSize: '12px', color: isDarkMode ? '#cbd5e1' : '#374151' }}
                   />
                 </PieChart>
@@ -158,7 +161,7 @@ export function StatisticsTab({
                     </tr>
                   </thead>
                   <tbody>
-                    {eventStats.team_performance.map((t, idx) => (
+                    {eventStats.team_performance.map((t) => (
                       <tr key={t.name} className={`border-b last:border-b-0 ${isDarkMode ? 'border-white/5 hover:bg-white/5' : 'border-gray-100 hover:bg-gray-50'}`}>
                         <td className={`py-3 px-4 text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t.name}</td>
                         <td className="py-3 px-3 text-center">

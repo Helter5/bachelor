@@ -24,7 +24,6 @@ export function CalendarTopBar({
   onPrevMonth,
   onNextMonth,
   onJumpToToday,
-  viewMode,
   setViewMode,
   viewToggleClass,
 }: CalendarTopBarProps) {

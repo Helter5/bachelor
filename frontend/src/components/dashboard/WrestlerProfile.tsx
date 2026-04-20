@@ -6,6 +6,7 @@ import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   LineChart, Line, ResponsiveContainer, Legend
 } from "recharts"
+import type { ReactNode } from "react"
 
 interface WrestlerProfileProps {
   isDarkMode: boolean
@@ -52,6 +53,103 @@ const CHART_COLORS = ["#8b5cf6", "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#e
 const WIN_COLOR = "#10b981"
 const LOSS_COLOR = "#ef4444"
 
+function SectionCard({ isDarkMode, className = "", children }: { isDarkMode: boolean; className?: string; children: ReactNode }) {
+  return (
+    <div className={`rounded-xl p-6 ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm ${className}`}>
+      {children}
+    </div>
+  )
+}
+
+function SummaryCard({ isDarkMode, label, value, color }: { isDarkMode: boolean; label: string; value: ReactNode; color: string }) {
+  return (
+    <div className={`rounded-xl p-4 text-center ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
+      <p className={`text-xs font-medium mb-1 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>{label}</p>
+      <p className={`text-xl font-bold ${color}`}>{value}</p>
+    </div>
+  )
+}
+
+function EventItem({
+  isDarkMode,
+  event,
+  isActive,
+  onClick,
+}: {
+  isDarkMode: boolean
+  event: PersonDetail["events"][number]
+  isActive: boolean
+  onClick: () => void
+}) {
+  return (
+    <div
+      onClick={onClick}
+      className={`flex items-center gap-3 rounded-lg px-4 py-3 cursor-pointer transition-all ${
+        isActive
+          ? isDarkMode ? "bg-blue-600/30 ring-1 ring-blue-500" : "bg-blue-50 ring-1 ring-blue-400"
+          : isDarkMode ? "bg-white/5 hover:bg-white/10" : "bg-gray-50 hover:bg-gray-100 border border-gray-200"
+      }`}
+    >
+      {event.team_country ? (
+        <span className={`fi fi-${event.team_country.toLowerCase()} fis rounded-sm flex-shrink-0`} style={{ fontSize: "1.5rem" }} title={event.team_name ?? undefined} />
+      ) : (
+        <div className={`w-6 h-6 rounded-sm flex-shrink-0 ${isDarkMode ? "bg-white/10" : "bg-gray-200"}`} />
+      )}
+      <div className="min-w-0 flex-1">
+        <p className={`text-sm font-medium truncate ${isDarkMode ? "text-white" : "text-gray-900"}`}>{event.event_name || "-"}</p>
+        {event.team_name && (
+          <p className={`text-xs truncate ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>{event.team_name}</p>
+        )}
+      </div>
+      {event.weight_category && (
+        <span className={`text-xs font-medium px-2 py-1 rounded-full flex-shrink-0 ${isDarkMode ? "bg-purple-900/40 text-purple-300" : "bg-purple-100 text-purple-700"}`}>
+          {event.weight_category}
+        </span>
+      )}
+    </div>
+  )
+}
+
+function FightItem({ isDarkMode, fight }: { isDarkMode: boolean; fight: PersonFight }) {
+  return (
+    <div className={`flex items-center gap-3 rounded-lg px-4 py-2.5 ${isDarkMode ? "bg-white/5" : "bg-gray-50 border border-gray-100"}`}>
+      {fight.is_winner === true ? (
+        <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold flex-shrink-0 ${isDarkMode ? "bg-green-900/40 text-green-400" : "bg-green-100 text-green-700"}`}>V</span>
+      ) : fight.is_winner === false ? (
+        <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold flex-shrink-0 ${isDarkMode ? "bg-red-900/40 text-red-400" : "bg-red-100 text-red-700"}`}>P</span>
+      ) : (
+        <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs flex-shrink-0 ${isDarkMode ? "bg-white/10 text-gray-500" : "bg-gray-200 text-gray-400"}`}>?</span>
+      )}
+      <span className={`flex-1 text-sm font-medium truncate ${isDarkMode ? "text-white" : "text-gray-900"}`}>{fight.opponent || "-"}</span>
+      {fight.victory_type && (
+        <span className={`text-xs font-medium px-2 py-0.5 rounded flex-shrink-0 ${isDarkMode ? "bg-purple-900/30 text-purple-300" : "bg-purple-50 text-purple-600"}`}>
+          {fight.victory_type}
+        </span>
+      )}
+      <span className={`text-xs flex-shrink-0 tabular-nums ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+        TP <span className={fight.is_winner ? "font-bold" : ""}>{fight.tp_self ?? "-"}</span>
+        <span className={isDarkMode ? "text-gray-600" : "text-gray-300"}> : </span>
+        {fight.tp_opponent ?? "-"}
+      </span>
+      <span className={`text-xs flex-shrink-0 tabular-nums ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+        CP <span className={fight.is_winner ? "font-bold" : ""}>{fight.cp_self ?? "-"}</span>
+        <span className={isDarkMode ? "text-gray-600" : "text-gray-300"}> : </span>
+        {fight.cp_opponent ?? "-"}
+      </span>
+    </div>
+  )
+}
+
+function FightGroupHeader({ isDarkMode, eventName, weightCategory }: { isDarkMode: boolean; eventName: string; weightCategory: string | null }) {
+  return (
+    <div className="flex items-center gap-2 mb-2">
+      <span className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>{eventName}</span>
+      <div className={`flex-1 h-px ${isDarkMode ? "bg-white/10" : "bg-gray-200"}`} />
+      <span className={`text-xs ${isDarkMode ? "text-gray-500" : "text-gray-400"}`}>{weightCategory}</span>
+    </div>
+  )
+}
+
 export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfileProps) {
   const { t } = useTranslation()
   const [person, setPerson] = useState<PersonDetail | null>(null)
@@ -79,7 +177,7 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
       })
       .catch(() => setError(t("wrestlerProfile.loadError")))
       .finally(() => setLoading(false))
-  }, [personId])
+  }, [personId, t])
 
   const stats = useMemo(() => {
     if (!fightsData || !person) return null
@@ -153,7 +251,7 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
       victoryTypeBarData,
       metricPerTournament,
     }
-  }, [fightsData, person])
+  }, [fightsData, person, t])
 
   const tooltipStyle = useMemo(() => ({
     backgroundColor: isDarkMode ? "#1e293b" : "#fff",
@@ -225,20 +323,14 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
           { label: t("wrestlerProfile.cards.topWin"), value: stats.mostCommonVictory, color: "text-orange-500" },
           { label: t("wrestlerProfile.cards.tournaments"), value: stats.numTournaments, color: "text-cyan-500" },
         ].map((card) => (
-          <div
-            key={card.label}
-            className={`rounded-xl p-4 text-center ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}
-          >
-            <p className={`text-xs font-medium mb-1 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>{card.label}</p>
-            <p className={`text-xl font-bold ${card.color}`}>{card.value}</p>
-          </div>
+          <SummaryCard key={card.label} isDarkMode={isDarkMode} label={card.label} value={card.value} color={card.color} />
         ))}
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Win/Loss Pie */}
-        <div className={`rounded-xl p-6 min-h-[400px] ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
+        <SectionCard isDarkMode={isDarkMode} className="min-h-[400px]">
           <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>{t("wrestlerProfile.charts.winLoss")}</h3>
           <ResponsiveContainer width="100%" height={320}>
             <PieChart style={{ overflow: "visible" }} margin={{ top: 24, right: 8, left: 8, bottom: 8 }}>
@@ -250,10 +342,10 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
               <Legend wrapperStyle={{ paddingTop: 16 }} />
             </PieChart>
           </ResponsiveContainer>
-        </div>
+        </SectionCard>
 
         {/* Victory Type Bar */}
-        <div className={`rounded-xl p-6 min-h-[400px] ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
+        <SectionCard isDarkMode={isDarkMode} className="min-h-[400px]">
           <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>{t("wrestlerProfile.charts.winTypes")}</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={stats.victoryTypeBarData}>
@@ -268,10 +360,10 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-        </div>
+        </SectionCard>
 
         {/* TP/CP per Tournament Line */}
-        <div className={`rounded-xl p-6 min-h-[400px] ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
+        <SectionCard isDarkMode={isDarkMode} className="min-h-[400px]">
           <div className="flex items-center justify-between mb-4">
             <h3 className={`text-lg font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>
               {t("wrestlerProfile.charts.metricByTournament", { metric: chartMetric === "tp" ? "TP" : "CP" })}
@@ -313,11 +405,11 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
               )}
             </LineChart>
           </ResponsiveContainer>
-        </div>
+        </SectionCard>
       </div>
 
       {/* Events Cards */}
-      <div className={`rounded-xl p-6 ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
+      <SectionCard isDarkMode={isDarkMode}>
         <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>{t("wrestlerProfile.tournamentsSection")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {person.events
@@ -325,35 +417,16 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
             .map((event) => {
               const isActive = selectedEvent === event.event_name
               return (
-                <div
+                <EventItem
                   key={event.athlete_id}
+                  isDarkMode={isDarkMode}
+                  event={event}
+                  isActive={isActive}
                   onClick={() => {
                     setSelectedEvent(isActive ? null : (event.event_name ?? null))
                     fightsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
                   }}
-                  className={`flex items-center gap-3 rounded-lg px-4 py-3 cursor-pointer transition-all ${
-                    isActive
-                      ? isDarkMode ? "bg-blue-600/30 ring-1 ring-blue-500" : "bg-blue-50 ring-1 ring-blue-400"
-                      : isDarkMode ? "bg-white/5 hover:bg-white/10" : "bg-gray-50 hover:bg-gray-100 border border-gray-200"
-                  }`}
-                >
-                  {event.team_country ? (
-                    <span className={`fi fi-${event.team_country.toLowerCase()} fis rounded-sm flex-shrink-0`} style={{ fontSize: "1.5rem" }} title={event.team_name ?? undefined} />
-                  ) : (
-                    <div className={`w-6 h-6 rounded-sm flex-shrink-0 ${isDarkMode ? "bg-white/10" : "bg-gray-200"}`} />
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className={`text-sm font-medium truncate ${isDarkMode ? "text-white" : "text-gray-900"}`}>{event.event_name || "-"}</p>
-                    {event.team_name && (
-                      <p className={`text-xs truncate ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>{event.team_name}</p>
-                    )}
-                  </div>
-                  {event.weight_category && (
-                    <span className={`text-xs font-medium px-2 py-1 rounded-full flex-shrink-0 ${isDarkMode ? "bg-purple-900/40 text-purple-300" : "bg-purple-100 text-purple-700"}`}>
-                      {event.weight_category}
-                    </span>
-                  )}
-                </div>
+                />
               )
             })}
         </div>
@@ -380,10 +453,11 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
             </button>
           </div>
         )}
-      </div>
+      </SectionCard>
 
       {/* Fights grouped by event */}
-      <div ref={fightsRef} className={`rounded-xl p-6 ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
+      <SectionCard isDarkMode={isDarkMode}>
+        <div ref={fightsRef}>
         <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
           <h3 className={`text-lg font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>
             {t("wrestlerProfile.fightsSection", { count: stats.totalFights })}
@@ -411,47 +485,17 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
               }, {})
           ).map(([eventName, fights]) => (
             <div key={eventName}>
-              <div className="flex items-center gap-2 mb-2">
-                <span className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>{eventName}</span>
-                <div className={`flex-1 h-px ${isDarkMode ? "bg-white/10" : "bg-gray-200"}`} />
-                <span className={`text-xs ${isDarkMode ? "text-gray-500" : "text-gray-400"}`}>{fights[0].weight_category}</span>
-              </div>
+              <FightGroupHeader isDarkMode={isDarkMode} eventName={eventName} weightCategory={fights[0].weight_category} />
               <div className="space-y-1">
                 {fights.map((fight) => (
-                  <div
-                    key={fight.fight_id}
-                    className={`flex items-center gap-3 rounded-lg px-4 py-2.5 ${isDarkMode ? "bg-white/5" : "bg-gray-50 border border-gray-100"}`}
-                  >
-                    {fight.is_winner === true ? (
-                      <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold flex-shrink-0 ${isDarkMode ? "bg-green-900/40 text-green-400" : "bg-green-100 text-green-700"}`}>V</span>
-                    ) : fight.is_winner === false ? (
-                      <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold flex-shrink-0 ${isDarkMode ? "bg-red-900/40 text-red-400" : "bg-red-100 text-red-700"}`}>P</span>
-                    ) : (
-                      <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs flex-shrink-0 ${isDarkMode ? "bg-white/10 text-gray-500" : "bg-gray-200 text-gray-400"}`}>?</span>
-                    )}
-                    <span className={`flex-1 text-sm font-medium truncate ${isDarkMode ? "text-white" : "text-gray-900"}`}>{fight.opponent || "-"}</span>
-                    {fight.victory_type && (
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded flex-shrink-0 ${isDarkMode ? "bg-purple-900/30 text-purple-300" : "bg-purple-50 text-purple-600"}`}>
-                        {fight.victory_type}
-                      </span>
-                    )}
-                    <span className={`text-xs flex-shrink-0 tabular-nums ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
-                      TP <span className={fight.is_winner ? "font-bold" : ""}>{fight.tp_self ?? "-"}</span>
-                      <span className={isDarkMode ? "text-gray-600" : "text-gray-300"}> : </span>
-                      {fight.tp_opponent ?? "-"}
-                    </span>
-                    <span className={`text-xs flex-shrink-0 tabular-nums ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
-                      CP <span className={fight.is_winner ? "font-bold" : ""}>{fight.cp_self ?? "-"}</span>
-                      <span className={isDarkMode ? "text-gray-600" : "text-gray-300"}> : </span>
-                      {fight.cp_opponent ?? "-"}
-                    </span>
-                  </div>
+                  <FightItem key={fight.fight_id} isDarkMode={isDarkMode} fight={fight} />
                 ))}
               </div>
             </div>
           ))}
         </div>
-      </div>
+        </div>
+      </SectionCard>
     </div>
   )
 }

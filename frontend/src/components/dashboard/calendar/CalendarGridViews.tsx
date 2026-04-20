@@ -1,4 +1,5 @@
 import type { TFunction } from 'i18next'
+import type { ReactNode } from 'react'
 import { formatDate } from '@/utils/dateFormatter'
 import type { CalendarEvent, CalendarViewMode } from './types'
 
@@ -10,7 +11,6 @@ interface CalendarGridViewsProps {
   weekdayLabels: string[]
   monthCells: Date[]
   weekDays: Date[]
-  selectedDate: Date
   dayEvents: CalendarEvent[]
   fullDateLabel: string
   eventMap: Map<string, CalendarEvent[]>
@@ -20,7 +20,8 @@ interface CalendarGridViewsProps {
   isSelected: (date: Date) => boolean
   flashDateKey: string | null
   selectDate: (date: Date) => void
-  renderEventDots: (eventsForDay: CalendarEvent[]) => JSX.Element
+  renderEventDots: (eventsForDay: CalendarEvent[]) => ReactNode
+  selectedDate: Date
 }
 
 export function CalendarGridViews({
@@ -31,7 +32,6 @@ export function CalendarGridViews({
   weekdayLabels,
   monthCells,
   weekDays,
-  selectedDate,
   dayEvents,
   fullDateLabel,
   eventMap,
@@ -42,6 +42,7 @@ export function CalendarGridViews({
   flashDateKey,
   selectDate,
   renderEventDots,
+  selectedDate,
 }: CalendarGridViewsProps) {
   if (viewMode === 'day') {
     return (
@@ -135,7 +136,10 @@ export function CalendarGridViews({
   }
 
   return (
-    <div className={`rounded-2xl overflow-hidden border ${isDarkMode ? 'border-white/10' : 'border-gray-200'}`}>
+    <div
+      className={`rounded-2xl overflow-hidden border ${isDarkMode ? 'border-white/10' : 'border-gray-200'}`}
+      data-selected-date={selectedDate.toISOString()}
+    >
       <div className={`grid grid-cols-7 text-[11px] uppercase tracking-[0.22em] font-semibold ${isDarkMode ? 'text-gray-400 bg-white/[0.02]' : 'text-gray-500 bg-gray-50'} [&>*:nth-child(7n)]:border-r-0`}>
         {weekdayLabels.map(label => (
           <div key={label} className={`px-1 py-2 text-center border-r border-b ${isDarkMode ? 'border-white/10' : 'border-gray-200'}`}>

@@ -46,7 +46,12 @@ export function AthletesTab({
   const countryOptions = useMemo(() => {
     const seen = new Set<string>()
     return teams
-      .filter(t => t.country_iso_code && !seen.has(t.country_iso_code) && !!seen.add(t.country_iso_code))
+      .filter((t): t is Team & { country_iso_code: string } => {
+        const code = t.country_iso_code
+        if (!code || seen.has(code)) return false
+        seen.add(code)
+        return true
+      })
       .map(t => ({
         value: t.country_iso_code,
         label: t.name,
@@ -69,7 +74,8 @@ export function AthletesTab({
     if (filterQuery.trim() && !a.person_full_name?.toLowerCase().includes(filterQuery.toLowerCase())) return false
     if (selectedCountries.size > 0) {
       const team = teams.find(t => t.id === a.team_id)
-      if (!team || !selectedCountries.has(team.country_iso_code)) return false
+      const countryCode = team?.country_iso_code
+      if (!countryCode || !selectedCountries.has(countryCode)) return false
     }
     return true
   })
@@ -147,14 +153,18 @@ export function AthletesTab({
                 <Card
                   key={athlete.id}
                   isDarkMode={isDarkMode}
-                  name={athlete.person_full_name}
-                  countryCode={athleteTeam?.country_iso_code}
+                  name={athlete.person_full_name ?? '-'}
+                  countryCode={athleteTeam?.country_iso_code ?? undefined}
                   metadata={athleteTeam?.name || athleteWeightCategory?.name ? metadata : undefined}
                   statusBadge={{
                     label: athlete.is_competing ? t('fighters.competing') : t('fighters.notCompeting'),
                     variant: athlete.is_competing ? 'success' : 'neutral',
                   }}
-                  onClick={onSelectPerson && athlete.person_id ? () => onSelectPerson(athlete.person_id!, athlete.person_full_name) : undefined}
+                  onClick={onSelectPerson ? () => {
+                    if (typeof athlete.person_id === 'number' && athlete.person_full_name) {
+                      onSelectPerson(athlete.person_id, athlete.person_full_name)
+                    }
+                  } : undefined}
                 />
               )
             })}

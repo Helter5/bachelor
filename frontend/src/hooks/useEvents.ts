@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
 
-export interface SportEvent {
+interface SportEvent {
   id: number
   uuid: string
   name: string

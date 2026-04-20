@@ -46,10 +46,6 @@ export function WrestlerPicker({
     ? "bg-[#0f172a]/95 border-white/10 shadow-[0_24px_70px_rgba(15,23,42,0.45)]"
     : "bg-white/95 border-gray-200 shadow-[0_24px_70px_rgba(15,23,42,0.08)]"
 
-  const headerClass = isDarkMode
-    ? "border-white/10 bg-white/5"
-    : "border-gray-100 bg-gradient-to-r from-purple-50 to-white"
-
   const filteredOptions = filteredPersons.slice(0, 15).map((person) => ({
     value: person.id,
     label: person.full_name,
@@ -133,7 +129,7 @@ export function WrestlerPicker({
 
           <OptionDropdown
             options={filteredOptions}
-            selectedValue={selected?.id ?? null}
+            selectedValue={null}
             onSelect={(personId) => {
               const person = filteredPersons.find((item) => item.id === personId)
               if (!person) return
@@ -173,7 +169,7 @@ export function WrestlerPicker({
 
           <OptionDropdown
             options={allOptions}
-            selectedValue={selected?.id ?? null}
+            selectedValue={null}
             onSelect={(personId) => {
               const person = allPersons.find((item) => item.id === personId)
               if (!person) return

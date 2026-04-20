@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import type { FightResult, Team, WeightCategory } from "../types"
-import { StatusBadge } from "../../../ui/StatusBadge"
 import { EmptyState } from "../../../ui/EmptyState"
 import { LoadingSpinner } from "../../../ui/LoadingSpinner"
 import { ErrorAlert } from "../../../ui/ErrorAlert"

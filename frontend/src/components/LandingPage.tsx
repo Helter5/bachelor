@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Toast } from "@/components/ui/Toast"
 import { GoogleLogin } from '@react-oauth/google'
+import type { CredentialResponse } from '@react-oauth/google'
 import { apiClient, ApiError } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
 import { validateUsername, validateRequired, validateEmail, validatePassword, validatePasswordMatch } from "@/utils/validation"
@@ -134,7 +135,12 @@ export function LandingPage({ onLogin }: LandingPageProps) {
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse: { credential: string }) => {
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    if (!credentialResponse.credential) {
+      showToast("error", t("landing.toasts.googleLoginError"), t("landing.toasts.serverError"))
+      return
+    }
+
     try {
       const data = await apiClient.post<{ csrf_token: string; token_type: string }>(
         API_ENDPOINTS.AUTH_GOOGLE,
@@ -526,7 +532,9 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                     {/* Hidden Google Button */}
                     <div ref={googleButtonRef} className="hidden">
                       <GoogleLogin
-                        onSuccess={handleGoogleSuccess}
+                        onSuccess={(credentialResponse) => {
+                          void handleGoogleSuccess(credentialResponse)
+                        }}
                         onError={handleGoogleError}
                       />
                     </div>

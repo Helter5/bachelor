@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
@@ -67,9 +67,7 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
   })
   const [formData, setFormData] = useState({ name: "", host: "host.docker.internal", port: 8080, client_id: "", client_secret: "", api_key: "" })
 
-  useEffect(() => { loadArenaSources() }, [])
-
-  const loadArenaSources = async () => {
+  const loadArenaSources = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -80,7 +78,9 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
     } finally {
       setLoading(false)
     }
-  }
+  }, [t])
+
+  useEffect(() => { void loadArenaSources() }, [loadArenaSources])
 
   const handleAddNew = () => {
     setIsAddingNew(true)

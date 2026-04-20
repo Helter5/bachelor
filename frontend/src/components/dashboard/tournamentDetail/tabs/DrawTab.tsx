@@ -232,7 +232,7 @@ export function DrawTab({ isDarkMode, eventId, weightCategories, weightCategorie
                   {entry?.result && !entry.error && (
                     <>
                       <span className={`text-xs ${sub}`}>{entry.result.athletes_count} {t("draw.athletes")}</span>
-                      <PenaltyBadge penalty={entry.result.total_penalty} isDarkMode={isDarkMode} />
+                      <PenaltyBadge penalty={entry.result.total_penalty} />
                     </>
                   )}
                 </div>
@@ -265,7 +265,7 @@ function ChevronIcon({ expanded, isDarkMode }: { expanded: boolean; isDarkMode: 
   )
 }
 
-function PenaltyBadge({ penalty, isDarkMode }: { penalty: number; isDarkMode: boolean }) {
+function PenaltyBadge({ penalty }: { penalty: number }) {
   const { t } = useTranslation()
 
   if (penalty === 0) {

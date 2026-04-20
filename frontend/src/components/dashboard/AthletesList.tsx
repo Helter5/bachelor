@@ -8,6 +8,7 @@ import { CountryFlag } from "./CountryFlag"
 import { LoadingSpinner } from "../ui/LoadingSpinner"
 import { MultiSelect } from "../ui/MultiSelect"
 import { NumberInput } from "../ui/NumberInput"
+import { AthleteCard } from "./AthleteCard"
 
 const PERSONS_LIMIT = 5000
 
@@ -64,10 +65,11 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
   }, [persons])
 
   const filtered = useMemo(() => {
+    const minFightsValue = Number.parseInt(minFights, 10)
     return persons.filter(p => {
       if (searchQuery && !p.full_name.toLowerCase().includes(searchQuery.toLowerCase())) return false
       if (selectedCountries.size > 0 && (!p.country_iso_code || !selectedCountries.has(p.country_iso_code))) return false
-      if (minFights && p.fight_count < parseInt(minFights)) return false
+      if (!Number.isNaN(minFightsValue) && p.fight_count < minFightsValue) return false
       return true
     })
   }, [persons, searchQuery, selectedCountries, minFights])
@@ -141,7 +143,8 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
                     onToggle={(val) => {
                       setSelectedCountries(prev => {
                         const next = new Set(prev)
-                        next.has(val) ? next.delete(val) : next.add(val)
+                        if (next.has(val)) next.delete(val)
+                        else next.add(val)
                         return next
                       })
                       setCurrentPage(1)
@@ -177,39 +180,14 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                   {currentPersons.map((person) => (
-                    <div
+                    <AthleteCard
                       key={person.id}
+                      fullName={person.full_name}
+                      countryCode={person.country_iso_code}
+                      fightCount={person.fight_count}
+                      isDarkMode={isDarkMode}
                       onClick={() => onSelectPerson({ id: person.id, name: person.full_name })}
-                      className={`rounded-lg transition-all hover:scale-[1.02] cursor-pointer overflow-hidden ${
-                        isDarkMode
-                          ? 'bg-[#0f172a] hover:bg-[#1e3a5f] shadow-lg hover:shadow-2xl'
-                          : 'bg-white hover:shadow-xl border border-gray-200 shadow-sm'
-                      }`}
-                    >
-                      {/* Flag area */}
-                      <div className={`flex items-center justify-center py-5 ${isDarkMode ? 'bg-white/5' : 'bg-gray-50'}`}>
-                        {person.country_iso_code?.trim().length === 2 ? (
-                          <span
-                            className={`fi fi-${person.country_iso_code.toLowerCase()} fis rounded`}
-                            style={{ fontSize: '3rem' }}
-                            title={person.country_iso_code}
-                          />
-                        ) : (
-                          <svg className={`w-12 h-12 ${isDarkMode ? 'text-gray-600' : 'text-gray-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 016 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                        )}
-                      </div>
-                      {/* Info */}
-                      <div className="px-3 py-2">
-                        <p className={`text-sm font-semibold leading-tight line-clamp-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                          {person.full_name}
-                        </p>
-                        <p className={`mt-1 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                          {person.fight_count} {person.fight_count === 1 ? t('athletes.fightCount_one') : person.fight_count >= 2 && person.fight_count <= 4 ? t('athletes.fightCount_few') : t('athletes.fightCount_many')}
-                        </p>
-                      </div>
-                    </div>
+                    />
                   ))}
                 </div>
               )}

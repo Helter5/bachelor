@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react"
+import { useState, useEffect, useMemo, useRef, type Dispatch, type SetStateAction, type ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
@@ -8,6 +8,7 @@ import { WrestlerPicker } from "./WrestlerPicker"
 import type { Person, PickerMode } from "./WrestlerPicker"
 import { usePersons } from "@/hooks/usePersons"
 import { formatDuration, pluralizeSk } from "@/utils/format"
+import { DashboardStatsShell } from "./DashboardStatsShell"
 
 interface ComparisonPerson {
   id: number
@@ -157,10 +158,10 @@ function CommonOpponentCard({ isDarkMode, opp, person1Name, person2Name }: Commo
               <div className="flex items-center gap-3">
                 <span className="text-green-500 font-bold text-lg">{summary.wins}V</span>
                 <span className={`font-bold text-lg ${isDarkMode ? 'text-red-400' : 'text-red-500'}`}>{summary.losses}P</span>
-                {summary.avg_cp > 0 && (
+                {(summary.avg_cp ?? 0) > 0 && (
                   <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>Ø CP: {summary.avg_cp}</span>
                 )}
-                {summary.avg_tp > 0 && (
+                {(summary.avg_tp ?? 0) > 0 && (
                   <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>Ø TP: {summary.avg_tp}</span>
                 )}
               </div>
@@ -180,6 +181,52 @@ interface ComparisonViewProps {
   onBack: () => void
 }
 
+type SetState<T> = Dispatch<SetStateAction<T>>
+
+function mergeUniquePersons(primary: Person[] | null, secondary: Person[] | null): Person[] | null {
+  if (primary === null || secondary === null) return null
+
+  const merged = [...primary]
+  const ids = new Set(primary.map((person) => person.id))
+
+  for (const person of secondary) {
+    if (!ids.has(person.id)) merged.push(person)
+  }
+
+  return merged.sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''))
+}
+
+async function loadComparisonCandidates(
+  personId: number,
+  setOpponents: SetState<Person[] | null>,
+  setCommonCandidates: SetState<Person[] | null>,
+  setLoadingOpponents: SetState<boolean>,
+  setLoadingCommonCandidates: SetState<boolean>
+) {
+  setLoadingOpponents(true)
+  setLoadingCommonCandidates(true)
+
+  try {
+    const [opponents, commonCandidates] = await Promise.all([
+      apiClient.get<{ id: number; full_name: string; country_iso_code: string | null }[]>(
+        API_ENDPOINTS.PERSON_OPPONENTS(personId)
+      ),
+      apiClient.get<{ id: number; full_name: string; country_iso_code: string | null }[]>(
+        API_ENDPOINTS.PERSON_COMMON_OPPONENT_CANDIDATES(personId)
+      ),
+    ])
+
+    setOpponents(opponents || [])
+    setCommonCandidates(commonCandidates || [])
+  } catch {
+    setOpponents([])
+    setCommonCandidates([])
+  } finally {
+    setLoadingOpponents(false)
+    setLoadingCommonCandidates(false)
+  }
+}
+
 export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: ComparisonViewProps) {
   const { t } = useTranslation()
   const persons = usePersons()
@@ -191,6 +238,7 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
   const [mode1, setMode1] = useState<PickerMode>("idle")
   const [mode2, setMode2] = useState<PickerMode>("idle")
   const [comparisonResult, setComparisonResult] = useState<ComparisonResult | null>(null)
+  const [comparisonError, setComparisonError] = useState<string | null>(null)
   const [comparing, setComparing] = useState(false)
   const [includeFights, setIncludeFights] = useState(false)
   const [includeCommonOpponents, setIncludeCommonOpponents] = useState(false)
@@ -221,34 +269,21 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
       setShowAllP1(false)
       return
     }
-    setLoadingOpponentsP2(true)
-    setLoadingCommonCandidatesP2(true)
     setShowAllP1(false)
-    apiClient.get<{ id: number; full_name: string; country_iso_code: string | null }[]>(
-      API_ENDPOINTS.PERSON_OPPONENTS(selectedWrestler2.id)
+    void loadComparisonCandidates(
+      selectedWrestler2.id,
+      setOpponentsOfP2,
+      setCommonCandidatesP2,
+      setLoadingOpponentsP2,
+      setLoadingCommonCandidatesP2
     )
-      .then(data => setOpponentsOfP2(data || []))
-      .catch(() => setOpponentsOfP2([]))
-      .finally(() => setLoadingOpponentsP2(false))
-    apiClient.get<{ id: number; full_name: string; country_iso_code: string | null }[]>(
-      API_ENDPOINTS.PERSON_COMMON_OPPONENT_CANDIDATES(selectedWrestler2.id)
-    )
-      .then(data => setCommonCandidatesP2(data || []))
-      .catch(() => setCommonCandidatesP2([]))
-      .finally(() => setLoadingCommonCandidatesP2(false))
-  }, [selectedWrestler2?.id])
+  }, [selectedWrestler2])
 
   // Filter list for picker 1 — active only when wrestler 2 is selected and wrestler 1 is not yet chosen
   const filterListForP1 = useMemo<Person[] | null>(() => {
     if (selectedWrestler1 || !selectedWrestler2 || !anyOptionSelected) return null
     if (includeFights && includeCommonOpponents) {
-      if (opponentsOfP2 === null || commonCandidatesP2 === null) return null
-      const merged = [...opponentsOfP2]
-      const ids = new Set(opponentsOfP2.map(p => p.id))
-      for (const p of commonCandidatesP2) {
-        if (!ids.has(p.id)) merged.push(p)
-      }
-      return merged.sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''))
+      return mergeUniquePersons(opponentsOfP2, commonCandidatesP2)
     }
     if (includeFights) return opponentsOfP2
     return commonCandidatesP2
@@ -271,34 +306,21 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
       setShowAllP2(false)
       return
     }
-    setLoadingOpponents(true)
-    setLoadingCommonCandidates(true)
     setShowAllP2(false)
-    apiClient.get<{ id: number; full_name: string; country_iso_code: string | null }[]>(
-      API_ENDPOINTS.PERSON_OPPONENTS(selectedWrestler1.id)
+    void loadComparisonCandidates(
+      selectedWrestler1.id,
+      setOpponentsOfP1,
+      setCommonCandidates,
+      setLoadingOpponents,
+      setLoadingCommonCandidates
     )
-      .then(data => setOpponentsOfP1(data || []))
-      .catch(() => setOpponentsOfP1([]))
-      .finally(() => setLoadingOpponents(false))
-    apiClient.get<{ id: number; full_name: string; country_iso_code: string | null }[]>(
-      API_ENDPOINTS.PERSON_COMMON_OPPONENT_CANDIDATES(selectedWrestler1.id)
-    )
-      .then(data => setCommonCandidates(data || []))
-      .catch(() => setCommonCandidates([]))
-      .finally(() => setLoadingCommonCandidates(false))
-  }, [selectedWrestler1?.id])
+  }, [selectedWrestler1])
 
   // Compute the filter list based on which checkboxes are active
   const filterList = useMemo<Person[] | null>(() => {
     if (!anyOptionSelected) return null
     if (includeFights && includeCommonOpponents) {
-      if (opponentsOfP1 === null || commonCandidates === null) return null
-      const merged = [...opponentsOfP1]
-      const ids = new Set(opponentsOfP1.map(p => p.id))
-      for (const p of commonCandidates) {
-        if (!ids.has(p.id)) merged.push(p)
-      }
-      return merged.sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''))
+      return mergeUniquePersons(opponentsOfP1, commonCandidates)
     }
     if (includeFights) return opponentsOfP1
     return commonCandidates
@@ -343,6 +365,7 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
     setMode1("idle")
     setMode2("idle")
     setComparisonResult(null)
+    setComparisonError(null)
     setComparing(false)
     setIncludeFights(false)
     setIncludeCommonOpponents(false)
@@ -364,42 +387,27 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
     if (!selectedWrestler1 || !selectedWrestler2 || isSameWrestler || neitherSelected) return
     setComparing(true)
     setComparisonResult(null)
+    setComparisonError(null)
     setComparedWith(null)
     try {
       const data = await apiClient.get<ComparisonResult>(API_ENDPOINTS.PERSON_COMPARE(selectedWrestler1.id, selectedWrestler2.id, includeFights, includeCommonOpponents))
       setComparisonResult(data)
       setComparedWith({ fights: includeFights, opponents: includeCommonOpponents })
     } catch {
-      setComparisonResult({ error: t("comparison.noFights") })
+      setComparisonError(t("comparison.noFights"))
     } finally {
       setComparing(false)
     }
   }
 
   return (
-    <div className="space-y-6">
-      <button
-        onClick={reset}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-          isDarkMode
-            ? 'bg-[#1e293b] hover:bg-[#334155] text-gray-300 hover:text-white'
-            : 'bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900'
-        }`}
-      >
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-        {t("comparison.backToCategories")}
-      </button>
-
-      <div className={`rounded-xl p-8 ${isDarkMode ? 'bg-[#1e293b]' : 'bg-white border border-gray-200'} shadow-lg`}>
-        <h2 className={`text-2xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-          {t("comparison.title")}
-        </h2>
-        <p className={`text-sm mb-6 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-          {t("comparison.subtitle")}
-        </p>
-
+    <DashboardStatsShell
+      isDarkMode={isDarkMode}
+      onBack={reset}
+      backLabel={t("comparison.backToCategories")}
+      title={t("comparison.title")}
+      subtitle={t("comparison.subtitle")}
+    >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div>
             {selectedWrestler2 && !selectedWrestler1 && anyOptionSelected && (
@@ -573,7 +581,7 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
           </div>
         </div>
 
-        {comparisonResult && !comparisonResult.error && comparedWith && (
+        {comparisonResult && comparedWith && (
           <div className="mt-8 space-y-8">
             {/* Head-to-head summary — only when direct fights were requested */}
             {comparedWith.fights && (
@@ -585,7 +593,7 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
                   {[
                     { person: comparisonResult.person1, wins: comparisonResult.person1_wins, otherWins: comparisonResult.person2_wins },
                     { person: comparisonResult.person2, wins: comparisonResult.person2_wins, otherWins: comparisonResult.person1_wins },
-                  ].map(({ person, wins, otherWins }, i) => (
+                  ].map(({ person, wins, otherWins }) => (
                     <div key={person.id} className="text-center flex-1">
                       <div className={`text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                         {person.country && (
@@ -608,7 +616,7 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
                         {pluralizeSk(wins, t("comparison.wins"), t("comparison.winsFew"), t("comparison.winsMany"))}
                       </div>
                     </div>
-                  )).reduce<React.ReactNode[]>((acc, el, i) => {
+                  )).reduce<ReactNode[]>((acc, el, i) => {
                     if (i === 1) {
                       acc.push(
                         <div key="vs" className="flex flex-col items-center">
@@ -671,12 +679,11 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
           </div>
         )}
 
-        {comparisonResult?.error && (
+        {comparisonError && (
           <div className={`mt-6 rounded-lg p-4 ${isDarkMode ? 'bg-red-900/20 text-red-400' : 'bg-red-50 text-red-600'}`}>
-            {comparisonResult.error}
+            {comparisonError}
           </div>
         )}
-      </div>
-    </div>
+    </DashboardStatsShell>
   )
 }

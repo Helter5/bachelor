@@ -111,7 +111,25 @@ export function Settings({ isDarkMode, toggleDarkMode, onUserDataChange }: Setti
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          {activeTab === 'profile' && <ProfileSettings isDarkMode={isDarkMode} onUserUpdated={onUserDataChange} />}
+          {activeTab === 'profile' && (
+            <ProfileSettings
+              isDarkMode={isDarkMode}
+              onUserUpdated={(updatedUser) => {
+                const mergedUser: User = {
+                  id: String(updatedUser.id),
+                  username: updatedUser.username,
+                  first_name: updatedUser.first_name,
+                  last_name: updatedUser.last_name,
+                  email: updatedUser.email,
+                  role: updatedUser.role,
+                  avatar_url: updatedUser.avatar_url,
+                  created_at: user?.created_at ?? new Date().toISOString(),
+                }
+                setUser(mergedUser)
+                onUserDataChange(mergedUser)
+              }}
+            />
+          )}
           {activeTab === 'appearance' && <AppearanceSettings isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />}
           {activeTab === 'arena-sources' && isAdmin && <ArenaSourcesSettings isDarkMode={isDarkMode} />}
           {activeTab === 'security' && <SecuritySettings isDarkMode={isDarkMode} />}

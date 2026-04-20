@@ -1,10 +1,10 @@
-import { ReactNode } from "react"
+import type { ReactNode } from "react"
 import { CountryFlag } from "../CountryFlag"
 import { StatusBadge } from "../../ui/StatusBadge"
 
 export interface Badge {
   label: string
-  variant?: 'success' | 'neutral' | 'warning' | 'info' | 'error'
+  variant?: 'success' | 'neutral' | 'warning' | 'info' | 'danger' | 'error'
 }
 
 interface CardProps {
@@ -15,9 +15,13 @@ interface CardProps {
   metadata?: ReactNode
   statusBadge?: {
     label: string
-    variant?: 'success' | 'neutral' | 'warning' | 'info' | 'error'
+    variant?: 'success' | 'neutral' | 'warning' | 'info' | 'danger' | 'error'
   }
   onClick?: () => void
+}
+
+function normalizeBadgeVariant(variant?: 'success' | 'neutral' | 'warning' | 'info' | 'danger' | 'error') {
+  return variant === 'error' ? 'danger' : (variant ?? 'neutral')
 }
 
 export function Card({
@@ -70,7 +74,7 @@ export function Card({
               {badges.map((badge, idx) => (
                 <StatusBadge
                   key={idx}
-                  variant={badge.variant || 'neutral'}
+                  variant={normalizeBadgeVariant(badge.variant)}
                   isDarkMode={isDarkMode}
                 >
                   {badge.label}
@@ -81,7 +85,7 @@ export function Card({
         </div>
 
         {statusBadge && (
-          <StatusBadge variant={statusBadge.variant || 'neutral'} isDarkMode={isDarkMode}>
+          <StatusBadge variant={normalizeBadgeVariant(statusBadge.variant)} isDarkMode={isDarkMode}>
             {statusBadge.label}
           </StatusBadge>
         )}

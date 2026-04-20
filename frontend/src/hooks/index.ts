@@ -1,6 +1,4 @@
 // Central export for all custom hooks
-export { useApi } from './useApi'
-export { usePagination } from './usePagination'
 export { useDarkMode } from './useDarkMode'
 export { useDashboardState } from './useDashboardState'
 export { useSync } from './useSync'

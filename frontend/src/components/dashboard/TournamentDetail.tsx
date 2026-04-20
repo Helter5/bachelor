@@ -4,7 +4,6 @@ import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
 
 import type { TabType, Team, WeightCategory, Athlete, FightResult, EventStatistics, Referee } from "./tournamentDetail/types"
-import { CategoriesTab } from "./tournamentDetail/tabs/CategoriesTab"
 import { TeamsTab } from "./tournamentDetail/tabs/TeamsTab"
 import { AthletesTab } from "./tournamentDetail/tabs/AthletesTab"
 import { RefereesTab } from "./tournamentDetail/tabs/RefereesTab"
@@ -12,6 +11,8 @@ import { ResultsTab } from "./tournamentDetail/tabs/ResultsTab"
 import { StatisticsTab } from "./tournamentDetail/tabs/StatisticsTab"
 import { ExportTab } from "./tournamentDetail/tabs/ExportTab"
 import { DrawTab } from "./tournamentDetail/tabs/DrawTab"
+
+const TABS_ORDER: TabType[] = ["teams", "athletes", "referees", "results", "statistics", "draw", "export"]
 
 interface TournamentDetailProps {
   isDarkMode: boolean
@@ -40,10 +41,9 @@ export function TournamentDetail({
     return first === 'en' || first === 'sk' ? `/${first}` : '/sk'
   }, [])
 
-  const tabsOrder: TabType[] = ["teams", "athletes", "referees", "results", "statistics", "draw", "export"]
-  const isTabType = (value: string | null): value is TabType => {
-    return !!value && tabsOrder.includes(value as TabType)
-  }
+  const isTabType = useCallback((value: string | null): value is TabType => {
+    return !!value && TABS_ORDER.includes(value as TabType)
+  }, [])
 
   const getTournamentBasePath = useCallback(() => `${getLocalePrefix()}/dashboard/tournaments/${tournamentId}`, [getLocalePrefix, tournamentId])
 
@@ -63,7 +63,7 @@ export function TournamentDetail({
     return tab === 'teams' ? basePath : `${basePath}/${tab}`
   }, [getTournamentBasePath])
 
-  const getTabFromUrl = () => {
+  const getTabFromUrl = useCallback(() => {
     const segments = window.location.pathname.split('/').filter(Boolean)
     const tournamentsIdx = segments.indexOf('tournaments')
     if (tournamentsIdx >= 0) {
@@ -76,7 +76,7 @@ export function TournamentDetail({
     // Backward compatibility for older query links
     const urlTab = new URLSearchParams(window.location.search).get('tab')
     return isTabType(urlTab) ? urlTab : 'teams'
-  }
+  }, [isTabType])
 
   const [activeTab, setActiveTab] = useState<TabType>(getTabFromUrl)
 
@@ -86,7 +86,7 @@ export function TournamentDetail({
 
   const [weightCategories, setWeightCategories] = useState<WeightCategory[]>([])
   const [weightCategoriesLoading, setWeightCategoriesLoading] = useState(false)
-  const [weightCategoriesError, setWeightCategoriesError] = useState<string | null>(null)
+  const [, setWeightCategoriesError] = useState<string | null>(null)
 
   const [athletes, setAthletes] = useState<Athlete[]>([])
   const [athletesLoading, setAthletesLoading] = useState(false)
@@ -100,10 +100,6 @@ export function TournamentDetail({
   const [teamAthletes, setTeamAthletes] = useState<Athlete[]>([])
   const [loadingTeamAthletes, setLoadingTeamAthletes] = useState(false)
 
-  const [selectedWeightCategory, setSelectedWeightCategory] = useState<{ id: number; name: string; sport_name: string; audience_name: string } | null>(null)
-  const [weightCategoryAthletes, setWeightCategoryAthletes] = useState<Athlete[]>([])
-  const [loadingWeightCategoryAthletes, setLoadingWeightCategoryAthletes] = useState(false)
-
   const [results, setResults] = useState<FightResult[]>([])
   const [resultsLoading, setResultsLoading] = useState(false)
   const [resultsError, setResultsError] = useState<string | null>(null)
@@ -113,12 +109,10 @@ export function TournamentDetail({
   const [statsLoading, setStatsLoading] = useState(false)
   const [statsError, setStatsError] = useState<string | null>(null)
 
-  const [weightCategoriesPage, setWeightCategoriesPage] = useState(1)
   const [teamsPage, setTeamsPage] = useState(1)
   const [athletesPage, setAthletesPage] = useState(1)
   const [refereesPage, setRefereesPage] = useState(1)
   const [teamAthletesPage, setTeamAthletesPage] = useState(1)
-  const [weightCategoryAthletesPage, setWeightCategoryAthletesPage] = useState(1)
 
   const getWeightCategoryStatus = useCallback((wc: WeightCategory): 'completed' | 'ongoing' | 'waiting' => {
     if (wc.is_completed) return 'completed'
@@ -146,7 +140,7 @@ export function TournamentDetail({
     } finally {
       setTeamsLoading(false)
     }
-  }, [tournamentId])
+  }, [tournamentId, t])
 
   const loadWeightCategories = useCallback(async () => {
     setWeightCategoriesLoading(true)
@@ -160,7 +154,7 @@ export function TournamentDetail({
     } finally {
       setWeightCategoriesLoading(false)
     }
-  }, [tournamentId])
+  }, [tournamentId, t])
 
   const loadAthletes = useCallback(async () => {
     setAthletesLoading(true)
@@ -174,7 +168,7 @@ export function TournamentDetail({
     } finally {
       setAthletesLoading(false)
     }
-  }, [tournamentId])
+  }, [tournamentId, t])
 
   const loadReferees = useCallback(async () => {
     setRefereesLoading(true)
@@ -188,7 +182,7 @@ export function TournamentDetail({
     } finally {
       setRefereesLoading(false)
     }
-  }, [tournamentId])
+  }, [tournamentId, t])
 
   const loadResults = useCallback(async () => {
     setResultsLoading(true)
@@ -202,7 +196,7 @@ export function TournamentDetail({
     } finally {
       setResultsLoading(false)
     }
-  }, [tournamentUuid])
+  }, [tournamentUuid, t])
 
   const loadStatistics = useCallback(async () => {
     setStatsLoading(true)
@@ -216,7 +210,7 @@ export function TournamentDetail({
     } finally {
       setStatsLoading(false)
     }
-  }, [tournamentId])
+  }, [tournamentId, t])
 
   // --- Team detail ---
 
@@ -257,38 +251,6 @@ export function TournamentDetail({
     setTeamAthletes([])
   }, [pushCurrentPathWithQuery])
 
-  // --- Weight category detail ---
-
-  const openWeightCategoryDetailWithoutHistory = useCallback(async (wc: { id: number; name: string; sport_name: string; audience_name: string }) => {
-    setSelectedWeightCategory(wc)
-    setLoadingWeightCategoryAthletes(true)
-    try {
-      if (teams.length === 0) await loadTeams()
-      const data = await apiClient.get<Athlete[]>(API_ENDPOINTS.ATHLETE_DATABASE(tournamentId))
-      const filtered = (data || []).filter((a: Athlete) => a.weight_category_id === wc.id)
-      setWeightCategoryAthletes(filtered)
-    } catch (error) {
-      console.error('Error loading weight category athletes:', error)
-    } finally {
-      setLoadingWeightCategoryAthletes(false)
-    }
-  }, [teams, tournamentId, loadTeams])
-
-  const openWeightCategoryDetail = useCallback(async (wc: { id: number; name: string; sport_name: string; audience_name: string }) => {
-    const params = new URLSearchParams(window.location.search)
-    params.set('wc', wc.id.toString())
-    pushCurrentPathWithQuery(params)
-    await openWeightCategoryDetailWithoutHistory(wc)
-  }, [openWeightCategoryDetailWithoutHistory, pushCurrentPathWithQuery])
-
-  const closeWeightCategoryDetail = useCallback(() => {
-    const params = new URLSearchParams(window.location.search)
-    params.delete('wc')
-    pushCurrentPathWithQuery(params)
-    setSelectedWeightCategory(null)
-    setWeightCategoryAthletes([])
-  }, [pushCurrentPathWithQuery])
-
   // --- Results weight category detail ---
 
   const openWeightCategoryResultsDetail = useCallback((wc: { id: number; name: string; sport_name: string; audience_name: string }) => {
@@ -316,7 +278,6 @@ export function TournamentDetail({
     const handlePopState = () => {
       const params = new URLSearchParams(window.location.search)
       const teamId = params.get('team')
-      const wcId = params.get('wc')
       const tab = getTabFromUrl()
 
       setActiveTab(tab)
@@ -324,19 +285,14 @@ export function TournamentDetail({
       if (teamId && teams.length > 0) {
         const team = teams.find(t => t.id === parseInt(teamId))
         if (team) openTeamDetailWithoutHistory({ id: team.id.toString(), name: team.name })
-      } else if (wcId && weightCategories.length > 0) {
-        const wc = weightCategories.find(w => w.id === parseInt(wcId))
-        if (wc) openWeightCategoryDetailWithoutHistory({ id: wc.id, name: wc.name, sport_name: wc.sport_name, audience_name: wc.audience_name })
       } else {
         setSelectedTeam(null)
-        setSelectedWeightCategory(null)
         setTeamAthletes([])
-        setWeightCategoryAthletes([])
       }
     }
     window.addEventListener('popstate', handlePopState)
     return () => window.removeEventListener('popstate', handlePopState)
-  }, [teams, weightCategories, openTeamDetailWithoutHistory, openWeightCategoryDetailWithoutHistory])
+  }, [teams, openTeamDetailWithoutHistory, getTabFromUrl])
 
   useEffect(() => {
     const tab = getTabFromUrl()
@@ -344,7 +300,7 @@ export function TournamentDetail({
     if (window.location.pathname !== getTabPath(tab)) {
       window.history.replaceState({}, '', getTabPath(tab))
     }
-  }, [tournamentId])
+  }, [tournamentId, getTabFromUrl, getTabPath])
 
   useEffect(() => {
     if (activeTab === "teams") loadTeams()
@@ -370,25 +326,18 @@ export function TournamentDetail({
   }, [activeTab, tournamentId, loadTeams, loadWeightCategories, loadAthletes, loadResults, loadStatistics, loadReferees])
 
   useEffect(() => {
-    setWeightCategoriesPage(1)
     setTeamsPage(1)
     setAthletesPage(1)
   }, [activeTab])
 
   useEffect(() => { setTeamAthletesPage(1) }, [selectedTeam])
-  useEffect(() => { setWeightCategoryAthletesPage(1) }, [selectedWeightCategory])
 
   // --- Render ---
 
-  const tabs: { id: TabType; label: string }[] = [
-    { id: "teams", label: t("tournamentDetail.tabs.teams") },
-    { id: "athletes", label: t("tournamentDetail.tabs.athletes") },
-    { id: "referees", label: t("tournamentDetail.tabs.referees") },
-    { id: "results", label: t("tournamentDetail.tabs.results") },
-    { id: "statistics", label: t("tournamentDetail.tabs.statistics") },
-    { id: "draw", label: t("tournamentDetail.tabs.draw") },
-    { id: "export", label: t("tournamentDetail.tabs.export") },
-  ]
+  const tabs: { id: TabType; label: string }[] = TABS_ORDER.map((id) => ({
+    id,
+    label: t(`tournamentDetail.tabs.${id}`),
+  }))
 
   return (
     <div className="space-y-6">

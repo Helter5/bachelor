@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
 
-export interface RankingBreakdown {
+interface RankingBreakdown {
   event_name: string
   start_date: string | null
   wins: number

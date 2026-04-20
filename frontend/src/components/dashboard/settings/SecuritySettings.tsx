@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/config/api'
@@ -58,12 +58,7 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadSessions()
-    loadLoginHistory()
-  }, [])
-
-  const loadSessions = async () => {
+  const loadSessions = useCallback(async () => {
     try {
       setLoadingSessions(true)
       setError(null)
@@ -74,9 +69,9 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
     } finally {
       setLoadingSessions(false)
     }
-  }
+  }, [t])
 
-  const loadLoginHistory = async () => {
+  const loadLoginHistory = useCallback(async () => {
     try {
       setLoadingHistory(true)
       const data = await apiClient.get<LoginHistoryEntry[]>(`${API_ENDPOINTS.PROFILE_LOGIN_HISTORY}?limit=20`)
@@ -86,7 +81,12 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
     } finally {
       setLoadingHistory(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    void loadSessions()
+    void loadLoginHistory()
+  }, [loadSessions, loadLoginHistory])
 
   const handleRevokeSession = async (sessionId: number) => {
     if (!confirm(t('security.confirmRevoke'))) return

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/config/api'
@@ -39,11 +39,7 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadLogs()
-  }, [])
-
-  const loadLogs = async () => {
+  const loadLogs = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -55,7 +51,11 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [t])
+
+  useEffect(() => {
+    void loadLogs()
+  }, [loadLogs])
 
   const loadLogDetail = async (logId: number) => {
     try {
@@ -119,6 +119,30 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
       log.fights_updated
     )
   }
+
+  const DetailField = ({ label, value }: { label: string; value: ReactNode }) => (
+    <div>
+      <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+        {label}
+      </div>
+      <div className={`text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+        {value}
+      </div>
+    </div>
+  )
+
+  const StatCard = ({ label, value }: { label: string; value: ReactNode }) => (
+    <div className={`p-4 rounded ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+      <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{label}</div>
+      <div className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{value}</div>
+    </div>
+  )
+
+  const StatusPill = ({ status }: { status: string }) => (
+    <span className={`px-3 py-1 rounded text-sm ${getStatusColor(status)}`}>
+      {getStatusText(status)}
+    </span>
+  )
 
   return (
     <div className="space-y-6">
@@ -231,61 +255,30 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
             <div className="p-6 space-y-6">
               {/* Overview */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {t('syncLogs.detailUser')}
-                  </div>
-                  <div className={`text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {selectedLog.username || t('syncLogs.unknownUser')} {selectedLog.ip_address && `(${selectedLog.ip_address})`}
-                  </div>
-                </div>
-
-                <div>
-                  <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {t('syncLogs.detailSource')}
-                  </div>
-                  <div className={`text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {selectedLog.arena_source_name || t('syncLogs.detailAllSources')}
-                  </div>
-                </div>
-
-                <div>
-                  <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {t('syncLogs.detailStart')}
-                  </div>
-                  <div className={`text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {formatDate(selectedLog.started_at)}
-                  </div>
-                </div>
-
-                <div>
-                  <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {t('syncLogs.detailEnd')}
-                  </div>
-                  <div className={`text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {selectedLog.finished_at ? formatDate(selectedLog.finished_at) : t('syncLogs.detailInProgress')}
-                  </div>
-                </div>
-
-                <div>
-                  <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {t('syncLogs.detailDuration')}
-                  </div>
-                  <div className={`text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {formatDuration(selectedLog.duration_seconds)}
-                  </div>
-                </div>
-
-                <div>
-                  <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {t('syncLogs.detailStatus')}
-                  </div>
-                  <div>
-                    <span className={`px-3 py-1 rounded text-sm ${getStatusColor(selectedLog.status)}`}>
-                      {getStatusText(selectedLog.status)}
-                    </span>
-                  </div>
-                </div>
+                <DetailField
+                  label={t('syncLogs.detailUser')}
+                  value={<>{selectedLog.username || t('syncLogs.unknownUser')} {selectedLog.ip_address && `(${selectedLog.ip_address})`}</>}
+                />
+                <DetailField
+                  label={t('syncLogs.detailSource')}
+                  value={selectedLog.arena_source_name || t('syncLogs.detailAllSources')}
+                />
+                <DetailField
+                  label={t('syncLogs.detailStart')}
+                  value={formatDate(selectedLog.started_at)}
+                />
+                <DetailField
+                  label={t('syncLogs.detailEnd')}
+                  value={selectedLog.finished_at ? formatDate(selectedLog.finished_at) : t('syncLogs.detailInProgress')}
+                />
+                <DetailField
+                  label={t('syncLogs.detailDuration')}
+                  value={formatDuration(selectedLog.duration_seconds)}
+                />
+                <DetailField
+                  label={t('syncLogs.detailStatus')}
+                  value={<StatusPill status={selectedLog.status} />}
+                />
               </div>
 
               {/* Statistics */}
@@ -294,40 +287,11 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
                   {t('syncLogs.statsTitle')}
                 </h4>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <div className={`p-4 rounded ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                    <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('syncLogs.statsEvents')}</div>
-                    <div className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                      +{selectedLog.events_created} / ~{selectedLog.events_updated}
-                    </div>
-                  </div>
-
-                  <div className={`p-4 rounded ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                    <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('syncLogs.statsAthletes')}</div>
-                    <div className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                      +{selectedLog.athletes_created} / ~{selectedLog.athletes_updated}
-                    </div>
-                  </div>
-
-                  <div className={`p-4 rounded ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                    <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('syncLogs.statsTeams')}</div>
-                    <div className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                      +{selectedLog.teams_created} / ~{selectedLog.teams_updated}
-                    </div>
-                  </div>
-
-                  <div className={`p-4 rounded ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                    <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('syncLogs.statsCategories')}</div>
-                    <div className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                      +{selectedLog.weight_categories_created} / ~{selectedLog.weight_categories_updated}
-                    </div>
-                  </div>
-
-                  <div className={`p-4 rounded ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                    <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('syncLogs.statsFights')}</div>
-                    <div className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                      +{selectedLog.fights_created} / ~{selectedLog.fights_updated}
-                    </div>
-                  </div>
+                  <StatCard label={t('syncLogs.statsEvents')} value={<>+{selectedLog.events_created} / ~{selectedLog.events_updated}</>} />
+                  <StatCard label={t('syncLogs.statsAthletes')} value={<>+{selectedLog.athletes_created} / ~{selectedLog.athletes_updated}</>} />
+                  <StatCard label={t('syncLogs.statsTeams')} value={<>+{selectedLog.teams_created} / ~{selectedLog.teams_updated}</>} />
+                  <StatCard label={t('syncLogs.statsCategories')} value={<>+{selectedLog.weight_categories_created} / ~{selectedLog.weight_categories_updated}</>} />
+                  <StatCard label={t('syncLogs.statsFights')} value={<>+{selectedLog.fights_created} / ~{selectedLog.fights_updated}</>} />
                 </div>
                 <div className={`text-xs mt-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                   {t('syncLogs.statsLegend')}

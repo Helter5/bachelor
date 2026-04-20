@@ -63,7 +63,7 @@ export function useTournamentFilters(events: Event[]) {
     setSortOrder("asc")
   }
 
-  const hasActiveFilters = searchQuery || locationFilter || sortBy !== "name" || sortOrder !== "asc"
+  const hasActiveFilters = Boolean(searchQuery || locationFilter || sortBy !== "name" || sortOrder !== "asc")
 
   return {
     searchQuery,

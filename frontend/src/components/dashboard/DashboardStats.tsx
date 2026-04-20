@@ -13,6 +13,44 @@ type StatsCategory = "comparison" | "rankings" | "team_comparison" | null
 
 const STATS_VIEW_QUERY_KEY = "stats_view"
 
+function ComparisonIcon() {
+  return (
+    <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+    </svg>
+  )
+}
+
+function RankingsIcon() {
+  return (
+    <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 4h2a2 2 0 012 2v1a5 5 0 01-5 5M8 4H6a2 2 0 00-2 2v1a5 5 0 005 5m3 6v3m-4 0h8M9 12a3 3 0 003-3V4h0a3 3 0 00-3 3v2a3 3 0 003 3z" />
+    </svg>
+  )
+}
+
+function TeamComparisonIcon() {
+  return (
+    <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  )
+}
+
+interface StatsCategoryConfig {
+  id: Exclude<StatsCategory, null>
+  color: "purple" | "yellow" | "blue"
+  titleKey: string
+  descriptionKey: string
+  Icon: () => ReactNode
+}
+
+const STATS_CATEGORY_CONFIGS: StatsCategoryConfig[] = [
+  { id: "comparison", color: "purple", titleKey: "stats.comparison.title", descriptionKey: "stats.comparison.description", Icon: ComparisonIcon },
+  { id: "rankings", color: "yellow", titleKey: "stats.rankings.title", descriptionKey: "stats.rankings.description", Icon: RankingsIcon },
+  { id: "team_comparison", color: "blue", titleKey: "stats.teamComparison.title", descriptionKey: "stats.teamComparison.description", Icon: TeamComparisonIcon },
+]
+
 function parseStatsCategoryFromUrl(): StatsCategory {
   const params = new URLSearchParams(window.location.search)
   const value = params.get(STATS_VIEW_QUERY_KEY)
@@ -104,16 +142,16 @@ export function DashboardStats({ isDarkMode, onSelectPerson }: DashboardStatsPro
     pushStatsCategoryToUrl(null)
   }, [])
 
-  if (selectedCategory === "rankings") {
-    return <RankingView isDarkMode={isDarkMode} onSelectPerson={onSelectPerson} onBack={handleBackToStatsOverview} />
-  }
+  const selectedView = selectedCategory
+    ? {
+        rankings: <RankingView isDarkMode={isDarkMode} onSelectPerson={onSelectPerson} onBack={handleBackToStatsOverview} />,
+        comparison: <ComparisonView isDarkMode={isDarkMode} onSelectPerson={onSelectPerson} onBack={handleBackToStatsOverview} />,
+        team_comparison: <TeamComparisonView isDarkMode={isDarkMode} onBack={handleBackToStatsOverview} />,
+      }[selectedCategory]
+    : null
 
-  if (selectedCategory === "comparison") {
-    return <ComparisonView isDarkMode={isDarkMode} onSelectPerson={onSelectPerson} onBack={handleBackToStatsOverview} />
-  }
-
-  if (selectedCategory === "team_comparison") {
-    return <TeamComparisonView isDarkMode={isDarkMode} onBack={handleBackToStatsOverview} />
+  if (selectedView) {
+    return selectedView
   }
 
   return (
@@ -123,42 +161,17 @@ export function DashboardStats({ isDarkMode, onSelectPerson }: DashboardStatsPro
         <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>{t("stats.subtitle")}</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <StatsCategoryCard
-          isDarkMode={isDarkMode}
-          onClick={() => handleSelectCategory("comparison")}
-          color="purple"
-          icon={
-            <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-            </svg>
-          }
-          title={t("stats.comparison.title")}
-          description={t("stats.comparison.description")}
-        />
-        <StatsCategoryCard
-          isDarkMode={isDarkMode}
-          onClick={() => handleSelectCategory("rankings")}
-          color="yellow"
-          icon={
-            <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 4h2a2 2 0 012 2v1a5 5 0 01-5 5M8 4H6a2 2 0 00-2 2v1a5 5 0 005 5m3 6v3m-4 0h8M9 12a3 3 0 003-3V4h0a3 3 0 00-3 3v2a3 3 0 003 3z" />
-            </svg>
-          }
-          title={t("stats.rankings.title")}
-          description={t("stats.rankings.description")}
-        />
-        <StatsCategoryCard
-          isDarkMode={isDarkMode}
-          onClick={() => handleSelectCategory("team_comparison")}
-          color="blue"
-          icon={
-            <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          }
-          title={t("stats.teamComparison.title")}
-          description={t("stats.teamComparison.description")}
-        />
+        {STATS_CATEGORY_CONFIGS.map(({ id, color, titleKey, descriptionKey, Icon }) => (
+          <StatsCategoryCard
+            key={id}
+            isDarkMode={isDarkMode}
+            onClick={() => handleSelectCategory(id)}
+            color={color}
+            icon={<Icon />}
+            title={t(titleKey)}
+            description={t(descriptionKey)}
+          />
+        ))}
       </div>
     </div>
   )

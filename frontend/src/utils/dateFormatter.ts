@@ -18,9 +18,3 @@ export function formatDate(dateString: string, language?: string): string {
   if (Number.isNaN(date.getTime())) return dateString
   return date.toLocaleDateString(resolveLocale(language), DATE_FORMAT_OPTIONS)
 }
-
-export function formatDateTime(dateString: string, language?: string): string {
-  const date = new Date(dateString)
-  if (Number.isNaN(date.getTime())) return dateString
-  return date.toLocaleString(resolveLocale(language))
-}

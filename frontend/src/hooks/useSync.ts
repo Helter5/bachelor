@@ -38,12 +38,20 @@ export function useSync() {
   const syncTimeoutRef = useRef<number | undefined>(undefined)
   const successTimeoutRef = useRef<number | undefined>(undefined)
 
-  useEffect(() => {
-    return () => {
-      if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current)
-      if (successTimeoutRef.current) clearTimeout(successTimeoutRef.current)
+  const clearTimers = useCallback(() => {
+    if (syncTimeoutRef.current !== undefined) {
+      clearTimeout(syncTimeoutRef.current)
+      syncTimeoutRef.current = undefined
+    }
+    if (successTimeoutRef.current !== undefined) {
+      clearTimeout(successTimeoutRef.current)
+      successTimeoutRef.current = undefined
     }
   }, [])
+
+  useEffect(() => {
+    return clearTimers
+  }, [clearTimers])
 
   const handleSyncClick = useCallback(() => {
     setSyncState(prev => ({ ...prev, showConfirm: true }))

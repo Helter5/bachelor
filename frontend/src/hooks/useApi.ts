@@ -4,7 +4,7 @@ import { apiClient } from '@/services/apiClient'
 interface UseApiOptions<T> {
   endpoint: string
   immediate?: boolean
-  transform?: (data: any) => T
+  transform?: (data: unknown) => T
   onSuccess?: (data: T) => void
   onError?: (error: Error) => void
 }
