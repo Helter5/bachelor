@@ -80,20 +80,16 @@ export function CalendarSidebar({
             <div className="space-y-3 max-h-[460px] overflow-y-auto pr-1">
               {selectedDayEvents.map((event, index) => {
                 const locality = event.address_locality || event.continent || ''
-                const eventTime = event.date.toLocaleTimeString(i18nLanguage, { hour: '2-digit', minute: '2-digit' })
                 return (
                   <div key={event.id} className={`rounded-2xl p-4 border ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'}`}>
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className={`h-2.5 w-2.5 rounded-full ${eventColors[index % eventColors.length]}`} />
-                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${isDarkMode ? 'bg-white/10 text-gray-300' : 'bg-white text-gray-600 border border-gray-200'}`}>
-                            {eventTime}
-                          </span>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${eventColors[index % eventColors.length]}`} />
+                          <p className={`text-sm font-semibold leading-snug ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                            {event.name}
+                          </p>
                         </div>
-                        <p className={`text-sm font-semibold leading-snug ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                          {event.name}
-                        </p>
                         <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                           {formatDate(event.start_date, i18nLanguage)}{locality ? ` · ${locality}` : ''}
                         </p>
