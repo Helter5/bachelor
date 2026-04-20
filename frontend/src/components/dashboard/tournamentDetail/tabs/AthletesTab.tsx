@@ -6,7 +6,7 @@ import { ITEMS_PER_PAGE } from "../types"
 import { CountryFlag } from "../../CountryFlag"
 import { MultiSelect } from "../../../ui/MultiSelect"
 import { EmptyState } from "../../../ui/EmptyState"
-import { AthleteCard } from "../AthleteCard"
+import { Card } from "../Card"
 import { LoadingSpinner } from "../../../ui/LoadingSpinner"
 import { ErrorAlert } from "../../../ui/ErrorAlert"
 
@@ -127,17 +127,34 @@ export function AthletesTab({
               .map((athlete) => {
               const athleteTeam = teams.find(t => t.id === athlete.team_id)
               const athleteWeightCategory = weightCategories.find(wc => wc.id === athlete.weight_category_id)
+
+              const metadata = (
+                <>
+                  {athleteTeam?.name && (
+                    <span className={`px-2.5 py-1 rounded-full text-xs ${isDarkMode ? 'bg-white/5 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
+                      {athleteTeam.name}
+                    </span>
+                  )}
+                  {athleteWeightCategory?.name && (
+                    <span className={`px-2.5 py-1 rounded-full text-xs ${isDarkMode ? 'bg-white/5 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
+                      {athleteWeightCategory.name}
+                    </span>
+                  )}
+                </>
+              )
+
               return (
-                <AthleteCard
+                <Card
                   key={athlete.id}
                   isDarkMode={isDarkMode}
                   name={athlete.person_full_name}
-                  isCompeting={athlete.is_competing}
-                  teamName={athleteTeam?.name}
                   countryCode={athleteTeam?.country_iso_code}
-                  weightCategoryName={athleteWeightCategory?.name}
-                  personId={athlete.person_id}
-                  onSelectPerson={onSelectPerson}
+                  metadata={athleteTeam?.name || athleteWeightCategory?.name ? metadata : undefined}
+                  statusBadge={{
+                    label: athlete.is_competing ? t('fighters.competing') : t('fighters.notCompeting'),
+                    variant: athlete.is_competing ? 'success' : 'neutral',
+                  }}
+                  onClick={onSelectPerson && athlete.person_id ? () => onSelectPerson(athlete.person_id!, athlete.person_full_name) : undefined}
                 />
               )
             })}

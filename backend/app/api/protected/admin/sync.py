@@ -17,6 +17,7 @@ from ....services.sport_event_service import SportEventService
 from ....services.weight_category_service import WeightCategoryService
 from ....services.fight_service import FightService
 from ....services.victory_type_service import VictoryTypeService
+from ....services.referee_service import RefereeService
 from ....config import get_settings
 
 _settings = get_settings()
@@ -544,6 +545,77 @@ async def sync_fights(
                 "count": fights.get('synced_count', 0) if isinstance(fights, dict) else 0,
                 "created": fights.get('created', 0) if isinstance(fights, dict) else 0,
                 "updated": fights.get('updated', 0) if isinstance(fights, dict) else 0,
+                "event_id": event_id,
+                "idempotency_key": idempotency_key
+            }
+
+            _sync_results[idempotency_key] = result
+            return result
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Sync failed: {str(e)}"
+            )
+
+
+@router.post("/referees/{event_id}")
+async def sync_referees(
+    event_id: int,
+    _: None = Depends(validate_csrf_and_origin),
+    user: User = Depends(require_admin),
+    session: Session = Depends(get_session),
+    idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key")
+):
+    """
+    Sync referees for specific event from Arena API (admin only)
+
+    Requires: Admin role + CSRF token + Origin validation
+
+    Idempotency: Provide X-Idempotency-Key header to safely retry
+    Locking: Only one sync per event can run at a time
+    """
+    if not idempotency_key:
+        idempotency_key = f"sync_referees_{event_id}_{datetime.now(timezone.utc).isoformat()}"
+
+    if idempotency_key in _sync_results:
+        return _sync_results[idempotency_key]
+
+    lock_key = f"referees_{event_id}"
+    if lock_key not in _sync_locks:
+        _sync_locks[lock_key] = asyncio.Lock()
+    lock = _sync_locks[lock_key]
+
+    if lock.locked():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Referees sync for event {event_id} already in progress. Please wait or retry with same idempotency key."
+        )
+
+    async with lock:
+        from ....domain import SportEvent
+        event = session.exec(select(SportEvent).where(SportEvent.id == event_id)).first()
+        if not event:
+            raise HTTPException(status_code=404, detail=f"Event {event_id} not found")
+
+        source = _get_active_arena_source(session, user.id)
+        service = RefereeService(session)
+
+        try:
+            event_uuid = await _resolve_event_uuid_for_source(event, source)
+            if event_uuid is None:
+                return {
+                    "message": f"Udalosť '{event.name}' sa nenachádza v aktívnom zdroji ({source.name}). Nie je čo synchronizovať.",
+                    "skipped": True,
+                    "event_id": event_id,
+                }
+            referees = await service.sync_referees_for_event(event_uuid, event_id=event_id, source=source)
+            result = {
+                "message": f"Successfully synced referees for event {event.name}",
+                "count": referees.get('synced_count', 0) if isinstance(referees, dict) else 0,
+                "created": referees.get('created', 0) if isinstance(referees, dict) else 0,
+                "updated": referees.get('updated', 0) if isinstance(referees, dict) else 0,
                 "event_id": event_id,
                 "idempotency_key": idempotency_key
             }

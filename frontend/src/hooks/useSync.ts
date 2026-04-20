@@ -105,6 +105,7 @@ export function useSync() {
       let teamsCreated = 0, teamsUpdated = 0
       let categoriesCreated = 0, categoriesUpdated = 0
       let athletesCreated = 0, athletesUpdated = 0
+      let refereesCreated = 0, refereesUpdated = 0
       let fightsCreated = 0, fightsUpdated = 0
 
       const teamResults = await Promise.all(
@@ -146,6 +147,19 @@ export function useSync() {
         athletesUpdated += r.updated || 0
       }
 
+      const refereeResults = await Promise.all(
+        dbEvents.map((event: { id: number; uuid: string; name: string }) =>
+          retryWithBackoff(
+            () => apiClient.post<SyncResult>(API_ENDPOINTS.REFEREE_SYNC(event.id)),
+            `Syncing referees for event ${event.name}`
+          )
+        )
+      )
+      for (const r of refereeResults) {
+        refereesCreated += r.created || 0
+        refereesUpdated += r.updated || 0
+      }
+
       const fightResults = await Promise.all(
         dbEvents.map((event: { id: number; uuid: string; name: string }) =>
           retryWithBackoff(
@@ -170,6 +184,8 @@ export function useSync() {
               athletes_updated: athletesUpdated,
               weight_categories_created: categoriesCreated,
               weight_categories_updated: categoriesUpdated,
+              referees_created: refereesCreated,
+              referees_updated: refereesUpdated,
               fights_created: fightsCreated,
               fights_updated: fightsUpdated,
             }

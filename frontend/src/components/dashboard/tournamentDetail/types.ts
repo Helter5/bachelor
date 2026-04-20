@@ -1,4 +1,4 @@
-export type TabType = "teams" | "athletes" | "results" | "statistics" | "draw" | "export"
+export type TabType = "teams" | "athletes" | "referees" | "results" | "statistics" | "draw" | "export"
 
 export interface EventStatistics {
   event_id: number
@@ -54,6 +54,23 @@ export interface Athlete {
   sport_event_id: number
   weight_category_id: number | null
   is_competing: boolean
+}
+
+export interface Referee {
+  id: number
+  person_full_name: string | null
+  country_iso_code: string | null
+  team_name: string | null
+  team_alternate_name: string | null
+  number: number | null
+  referee_level: string | null
+  referee_group: string | null
+  delegate: boolean
+  matchairman: boolean
+  is_referee: boolean
+  preferred_style: string[] | null
+  mat_name: string | null
+  deactivated: boolean
 }
 
 export interface FightResult {

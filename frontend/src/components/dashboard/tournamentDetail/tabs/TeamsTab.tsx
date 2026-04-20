@@ -3,7 +3,7 @@ import { Pagination } from "../Pagination"
 import type { Team, Athlete, WeightCategory } from "../types"
 import { ITEMS_PER_PAGE } from "../types"
 import { CountryFlag } from "../../CountryFlag"
-import { AthleteCard } from "../AthleteCard"
+import { Card } from "../Card"
 import { EmptyState } from "../../../ui/EmptyState"
 import { LoadingSpinner } from "../../../ui/LoadingSpinner"
 import { ErrorAlert } from "../../../ui/ErrorAlert"
@@ -68,15 +68,23 @@ export function TeamsTab({
                 .slice((teamAthletesPage - 1) * ITEMS_PER_PAGE, teamAthletesPage * ITEMS_PER_PAGE)
                 .map((athlete) => {
                 const athleteWeightCategory = weightCategories.find(wc => wc.id === athlete.weight_category_id)
+                const metadata = athleteWeightCategory?.name ? (
+                  <span className={`px-2.5 py-1 rounded-full text-xs ${isDarkMode ? 'bg-white/5 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
+                    {athleteWeightCategory.name}
+                  </span>
+                ) : undefined
+
                 return (
-                  <AthleteCard
+                  <Card
                     key={athlete.id}
                     isDarkMode={isDarkMode}
                     name={athlete.person_full_name}
-                    isCompeting={athlete.is_competing}
-                    weightCategoryName={athleteWeightCategory?.name}
-                    personId={athlete.person_id}
-                    onSelectPerson={onSelectPerson}
+                    metadata={metadata}
+                    statusBadge={{
+                      label: athlete.is_competing ? t('fighters.competing') : t('fighters.notCompeting'),
+                      variant: athlete.is_competing ? 'success' : 'neutral',
+                    }}
+                    onClick={onSelectPerson && athlete.person_id ? () => onSelectPerson(athlete.person_id!, athlete.person_full_name) : undefined}
                   />
                 )
               })}
@@ -112,33 +120,27 @@ export function TeamsTab({
         <EmptyState icon="team" title={t('tournamentDetail.errors.noTeams')} description={t('tournamentDetail.errors.syncFirst')} isDarkMode={isDarkMode} />
       ) : (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {teams
               .slice((teamsPage - 1) * ITEMS_PER_PAGE, teamsPage * ITEMS_PER_PAGE)
-              .map((team) => (
-              <div
-                key={team.id}
-                onClick={() => openTeamDetail({ id: team.id.toString(), name: team.name })}
-                className={`rounded-lg p-4 transition-all cursor-pointer flex flex-col ${
-                  isDarkMode
-                    ? 'bg-[#0f172a]/50 hover:bg-[#1e293b] shadow-md hover:shadow-xl backdrop-blur-sm'
-                    : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
-                }`}
-              >
-                <CountryFlag code={team.country_iso_code} style={{ fontSize: '2.5rem' }} flagOnly />
-                <h4 className={`font-semibold text-base mt-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                  {team.name}
-                </h4>
-                <div className="flex items-center gap-1.5 text-xs mt-1">
-                  <svg className={`w-3.5 h-3.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-                    {t('tournamentDetail.athleteCount', { count: team.athlete_count || 0 })}
+              .map((team) => {
+                const metadata = team.athlete_count !== null ? (
+                  <span className={`px-2.5 py-1 rounded-full text-xs ${isDarkMode ? 'bg-white/5 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
+                    {t('tournamentDetail.athleteCount', { count: team.athlete_count })}
                   </span>
-                </div>
-              </div>
-            ))}
+                ) : undefined
+
+                return (
+                  <Card
+                    key={team.id}
+                    isDarkMode={isDarkMode}
+                    name={team.name}
+                    countryCode={team.country_iso_code || undefined}
+                    metadata={metadata}
+                    onClick={() => openTeamDetail({ id: team.id.toString(), name: team.name })}
+                  />
+                )
+              })}
           </div>
           <Pagination
             isDarkMode={isDarkMode}

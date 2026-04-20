@@ -3,10 +3,11 @@ import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
 
-import type { TabType, Team, WeightCategory, Athlete, FightResult, EventStatistics } from "./tournamentDetail/types"
+import type { TabType, Team, WeightCategory, Athlete, FightResult, EventStatistics, Referee } from "./tournamentDetail/types"
 import { CategoriesTab } from "./tournamentDetail/tabs/CategoriesTab"
 import { TeamsTab } from "./tournamentDetail/tabs/TeamsTab"
 import { AthletesTab } from "./tournamentDetail/tabs/AthletesTab"
+import { RefereesTab } from "./tournamentDetail/tabs/RefereesTab"
 import { ResultsTab } from "./tournamentDetail/tabs/ResultsTab"
 import { StatisticsTab } from "./tournamentDetail/tabs/StatisticsTab"
 import { ExportTab } from "./tournamentDetail/tabs/ExportTab"
@@ -39,7 +40,7 @@ export function TournamentDetail({
     return first === 'en' || first === 'sk' ? `/${first}` : '/sk'
   }, [])
 
-  const tabsOrder: TabType[] = ["teams", "athletes", "results", "statistics", "draw", "export"]
+  const tabsOrder: TabType[] = ["teams", "athletes", "referees", "results", "statistics", "draw", "export"]
   const isTabType = (value: string | null): value is TabType => {
     return !!value && tabsOrder.includes(value as TabType)
   }
@@ -91,6 +92,10 @@ export function TournamentDetail({
   const [athletesLoading, setAthletesLoading] = useState(false)
   const [athletesError, setAthletesError] = useState<string | null>(null)
 
+  const [referees, setReferees] = useState<Referee[]>([])
+  const [refereesLoading, setRefereesLoading] = useState(false)
+  const [refereesError, setRefereesError] = useState<string | null>(null)
+
   const [selectedTeam, setSelectedTeam] = useState<{ id: string; name: string } | null>(null)
   const [teamAthletes, setTeamAthletes] = useState<Athlete[]>([])
   const [loadingTeamAthletes, setLoadingTeamAthletes] = useState(false)
@@ -111,6 +116,7 @@ export function TournamentDetail({
   const [weightCategoriesPage, setWeightCategoriesPage] = useState(1)
   const [teamsPage, setTeamsPage] = useState(1)
   const [athletesPage, setAthletesPage] = useState(1)
+  const [refereesPage, setRefereesPage] = useState(1)
   const [teamAthletesPage, setTeamAthletesPage] = useState(1)
   const [weightCategoryAthletesPage, setWeightCategoryAthletesPage] = useState(1)
 
@@ -167,6 +173,20 @@ export function TournamentDetail({
       setAthletesError(t("tournamentDetail.errors.loadAthletes"))
     } finally {
       setAthletesLoading(false)
+    }
+  }, [tournamentId])
+
+  const loadReferees = useCallback(async () => {
+    setRefereesLoading(true)
+    setRefereesError(null)
+    try {
+      const data = await apiClient.get<Referee[]>(API_ENDPOINTS.REFEREES(tournamentId))
+      setReferees(data || [])
+    } catch (error) {
+      console.error('Error loading referees:', error)
+      setRefereesError(t("tournamentDetail.errors.loadReferees"))
+    } finally {
+      setRefereesLoading(false)
     }
   }, [tournamentId])
 
@@ -333,6 +353,7 @@ export function TournamentDetail({
       if (teams.length === 0) loadTeams()
       if (weightCategories.length === 0) loadWeightCategories()
     }
+    else if (activeTab === "referees") loadReferees()
     else if (activeTab === "results") {
       loadResults()
       if (weightCategories.length === 0) loadWeightCategories()
@@ -346,7 +367,7 @@ export function TournamentDetail({
       if (athletes.length === 0) loadAthletes()
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, tournamentId, loadTeams, loadWeightCategories, loadAthletes, loadResults, loadStatistics])
+  }, [activeTab, tournamentId, loadTeams, loadWeightCategories, loadAthletes, loadResults, loadStatistics, loadReferees])
 
   useEffect(() => {
     setWeightCategoriesPage(1)
@@ -362,6 +383,7 @@ export function TournamentDetail({
   const tabs: { id: TabType; label: string }[] = [
     { id: "teams", label: t("tournamentDetail.tabs.teams") },
     { id: "athletes", label: t("tournamentDetail.tabs.athletes") },
+    { id: "referees", label: t("tournamentDetail.tabs.referees") },
     { id: "results", label: t("tournamentDetail.tabs.results") },
     { id: "statistics", label: t("tournamentDetail.tabs.statistics") },
     { id: "draw", label: t("tournamentDetail.tabs.draw") },
@@ -443,6 +465,17 @@ export function TournamentDetail({
             athletesPage={athletesPage}
             setAthletesPage={setAthletesPage}
             onSelectPerson={onSelectPerson}
+          />
+        )}
+
+        {activeTab === "referees" && (
+          <RefereesTab
+            isDarkMode={isDarkMode}
+            referees={referees}
+            loading={refereesLoading}
+            error={refereesError}
+            refereesPage={refereesPage}
+            setRefereesPage={setRefereesPage}
           />
         )}
 

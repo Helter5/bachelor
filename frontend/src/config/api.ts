@@ -45,7 +45,10 @@ export const API_ENDPOINTS = {
   ATHLETE_DATABASE_BY_TEAM: (eventId: number, teamId: number) => `/api/v1/athletes?event_id=${eventId}&team_id=${teamId}`,
   ATHLETE_PRINT: (eventUuid: string) => `/athlete/${eventUuid}/print`,
   ATHLETE_SHOW: (eventUuid: string) => `/show/athlete/${eventUuid}`,
-  
+
+  // Referee endpoints (PUBLIC)
+  REFEREE_SYNC: (eventId: number) => `/api/v1/admin/sync/referees/${eventId}`,
+  REFEREES: (eventId: number) => `/api/v1/referees?event_id=${eventId}`,
 
   // Results endpoints (PUBLIC)
   RESULTS: (eventUuid: string) => `/api/v1/results/${eventUuid}`,

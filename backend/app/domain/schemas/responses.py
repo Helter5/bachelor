@@ -1,6 +1,6 @@
 """Response schemas for public and protected API endpoints"""
 from datetime import datetime, date
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
@@ -104,6 +104,27 @@ class AthleteWithDetails(BaseModel):
     person_id: Optional[int] = None
     sync_timestamp: Optional[datetime] = None
 
+
+# ==================== Referee Responses ====================
+
+class RefereeOut(BaseModel):
+    """Public referee data"""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    person_full_name: Optional[str] = None
+    country_iso_code: Optional[str] = None
+    team_name: Optional[str] = None
+    team_alternate_name: Optional[str] = None
+    number: Optional[int] = None
+    referee_level: Optional[str] = None
+    referee_group: Optional[str] = None
+    delegate: bool = False
+    matchairman: bool = False
+    is_referee: bool = False
+    preferred_style: Optional[List[str]] = None
+    mat_name: Optional[str] = None
+    deactivated: bool = False
 
 # ==================== Weight Category Responses ====================
 
@@ -218,6 +239,8 @@ class SyncLogOut(BaseModel):
     weight_categories_updated: int
     fights_created: int
     fights_updated: int
+    referees_created: int
+    referees_updated: int
     error_message: Optional[str] = None
     details: Optional[dict] = None
     ip_address: Optional[str] = None

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 import { Pagination } from "../Pagination"
 import type { WeightCategory, Team, Athlete, FightResult } from "../types"
 import { ITEMS_PER_PAGE } from "../types"
-import { AthleteCard } from "../AthleteCard"
+import { Card } from "../Card"
 import { EmptyState } from "../../../ui/EmptyState"
 import { LoadingSpinner } from "../../../ui/LoadingSpinner"
 import { ErrorAlert } from "../../../ui/ErrorAlert"
@@ -99,14 +99,23 @@ export function CategoriesTab({
                   .slice((weightCategoryAthletesPage - 1) * ITEMS_PER_PAGE, weightCategoryAthletesPage * ITEMS_PER_PAGE)
                   .map((athlete) => {
                   const athleteTeam = teams.find(t => t.id === athlete.team_id)
+                  const metadata = athleteTeam?.name ? (
+                    <span className={`px-2.5 py-1 rounded-full text-xs ${isDarkMode ? 'bg-white/5 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
+                      {athleteTeam.name}
+                    </span>
+                  ) : undefined
+
                   return (
-                    <AthleteCard
+                    <Card
                       key={athlete.id}
                       isDarkMode={isDarkMode}
                       name={athlete.person_full_name}
-                      isCompeting={athlete.is_competing}
-                      teamName={athleteTeam?.name}
                       countryCode={athleteTeam?.country_iso_code}
+                      metadata={metadata}
+                      statusBadge={{
+                        label: athlete.is_competing ? t('fighters.competing') : t('fighters.notCompeting'),
+                        variant: athlete.is_competing ? 'success' : 'neutral',
+                      }}
                     />
                   )
                 })}

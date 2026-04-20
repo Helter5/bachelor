@@ -9,6 +9,7 @@ import { DetailHeader } from "../../../ui/DetailHeader"
 import { WeightCategoryGrid } from "../WeightCategoryGrid"
 import { Pagination } from "../Pagination"
 import { ResultsView } from "../ResultsView"
+import { Card } from "../Card"
 
 interface ResultsTabProps {
   isDarkMode: boolean
@@ -185,40 +186,33 @@ export function ResultsTab({
         />
       ) : (
         <>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {pagedSportTypes.map(([key, info]) => {
             const allDone = info.completed === info.total
             const anyDone = info.completed > 0
+
+            const metadata = (
+              <span className={`px-2.5 py-1 rounded-full text-xs ${isDarkMode ? 'bg-white/5 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
+                {info.total} {t('tournamentDetail.weightCategories')} · {info.completed}/{info.total} {t('tournamentDetail.statusCompleted').toLowerCase()}
+              </span>
+            )
+
             return (
-              <div
+              <Card
                 key={key}
-                onClick={() => setSelectedSportType(key)}
-                className={`rounded-xl p-5 cursor-pointer transition-all ${
-                  isDarkMode
-                    ? 'bg-[#0f172a]/60 border border-white/[0.06] hover:border-white/10 hover:bg-[#1e293b]'
-                    : 'bg-white border border-gray-200 hover:border-gray-300 hover:shadow-md'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2 mb-3">
-                  <div>
-                    <p className={`font-bold text-base leading-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                      {info.sport_name}
-                    </p>
-                    <p className={`text-xs mt-0.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      {info.audience_name}
-                    </p>
-                  </div>
-                  {allDone
-                    ? <StatusBadge variant="success" isDarkMode={isDarkMode}>{t('tournamentDetail.statusCompleted')}</StatusBadge>
+                isDarkMode={isDarkMode}
+                name={`${info.sport_name} • ${info.audience_name}`}
+                metadata={metadata}
+                statusBadge={{
+                  label: allDone
+                    ? t('tournamentDetail.statusCompleted')
                     : anyDone
-                      ? <StatusBadge variant="info" isDarkMode={isDarkMode}>{t('tournamentDetail.statusOngoing')}</StatusBadge>
-                      : <StatusBadge variant="neutral" isDarkMode={isDarkMode}>{t('tournamentDetail.statusWaiting')}</StatusBadge>
-                  }
-                </div>
-                <p className={`text-sm ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                  {info.total} {t('tournamentDetail.weightCategories')} · {info.completed}/{info.total} {t('tournamentDetail.statusCompleted').toLowerCase()}
-                </p>
-              </div>
+                      ? t('tournamentDetail.statusOngoing')
+                      : t('tournamentDetail.statusWaiting'),
+                  variant: allDone ? 'success' : anyDone ? 'info' : 'neutral',
+                }}
+                onClick={() => setSelectedSportType(key)}
+              />
             )
           })}
         </div>

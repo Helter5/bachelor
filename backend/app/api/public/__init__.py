@@ -3,9 +3,10 @@ from .events import router as events_router
 from .athletes import router as athletes_router
 from .teams import router as teams_router
 from .persons import router as persons_router
+from .referees import router as referees_router
 from .rankings import router as rankings_router
 from .event_statistics import router as event_statistics_router
 from .draw import router as draw_router
 from .exports import router as exports_router
 
-__all__ = ["events_router", "athletes_router", "teams_router", "persons_router", "rankings_router", "event_statistics_router", "draw_router", "exports_router"]
+__all__ = ["events_router", "athletes_router", "teams_router", "persons_router", "referees_router", "rankings_router", "event_statistics_router", "draw_router", "exports_router"]
