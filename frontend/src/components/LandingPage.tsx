@@ -348,7 +348,11 @@ export function LandingPage({ onLogin }: LandingPageProps) {
               </p>
             </div>
 
-            <Card className="border-transparent bg-[#1e293b]/80 backdrop-blur-xl shadow-2xl shadow-blue-500/10 relative overflow-hidden">
+            {/* Animated glow border wrapper */}
+            <div className="relative rounded-xl p-[1px]">
+            <div className="login-glow-border absolute inset-0 rounded-xl" />
+            <div className="login-glow-border absolute inset-[-5px] rounded-xl blur-[10px] opacity-50" />
+            <Card className="border-0 rounded-xl bg-[#1e293b]/80 backdrop-blur-xl shadow-2xl relative overflow-hidden">
               {/* Top gradient reflection */}
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
 
@@ -682,6 +686,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                 </div>
               </CardContent>
             </Card>
+            </div>
 
             {/* Mobile branding */}
             <div className="lg:hidden mt-8 text-center">

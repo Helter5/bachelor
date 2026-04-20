@@ -42,3 +42,31 @@ input.date-input-calendar::-webkit-calendar-picker-indicator {
   opacity: 0;
   pointer-events: none;
 }
+
+/* Login card animated glow border */
+@property --glow-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes glow-rotate {
+  to { --glow-angle: 360deg; }
+}
+
+.login-glow-border {
+  --glow-angle: 0deg;
+  background: conic-gradient(
+    from var(--glow-angle),
+    transparent 0%,
+    transparent 28%,
+    #3b82f6 40%,
+    #818cf8 48%,
+    #a855f7 52%,
+    #818cf8 56%,
+    #3b82f6 64%,
+    transparent 76%,
+    transparent 100%
+  );
+  animation: glow-rotate 4s linear infinite;
+}
