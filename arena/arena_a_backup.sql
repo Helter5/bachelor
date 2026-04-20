@@ -733,10 +733,10 @@ CREATE TABLE `cron_task` (
 LOCK TABLES `cron_task` WRITE;
 /*!40000 ALTER TABLE `cron_task` DISABLE KEYS */;
 INSERT INTO `cron_task` VALUES
-(5,'Check every remote','a:3:{i:0;s:19:\"arena:remotes:check\";i:1;s:10:\"--env=prod\";i:2;s:10:\"--no-debug\";}',60,'2026-04-19 11:41:14'),
-(6,'Clean expired API tokens','a:3:{i:0;s:41:\"league:oauth2-server:clear-expired-tokens\";i:1;s:10:\"--env=prod\";i:2;s:10:\"--no-debug\";}',86400,'2026-04-19 10:35:10'),
-(7,'Get the current version on the master Arena','a:1:{i:0;s:20:\"arena:version:master\";}',3600,'2026-04-19 11:15:11'),
-(8,'Synchronize the local client','a:1:{i:0;s:17:\"arena:client:sync\";}',3600,'2026-04-19 11:16:12');
+(5,'Check every remote','a:3:{i:0;s:19:\"arena:remotes:check\";i:1;s:10:\"--env=prod\";i:2;s:10:\"--no-debug\";}',60,'2026-04-20 21:09:49'),
+(6,'Clean expired API tokens','a:3:{i:0;s:41:\"league:oauth2-server:clear-expired-tokens\";i:1;s:10:\"--env=prod\";i:2;s:10:\"--no-debug\";}',86400,'2026-04-20 16:01:33'),
+(7,'Get the current version on the master Arena','a:1:{i:0;s:20:\"arena:version:master\";}',3600,'2026-04-20 21:08:33'),
+(8,'Synchronize the local client','a:1:{i:0;s:17:\"arena:client:sync\";}',3600,'2026-04-20 21:08:48');
 /*!40000 ALTER TABLE `cron_task` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -5105,7 +5105,7 @@ CREATE TABLE `local_client` (
 LOCK TABLES `local_client` WRITE;
 /*!40000 ALTER TABLE `local_client` DISABLE KEYS */;
 INSERT INTO `local_client` VALUES
-('4mwspuw0z5og8w0koc8skoskgowsc8s','g.kanocz2@gmail.com','Gabriel Kanocz','UWW','1.6.3','1.6.3.1',NULL,0,'2026-04-13 16:12:08','2026-04-18 10:34:29',0);
+('4mwspuw0z5og8w0koc8skoskgowsc8s','g.kanocz2@gmail.com','Gabriel Kanocz','UWW','1.6.3.1','1.6.3.1',NULL,0,'2026-04-13 16:12:08','2026-04-20 17:02:31',0);
 /*!40000 ALTER TABLE `local_client` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -5353,39 +5353,12 @@ CREATE TABLE `oauth2_access_token` (
 LOCK TABLES `oauth2_access_token` WRITE;
 /*!40000 ALTER TABLE `oauth2_access_token` DISABLE KEYS */;
 INSERT INTO `oauth2_access_token` VALUES
-('01a93782da2d044a3a1db2c6a5f276861447cd885f1927d7e604c8d6fe9db5a6e9493db6bf1003ef','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 11:13:14','helter','email',0),
-('0316b979d8afaff55a5bcb5c4636abb01a98f13daf5f780bb9d3090c3aa657d415b11fb78aeb38df','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 11:34:40','helter','email',0),
-('09c6c49557f39c19b1ffdea7ad12b48a4da68fce3b5b2d119d68861ecd526273c8ca97762cd35c0f','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 11:00:16','helter','email',0),
-('13281db7dbd21a12bb39488546f017eb3a52956a24e069aa22ee30e129b660ff64f649ad7a04705c','d1532eae14baf3ff798b6c7be8a8355f','2026-04-20 07:37:07','helter','email',0),
-('14bee648df5a2083914d8ef237ef04ab2ff2580ac503d5f948e6022bc958e8e76540440a85333cd0','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 11:02:26','helter','email',0),
-('226132e6cb4f2c2292644bfeb6937b41c7c6247a652fe48acac7195741b3a3cb4d4185dfeec46679','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 11:38:25','helter','email',0),
-('297bb4685ad641d3264ccf3d48bedbd46308bbd02775ff7b05a828fe7654a4fd188defe843f78445','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 11:45:53','helter','email',0),
-('2f7721492098a2ef4d349fee41f3d6f6a0eaa171d3ef7f24fb763ac5fd1373fceeb232f9adb7c1c9','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 11:34:40','helter','email',0),
-('2f96b5bd1a46fafd67727eba3b1756b99a8b96eddda866b84cb24f82b701bae7fd73f709500212e8','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 11:10:11','helter','email',0),
-('345f65ab47305f9c12ed28d691360619add42a390bc13dbcd7ad2cf994fa3d681c6b74efd8a621ef','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 11:30:03','helter','email',0),
-('365df96aa3f8db650422fac2fc6b963f26a3227b594bed80d990b456427c171464104a397e6ce83a','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 11:12:06','helter','email',0),
-('3d1b4dd5b5798359013562bf13c5d2afe1f2492326f51e46c43a37581570d355f994354ce08afe4a','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 11:41:03','helter','email',0),
-('3e6f5889a1372b53a2327ec39b8fdfb5f039f0b4efcce4df2af93dfa2ed42a5bbdac0e7a87c421e0','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 11:30:27','helter','email',0),
-('4b824f30dabcdfb3152214b6e329a34339666bfccc1a814fa519c78cfe15a8049b49027e127c95b8','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 18:21:05','admin','email',0),
-('71d1ea35489aeec6415bd7b616d045e147798a22df282affa7ec0397348189ed36714ec8cb4ba4d8','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 11:45:36','helter','email',0),
-('731c30891df46ab1746b4b2a426e55f1ad8fb189592e2639f2f32c8043ad3c27481fa8d2a7489893','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 11:34:50','helter','email',0),
-('81d3c1c073c2df8ff398e01bc0d3f79f4430a2af8ed01e73ee81781570b8ba34f64ea7916275a3ad','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 10:56:23','helter','email',0),
-('84ef18749fadc3605751fae6897a898632eab8e40915d27bc69ed7607e2867be2a07e52d6743dec5','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 11:13:34','helter','email',0),
-('879de77faae38bc34ca1646851013e5a064266d9c6604e3b640c63f2646dc004d1fd76bd33de60f2','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 11:24:07','admin','email',0),
-('98aa62909e4153655148832eb8b66a52c60cdc653b557d219742149fafddc484f3b6f78642f3889d','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 11:34:49','helter','email',0),
-('9b3761b9a57718a17d46a796b998d5ba028cc1fa33615261b2e53fc9462db84fb60b7b5eb38efcb0','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 10:58:18','helter','email',0),
-('9fcef2fbf42ff8b428dbcc53167fa115dd3bcdcd8a53696679f02151209f798a8588d4e1688b105a','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 10:57:39','helter','email',0),
-('a46ba99a93ec9b54b0dac83e5b974c04ee7b89f340c51980ca0e057f48bcbfea9b956becd9da4cef','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 17:53:55','superadmin','email',0),
-('a9ed0129c487699b031e67fe4876c2644c824fac7f45b732f2a7ef18cbfa4e9e1a9d542e7059a488','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 11:00:41','helter','email',0),
-('b1438ac9986b3b1d2a37469b42161f94f20e2e36db61faa18872226be88e0b512e0846f664860e2a','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 11:30:19','helter','email',0),
-('c0d7fbd8c29563deb129c3d5736cbf64a3a1fe6c4730c54b3b9754b7b91f81c2b1b8de5cf47fa015','d1532eae14baf3ff798b6c7be8a8355f','2026-04-20 05:54:00','admin','email',0),
-('c22d705e33e37f40203ea8b0aab3ffa6e64fad5fdc7076d4c36463cf86212f25ddbbfbcd42377d6f','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 10:59:47','helter','email',0),
-('c3fb8d050cd13cc3e0cd8eb0c04241dc30b302653f17b51d141fcdd0d7db0e25cd280db937e26cf8','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 11:38:34','helter','email',0),
-('d4044f32eabd7bdabbf0e773e088c529a45ad1345e5088b994ebf035546a77e87600376fdd9226ba','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 17:18:06','helter','email',0),
-('d598f859f9626589605aea4c6c693544e4164782e26ad958c48aecc1b0597fef860f8bfffbc5df32','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 10:58:08','helter','email',0),
-('e4b7c73b3168a727884babee72910458937791e6733ee3ef5eed6a8299d251104e827d7c9ce6ae89','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 11:30:19','helter','email',0),
-('ebca0c14a86cd01fab87c6e5555cce134d195b246158634445216e6648a897a023fbba87ccf1006b','d1532eae14baf3ff798b6c7be8a8355f','2026-04-20 06:15:08','superadmin','email',0),
-('f23da853531d6decf87c5a8d7b0ec59d0693c1d1e89fbe0903446a33292108e61f663285797b3256','d1532eae14baf3ff798b6c7be8a8355f','2026-04-19 17:56:03','superadmin','email',0);
+('3b1ef9b896ab45aac6a150a2ee362e2235665a865903ab3cbffd0433ab18fa6906a137d832e918e2','d1532eae14baf3ff798b6c7be8a8355f','2026-04-21 13:02:32','superadmin','email',0),
+('61f05123df6f7650c393f8bab0bbb551fff17d19e15a53c4327f2e09729c00856df19645d4375769','d1532eae14baf3ff798b6c7be8a8355f','2026-04-21 17:08:47','admin','email',0),
+('8e97bf0e0d430b498e5eb9aebfd42e481900d9d67a0c4fae1dfcf980fe64d5907fc225f61ce7b7ec','d1532eae14baf3ff798b6c7be8a8355f','2026-04-21 17:08:46','superadmin','email',0),
+('955cdc197083565dca8eba1e0813222f7a5e9d72bb08a6e6e92a091a8722a15f3bf0879bd7cee883','d1532eae14baf3ff798b6c7be8a8355f','2026-04-21 12:45:37','admin','email',0),
+('bc678c8b43c9e3e2da25cc5f92a6691435196ee7ad847019e8117c0c0e01b149de3173db73a027af','d1532eae14baf3ff798b6c7be8a8355f','2026-04-21 12:26:36','helter','email',0),
+('c8625e4cbdd82c2946f6d93cd622617ef26e4db2fa73fc523ba13d423b23e6bdfcb115bb666ec638','d1532eae14baf3ff798b6c7be8a8355f','2026-04-21 12:06:09','admin','email',0);
 /*!40000 ALTER TABLE `oauth2_access_token` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -5815,6 +5788,11 @@ INSERT INTO `person` VALUES
 ('1f139075-346a-66e6-9273-0d070e35dd3b','SERBAN','Victor','SERBAN Victor','SERBAN V.',NULL,NULL,NULL,NULL,NULL,90289,'a:0:{}','a:0:{}','2026-04-15 20:11:44','2026-04-15 20:11:44',NULL,NULL,NULL),
 ('1f139075-3470-6c80-879e-0d070e35dd3b','WERNER','Kevin','WERNER Kevin','WERNER K.',NULL,NULL,NULL,NULL,NULL,90290,'a:0:{}','a:0:{}','2026-04-15 20:11:44','2026-04-15 20:11:44',NULL,NULL,NULL),
 ('1f139075-3478-6c5a-9206-0d070e35dd3b','THOMAS','Jannis','THOMAS Jannis','THOMAS J.',NULL,NULL,NULL,NULL,NULL,90291,'a:0:{}','a:0:{}','2026-04-15 20:11:44','2026-04-15 20:11:44',NULL,NULL,NULL),
+('1f13cd3b-e73c-651e-b990-e183d9dcde74','JOZEF','','Jozef','JOZEF',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-04-20 16:12:35','2026-04-20 16:12:35',NULL,NULL,NULL),
+('1f13cd3d-3c0c-680e-8b7e-e35bc34b876b','PETER','','Peter','PETER',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-04-20 16:13:11','2026-04-20 16:13:11',NULL,NULL,NULL),
+('1f13cd40-3604-6166-9f6a-1f1c8d62eff4','POMARANČ','Peter','Peter Pomaranč','POMARANČ P.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-04-20 16:14:31','2026-04-20 16:14:31',NULL,NULL,NULL),
+('1f13cd41-73ba-6d74-98a3-65abca28ad6e','MRKVIČKA','Jozef','Jozef Mrkvička','MRKVIČKA J.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-04-20 16:15:04','2026-04-20 16:15:04',NULL,NULL,NULL),
+('1f13cd42-2e61-6a2e-81ef-c52f94680f80','URBAN','Saleh','Saleh Urban','URBAN S.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-04-20 16:15:24','2026-04-20 16:15:24',NULL,NULL,NULL),
 ('aaaa5001-5001-5001-5001-000000000030','NOVAK','Jan','Jan NOVAK','NOVAK Jan.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-07-01 10:00:00','2026-07-01 10:00:00',NULL,NULL,NULL),
 ('aaaa5001-5001-5001-5001-000000000031','CERNY','Petr','Petr CERNY','CERNY Petr.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-07-01 10:00:00','2026-07-01 10:00:00',NULL,NULL,NULL),
 ('aaaa5001-5001-5001-5001-000000000032','KISS','Balazs','Balazs KISS','KISS Balazs.',NULL,NULL,NULL,NULL,NULL,NULL,'a:0:{}','a:0:{}','2026-07-01 10:00:00','2026-07-01 10:00:00',NULL,NULL,NULL),
@@ -5937,7 +5915,10 @@ INSERT INTO `referee` VALUES
 ('1f13913c-041a-6622-ade4-d975ee6e10c4','1f139040-9394-608e-bbca-e3bb4000ad59','aaaaaaaa-0004-0004-0004-000000000004','786629ce-3913-11f1-9ba6-3213cf152521',7,'CATEGORY IS','B',0,0,1,NULL,0,'a:0:{}','N;','2026-04-15 21:40:41','2026-04-15 21:40:41',NULL),
 ('1f13913c-0422-6c96-84fe-d975ee6e10c4','1f139040-93a7-6bc0-92a3-e3bb4000ad59','aaaaaaaa-0004-0004-0004-000000000004','786624ed-3913-11f1-9ba6-3213cf152521',8,'CATEGORY IS','C',0,0,1,NULL,0,'a:0:{}','N;','2026-04-15 21:40:41','2026-04-15 21:40:41',NULL),
 ('1f13913c-042b-69f4-8f01-d975ee6e10c4','1f139040-93b8-6bbe-89ae-e3bb4000ad59','aaaaaaaa-0004-0004-0004-000000000004','786625bf-3913-11f1-9ba6-3213cf152521',9,'CATEGORY IS','C',0,0,1,NULL,0,'a:0:{}','N;','2026-04-15 21:40:41','2026-04-15 21:40:41',NULL),
-('1f13913c-0433-6b90-b49e-d975ee6e10c4','1f139040-93d1-6ba0-8e47-e3bb4000ad59','aaaaaaaa-0004-0004-0004-000000000004','78662aa1-3913-11f1-9ba6-3213cf152521',10,'CATEGORY IS','C',0,0,1,NULL,0,'a:0:{}','N;','2026-04-15 21:40:41','2026-04-15 21:40:41',NULL);
+('1f13913c-0433-6b90-b49e-d975ee6e10c4','1f139040-93d1-6ba0-8e47-e3bb4000ad59','aaaaaaaa-0004-0004-0004-000000000004','78662aa1-3913-11f1-9ba6-3213cf152521',10,'CATEGORY IS','C',0,0,1,NULL,0,'a:0:{}','N;','2026-04-15 21:40:41','2026-04-15 21:40:41',NULL),
+('1f13cd3b-e7d5-6eee-a4a1-e183d9dcde74','1f13cd41-73ba-6d74-98a3-65abca28ad6e','dddd7001-7001-7001-0003-000000000001','1f13cd41-73e5-6cfe-a19a-65abca28ad6e',1,'CATEGORY I',NULL,0,0,1,NULL,0,'a:1:{i:0;s:3:\"USA\";}','a:1:{i:0;s:2:\"gr\";}','2026-04-20 16:12:35','2026-04-20 16:15:04',NULL),
+('1f13cd3d-3c3d-60d0-a32a-e35bc34b876b','1f13cd40-3604-6166-9f6a-1f1c8d62eff4','dddd7001-7001-7001-0003-000000000001','1f13cd40-3631-6472-a0ac-1f1c8d62eff4',2,'CATEGORY I',NULL,0,1,0,NULL,0,'a:1:{i:0;s:3:\"ESP\";}','a:1:{i:0;s:2:\"gr\";}','2026-04-20 16:13:11','2026-04-20 16:14:31',NULL),
+('1f13cd42-2e91-68be-ab58-c52f94680f80','1f13cd42-2e61-6a2e-81ef-c52f94680f80','dddd7001-7001-7001-0003-000000000001','1f13cd42-2e8f-6938-9944-c52f94680f80',3,'CATEGORY IS',NULL,1,0,0,'dddd8002-8002-8002-0006-000000000001',0,'a:1:{i:0;s:3:\"AZE\";}','N;','2026-04-20 16:15:24','2026-04-20 16:15:29',NULL);
 /*!40000 ALTER TABLE `referee` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -7446,7 +7427,7 @@ INSERT INTO `sport_event` VALUES
 ('dddd7001-7001-7001-0003-000000000001','Stats Cup Gamma 2026','2026-10-20 00:00:00','2026-10-21 00:00:00','Kosice',178,'individual','singlebracket','continental-championships','uww',NULL,'Europe/Bratislava',20,1,0,2,0,1,1,'2026-04-18 15:43:44','2026-04-18 15:43:44',NULL,NULL,NULL,NULL,NULL,'europe','1day',NULL,0,0,0,NULL,NULL,'volunteer',NULL),
 ('dddd7001-7001-7001-0004-000000000001','Stats Cup Delta 2026','2026-11-01 00:00:00','2026-11-02 00:00:00','Brno',178,'individual','singlebracket','continental-championships','uww',NULL,'Europe/Bratislava',20,1,0,2,0,1,1,'2026-04-18 15:43:44','2026-04-18 15:43:44',NULL,NULL,NULL,NULL,NULL,'europe','1day',NULL,0,0,0,NULL,NULL,'volunteer',NULL),
 ('dddd7001-7001-7001-0005-000000000001','Stats Cup Epsilon 2026','2026-11-12 00:00:00','2026-11-13 00:00:00','Budapest',178,'individual','singlebracket','continental-championships','uww',NULL,'Europe/Bratislava',20,1,0,2,0,1,1,'2026-04-18 15:43:44','2026-04-18 15:43:44',NULL,NULL,NULL,NULL,NULL,'europe','1day',NULL,0,0,0,NULL,NULL,'volunteer',NULL),
-('dddd7991-7991-7991-7991-000000000001','[TEST] All weight categories 2026','2026-12-01 00:00:00','2026-12-03 00:00:00','Bratislava',178,'individual','singlebracket','continental-championships','uww',NULL,'Europe/Bratislava',20,1,0,2,0,1,1,'2026-04-18 15:43:44','2026-04-18 15:48:19',NULL,NULL,NULL,NULL,NULL,'europe','1day',NULL,0,0,0,NULL,NULL,'volunteer',NULL);
+('dddd7991-7991-7991-7991-000000000001','[TEST] All weight categories 2026','2026-04-17 00:00:00','2026-04-20 00:00:00','Bratislava',178,'individual','singlebracket','continental-championships','uww',NULL,'Europe/Bratislava',20,1,0,2,0,1,1,'2026-04-18 15:43:44','2026-04-19 17:36:11',NULL,NULL,NULL,NULL,NULL,'europe','1day',NULL,0,0,0,NULL,NULL,'volunteer',NULL);
 /*!40000 ALTER TABLE `sport_event` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -7614,6 +7595,11 @@ CREATE TABLE `sport_event_team` (
 LOCK TABLES `sport_event_team` WRITE;
 /*!40000 ALTER TABLE `sport_event_team` DISABLE KEYS */;
 INSERT INTO `sport_event_team` VALUES
+('1f13cd3b-e7d4-62ba-aa6a-e183d9dcde74',NULL,'Mrkvička','Mrkvička',NULL,'dddd7001-7001-7001-0003-000000000001',NULL,NULL,NULL,'2026-04-20 16:12:35','2026-04-20 16:12:35',NULL),
+('1f13cd3d-3c3b-6226-8907-e35bc34b876b',NULL,'Pomaranč','Pomaranč',NULL,'dddd7001-7001-7001-0003-000000000001',NULL,NULL,NULL,'2026-04-20 16:13:11','2026-04-20 16:13:11',NULL),
+('1f13cd40-3631-6472-a0ac-1f1c8d62eff4',60,'SPAIN','ESP',NULL,'dddd7001-7001-7001-0003-000000000001',NULL,NULL,'Europe','2026-04-20 16:14:31','2026-04-20 16:14:31',NULL),
+('1f13cd41-73e5-6cfe-a19a-65abca28ad6e',198,'UNITED STATES','USA',NULL,'dddd7001-7001-7001-0003-000000000001',NULL,NULL,'America','2026-04-20 16:15:04','2026-04-20 16:15:04',NULL),
+('1f13cd42-2e8f-6938-9944-c52f94680f80',13,'AZERBAIJAN','AZE',NULL,'dddd7001-7001-7001-0003-000000000001',NULL,NULL,'Europe','2026-04-20 16:15:24','2026-04-20 16:15:24',NULL),
 ('399af0ad-3a3d-11f1-a923-a22c3a34e257',2,'ALBANIA','ALB',NULL,'1f13a3c0-9a8d-6cda-a592-f597759c7aa7',NULL,NULL,NULL,'2026-04-17 09:10:05','2026-04-17 09:10:05',NULL),
 ('399b5cb9-3a3d-11f1-a923-a22c3a34e257',8,'ARMENIA','ARM',NULL,'1f13a3c0-9a8d-6cda-a592-f597759c7aa7',NULL,NULL,NULL,'2026-04-17 09:10:05','2026-04-17 09:10:05',NULL),
 ('399b5d35-3a3d-11f1-a923-a22c3a34e257',12,'AUSTRIA','AUT',NULL,'1f13a3c0-9a8d-6cda-a592-f597759c7aa7',NULL,NULL,NULL,'2026-04-17 09:10:05','2026-04-17 09:10:05',NULL),
@@ -9111,7 +9097,7 @@ INSERT INTO `user` VALUES
 (2,'scoreboard','scoreboard','arena.scoreboard@uww.io','arena.scoreboard@uww.io',1,NULL,'$2y$13$doIfnldu8FVYmO0OQpN1.ux9t1IbQpBSZtoFcopZYb8IXUbGWVze.',NULL,NULL,NULL,'a:1:{i:0;s:15:\"ROLE_SCOREBOARD\";}','Scoreboard','United World Wrestling','7U4YiGrWoFwp2VsHwzbQvZC2vWXp2e',NULL),
 (3,'public','public','arena.public@uww.io','arena.public@uww.io',1,'puCVUSOACLA1XH0gpiymupKLQdAJjPJt3ZPPkZbofkY','$2y$13$IYOq37Ul.CVs.1TjQDbkM.HtVfdE0W7a7vjQBprLaoewP525tKX6C',NULL,NULL,NULL,'a:1:{i:0;s:11:\"ROLE_PUBLIC\";}','Public User','United World Wrestling','67GNCCB6Q8h47QYnQyo1MdzTvqj7Hw7DMsQi2UVjfebRWiVGNt',NULL),
 (10,'helter','helter','g.kanocz2@gmail.com','g.kanocz2@gmail.com',1,NULL,'$2y$13$Weiou/sY3W1IvuuwQVbsBOJQM00DPy5qnCFIZWopzqdtT9FwmIuU6','2026-04-18 13:13:50',NULL,NULL,'a:1:{i:0;s:10:\"ROLE_ADMIN\";}','Gabriel Kanocz','UWW','iCSy715WrQzPKV2G5io4HL1wH4WaCg6ZzyAuzzQo1miHHGtApQ',NULL),
-(11,'admin','admin','admin@local','admin@local',1,NULL,'$2y$13$FH/HANtxDahPH7ldBHoSRu2t2Q2BhJ78PAqm0S4wnvB1PzzoJh0SC','2026-04-19 09:54:00',NULL,NULL,'a:1:{i:0;s:16:\"ROLE_SUPER_ADMIN\";}','Administrator',NULL,'THxmuUTEdYHoLEGM8Y9xYTrCyFiPQvFFRp48KZXn3oQvevVdoH',NULL);
+(11,'admin','admin','admin@local','admin@local',1,NULL,'$2y$13$FH/HANtxDahPH7ldBHoSRu2t2Q2BhJ78PAqm0S4wnvB1PzzoJh0SC','2026-04-20 21:08:43',NULL,NULL,'a:1:{i:0;s:16:\"ROLE_SUPER_ADMIN\";}','Administrator',NULL,'THxmuUTEdYHoLEGM8Y9xYTrCyFiPQvFFRp48KZXn3oQvevVdoH',NULL);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -9152,4 +9138,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-04-19 11:41:58
+-- Dump completed on 2026-04-20 21:09:52

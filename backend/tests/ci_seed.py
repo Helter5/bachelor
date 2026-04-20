@@ -18,6 +18,7 @@ from app.services.weight_category_service import WeightCategoryService
 from app.services.team_service import TeamService
 from app.services.athlete_service import AthleteService
 from app.services.fight_service import FightService
+from app.services.referee_service import RefereeService
 
 
 async def seed() -> None:
@@ -101,10 +102,13 @@ async def seed() -> None:
 
         # ── 3. Kategórie + tímy + atléti pre každý event ─────────────────
         from app.domain.entities.athlete import Athlete
-        has_athletes = session.exec(select(Athlete)).first() is not None
+        from app.domain.entities.referee import Referee
 
-        if has_athletes:
-            print("[seed] DB má atléti, preskakujem sync kategórií/tímov/atlétov")
+        has_athletes = session.exec(select(Athlete)).first() is not None
+        has_referees = session.exec(select(Referee)).first() is not None
+
+        if has_athletes and has_referees:
+            print("[seed] DB má atléti aj rozhodcov, preskakujem sync kategórií/tímov/atlétov/zápasov/rozhodcov")
         else:
             for event in events:
                 arena_uuid = uuid_map.get(event.id)
@@ -114,21 +118,31 @@ async def seed() -> None:
 
                 print(f"\n[seed] Event: {event.name}")
 
-                wc_service = WeightCategoryService(session)
-                r = await wc_service.sync_weight_categories_for_event(arena_uuid, event_id=event.id, source=source)
-                print(f"[seed]   Kategórie: {r.get('synced_count', 0)} synced")
+                if not has_athletes:
+                    wc_service = WeightCategoryService(session)
+                    r = await wc_service.sync_weight_categories_for_event(arena_uuid, event_id=event.id, source=source)
+                    print(f"[seed]   Kategórie: {r.get('synced_count', 0)} synced")
 
-                team_service = TeamService(session)
-                r = await team_service.sync_teams_for_event(arena_uuid, event_id=event.id, source=source)
-                print(f"[seed]   Tímy: {r.get('synced_count', 0)} synced")
+                    team_service = TeamService(session)
+                    r = await team_service.sync_teams_for_event(arena_uuid, event_id=event.id, source=source)
+                    print(f"[seed]   Tímy: {r.get('synced_count', 0)} synced")
 
-                athlete_service = AthleteService(session)
-                r = await athlete_service.sync_athletes_for_event(arena_uuid, event_id=event.id, source=source)
-                print(f"[seed]   Atléti: {r.get('synced_count', 0)} synced")
+                    athlete_service = AthleteService(session)
+                    r = await athlete_service.sync_athletes_for_event(arena_uuid, event_id=event.id, source=source)
+                    print(f"[seed]   Atléti: {r.get('synced_count', 0)} synced")
 
-                fight_service = FightService(session)
-                r = await fight_service.sync_fights_for_event(arena_uuid, event_id=event.id, source=source)
-                print(f"[seed]   Zápasy: {r.get('synced_count', 0)} synced")
+                    fight_service = FightService(session)
+                    r = await fight_service.sync_fights_for_event(arena_uuid, event_id=event.id, source=source)
+                    print(f"[seed]   Zápasy: {r.get('synced_count', 0)} synced")
+                else:
+                    print("[seed]   Atléti už existujú, preskakujem kategórie/tímy/atlétov/zápasy")
+
+                if not has_referees:
+                    referee_service = RefereeService(session)
+                    r = await referee_service.sync_referees_for_event(arena_uuid, event_id=event.id, source=source)
+                    print(f"[seed]   Rozhodcovia: {r.get('synced_count', 0)} synced")
+                else:
+                    print("[seed]   Rozhodcovia už existujú, preskakujem referee sync")
 
     print("\n[seed] Hotovo.")
 
