@@ -55,6 +55,15 @@ export function Settings({ isDarkMode, toggleDarkMode, onUserDataChange }: Setti
     loadUser()
   }, [loadUser])
 
+  const handleUserUpdated = useCallback((updatedUser: AppUser) => {
+    setUser((prev) => ({
+      ...updatedUser,
+      created_at: updatedUser.created_at ?? prev?.created_at ?? new Date().toISOString(),
+    }))
+
+    onUserDataChange(updatedUser)
+  }, [onUserDataChange])
+
   const isAdmin = user?.role === 'admin'
 
   const tabs = [
@@ -104,11 +113,7 @@ export function Settings({ isDarkMode, toggleDarkMode, onUserDataChange }: Setti
           {activeTab === 'profile' && (
             <ProfileSettings
               isDarkMode={isDarkMode}
-              onUserUpdated={(updatedUser) => {
-                const nextUser = { ...updatedUser, created_at: updatedUser.created_at ?? user?.created_at ?? new Date().toISOString() }
-                setUser(nextUser)
-                onUserDataChange(nextUser)
-              }}
+              onUserUpdated={handleUserUpdated}
             />
           )}
           {activeTab === 'appearance' && <AppearanceSettings isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />}
