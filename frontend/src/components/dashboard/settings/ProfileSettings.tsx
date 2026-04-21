@@ -4,6 +4,7 @@ import { apiClient } from '@/services/apiClient'
 import { API_BASE_URL, API_ENDPOINTS } from '@/config/api'
 import { validateRequired, validateEmail, validatePassword, validatePasswordMatch } from '@/utils/validation'
 import { mapApiUserDto, type ApiUserDto, type AppUser } from '@/domain/user'
+import { Input } from '@/components/ui/input'
 
 interface ProfileSettingsProps {
   isDarkMode: boolean
@@ -82,7 +83,7 @@ function FormInput({ isDarkMode, label, type = 'text', value, onChange, onBlur, 
             {icon}
           </div>
         )}
-        <input
+        <Input
           type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
