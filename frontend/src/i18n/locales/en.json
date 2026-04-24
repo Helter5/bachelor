@@ -317,6 +317,8 @@
     "generateAll": "Generate all draws",
     "loadingCategories": "Loading categories...",
     "noCategories": "No weight categories.",
+    "noAthletesInEvent": "There are no athletes in this event.",
+    "noAthletesInEventDesc": "Draws can be generated only after athletes are added to or synchronised into the event.",
     "instructions": "Click the button above and the draw will be generated for all categories at once.",
     "notGenerated": "Not generated",
     "penaltyNone": "No penalties",

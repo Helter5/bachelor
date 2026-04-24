@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 import { Pagination } from "../Pagination"
 import type { Team, Athlete, WeightCategory } from "../types"
 import { ITEMS_PER_PAGE } from "../types"
-import { CountryFlag } from "../../CountryFlag"
+import { CountryFlag, buildArenaFlagUrl } from "../../CountryFlag"
 import { MultiSelect } from "../../../ui/MultiSelect"
 import { EmptyState } from "../../../ui/EmptyState"
 import { Card } from "../Card"
@@ -55,7 +55,7 @@ export function AthletesTab({
       .map(t => ({
         value: t.country_iso_code,
         label: t.name,
-        icon: <CountryFlag code={t.country_iso_code} flagOnly />,
+        icon: <CountryFlag code={t.country_iso_code} imageUrl={buildArenaFlagUrl(t.alternate_name ?? t.country_iso_code)} flagOnly />,
       }))
       .sort((a, b) => a.label.localeCompare(b.label))
   }, [teams])
@@ -155,6 +155,7 @@ export function AthletesTab({
                   isDarkMode={isDarkMode}
                   name={athlete.person_full_name ?? '-'}
                   countryCode={athleteTeam?.country_iso_code ?? undefined}
+                  countryFlagUrl={buildArenaFlagUrl(athleteTeam?.alternate_name ?? athleteTeam?.country_iso_code)}
                   metadata={athleteTeam?.name || athleteWeightCategory?.name ? metadata : undefined}
                   statusBadge={{
                     label: athlete.is_competing ? t('fighters.competing') : t('fighters.notCompeting'),

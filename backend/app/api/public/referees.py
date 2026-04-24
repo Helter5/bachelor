@@ -8,6 +8,7 @@ from ...domain.entities.referee import Referee
 from ...domain.entities.person import Person
 from ...domain.entities.team import Team
 from ...domain.schemas.responses import RefereeOut
+from ...utils.country_codes import normalize_country_iso_code
 
 router = APIRouter(prefix="/referees")
 
@@ -37,7 +38,7 @@ async def list_referees(
         out.append(RefereeOut(
             id=referee.id,
             person_full_name=person.full_name if person else None,
-            country_iso_code=person.country_iso_code if person else None,
+            country_iso_code=normalize_country_iso_code(person.country_iso_code) if person else None,
             team_name=team.name if team else None,
             team_alternate_name=team.alternate_name if team else None,
             number=referee.number,
@@ -74,7 +75,7 @@ async def get_referee(referee_id: int, session: Session = Depends(get_session)):
     return RefereeOut(
         id=referee.id,
         person_full_name=person.full_name if person else None,
-        country_iso_code=person.country_iso_code if person else None,
+        country_iso_code=normalize_country_iso_code(person.country_iso_code) if person else None,
         team_name=team.name if team else None,
         team_alternate_name=team.alternate_name if team else None,
         number=referee.number,

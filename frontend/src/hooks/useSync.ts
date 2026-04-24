@@ -23,6 +23,15 @@ interface SyncResult {
   sync_log_id?: number
 }
 
+interface SyncLogSummary {
+  id: number
+  status: string
+  started_at: string
+  finished_at?: string | null
+  details?: { progress_percent?: number; current_step?: string; initiated_by?: string }
+  user_full_name?: string | null
+}
+
 const MAX_RETRY_ATTEMPTS = 5
 const RETRY_DELAY_MS = 1000
 
@@ -83,6 +92,27 @@ export function useSync() {
     return Math.round((step / totalSteps) * 100)
   }
 
+  const isSyncLogEffectivelyActive = useCallback((log: SyncLogSummary) => {
+    if (log.status !== 'in_progress') return false
+
+    const progress = Number(log.details?.progress_percent ?? 0)
+    const step = (log.details?.current_step ?? '').trim().toLowerCase()
+
+    if (progress >= 100 || step === 'completed' || step === 'failed') {
+      return false
+    }
+
+    const startedAtMs = Date.parse(log.started_at)
+    if (!Number.isNaN(startedAtMs)) {
+      const twelveHoursMs = 12 * 60 * 60 * 1000
+      if (Date.now() - startedAtMs > twelveHoursMs) {
+        return false
+      }
+    }
+
+    return true
+  }, [])
+
   const startProgressPolling = useCallback((logId: number) => {
     if (progressIntervalRef.current !== undefined) {
       clearInterval(progressIntervalRef.current)
@@ -91,27 +121,23 @@ export function useSync() {
 
     progressIntervalRef.current = window.setInterval(async () => {
       try {
-        const log = await apiClient.get<{
-          id: number
-          status: string
-          details?: { progress_percent?: number; current_step?: string; initiated_by?: string }
-          user_full_name?: string | null
-        }>(API_ENDPOINTS.SYNC_LOG_DETAIL(logId))
+        const log = await apiClient.get<SyncLogSummary>(API_ENDPOINTS.SYNC_LOG_DETAIL(logId))
 
         const progress = Number(log.details?.progress_percent ?? 0)
         const step = log.details?.current_step ?? ''
         const initiator = (log.details?.initiated_by ?? log.user_full_name ?? '').trim()
+        const isActive = isSyncLogEffectivelyActive(log)
 
         setSyncState(prev => ({
           ...prev,
-          activeSyncLogId: log.id,
-          isSyncing: log.status === 'in_progress',
-          progressPercent: progress,
-          currentStep: step,
-          initiatedBy: initiator,
+          activeSyncLogId: isActive ? log.id : null,
+          isSyncing: isActive,
+          progressPercent: isActive ? progress : 0,
+          currentStep: isActive ? step : '',
+          initiatedBy: isActive ? initiator : '',
         }))
 
-        if (log.status !== 'in_progress' && progressIntervalRef.current !== undefined) {
+        if (!isActive && progressIntervalRef.current !== undefined) {
           clearInterval(progressIntervalRef.current)
           progressIntervalRef.current = undefined
         }
@@ -119,7 +145,7 @@ export function useSync() {
         // Keep UI state as-is; next poll will retry.
       }
     }, 2500)
-  }, [])
+  }, [isSyncLogEffectivelyActive])
 
   const retryWithBackoff = async <T,>(
     fn: () => Promise<T>,
@@ -351,6 +377,7 @@ export function useSync() {
         lastSyncDate: formattedDate,
         progressPercent: 100,
         currentStep: 'completed',
+        activeSyncLogId: null,
       }))
 
       successTimeoutRef.current = setTimeout(() => {
@@ -378,6 +405,7 @@ export function useSync() {
         showError: true,
         errorMessage: errorMessage,
         currentStep: 'failed',
+        activeSyncLogId: null,
       }))
     }
   }, [retryWithBackoff, startProgressPolling, syncState.activeSyncLogId])
@@ -389,19 +417,17 @@ export function useSync() {
 
   const loadActiveSyncFromLogs = useCallback(async () => {
     try {
-      const logs = await apiClient.get<Array<{
-        id: number
-        status: string
-        details?: { progress_percent?: number; current_step?: string; initiated_by?: string }
-        user_full_name?: string | null
-      }>>(`${API_ENDPOINTS.SYNC_LOGS}?limit=20`)
+      const logs = await apiClient.get<SyncLogSummary[]>(`${API_ENDPOINTS.SYNC_LOGS}?limit=20`)
 
-      const active = logs.find((log) => log.status === 'in_progress')
+      const active = logs.find(isSyncLogEffectivelyActive)
       if (!active) {
         setSyncState(prev => ({
           ...prev,
           isSyncing: false,
-          activeSyncLogId: prev.isSyncing ? prev.activeSyncLogId : null,
+          activeSyncLogId: null,
+          progressPercent: 0,
+          currentStep: '',
+          initiatedBy: '',
         }))
         return
       }
@@ -423,7 +449,7 @@ export function useSync() {
     } catch {
       // Ignore on initial load
     }
-  }, [startProgressPolling])
+  }, [isSyncLogEffectivelyActive, startProgressPolling])
 
   useEffect(() => {
     void loadActiveSyncFromLogs()

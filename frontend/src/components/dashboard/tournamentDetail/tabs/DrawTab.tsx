@@ -4,6 +4,7 @@ import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
 import type { WeightCategory } from "../types"
 import { Select } from "../../../ui/Select"
+import { EmptyState } from "../../../ui/EmptyState"
 
 interface DrawAthlete {
   seed: number
@@ -46,9 +47,18 @@ interface DrawTabProps {
   eventId: number
   weightCategories: WeightCategory[]
   weightCategoriesLoading: boolean
+  athletesCount: number
+  athletesLoading: boolean
 }
 
-export function DrawTab({ isDarkMode, eventId, weightCategories, weightCategoriesLoading }: DrawTabProps) {
+export function DrawTab({
+  isDarkMode,
+  eventId,
+  weightCategories,
+  weightCategoriesLoading,
+  athletesCount,
+  athletesLoading,
+}: DrawTabProps) {
   const { t } = useTranslation()
   const [lastN, setLastN] = useState(3)
   const [draws, setDraws] = useState<Record<number, CategoryDraw>>({})
@@ -65,6 +75,8 @@ export function DrawTab({ isDarkMode, eventId, weightCategories, weightCategorie
   const text = isDarkMode ? 'text-white' : 'text-gray-900'
   const sub = isDarkMode ? 'text-gray-400' : 'text-gray-500'
   const card = isDarkMode ? 'bg-[#0f172a] border border-white/5' : 'bg-gray-50 border border-gray-200'
+  const hasEventAthletes = athletesCount > 0
+  const generationDisabled = generatingAll || weightCategoriesLoading || athletesLoading || !weightCategories.length || !hasEventAthletes
 
   const generateForCategory = async (wc: WeightCategory, n: number): Promise<DrawResult | null> => {
     try {
@@ -75,7 +87,7 @@ export function DrawTab({ isDarkMode, eventId, weightCategories, weightCategorie
   }
 
   const handleGenerateAll = async () => {
-    if (!weightCategories.length) return
+    if (!weightCategories.length || !hasEventAthletes) return
     setGeneratingAll(true)
 
     // Init loading state for all
@@ -128,9 +140,9 @@ export function DrawTab({ isDarkMode, eventId, weightCategories, weightCategorie
 
           <button
             onClick={handleGenerateAll}
-            disabled={generatingAll || weightCategoriesLoading || !weightCategories.length}
+            disabled={generationDisabled}
             className={`px-4 py-2 rounded-lg font-medium text-sm text-white transition-all ${
-              generatingAll || weightCategoriesLoading || !weightCategories.length
+              generationDisabled
                 ? 'bg-blue-600/50 cursor-not-allowed'
                 : 'bg-blue-600 hover:bg-blue-700'
             }`}
@@ -192,11 +204,26 @@ export function DrawTab({ isDarkMode, eventId, weightCategories, weightCategorie
         <p className={`text-sm ${sub}`}>{t("draw.loadingCategories")}</p>
       )}
 
+      {!weightCategoriesLoading && athletesLoading && (
+        <p className={`text-sm ${sub}`}>{t("tournamentDetail.errors.loadingAthletes")}</p>
+      )}
+
       {!weightCategoriesLoading && !weightCategories.length && (
         <p className={`text-sm ${sub}`}>{t("draw.noCategories")}</p>
       )}
 
-      {!hasDraws && !generatingAll && weightCategories.length > 0 && (
+      {!weightCategoriesLoading && !athletesLoading && !hasEventAthletes && (
+        <div className={card}>
+          <EmptyState
+            icon="person"
+            title={t("draw.noAthletesInEvent")}
+            description={t("draw.noAthletesInEventDesc")}
+            isDarkMode={isDarkMode}
+          />
+        </div>
+      )}
+
+      {!hasDraws && !generatingAll && weightCategories.length > 0 && hasEventAthletes && (
         <div className={`rounded-lg p-8 text-center ${card}`}>
           <p className={`text-sm ${sub} mb-1`}>{t("draw.instructions")}</p>
         </div>

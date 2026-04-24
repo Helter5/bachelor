@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 import { Pagination } from "../Pagination"
 import type { Referee } from "../types"
 import { ITEMS_PER_PAGE } from "../types"
-import { CountryFlag } from "../../CountryFlag"
+import { CountryFlag, buildArenaFlagUrl } from "../../CountryFlag"
 import { MultiSelect } from "../../../ui/MultiSelect"
 import { EmptyState } from "../../../ui/EmptyState"
 import { LoadingSpinner } from "../../../ui/LoadingSpinner"
@@ -48,7 +48,7 @@ export function RefereesTab({
       .map(r => ({
         value: r.country_iso_code!,
         label: r.country_iso_code!,
-        icon: <CountryFlag code={r.country_iso_code!} flagOnly />,
+        icon: <CountryFlag code={r.country_iso_code!} imageUrl={buildArenaFlagUrl(r.country_iso_code)} flagOnly />,
       }))
       .sort((a, b) => a.label.localeCompare(b.label))
   }, [activeReferees])
@@ -178,6 +178,8 @@ export function RefereesTab({
                     isDarkMode={isDarkMode}
                     name={referee.person_full_name || '—'}
                     countryCode={referee.country_iso_code || undefined}
+                    countryFlagUrl={buildArenaFlagUrl(referee.team_alternate_name ?? referee.country_iso_code)}
+                    showCountryText={false}
                     badges={badges.length > 0 ? badges : undefined}
                     metadata={referee.team_alternate_name || referee.mat_name ? metadata : undefined}
                   />

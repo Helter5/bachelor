@@ -23,6 +23,64 @@ interface DashboardProps {
   onUserDataChange: (userData: AppUser) => void;
 }
 
+function SyncProgressWidget({
+  isDarkMode,
+  progressPercent,
+  syncingLabel,
+  stepLabel,
+  stepUnknownLabel,
+  byLabel,
+}: {
+  isDarkMode: boolean
+  progressPercent: number
+  syncingLabel: string
+  stepLabel: string
+  stepUnknownLabel: string
+  byLabel: string
+}) {
+  const progress = Math.max(0, Math.min(100, progressPercent))
+  const ringBackground = `conic-gradient(${isDarkMode ? '#60a5fa' : '#2563eb'} ${progress * 3.6}deg, ${
+    isDarkMode ? 'rgba(148, 163, 184, 0.18)' : 'rgba(191, 219, 254, 0.9)'
+  } 0deg)`
+
+  return (
+    <div className={`flex items-center gap-3 rounded-2xl border px-3 py-2 shadow-sm ${
+      isDarkMode
+        ? 'border-blue-400/20 bg-slate-900/80 shadow-blue-950/30'
+        : 'border-blue-200 bg-white/90 shadow-blue-100'
+    }`}>
+      <div
+        className="relative grid h-14 w-14 place-items-center rounded-full"
+        style={{ background: ringBackground }}
+      >
+        <div className={`grid h-10 w-10 place-items-center rounded-full ${
+          isDarkMode ? 'bg-[#0f172a] text-blue-100' : 'bg-white text-blue-700'
+        }`}>
+          <span className="text-[11px] font-semibold">{progress}%</span>
+        </div>
+      </div>
+
+      <div className="min-w-[170px]">
+        <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${
+          isDarkMode ? 'text-blue-300' : 'text-blue-700'
+        }`}>
+          {syncingLabel}
+        </p>
+        <p className={`text-sm font-medium ${
+          isDarkMode ? 'text-white' : 'text-gray-900'
+        }`}>
+          {stepLabel}
+        </p>
+        <p className={`text-[11px] ${
+          isDarkMode ? 'text-slate-400' : 'text-gray-500'
+        }`}>
+          {byLabel || stepUnknownLabel}
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardProps) {
   const { t } = useTranslation()
   const isAdmin = userData?.role === 'admin'
@@ -181,30 +239,23 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
 
                     {/* Sync Button — admin only */}
                     {isAdmin && (
-                      <div className="flex items-center gap-3">
+                      <div className="flex flex-wrap items-center justify-end gap-3">
+                        {syncState.isSyncing && (
+                          <SyncProgressWidget
+                            isDarkMode={isDarkMode}
+                            progressPercent={syncState.progressPercent}
+                            syncingLabel={t("dashboard.syncing")}
+                            stepLabel={t("dashboard.syncStep", {
+                              step: syncState.currentStep || t("dashboard.syncStepUnknown"),
+                            })}
+                            stepUnknownLabel={t("dashboard.syncStepUnknown")}
+                            byLabel={t("dashboard.syncBy", {
+                              name: syncState.initiatedBy || t("syncLogs.unknownUser"),
+                            })}
+                          />
+                        )}
+
                         <div className="flex flex-col items-end gap-2">
-                          {syncState.isSyncing && (
-                            <div className={`w-full min-w-[260px] rounded-lg border px-3 py-2 ${isDarkMode ? 'border-blue-500/30 bg-blue-500/10' : 'border-blue-200 bg-blue-50'}`}>
-                              <div className="flex items-center justify-between gap-3 mb-1.5">
-                                <span className={`text-xs font-medium ${isDarkMode ? 'text-blue-200' : 'text-blue-700'}`}>
-                                  {t("dashboard.syncing")}
-                                </span>
-                                <span className={`text-xs font-semibold ${isDarkMode ? 'text-blue-100' : 'text-blue-800'}`}>
-                                  {syncState.progressPercent}%
-                                </span>
-                              </div>
-                              <div className={`h-2 rounded-full overflow-hidden ${isDarkMode ? 'bg-blue-950/60' : 'bg-blue-100'}`}>
-                                <div
-                                  className="h-full bg-blue-600 transition-all duration-300"
-                                  style={{ width: `${Math.max(0, Math.min(100, syncState.progressPercent))}%` }}
-                                />
-                              </div>
-                              <div className={`mt-1.5 flex items-center justify-between text-[11px] ${isDarkMode ? 'text-blue-200/85' : 'text-blue-700/90'}`}>
-                                <span>{t("dashboard.syncStep", { step: syncState.currentStep || t("dashboard.syncStepUnknown") })}</span>
-                                <span>{t("dashboard.syncBy", { name: syncState.initiatedBy || t("syncLogs.unknownUser") })}</span>
-                              </div>
-                            </div>
-                          )}
                           <button
                             onClick={handleSyncClick}
                             disabled={syncState.isSyncing}

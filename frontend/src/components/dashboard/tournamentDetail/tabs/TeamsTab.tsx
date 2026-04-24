@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next"
 import { Pagination } from "../Pagination"
 import type { Team, Athlete, WeightCategory } from "../types"
 import { ITEMS_PER_PAGE } from "../types"
-import { CountryFlag } from "../../CountryFlag"
+import { CountryFlag, buildArenaFlagUrl } from "../../CountryFlag"
 import { Card } from "../Card"
 import { EmptyState } from "../../../ui/EmptyState"
 import { LoadingSpinner } from "../../../ui/LoadingSpinner"
@@ -45,6 +45,7 @@ export function TeamsTab({
   onSelectPerson,
 }: TeamsTabProps) {
   const { t } = useTranslation()
+  const selectedTeamData = selectedTeam ? teams.find(t => t.id === parseInt(selectedTeam.id)) : undefined
 
   if (selectedTeam) {
     return (
@@ -55,7 +56,14 @@ export function TeamsTab({
           onBack={closeTeamDetail}
           title={selectedTeam.name}
           subtitle={t('tournamentDetail.teamAthletes')}
-          leading={<CountryFlag code={teams.find(t => t.id === parseInt(selectedTeam.id))?.country_iso_code} style={{ fontSize: '3rem' }} flagOnly />}
+          leading={
+            <CountryFlag
+              code={selectedTeamData?.country_iso_code}
+              imageUrl={buildArenaFlagUrl(selectedTeamData?.alternate_name ?? selectedTeamData?.country_iso_code)}
+              className="h-12 w-auto"
+              flagOnly
+            />
+          }
         />
 
         {/* Athletes in Team */}
@@ -136,6 +144,7 @@ export function TeamsTab({
                     isDarkMode={isDarkMode}
                     name={team.name}
                     countryCode={team.country_iso_code || undefined}
+                    countryFlagUrl={buildArenaFlagUrl(team.alternate_name ?? team.country_iso_code)}
                     metadata={metadata}
                     onClick={() => openTeamDetail({ id: team.id.toString(), name: team.name })}
                   />

@@ -320,6 +320,8 @@
     "generateAll": "Generovať všetky žreby",
     "loadingCategories": "Načítavam kategórie...",
     "noCategories": "Žiadne váhové kategórie.",
+    "noAthletesInEvent": "V tomto evente nie sú žiadni atléti.",
+    "noAthletesInEventDesc": "Žreby je možné generovať až po pridaní alebo synchronizácii atlétov do eventu.",
     "instructions": "Klikni na tlačidlo vyššie a žreb sa vygeneruje pre všetky kategórie naraz.",
     "notGenerated": "Nevygenerované",
     "penaltyNone": "Bez penalizácií",

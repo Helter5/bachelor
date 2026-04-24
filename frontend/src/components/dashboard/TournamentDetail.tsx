@@ -453,6 +453,8 @@ export function TournamentDetail({
             eventId={tournamentId}
             weightCategories={weightCategories}
             weightCategoriesLoading={weightCategoriesLoading}
+            athletesCount={athletes.length}
+            athletesLoading={athletesLoading}
           />
         )}
 

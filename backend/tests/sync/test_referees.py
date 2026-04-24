@@ -10,6 +10,7 @@ from app.domain.entities.person import Person
 from app.domain.entities.referee import Referee
 from app.domain.entities.team import Team
 from app.services.arena import fetch_all_arena_items
+from app.utils.country_codes import normalize_country_iso_code
 from tests.utils import check, section, result
 
 
@@ -48,7 +49,7 @@ async def _fetch_arena_referees(event) -> dict[str, dict]:
     for item in items:
         full_name = item.get("fullName")
         origins = item.get("origins") or []
-        country = origins[0] if origins else None
+        country = normalize_country_iso_code(origins[0] if origins else None)
         key = _referee_natural_key(full_name, country)
         result_map[key] = item
 
@@ -200,7 +201,7 @@ async def test_referee_person_mapping_correct(db, synced_events):
 
             expected_first, expected_last = _split_full_name(item.get("fullName"))
             origins = item.get("origins") or []
-            expected_country = (origins[0] if origins else None) or ""
+            expected_country = normalize_country_iso_code(origins[0] if origins else None) or ""
             db_country = person.country_iso_code or ""
 
             ok_first = check(f"first_name [{person.full_name[:12]}]", expected_first, person.first_name)

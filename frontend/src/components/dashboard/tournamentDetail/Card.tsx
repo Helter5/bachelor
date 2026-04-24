@@ -11,6 +11,8 @@ interface CardProps {
   isDarkMode: boolean
   name: string
   countryCode?: string
+  countryFlagUrl?: string
+  showCountryText?: boolean
   badges?: Badge[]
   metadata?: ReactNode
   statusBadge?: {
@@ -28,6 +30,8 @@ export function Card({
   isDarkMode,
   name,
   countryCode,
+  countryFlagUrl,
+  showCountryText = true,
   badges,
   metadata,
   statusBadge,
@@ -55,14 +59,13 @@ export function Card({
             <div className="flex items-center gap-1 text-xs mt-0.5 flex-wrap">
               {countryCode && (
                 <div className="flex items-center gap-1">
-                  <CountryFlag code={countryCode} flagOnly />
-                  <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-                    {countryCode}
-                  </span>
+                  <CountryFlag code={countryCode} imageUrl={countryFlagUrl} flagOnly />
+                  {showCountryText && (
+                    <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
+                      {countryCode}
+                    </span>
+                  )}
                 </div>
-              )}
-              {countryCode && metadata && (
-                <span className={isDarkMode ? 'text-gray-600' : 'text-gray-300'}>•</span>
               )}
               {metadata && metadata}
             </div>
@@ -93,4 +96,3 @@ export function Card({
     </div>
   )
 }
-

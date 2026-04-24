@@ -15,6 +15,7 @@ from ..domain.entities.referee import Referee
 from ..domain.entities.person import Person
 from ..domain.entities.team import Team
 from ..domain.entities.sport_event import SportEvent
+from ..utils.country_codes import normalize_country_iso_code
 from .base_service import BaseService
 from .arena import fetch_arena_data, fetch_all_arena_items
 
@@ -209,7 +210,7 @@ class RefereeService(BaseService[Referee]):
 
                 # Get country from origins
                 origins = referee_data.get("origins") or []
-                country_iso_code = origins[0] if origins else None
+                country_iso_code = normalize_country_iso_code(origins[0] if origins else None)
 
                 # Resolve person
                 person_id = self._resolve_person(first_name, last_name, country_iso_code)

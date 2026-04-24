@@ -2,13 +2,37 @@ interface CountryFlagProps {
   code: string | null | undefined
   className?: string
   style?: React.CSSProperties
+  imageUrl?: string | null
   /** If true, only renders for valid 2-letter ISO codes — no badge for non-standard codes */
   flagOnly?: boolean
 }
 
+function normalizeArenaAssetUrl(url: string): string {
+  return url.replace("http://host.docker.internal:8080", "http://localhost:8080")
+}
+
+export function buildArenaFlagUrl(code: string | null | undefined): string | null {
+  const trimmed = code?.trim().toLowerCase()
+  if (!trimmed) return null
+  if (trimmed.length !== 3) return null
+  return `http://localhost:8080/build/images/flags/4x3/${trimmed}.svg`
+}
+
 /** Renders a flag for valid 2-letter ISO codes. Non-standard codes (e.g. "UWW") show as text badge unless flagOnly=true. */
-export function CountryFlag({ code, className = "", style, flagOnly = false }: CountryFlagProps) {
+export function CountryFlag({ code, className = "", style, imageUrl, flagOnly = false }: CountryFlagProps) {
   if (!code) return null
+
+  if (imageUrl) {
+    return (
+      <img
+        src={normalizeArenaAssetUrl(imageUrl)}
+        alt={code}
+        className={`inline-block h-[0.9rem] w-auto rounded-sm object-cover align-[-0.125em] ${className}`}
+        style={style}
+        title={code}
+      />
+    )
+  }
 
   if (code.trim().length === 2) {
     return (
@@ -24,7 +48,7 @@ export function CountryFlag({ code, className = "", style, flagOnly = false }: C
 
   return (
     <span
-      className={`inline-flex items-center justify-center rounded px-1 text-xs font-semibold bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300 ${className}`}
+      className={`inline-flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-300 ${className}`}
       title={code}
     >
       {code.trim()}

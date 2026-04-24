@@ -6,6 +6,7 @@ import { CHART_COLORS } from "../types"
 import { ErrorAlert } from "../../../ui/ErrorAlert"
 import { LoadingSpinner } from "../../../ui/LoadingSpinner"
 import { EmptyState } from "../../../ui/EmptyState"
+import { CountryFlag, buildArenaFlagUrl } from "../../CountryFlag"
 
 interface StatisticsTabProps {
   isDarkMode: boolean
@@ -131,7 +132,13 @@ export function StatisticsTab({
                           {p.name}
                         </td>
                         <td className={`py-3 px-4 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                          {p.country && <span className={`fi fi-${p.country.toLowerCase()} rounded-sm mr-1.5`} style={{ fontSize: '0.9rem' }} />}
+                          {p.country && (
+                            <CountryFlag
+                              code={p.country}
+                              imageUrl={buildArenaFlagUrl(p.country)}
+                              className="mr-1.5"
+                            />
+                          )}
                           {p.team_name || '-'}
                         </td>
                         <td className={`py-3 px-4 text-center text-sm font-medium text-green-500`}>{p.wins}</td>
@@ -166,7 +173,11 @@ export function StatisticsTab({
                         <td className={`py-3 px-4 text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t.name}</td>
                         <td className="py-3 px-3 text-center">
                           {t.country ? (
-                            <span className={`fi fi-${t.country.toLowerCase()} rounded-sm`} style={{ fontSize: '1.1rem' }} />
+                            <CountryFlag
+                              code={t.country}
+                              imageUrl={buildArenaFlagUrl(t.country)}
+                              className="h-[1.1rem] w-auto"
+                            />
                           ) : (
                             <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>-</span>
                           )}

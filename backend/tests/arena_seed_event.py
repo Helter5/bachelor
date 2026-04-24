@@ -24,7 +24,7 @@ import json
 ARENA_BASE = "http://localhost:8080"
 CLIENT_ID = "d1532eae14baf3ff798b6c7be8a8355f"
 CLIENT_SECRET = "2356194b47bbcb3b8d2b6e5dc06831a60e1f8248d68b7ab4b2b549d181ec0075920b1883c81caa941c00648ebafac3d23dc56e6fdaa5919b000140503d670486"
-API_KEY = "2TsgJLB2CkgPRiQwLTR7bZUtBTxHUarX3Asic5Y2nP3DUj8riD"
+API_KEY = "THxmuUTEdYHoLEGM8Y9xYTrCyFiPQvFFRp48KZXn3oQvevVdoH"
 
 # Multi-Arena Test Cup — existuje vo všetkých troch Arena inštanciách
 DEFAULT_EVENT_ID = "aaaaaaaa-aaaa-aaaa-aaaa-000000000001"
