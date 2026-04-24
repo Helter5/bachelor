@@ -72,8 +72,16 @@ async def list_persons(
         .subquery()
     )
 
+    athlete_persons_sub = (
+        select(col(Athlete.person_id).label("person_id"))
+        .where(col(Athlete.person_id).is_not(None))
+        .group_by(col(Athlete.person_id))
+        .subquery()
+    )
+
     statement = (
         select(Person, func.coalesce(fight_count_sub.c.fight_count, 0).label("fight_count"))
+        .join(athlete_persons_sub, Person.id == athlete_persons_sub.c.person_id)
         .outerjoin(fight_count_sub, Person.id == fight_count_sub.c.person_id)
     )
 
