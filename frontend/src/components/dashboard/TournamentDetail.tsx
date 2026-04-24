@@ -451,6 +451,7 @@ export function TournamentDetail({
           <DrawTab
             isDarkMode={isDarkMode}
             eventId={tournamentId}
+            teams={teams}
             weightCategories={weightCategories}
             weightCategoriesLoading={weightCategoriesLoading}
             athletesCount={athletes.length}

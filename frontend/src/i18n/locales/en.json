@@ -192,6 +192,21 @@
     "syncBy": "Started by: {{name}}",
     "syncStep": "Step: {{step}}",
     "syncStepUnknown": "unknown",
+    "syncSteps": {
+      "events": "events",
+      "teams": "teams",
+      "categories": "categories",
+      "athletes": "athletes",
+      "referees": "referees",
+      "fights": "fights",
+      "completed": "completed",
+      "failed": "failed"
+    },
+    "syncErrors": {
+      "alreadyRunning": "A synchronisation is already running. Please wait for it to finish.",
+      "network": "Could not connect to the server during synchronisation.",
+      "generic": "Synchronisation failed."
+    },
     "lastSync": "Last: {{date}}",
     "showDetails": "Show detailed information",
     "logs": "Logs",

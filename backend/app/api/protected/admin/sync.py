@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, 
 from sqlmodel import Session, select, col
 from typing import Optional
 import asyncio
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from ....database import get_session
 from ....domain.entities.user import User
@@ -58,6 +58,78 @@ _sync_locks: dict[str, asyncio.Lock] = {}
 _sync_results: dict[str, dict] = {}  # Store results by idempotency key
 
 
+def _as_utc_datetime(value: datetime) -> datetime:
+    """Normalize DB datetimes so comparisons work across naive/aware values."""
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+
+def _is_sync_log_effectively_active(sync_log: SyncLog) -> bool:
+    """Treat obviously stale/completed in_progress logs as inactive."""
+    if sync_log.status != "in_progress":
+        return False
+
+    details = sync_log.details or {}
+    progress = int(details.get("progress_percent") or 0)
+    step = str(details.get("current_step") or "").strip().lower()
+
+    if progress >= 100 or step in {"completed", "failed"}:
+        return False
+
+    started_at = _as_utc_datetime(sync_log.started_at)
+    if started_at < datetime.now(timezone.utc) - timedelta(hours=12):
+        return False
+
+    return True
+
+
+def _get_active_sync_log(session: Session) -> Optional[SyncLog]:
+    """Return the most recent effectively-active global sync log, if any."""
+    logs = session.exec(
+        select(SyncLog)
+        .where(SyncLog.status == "in_progress")
+        .order_by(col(SyncLog.started_at).desc())
+        .limit(10)
+    ).all()
+
+    for log in logs:
+        if _is_sync_log_effectively_active(log):
+            return log
+
+    return None
+
+
+def _ensure_sync_run_access(
+    session: Session,
+    sync_log_id: Optional[int],
+    *,
+    allow_start_new: bool,
+) -> Optional[SyncLog]:
+    """
+    Enforce a single global sync run.
+
+    - If no active sync exists and allow_start_new=True, caller may start a new one.
+    - If active sync exists, only requests carrying the same sync_log_id may continue it.
+    """
+    active_log = _get_active_sync_log(session)
+    if not active_log:
+        if allow_start_new:
+            return None
+        return None
+
+    if sync_log_id is not None and active_log.id == sync_log_id:
+        return active_log
+
+    raise HTTPException(
+        status_code=status.HTTP_409_CONFLICT,
+        detail=(
+            f"Synchronizácia už prebieha (sync log #{active_log.id}). "
+            "Počkajte na jej dokončenie."
+        ),
+    )
+
+
 def _get_active_arena_source(session: Session, user_id: int) -> ArenaSource:
     """Return the single active ArenaSource for the given user. Raises 400 if none configured/enabled."""
     source = session.exec(
@@ -100,7 +172,8 @@ async def sync_events(
     _: None = Depends(validate_csrf_and_origin),  # CSRF + Origin validation
     user: User = Depends(require_admin),
     session: Session = Depends(get_session),
-    idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key")
+    idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key"),
+    sync_orchestrated: Optional[str] = Header(None, alias="X-Sync-Orchestrated")
 ):
     """
     Sync sport events from Arena API (admin only)
@@ -110,6 +183,8 @@ async def sync_events(
     Idempotency: Provide X-Idempotency-Key header to safely retry
     Locking: Only one sync of events can run at a time
     """
+    _ensure_sync_run_access(session, None, allow_start_new=True)
+
     # Generate idempotency key if not provided
     if not idempotency_key:
         idempotency_key = f"sync_events_{datetime.now(timezone.utc).isoformat()}"
@@ -205,22 +280,38 @@ async def sync_events(
             session.add(source)
             session.commit()
 
-            # Update sync log
-            sync_log.status = "success"
-            sync_log.finished_at = datetime.now(timezone.utc)
-            sync_log.duration_seconds = int((sync_log.finished_at - start_time).total_seconds())
-            sync_log.events_created = events_created_total
-            sync_log.events_updated = events_updated_total
             existing_details = sync_log.details or {}
-            sync_log.details = {
+            details_payload = {
                 **existing_details,
                 "source_id": source.id,
                 "source_name": source.name,
                 "host": f"{source.host}:{source.port}",
                 "total_events": len(total_synced_events),
-                "progress_percent": 100,
-                "current_step": "completed",
             }
+
+            sync_log.events_created = events_created_total
+            sync_log.events_updated = events_updated_total
+
+            orchestrated = str(sync_orchestrated or "").strip().lower() in {"1", "true", "yes"}
+            if orchestrated:
+                sync_log.status = "in_progress"
+                sync_log.finished_at = None
+                sync_log.duration_seconds = None
+                sync_log.details = {
+                    **details_payload,
+                    "progress_percent": max(int(existing_details.get("progress_percent") or 0), 5),
+                    "current_step": "events",
+                }
+            else:
+                sync_log.status = "success"
+                sync_log.finished_at = datetime.now(timezone.utc)
+                sync_log.duration_seconds = int((sync_log.finished_at - start_time).total_seconds())
+                sync_log.details = {
+                    **details_payload,
+                    "progress_percent": 100,
+                    "current_step": "completed",
+                }
+
             session.add(sync_log)
             session.commit()
             _cleanup_old_sync_logs(session)
@@ -258,7 +349,8 @@ async def sync_teams(
     _: None = Depends(validate_csrf_and_origin),  # CSRF + Origin validation
     user: User = Depends(require_admin),
     session: Session = Depends(get_session),
-    idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key")
+    idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key"),
+    sync_log_id: Optional[int] = Header(None, alias="X-Sync-Log-Id")
 ):
     """
     Sync teams for specific event from Arena API (admin only)
@@ -275,6 +367,8 @@ async def sync_teams(
     # Check if already processed (idempotency)
     if idempotency_key in _sync_results:
         return _sync_results[idempotency_key]
+
+    _ensure_sync_run_access(session, sync_log_id, allow_start_new=False)
     
     # Acquire lock for this event's team sync (asyncio.Lock for async context)
     lock_key = f"teams_{event_id}"
@@ -335,7 +429,8 @@ async def sync_athletes(
     _: None = Depends(validate_csrf_and_origin),  # CSRF + Origin validation
     user: User = Depends(require_admin),
     session: Session = Depends(get_session),
-    idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key")
+    idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key"),
+    sync_log_id: Optional[int] = Header(None, alias="X-Sync-Log-Id")
 ):
     """
     Sync athletes for specific event from Arena API (admin only)
@@ -352,6 +447,8 @@ async def sync_athletes(
     # Check if already processed (idempotency)
     if idempotency_key in _sync_results:
         return _sync_results[idempotency_key]
+
+    _ensure_sync_run_access(session, sync_log_id, allow_start_new=False)
     
     # Acquire lock for this event's athlete sync (asyncio.Lock for async context)
     lock_key = f"athletes_{event_id}"
@@ -412,7 +509,8 @@ async def sync_categories(
     _: None = Depends(validate_csrf_and_origin),  # CSRF + Origin validation
     user: User = Depends(require_admin),
     session: Session = Depends(get_session),
-    idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key")
+    idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key"),
+    sync_log_id: Optional[int] = Header(None, alias="X-Sync-Log-Id")
 ):
     """
     Sync weight categories for specific event from Arena API (admin only)
@@ -429,6 +527,8 @@ async def sync_categories(
     # Check if already processed (idempotency)
     if idempotency_key in _sync_results:
         return _sync_results[idempotency_key]
+
+    _ensure_sync_run_access(session, sync_log_id, allow_start_new=False)
     
     # Acquire lock for this event's category sync (asyncio.Lock for async context)
     lock_key = f"categories_{event_id}"
@@ -509,7 +609,8 @@ async def sync_fights(
     _: None = Depends(validate_csrf_and_origin),
     user: User = Depends(require_admin),
     session: Session = Depends(get_session),
-    idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key")
+    idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key"),
+    sync_log_id: Optional[int] = Header(None, alias="X-Sync-Log-Id")
 ):
     """
     Sync fights for specific event from Arena API (admin only)
@@ -519,6 +620,8 @@ async def sync_fights(
 
     if idempotency_key in _sync_results:
         return _sync_results[idempotency_key]
+
+    _ensure_sync_run_access(session, sync_log_id, allow_start_new=False)
 
     lock_key = f"fights_{event_id}"
     if lock_key not in _sync_locks:
@@ -575,7 +678,8 @@ async def sync_referees(
     _: None = Depends(validate_csrf_and_origin),
     user: User = Depends(require_admin),
     session: Session = Depends(get_session),
-    idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key")
+    idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key"),
+    sync_log_id: Optional[int] = Header(None, alias="X-Sync-Log-Id")
 ):
     """
     Sync referees for specific event from Arena API (admin only)
@@ -638,5 +742,3 @@ async def sync_referees(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Sync failed: {str(e)}"
             )
-
-

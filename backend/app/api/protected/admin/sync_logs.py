@@ -16,6 +16,13 @@ from ....core.dependencies import require_admin
 router = APIRouter(prefix="/admin/sync-logs")
 
 
+def _as_utc_datetime(value: datetime) -> datetime:
+    """Normalize DB datetimes so arithmetic works across naive/aware values."""
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+
 class SyncLogStatsPatch(BaseModel):
     teams_created: int | None = None
     teams_updated: int | None = None
@@ -144,7 +151,12 @@ async def patch_sync_log_stats(
         elif payload.status in {"success", "failed"}:
             if sync_log.finished_at is None:
                 sync_log.finished_at = datetime.now(timezone.utc)
-            sync_log.duration_seconds = int((sync_log.finished_at - sync_log.started_at).total_seconds())
+            sync_log.duration_seconds = int(
+                (
+                    _as_utc_datetime(sync_log.finished_at)
+                    - _as_utc_datetime(sync_log.started_at)
+                ).total_seconds()
+            )
 
     session.add(sync_log)
     session.commit()

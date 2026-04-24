@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { apiClient } from '@/services/apiClient'
+import { useTranslation } from 'react-i18next'
+import { ApiError, apiClient } from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/config/api'
 
 interface SyncState {
@@ -35,7 +36,8 @@ interface SyncLogSummary {
 const MAX_RETRY_ATTEMPTS = 5
 const RETRY_DELAY_MS = 1000
 
-export function useSync() {
+export function useSync(currentUserName?: string) {
+  const { t } = useTranslation()
   const [syncState, setSyncState] = useState<SyncState>(() => {
     const savedSyncDate = localStorage.getItem('lastSyncDate')
     return {
@@ -160,6 +162,10 @@ export function useSync() {
       } catch (error) {
         lastError = error
 
+        if (error instanceof ApiError && error.status === 409) {
+          throw error
+        }
+
         if (attempt === maxAttempts) {
           console.error(`${context} failed after ${maxAttempts} attempts:`, error)
           throw error
@@ -173,7 +179,31 @@ export function useSync() {
     throw lastError
   }
 
+  const getSyncErrorMessage = useCallback((error: unknown) => {
+    if (error instanceof ApiError) {
+      if (error.status === 409) {
+        return t('dashboard.syncErrors.alreadyRunning')
+      }
+
+      if (error.message?.trim()) {
+        return error.message
+      }
+    }
+
+    if (error instanceof TypeError) {
+      return t('dashboard.syncErrors.network')
+    }
+
+    if (error instanceof Error && error.message?.trim()) {
+      return error.message
+    }
+
+    return t('dashboard.syncErrors.generic')
+  }, [t])
+
   const triggerSync = useCallback(async () => {
+    let currentSyncLogId: number | null = null
+
     setSyncState(prev => ({
       ...prev,
       isSyncing: true,
@@ -181,7 +211,7 @@ export function useSync() {
       errorMessage: '',
       progressPercent: 0,
       currentStep: 'events',
-      initiatedBy: prev.initiatedBy,
+      initiatedBy: currentUserName?.trim() || prev.initiatedBy,
     }))
 
     try {
@@ -189,11 +219,16 @@ export function useSync() {
       let completedSteps = 0
 
       const eventsSyncResult = await retryWithBackoff(
-        () => apiClient.post<SyncResult>(API_ENDPOINTS.SPORT_EVENT_SYNC),
+        () => apiClient.post<SyncResult>(
+          API_ENDPOINTS.SPORT_EVENT_SYNC,
+          undefined,
+          { headers: { 'X-Sync-Orchestrated': 'true' } }
+        ),
         'Syncing sport events'
       )
 
       const syncLogId = eventsSyncResult.sync_log_id
+      currentSyncLogId = syncLogId ?? null
 
       if (syncLogId) {
         setSyncState(prev => ({ ...prev, activeSyncLogId: syncLogId }))
@@ -216,6 +251,7 @@ export function useSync() {
         'Fetching events from database'
       )
       const dbEvents = dbEventsData.items || []
+      const syncHeaders = syncLogId ? { headers: { 'X-Sync-Log-Id': String(syncLogId) } } : undefined
 
       let teamsCreated = 0, teamsUpdated = 0
       let categoriesCreated = 0, categoriesUpdated = 0
@@ -226,7 +262,7 @@ export function useSync() {
       const teamResults = await Promise.all(
         dbEvents.map((event: { id: number; uuid: string; name: string }) =>
           retryWithBackoff(
-            () => apiClient.post<SyncResult>(API_ENDPOINTS.TEAM_SYNC(event.id)),
+            () => apiClient.post<SyncResult>(API_ENDPOINTS.TEAM_SYNC(event.id), undefined, syncHeaders),
             `Syncing teams for event ${event.name}`
           )
         )
@@ -249,7 +285,7 @@ export function useSync() {
       const wcResults = await Promise.all(
         dbEvents.map((event: { id: number; uuid: string; name: string }) =>
           retryWithBackoff(
-            () => apiClient.post<SyncResult>(API_ENDPOINTS.WEIGHT_CATEGORY_SYNC(event.id)),
+            () => apiClient.post<SyncResult>(API_ENDPOINTS.WEIGHT_CATEGORY_SYNC(event.id), undefined, syncHeaders),
             `Syncing weight categories for event ${event.name}`
           )
         )
@@ -272,7 +308,7 @@ export function useSync() {
       const athleteResults = await Promise.all(
         dbEvents.map((event: { id: number; uuid: string; name: string }) =>
           retryWithBackoff(
-            () => apiClient.post<SyncResult>(API_ENDPOINTS.ATHLETE_SYNC(event.id)),
+            () => apiClient.post<SyncResult>(API_ENDPOINTS.ATHLETE_SYNC(event.id), undefined, syncHeaders),
             `Syncing athletes for event ${event.name}`
           )
         )
@@ -295,7 +331,7 @@ export function useSync() {
       const refereeResults = await Promise.all(
         dbEvents.map((event: { id: number; uuid: string; name: string }) =>
           retryWithBackoff(
-            () => apiClient.post<SyncResult>(API_ENDPOINTS.REFEREE_SYNC(event.id)),
+            () => apiClient.post<SyncResult>(API_ENDPOINTS.REFEREE_SYNC(event.id), undefined, syncHeaders),
             `Syncing referees for event ${event.name}`
           )
         )
@@ -318,7 +354,7 @@ export function useSync() {
       const fightResults = await Promise.all(
         dbEvents.map((event: { id: number; uuid: string; name: string }) =>
           retryWithBackoff(
-            () => apiClient.post<SyncResult>(API_ENDPOINTS.FIGHT_SYNC(event.id)),
+            () => apiClient.post<SyncResult>(API_ENDPOINTS.FIGHT_SYNC(event.id), undefined, syncHeaders),
             `Syncing fights for event ${event.name}`
           )
         )
@@ -385,14 +421,20 @@ export function useSync() {
       }, 3000)
     } catch (error) {
       console.error('Sync error:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Synchronizácia zlyhala po 5 pokusoch'
+      const errorMessage = getSyncErrorMessage(error)
 
-      const logId = syncState.activeSyncLogId
+      clearTimers()
+
+      const logId = currentSyncLogId
       if (logId) {
         try {
           await apiClient.patch(API_ENDPOINTS.SYNC_LOG_UPDATE_STATS(logId), {
             status: 'failed',
             error_message: errorMessage,
+            details: {
+              progress_percent: 100,
+              current_step: 'failed',
+            },
           })
         } catch {
           // Best effort only
@@ -406,9 +448,11 @@ export function useSync() {
         errorMessage: errorMessage,
         currentStep: 'failed',
         activeSyncLogId: null,
+        progressPercent: 0,
+        initiatedBy: '',
       }))
     }
-  }, [retryWithBackoff, startProgressPolling, syncState.activeSyncLogId])
+  }, [clearTimers, currentUserName, getSyncErrorMessage, retryWithBackoff, startProgressPolling])
 
   const confirmSync = useCallback(() => {
     setSyncState(prev => ({ ...prev, showConfirm: false }))

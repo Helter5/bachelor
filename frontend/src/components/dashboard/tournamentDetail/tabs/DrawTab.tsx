@@ -2,9 +2,10 @@ import { useMemo, useState, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
-import type { WeightCategory } from "../types"
+import type { Team, WeightCategory } from "../types"
 import { Select } from "../../../ui/Select"
 import { EmptyState } from "../../../ui/EmptyState"
+import { CountryFlag, buildArenaFlagUrl } from "../../CountryFlag"
 
 interface DrawAthlete {
   seed: number
@@ -45,6 +46,7 @@ interface CategoryDraw {
 interface DrawTabProps {
   isDarkMode: boolean
   eventId: number
+  teams: Team[]
   weightCategories: WeightCategory[]
   weightCategoriesLoading: boolean
   athletesCount: number
@@ -54,6 +56,7 @@ interface DrawTabProps {
 export function DrawTab({
   isDarkMode,
   eventId,
+  teams,
   weightCategories,
   weightCategoriesLoading,
   athletesCount,
@@ -77,6 +80,21 @@ export function DrawTab({
   const card = isDarkMode ? 'bg-[#0f172a] border border-white/5' : 'bg-gray-50 border border-gray-200'
   const hasEventAthletes = athletesCount > 0
   const generationDisabled = generatingAll || weightCategoriesLoading || athletesLoading || !weightCategories.length || !hasEventAthletes
+  const teamsByName = useMemo(() => {
+    const normalizeTeamName = (name: string) =>
+      name
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+
+    const map = new Map<string, Team>()
+    for (const team of teams) {
+      map.set(normalizeTeamName(team.name), team)
+    }
+    return map
+  }, [teams])
 
   const generateForCategory = async (wc: WeightCategory, n: number): Promise<DrawResult | null> => {
     try {
@@ -268,7 +286,7 @@ export function DrawTab({
               {/* Expanded content */}
               {isExpanded && entry?.result && !entry.error && (
                 <div className={`px-4 pb-4 pt-2 ${isDarkMode ? 'bg-[#1e293b]' : 'bg-white'}`}>
-                  <DrawContent result={entry.result} isDarkMode={isDarkMode} />
+                  <DrawContent result={entry.result} teamsByName={teamsByName} isDarkMode={isDarkMode} />
                 </div>
               )}
             </div>
@@ -305,11 +323,26 @@ function PenaltyBadge({ penalty }: { penalty: number }) {
   )
 }
 
-function DrawContent({ result, isDarkMode }: { result: DrawResult; isDarkMode: boolean }) {
+function DrawContent({
+  result,
+  teamsByName,
+  isDarkMode,
+}: {
+  result: DrawResult
+  teamsByName: Map<string, Team>
+  isDarkMode: boolean
+}) {
   const { t } = useTranslation()
   const text = isDarkMode ? 'text-white' : 'text-gray-900'
   const sub = isDarkMode ? 'text-gray-400' : 'text-gray-500'
   const divider = isDarkMode ? 'border-white/5' : 'border-gray-100'
+  const normalizeTeamName = (name: string) =>
+    name
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
 
   return (
     <div className="space-y-4 mt-2">
@@ -369,7 +402,22 @@ function DrawContent({ result, isDarkMode }: { result: DrawResult; isDarkMode: b
                       }`}>{a.seed}</span>
                     </td>
                     <td className={`px-3 py-1.5 font-medium ${text}`}>{a.full_name}</td>
-                    <td className={`px-3 py-1.5 ${sub}`}>{a.team_name ?? '—'}</td>
+                    <td className={`px-3 py-1.5 ${sub}`}>
+                      {(() => {
+                        if (!a.team_name) return '—'
+                        const team = teamsByName.get(normalizeTeamName(a.team_name))
+                        return (
+                          <span className="inline-flex items-center gap-1.5">
+                            <CountryFlag
+                              code={team?.country_iso_code ?? null}
+                              imageUrl={buildArenaFlagUrl(team?.alternate_name ?? team?.country_iso_code)}
+                              flagOnly
+                            />
+                            <span>{a.team_name}</span>
+                          </span>
+                        )
+                      })()}
+                    </td>
                     <td className={`px-3 py-1.5 ${sub}`}>{a.score}</td>
                   </tr>
                 ))}

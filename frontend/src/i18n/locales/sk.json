@@ -195,6 +195,21 @@
     "syncBy": "Spustil: {{name}}",
     "syncStep": "Krok: {{step}}",
     "syncStepUnknown": "neznámy",
+    "syncSteps": {
+      "events": "eventy",
+      "teams": "tímy",
+      "categories": "kategórie",
+      "athletes": "atléti",
+      "referees": "rozhodcovia",
+      "fights": "zápasy",
+      "completed": "dokončené",
+      "failed": "chyba"
+    },
+    "syncErrors": {
+      "alreadyRunning": "Synchronizácia už prebieha. Počkajte na jej dokončenie.",
+      "network": "Nepodarilo sa spojiť so serverom počas synchronizácie.",
+      "generic": "Synchronizácia zlyhala."
+    },
     "lastSync": "Naposledy: {{date}}",
     "showDetails": "Zobraziť detailné informácie",
     "logs": "Logy",

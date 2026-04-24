@@ -84,8 +84,9 @@ function SyncProgressWidget({
 export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardProps) {
   const { t } = useTranslation()
   const isAdmin = userData?.role === 'admin'
+  const currentUserName = `${userData?.first_name ?? ''} ${userData?.last_name ?? ''}`.trim() || userData?.username || ''
   // Custom hooks for state management
-  const { syncState, handleSyncClick, confirmSync, cancelSync, dismissError } = useSync()
+  const { syncState, handleSyncClick, confirmSync, cancelSync, dismissError } = useSync(currentUserName)
   const { isDarkMode, toggleDarkMode } = useDarkMode()
   const {
     state: dashboardState,
@@ -246,7 +247,11 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
                             progressPercent={syncState.progressPercent}
                             syncingLabel={t("dashboard.syncing")}
                             stepLabel={t("dashboard.syncStep", {
-                              step: syncState.currentStep || t("dashboard.syncStepUnknown"),
+                              step: syncState.currentStep
+                                ? t(`dashboard.syncSteps.${syncState.currentStep}`, {
+                                    defaultValue: syncState.currentStep,
+                                  })
+                                : t("dashboard.syncStepUnknown"),
                             })}
                             stepUnknownLabel={t("dashboard.syncStepUnknown")}
                             byLabel={t("dashboard.syncBy", {
