@@ -5,6 +5,8 @@ WORKDIR /app
 
 # Copy package files first for better layer caching
 COPY package.json package-lock.json* ./
+# Copy config files into image to avoid VirtioFS read errors on macOS
+COPY vite.config.ts tsconfig.json tsconfig.app.json index.html ./
 
 # Install dependencies (cached unless package files change)
 RUN npm install --legacy-peer-deps

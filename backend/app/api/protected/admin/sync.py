@@ -144,6 +144,11 @@ async def sync_events(
             user_id=user.id,
             status="in_progress",
             started_at=datetime.now(timezone.utc),
+            details={
+                "progress_percent": 0,
+                "current_step": "events",
+                "initiated_by": f"{user.first_name} {user.last_name}".strip(),
+            },
             ip_address=ip_address
         )
         session.add(sync_log)
@@ -206,11 +211,15 @@ async def sync_events(
             sync_log.duration_seconds = int((sync_log.finished_at - start_time).total_seconds())
             sync_log.events_created = events_created_total
             sync_log.events_updated = events_updated_total
+            existing_details = sync_log.details or {}
             sync_log.details = {
+                **existing_details,
                 "source_id": source.id,
                 "source_name": source.name,
                 "host": f"{source.host}:{source.port}",
                 "total_events": len(total_synced_events),
+                "progress_percent": 100,
+                "current_step": "completed",
             }
             session.add(sync_log)
             session.commit()

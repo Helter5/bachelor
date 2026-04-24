@@ -9,6 +9,10 @@ interface SyncState {
   showError: boolean
   errorMessage: string
   lastSyncDate: string
+  activeSyncLogId: number | null
+  progressPercent: number
+  currentStep: string
+  initiatedBy: string
 }
 
 interface SyncResult {
@@ -31,12 +35,17 @@ export function useSync() {
       showConfirm: false,
       showError: false,
       errorMessage: '',
-      lastSyncDate: savedSyncDate || ""
+      lastSyncDate: savedSyncDate || "",
+      activeSyncLogId: null,
+      progressPercent: 0,
+      currentStep: '',
+      initiatedBy: '',
     }
   })
 
   const syncTimeoutRef = useRef<number | undefined>(undefined)
   const successTimeoutRef = useRef<number | undefined>(undefined)
+  const progressIntervalRef = useRef<number | undefined>(undefined)
 
   const clearTimers = useCallback(() => {
     if (syncTimeoutRef.current !== undefined) {
@@ -46,6 +55,10 @@ export function useSync() {
     if (successTimeoutRef.current !== undefined) {
       clearTimeout(successTimeoutRef.current)
       successTimeoutRef.current = undefined
+    }
+    if (progressIntervalRef.current !== undefined) {
+      clearInterval(progressIntervalRef.current)
+      progressIntervalRef.current = undefined
     }
   }, [])
 
@@ -63,6 +76,49 @@ export function useSync() {
 
   const dismissError = useCallback(() => {
     setSyncState(prev => ({ ...prev, showError: false, errorMessage: '' }))
+  }, [])
+
+  const stepToProgress = (step: number, totalSteps: number) => {
+    if (totalSteps <= 0) return 0
+    return Math.round((step / totalSteps) * 100)
+  }
+
+  const startProgressPolling = useCallback((logId: number) => {
+    if (progressIntervalRef.current !== undefined) {
+      clearInterval(progressIntervalRef.current)
+      progressIntervalRef.current = undefined
+    }
+
+    progressIntervalRef.current = window.setInterval(async () => {
+      try {
+        const log = await apiClient.get<{
+          id: number
+          status: string
+          details?: { progress_percent?: number; current_step?: string; initiated_by?: string }
+          user_full_name?: string | null
+        }>(API_ENDPOINTS.SYNC_LOG_DETAIL(logId))
+
+        const progress = Number(log.details?.progress_percent ?? 0)
+        const step = log.details?.current_step ?? ''
+        const initiator = (log.details?.initiated_by ?? log.user_full_name ?? '').trim()
+
+        setSyncState(prev => ({
+          ...prev,
+          activeSyncLogId: log.id,
+          isSyncing: log.status === 'in_progress',
+          progressPercent: progress,
+          currentStep: step,
+          initiatedBy: initiator,
+        }))
+
+        if (log.status !== 'in_progress' && progressIntervalRef.current !== undefined) {
+          clearInterval(progressIntervalRef.current)
+          progressIntervalRef.current = undefined
+        }
+      } catch {
+        // Keep UI state as-is; next poll will retry.
+      }
+    }, 2500)
   }, [])
 
   const retryWithBackoff = async <T,>(
@@ -92,15 +148,40 @@ export function useSync() {
   }
 
   const triggerSync = useCallback(async () => {
-    setSyncState(prev => ({ ...prev, isSyncing: true, showError: false, errorMessage: '' }))
+    setSyncState(prev => ({
+      ...prev,
+      isSyncing: true,
+      showError: false,
+      errorMessage: '',
+      progressPercent: 0,
+      currentStep: 'events',
+      initiatedBy: prev.initiatedBy,
+    }))
 
     try {
+      const totalSteps = 6
+      let completedSteps = 0
+
       const eventsSyncResult = await retryWithBackoff(
         () => apiClient.post<SyncResult>(API_ENDPOINTS.SPORT_EVENT_SYNC),
         'Syncing sport events'
       )
 
       const syncLogId = eventsSyncResult.sync_log_id
+
+      if (syncLogId) {
+        setSyncState(prev => ({ ...prev, activeSyncLogId: syncLogId }))
+        startProgressPolling(syncLogId)
+
+        completedSteps += 1
+        await apiClient.patch(API_ENDPOINTS.SYNC_LOG_UPDATE_STATS(syncLogId), {
+          status: 'in_progress',
+          details: {
+            progress_percent: stepToProgress(completedSteps, totalSteps),
+            current_step: 'events',
+          },
+        })
+      }
 
       const dbEventsData = await retryWithBackoff(
         () => apiClient.get<{ items: Array<{ id: number; uuid: string; name: string }>; total: number }>(
@@ -124,6 +205,16 @@ export function useSync() {
           )
         )
       )
+      completedSteps += 1
+      if (syncLogId) {
+        await apiClient.patch(API_ENDPOINTS.SYNC_LOG_UPDATE_STATS(syncLogId), {
+          status: 'in_progress',
+          details: {
+            progress_percent: stepToProgress(completedSteps, totalSteps),
+            current_step: 'teams',
+          },
+        })
+      }
       for (const r of teamResults) {
         teamsCreated += r.created || 0
         teamsUpdated += r.updated || 0
@@ -137,6 +228,16 @@ export function useSync() {
           )
         )
       )
+      completedSteps += 1
+      if (syncLogId) {
+        await apiClient.patch(API_ENDPOINTS.SYNC_LOG_UPDATE_STATS(syncLogId), {
+          status: 'in_progress',
+          details: {
+            progress_percent: stepToProgress(completedSteps, totalSteps),
+            current_step: 'categories',
+          },
+        })
+      }
       for (const r of wcResults) {
         categoriesCreated += r.created || 0
         categoriesUpdated += r.updated || 0
@@ -150,6 +251,16 @@ export function useSync() {
           )
         )
       )
+      completedSteps += 1
+      if (syncLogId) {
+        await apiClient.patch(API_ENDPOINTS.SYNC_LOG_UPDATE_STATS(syncLogId), {
+          status: 'in_progress',
+          details: {
+            progress_percent: stepToProgress(completedSteps, totalSteps),
+            current_step: 'athletes',
+          },
+        })
+      }
       for (const r of athleteResults) {
         athletesCreated += r.created || 0
         athletesUpdated += r.updated || 0
@@ -163,6 +274,16 @@ export function useSync() {
           )
         )
       )
+      completedSteps += 1
+      if (syncLogId) {
+        await apiClient.patch(API_ENDPOINTS.SYNC_LOG_UPDATE_STATS(syncLogId), {
+          status: 'in_progress',
+          details: {
+            progress_percent: stepToProgress(completedSteps, totalSteps),
+            current_step: 'referees',
+          },
+        })
+      }
       for (const r of refereeResults) {
         refereesCreated += r.created || 0
         refereesUpdated += r.updated || 0
@@ -176,6 +297,16 @@ export function useSync() {
           )
         )
       )
+      completedSteps += 1
+      if (syncLogId) {
+        await apiClient.patch(API_ENDPOINTS.SYNC_LOG_UPDATE_STATS(syncLogId), {
+          status: 'in_progress',
+          details: {
+            progress_percent: stepToProgress(completedSteps, totalSteps),
+            current_step: 'fights',
+          },
+        })
+      }
       for (const r of fightResults) {
         fightsCreated += r.created || 0
         fightsUpdated += r.updated || 0
@@ -196,6 +327,11 @@ export function useSync() {
               referees_updated: refereesUpdated,
               fights_created: fightsCreated,
               fights_updated: fightsUpdated,
+              status: 'success',
+              details: {
+                progress_percent: 100,
+                current_step: 'completed',
+              },
             }
           )
         } catch (error) {
@@ -212,7 +348,9 @@ export function useSync() {
         ...prev,
         isSyncing: false,
         showSuccess: true,
-        lastSyncDate: formattedDate
+        lastSyncDate: formattedDate,
+        progressPercent: 100,
+        currentStep: 'completed',
       }))
 
       successTimeoutRef.current = setTimeout(() => {
@@ -221,19 +359,75 @@ export function useSync() {
     } catch (error) {
       console.error('Sync error:', error)
       const errorMessage = error instanceof Error ? error.message : 'Synchronizácia zlyhala po 5 pokusoch'
+
+      const logId = syncState.activeSyncLogId
+      if (logId) {
+        try {
+          await apiClient.patch(API_ENDPOINTS.SYNC_LOG_UPDATE_STATS(logId), {
+            status: 'failed',
+            error_message: errorMessage,
+          })
+        } catch {
+          // Best effort only
+        }
+      }
+
       setSyncState(prev => ({
         ...prev,
         isSyncing: false,
         showError: true,
-        errorMessage: errorMessage
+        errorMessage: errorMessage,
+        currentStep: 'failed',
       }))
     }
-  }, [])
+  }, [retryWithBackoff, startProgressPolling, syncState.activeSyncLogId])
 
   const confirmSync = useCallback(() => {
     setSyncState(prev => ({ ...prev, showConfirm: false }))
-    triggerSync()
+    void triggerSync()
   }, [triggerSync])
+
+  const loadActiveSyncFromLogs = useCallback(async () => {
+    try {
+      const logs = await apiClient.get<Array<{
+        id: number
+        status: string
+        details?: { progress_percent?: number; current_step?: string; initiated_by?: string }
+        user_full_name?: string | null
+      }>>(`${API_ENDPOINTS.SYNC_LOGS}?limit=20`)
+
+      const active = logs.find((log) => log.status === 'in_progress')
+      if (!active) {
+        setSyncState(prev => ({
+          ...prev,
+          isSyncing: false,
+          activeSyncLogId: prev.isSyncing ? prev.activeSyncLogId : null,
+        }))
+        return
+      }
+
+      const progress = Number(active.details?.progress_percent ?? 0)
+      const step = active.details?.current_step ?? ''
+      const initiator = (active.details?.initiated_by ?? active.user_full_name ?? '').trim()
+
+      setSyncState(prev => ({
+        ...prev,
+        isSyncing: true,
+        activeSyncLogId: active.id,
+        progressPercent: progress,
+        currentStep: step,
+        initiatedBy: initiator,
+      }))
+
+      startProgressPolling(active.id)
+    } catch {
+      // Ignore on initial load
+    }
+  }, [startProgressPolling])
+
+  useEffect(() => {
+    void loadActiveSyncFromLogs()
+  }, [loadActiveSyncFromLogs])
 
   return {
     syncState,

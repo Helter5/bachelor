@@ -247,4 +247,5 @@ class SyncLogOut(BaseModel):
 
     # Joined data
     username: Optional[str] = None
+    user_full_name: Optional[str] = None
     arena_source_name: Optional[str] = None

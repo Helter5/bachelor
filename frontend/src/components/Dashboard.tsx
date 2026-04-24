@@ -182,10 +182,29 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
                     {/* Sync Button — admin only */}
                     {isAdmin && (
                       <div className="flex items-center gap-3">
-                        {syncState.isSyncing && (
-                          <span className="text-sm text-blue-600 animate-pulse">{t("dashboard.syncing")}</span>
-                        )}
                         <div className="flex flex-col items-end gap-2">
+                          {syncState.isSyncing && (
+                            <div className={`w-full min-w-[260px] rounded-lg border px-3 py-2 ${isDarkMode ? 'border-blue-500/30 bg-blue-500/10' : 'border-blue-200 bg-blue-50'}`}>
+                              <div className="flex items-center justify-between gap-3 mb-1.5">
+                                <span className={`text-xs font-medium ${isDarkMode ? 'text-blue-200' : 'text-blue-700'}`}>
+                                  {t("dashboard.syncing")}
+                                </span>
+                                <span className={`text-xs font-semibold ${isDarkMode ? 'text-blue-100' : 'text-blue-800'}`}>
+                                  {syncState.progressPercent}%
+                                </span>
+                              </div>
+                              <div className={`h-2 rounded-full overflow-hidden ${isDarkMode ? 'bg-blue-950/60' : 'bg-blue-100'}`}>
+                                <div
+                                  className="h-full bg-blue-600 transition-all duration-300"
+                                  style={{ width: `${Math.max(0, Math.min(100, syncState.progressPercent))}%` }}
+                                />
+                              </div>
+                              <div className={`mt-1.5 flex items-center justify-between text-[11px] ${isDarkMode ? 'text-blue-200/85' : 'text-blue-700/90'}`}>
+                                <span>{t("dashboard.syncStep", { step: syncState.currentStep || t("dashboard.syncStepUnknown") })}</span>
+                                <span>{t("dashboard.syncBy", { name: syncState.initiatedBy || t("syncLogs.unknownUser") })}</span>
+                              </div>
+                            </div>
+                          )}
                           <button
                             onClick={handleSyncClick}
                             disabled={syncState.isSyncing}

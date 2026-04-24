@@ -21,10 +21,13 @@ interface SyncLog {
   weight_categories_updated: number
   fights_created: number
   fights_updated: number
+  referees_created: number
+  referees_updated: number
   error_message: string | null
   details: Record<string, unknown> | null
   ip_address: string | null
   username: string | null
+  user_full_name: string | null
   arena_source_name: string | null
 }
 
@@ -116,7 +119,9 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
       log.weight_categories_created +
       log.weight_categories_updated +
       log.fights_created +
-      log.fights_updated
+      log.fights_updated +
+      log.referees_created +
+      log.referees_updated
     )
   }
 
@@ -205,7 +210,7 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
                       {formatDate(log.started_at)}
                     </td>
                     <td className={`py-2 px-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                      {log.username || t('syncLogs.unknownUser')}
+                      {log.user_full_name || log.username || t('syncLogs.unknownUser')}
                     </td>
                     <td className="py-2 px-3">
                       <span className={`px-2 py-1 rounded text-xs ${getStatusColor(log.status)}`}>
@@ -257,7 +262,7 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <DetailField
                   label={t('syncLogs.detailUser')}
-                  value={<>{selectedLog.username || t('syncLogs.unknownUser')} {selectedLog.ip_address && `(${selectedLog.ip_address})`}</>}
+                  value={<>{selectedLog.user_full_name || selectedLog.username || t('syncLogs.unknownUser')} {selectedLog.ip_address && `(${selectedLog.ip_address})`}</>}
                 />
                 <DetailField
                   label={t('syncLogs.detailSource')}
@@ -292,6 +297,7 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
                   <StatCard label={t('syncLogs.statsTeams')} value={<>+{selectedLog.teams_created} / ~{selectedLog.teams_updated}</>} />
                   <StatCard label={t('syncLogs.statsCategories')} value={<>+{selectedLog.weight_categories_created} / ~{selectedLog.weight_categories_updated}</>} />
                   <StatCard label={t('syncLogs.statsFights')} value={<>+{selectedLog.fights_created} / ~{selectedLog.fights_updated}</>} />
+                  <StatCard label={t('syncLogs.statsReferees')} value={<>+{selectedLog.referees_created} / ~{selectedLog.referees_updated}</>} />
                 </div>
                 <div className={`text-xs mt-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                   {t('syncLogs.statsLegend')}
