@@ -12,19 +12,17 @@ router = APIRouter(prefix="/teams")
 
 
 @router.get("", response_model=list[TeamOut])
-async def list_teams(
+def list_teams(
     event_id: Optional[int] = None,
     skip: int = 0,
     limit: int = 100,
     session: Session = Depends(get_session)
 ):
     statement = select(Team)
-
     if event_id:
         statement = statement.where(Team.sport_event_id == event_id)
 
-    statement = statement.offset(skip).limit(limit)
-    teams = session.exec(statement).all()
+    teams = session.exec(statement.offset(skip).limit(limit)).all()
 
     # Count distinct persons per team (deduplicated — same person in multiple weight categories counts once)
     team_ids = [t.id for t in teams]
@@ -43,21 +41,16 @@ async def list_teams(
         out = TeamOut.model_validate(team, from_attributes=True)
         out.athlete_count = person_counts.get(team.id, 0)
         result.append(out)
-
     return result
 
 
 @router.get("/{team_id}", response_model=TeamOut)
-async def get_team(team_id: int, session: Session = Depends(get_session)):
-    """
-    Get specific team by ID (public, no auth required)
-    """
+def get_team(team_id: int, session: Session = Depends(get_session)):
+    """Get specific team by ID (public, no auth required)"""
     team = session.get(Team, team_id)
-    
     if not team:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Team with id {team_id} not found"
+            detail=f"Team with id {team_id} not found",
         )
-    
     return TeamOut.model_validate(team, from_attributes=True)

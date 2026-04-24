@@ -13,6 +13,25 @@ from ...utils.country_codes import normalize_country_iso_code
 router = APIRouter(prefix="/referees")
 
 
+def _build_referee_out(referee: Referee, person: Optional[Person], team: Optional[Team]) -> RefereeOut:
+    return RefereeOut(
+        id=referee.id,
+        person_full_name=person.full_name if person else None,
+        country_iso_code=normalize_country_iso_code(person.country_iso_code) if person else None,
+        team_name=team.name if team else None,
+        team_alternate_name=team.alternate_name if team else None,
+        number=referee.number,
+        referee_level=referee.referee_level,
+        referee_group=referee.referee_group,
+        delegate=referee.delegate,
+        matchairman=referee.matchairman,
+        is_referee=referee.is_referee,
+        preferred_style=referee.preferred_style,
+        mat_name=referee.mat_name,
+        deactivated=referee.deactivated,
+    )
+
+
 @router.get("", response_model=list[RefereeOut])
 async def list_referees(
     event_id: Optional[int] = None,
@@ -33,26 +52,7 @@ async def list_referees(
     statement = statement.offset(skip).limit(limit)
     results = session.exec(statement).all()
 
-    out = []
-    for referee, person, team in results:
-        out.append(RefereeOut(
-            id=referee.id,
-            person_full_name=person.full_name if person else None,
-            country_iso_code=normalize_country_iso_code(person.country_iso_code) if person else None,
-            team_name=team.name if team else None,
-            team_alternate_name=team.alternate_name if team else None,
-            number=referee.number,
-            referee_level=referee.referee_level,
-            referee_group=referee.referee_group,
-            delegate=referee.delegate,
-            matchairman=referee.matchairman,
-            is_referee=referee.is_referee,
-            preferred_style=referee.preferred_style,
-            mat_name=referee.mat_name,
-            deactivated=referee.deactivated,
-        ))
-
-    return out
+    return [_build_referee_out(referee, person, team) for referee, person, team in results]
 
 
 @router.get("/{referee_id}", response_model=RefereeOut)
@@ -72,19 +72,4 @@ async def get_referee(referee_id: int, session: Session = Depends(get_session)):
         )
 
     referee, person, team = result
-    return RefereeOut(
-        id=referee.id,
-        person_full_name=person.full_name if person else None,
-        country_iso_code=normalize_country_iso_code(person.country_iso_code) if person else None,
-        team_name=team.name if team else None,
-        team_alternate_name=team.alternate_name if team else None,
-        number=referee.number,
-        referee_level=referee.referee_level,
-        referee_group=referee.referee_group,
-        delegate=referee.delegate,
-        matchairman=referee.matchairman,
-        is_referee=referee.is_referee,
-        preferred_style=referee.preferred_style,
-        mat_name=referee.mat_name,
-        deactivated=referee.deactivated,
-    )
+    return _build_referee_out(referee, person, team)

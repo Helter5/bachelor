@@ -12,13 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 @router.get("/{event_id}", response_model=List[Any])
-async def get_results(event_id: int, session: Session = Depends(get_session)):
-    """
-    Get fight results for an event from the local database.
-
-    Path parameters:
-    - **event_id**: Local database ID of the event
-    """
+def get_results(event_id: int, session: Session = Depends(get_session)):
+    """Get fight results for an event from the local database."""
     try:
         logger.info(f"Fetching results from DB for event: {event_id}")
 
@@ -64,7 +59,6 @@ async def get_results(event_id: int, session: Session = Depends(get_session)):
         results = []
         for row in rows:
             wc_name = f"{row.max_weight} kg" if row.max_weight is not None else ""
-
             tp_list = []
             if row.fighter1_id and row.tp_one is not None:
                 tp_list.append({"fighterId": row.fighter1_id, "points": row.tp_one})
@@ -108,5 +102,5 @@ async def get_results(event_id: int, session: Session = Depends(get_session)):
         logger.error(f"Failed to fetch results for event {event_id}: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch results: {str(e)}"
+            detail=f"Failed to fetch results: {str(e)}",
         )

@@ -2,11 +2,14 @@
 Base Service Class
 Provides common functionality for all service classes
 """
-from sqlmodel import Session
-from typing import Generic, TypeVar, Type, Optional, List
-from sqlmodel import select
+from fastapi import HTTPException
+from sqlmodel import Session, select
+from typing import Generic, TypeVar, Type, Optional, List, Dict, Any, Callable, Awaitable
+import logging
 
 ModelType = TypeVar("ModelType")
+
+logger = logging.getLogger(__name__)
 
 
 class BaseService(Generic[ModelType]):
@@ -55,14 +58,71 @@ class BaseService(Generic[ModelType]):
             if key in exclude:
                 continue
             old_value = getattr(existing, key, None)
-            # Both None
             if old_value is None and new_value is None:
                 continue
-            # One is None
             if old_value is None or new_value is None:
                 return True
-            # Compare as stripped strings to handle type mismatches
-            # and PostgreSQL CHAR padding (e.g. 'TH ' vs 'TH')
             if str(old_value).strip() != str(new_value).strip():
                 return True
         return False
+
+    async def _run_arena_sync_for_event(
+        self,
+        event_id: int,
+        sport_event_uuid: str,
+        entity_label: str,
+        do_sync: Callable[[str, int], Awaitable[Optional[Dict[str, int]]]],
+    ) -> Dict[str, Any]:
+        """
+        Shared boilerplate for Arena entity sync per event.
+
+        do_sync(sport_event_uuid, event_db_id) must return:
+          {"created": int, "updated": int}  — on success
+          None                               — if nothing to sync (empty / Arena 404)
+        """
+        from ..domain.entities.sport_event import SportEvent
+
+        try:
+            event = self.session.exec(
+                select(SportEvent).where(SportEvent.id == event_id)
+            ).first()
+            if not event:
+                raise HTTPException(status_code=404, detail=f"Sport event {event_id} not found")
+
+            logger.info(f"Syncing {entity_label} for event: {event.name}")
+
+            result = await do_sync(sport_event_uuid, event.id)
+
+            if result is None:
+                return {
+                    "success": True,
+                    "event_id": sport_event_uuid,
+                    "event_name": event.name,
+                    "synced_count": 0,
+                    "created": 0,
+                    "updated": 0,
+                }
+
+            self.session.commit()
+            logger.info(
+                f"{entity_label.capitalize()} for {event.name}: "
+                f"{result['created']} created, {result['updated']} updated"
+            )
+            return {
+                "success": True,
+                "event_id": sport_event_uuid,
+                "event_name": event.name,
+                "synced_count": result["created"] + result["updated"],
+                "created": result["created"],
+                "updated": result["updated"],
+            }
+
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(
+                f"Failed to sync {entity_label} for event {sport_event_uuid}: {str(e)}",
+                exc_info=True,
+            )
+            self.session.rollback()
+            raise HTTPException(status_code=500, detail=f"Failed to sync {entity_label}: {str(e)}")

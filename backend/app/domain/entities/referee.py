@@ -27,4 +27,4 @@ class Referee(SQLModel, table=True):
     mat_name: Optional[str] = Field(default=None, max_length=100)
     deactivated: bool = Field(default=False)
 
-    sync_timestamp: datetime = Field(default_factory=lambda: datetime.utcnow())
+    sync_timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

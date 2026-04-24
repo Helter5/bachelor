@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 import logging
 
 from ..domain import SportEvent, SportEventBase
+from ..infrastructure.arena_gateway import ArenaGateway
 from .base_service import BaseService
 from .arena import fetch_arena_data
 
@@ -70,12 +71,7 @@ class SportEventService(BaseService[SportEvent]):
         Returns:
             Arena API response with sport events
         """
-        from .arena_auth import get_access_token_for_source
-        from .arena_request import call_arena_api
-
-        token = await get_access_token_for_source(source)
-        url = f"http://{source.host}:{source.port}/api/json/sport-event/"
-        return await call_arena_api(url, token)
+        return await ArenaGateway(source).fetch_data("sport-event/", source=source)
 
     async def get_details_from_arena(self, event_id: str) -> Dict[str, Any]:
         """

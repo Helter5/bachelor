@@ -52,6 +52,40 @@ class SportEventListOut(BaseModel):
     limit: int
 
 
+class EventTopPerformerOut(BaseModel):
+    """Top performer entry for event statistics."""
+    name: str
+    wins: int
+    total_fights: int
+    win_rate: float
+    person_id: Optional[int] = None
+    team_name: Optional[str] = None
+    country: Optional[str] = None
+
+
+class EventTeamPerformanceOut(BaseModel):
+    """Team performance entry for event statistics."""
+    name: str
+    country: Optional[str] = None
+    wins: int
+    losses: int
+    total_fights: int
+    win_rate: float
+
+
+class EventStatisticsOut(BaseModel):
+    """Aggregated event statistics payload."""
+    event_id: int
+    event_name: str
+    total_fights: int
+    victory_type_distribution: dict[str, int]
+    avg_duration: int
+    avg_tp: float
+    avg_cp: float
+    top_performers: list[EventTopPerformerOut]
+    team_performance: list[EventTeamPerformanceOut]
+
+
 # ==================== Team Responses ====================
 
 class TeamOut(BaseModel):

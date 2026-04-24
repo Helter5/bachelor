@@ -12,7 +12,7 @@ router = APIRouter(prefix="/events")
 
 
 @router.get("/{event_id}/exports/medal-standings")
-async def export_medal_standings(
+def export_medal_standings(
     event_id: int,
     by: str = "teams",
     session: Session = Depends(get_session),

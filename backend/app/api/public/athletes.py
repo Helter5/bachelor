@@ -7,7 +7,21 @@ from ...database import get_session
 from ...domain.entities.athlete import Athlete
 from ...domain.entities.person import Person
 from ...domain.schemas.responses import AthleteOut
+
 router = APIRouter(prefix="/athletes")
+
+
+def _build_athlete_out(athlete: Athlete, person: Optional[Person]) -> AthleteOut:
+    return AthleteOut(
+        id=athlete.id,
+        person_full_name=person.full_name if person else None,
+        sport_event_id=athlete.sport_event_id,
+        team_id=athlete.team_id,
+        weight_category_id=athlete.weight_category_id,
+        is_competing=athlete.is_competing,
+        person_id=athlete.person_id,
+        sync_timestamp=athlete.sync_timestamp,
+    )
 
 
 @router.get("", response_model=list[AthleteOut])
@@ -34,20 +48,7 @@ async def list_athletes(
     statement = statement.offset(skip).limit(limit)
     results = session.exec(statement).all()
 
-    out = []
-    for athlete, person in results:
-        out.append(AthleteOut(
-            id=athlete.id,
-            person_full_name=person.full_name if person else None,
-            sport_event_id=athlete.sport_event_id,
-            team_id=athlete.team_id,
-            weight_category_id=athlete.weight_category_id,
-            is_competing=athlete.is_competing,
-            person_id=athlete.person_id,
-            sync_timestamp=athlete.sync_timestamp,
-        ))
-
-    return out
+    return [_build_athlete_out(athlete, person) for athlete, person in results]
 
 
 @router.get("/{athlete_id}", response_model=AthleteOut)
@@ -65,13 +66,4 @@ async def get_athlete(athlete_id: int, session: Session = Depends(get_session)):
         )
 
     athlete, person = result
-    return AthleteOut(
-        id=athlete.id,
-        person_full_name=person.full_name if person else None,
-        sport_event_id=athlete.sport_event_id,
-        team_id=athlete.team_id,
-        weight_category_id=athlete.weight_category_id,
-        is_competing=athlete.is_competing,
-        person_id=athlete.person_id,
-        sync_timestamp=athlete.sync_timestamp,
-    )
+    return _build_athlete_out(athlete, person)

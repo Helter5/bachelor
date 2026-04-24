@@ -25,132 +25,56 @@ class TeamService(BaseService[Team]):
         super().__init__(session, Team)
 
     async def get_teams_from_arena(self, sport_event_id: str) -> Dict[str, Any]:
-        """
-        Fetch teams for a sport event from Arena API
-
-        Args:
-            sport_event_id: Sport event UUID
-
-        Returns:
-            Arena API response with teams
-        """
+        """Fetch teams for a sport event from Arena API."""
         return await fetch_arena_data(f"team/{sport_event_id}")
 
     def get_teams_by_event(self, sport_event_id: int) -> List[Team]:
-        """
-        Get all teams for a sport event from database
+        """Get all teams for a sport event from database."""
+        return list(self.session.exec(select(Team).where(Team.sport_event_id == sport_event_id)).all())
 
-        Args:
-            sport_event_id: Sport event database ID
-
-        Returns:
-            List of teams
-        """
-        statement = select(Team).where(Team.sport_event_id == sport_event_id)
-        return list(self.session.exec(statement).all())
-
-    async def sync_teams_for_event(self, sport_event_uuid: str, event_id: int, source: Optional["ArenaSource"] = None) -> Dict[str, Any]:
-        """
-        Sync teams for a sport event from Arena API to database
-
-        Args:
-            sport_event_uuid: Sport event UUID from Arena API (used for API call)
-            event_id: Local database ID of the sport event
-
-        Returns:
-            Dict with sync results
-
-        Raises:
-            HTTPException: If event not found or sync fails
-        """
-        try:
-            event = self.session.exec(
-                select(SportEvent).where(SportEvent.id == event_id)
-            ).first()
-
-            if not event:
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"Sport event {event_id} not found"
-                )
-
-            logger.info(f"Syncing teams for event: {event.name}")
-
-            # Fetch all teams from Arena API (handles pagination automatically)
+    async def sync_teams_for_event(
+        self,
+        sport_event_uuid: str,
+        event_id: int,
+        source: Optional["ArenaSource"] = None,
+    ) -> Dict[str, Any]:
+        """Sync teams for a sport event from Arena API to database."""
+        async def _do_sync(uuid: str, event_db_id: int) -> Optional[Dict[str, int]]:
             try:
-                teams_list = await fetch_all_arena_items(f"team/{sport_event_uuid}", "sportEventTeams", source=source)
+                teams_list = await fetch_all_arena_items(
+                    f"team/{uuid}", "sportEventTeams", source=source
+                )
             except HTTPException as e:
                 if e.status_code == 404:
-                    logger.warning(f"No teams found for event {sport_event_uuid}")
-                    return {
-                        "success": True,
-                        "event_id": sport_event_uuid,
-                        "event_name": event.name,
-                        "synced_count": 0,
-                        "message": "No teams available for this event"
-                    }
+                    logger.warning(f"No teams found for event {uuid}")
+                    return None
                 raise
 
             if not teams_list:
-                logger.warning(f"No teams data in response for event {sport_event_uuid}")
-                return {
-                    "success": True,
-                    "event_id": sport_event_uuid,
-                    "event_name": event.name,
-                    "synced_count": 0,
-                    "message": "No teams data in response"
-                }
+                logger.warning(f"No teams data in response for event {uuid}")
+                return None
 
-            # Sync each team
-            result = self._sync_teams_list(teams_list, event.id, source=source)
+            return self._sync_teams_list(teams_list, event_db_id, source=source)
 
-            self.session.commit()
-            logger.info(f"Teams for {event.name}: {result['created']} created, {result['updated']} updated")
-
-            return {
-                "success": True,
-                "event_id": sport_event_uuid,
-                "event_name": event.name,
-                "synced_count": result["created"] + result["updated"],
-                "created": result["created"],
-                "updated": result["updated"]
-            }
-
-        except HTTPException:
-            raise
-        except Exception as e:
-            logger.error(f"Failed to sync teams for event {sport_event_uuid}: {str(e)}", exc_info=True)
-            self.session.rollback()
-            raise HTTPException(status_code=500, detail=f"Failed to sync teams: {str(e)}")
+        return await self._run_arena_sync_for_event(event_id, sport_event_uuid, "teams", _do_sync)
 
     def _extract_teams_list(self, teams_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """
-        Extract teams list from Arena API response
-
-        Args:
-            teams_data: Arena API response
-
-        Returns:
-            List of team dictionaries
-        """
+        """Extract teams list from Arena API response."""
         if "sportEventTeams" in teams_data and "items" in teams_data["sportEventTeams"]:
             return teams_data["sportEventTeams"]["items"]
         elif "teams" in teams_data:
             return teams_data["teams"]
         return []
 
-    def _sync_teams_list(self, teams_list: List[Dict[str, Any]], event_db_id: int, source: Optional["ArenaSource"] = None) -> Dict[str, int]:
+    def _sync_teams_list(
+        self,
+        teams_list: List[Dict[str, Any]],
+        event_db_id: int,
+        source: Optional["ArenaSource"] = None,
+    ) -> Dict[str, int]:
         """
         Sync a list of teams to the database.
         Matches by natural key (sport_event_id, name). Arena UUIDs stored in TeamSourceUid.
-
-        Args:
-            teams_list: List of team data from Arena API
-            event_db_id: Sport event database ID
-            source: ArenaSource — when provided, records per-source UUID mappings
-
-        Returns:
-            Dict with created and updated counts
         """
         created = 0
         updated = 0
@@ -174,8 +98,7 @@ class TeamService(BaseService[Team]):
                 ).first()
 
                 # Fallback: different Arena sources may name the same country differently
-                # (e.g. source A: name="GERMANY", alternate_name="GER" vs source B: name="GER", alternate_name="GERMANY")
-                # If name doesn't match, check if a team already has this name as its alternate_name
+                # (e.g. source A: name="GERMANY" vs source B: name="GER")
                 if not existing_team and team_create.name:
                     existing_team = self.session.exec(
                         select(Team).where(
@@ -184,11 +107,8 @@ class TeamService(BaseService[Team]):
                         )
                     ).first()
                     if existing_team:
-                        # Don't rename the existing team — only absorb fields that are missing
                         team_create.name = existing_team.name
-                        if not existing_team.country_iso_code and team_create.country_iso_code:
-                            pass  # let the update below fill it in
-                        elif existing_team.country_iso_code and not team_create.country_iso_code:
+                        if existing_team.country_iso_code and not team_create.country_iso_code:
                             team_create.country_iso_code = existing_team.country_iso_code
 
                 if existing_team:
@@ -200,18 +120,15 @@ class TeamService(BaseService[Team]):
                         self.session.add(existing_team)
                         updated += 1
                         logger.info(f"Updated team: {existing_team.name}")
-                    the_team = existing_team
                 else:
                     new_team = Team(**team_create.model_dump())
                     self.session.add(new_team)
                     self.session.flush()
                     created += 1
                     logger.info(f"Created new team: {team_create.name}")
-                    the_team = new_team
 
             except Exception as e:
                 logger.error(f"Failed to sync team {team_data.get('id')}: {str(e)}", exc_info=True)
                 continue
 
         return {"created": created, "updated": updated}
-

@@ -1,9 +1,6 @@
 from typing import Optional, TYPE_CHECKING
 
-from .arena_auth import get_access_token_for_source
-from .arena_request import call_arena_api
-from ..config import settings
-from fastapi import HTTPException
+from ..infrastructure.arena_gateway import ArenaGateway
 
 if TYPE_CHECKING:
     from ..domain.entities.arena_source import ArenaSource
@@ -21,26 +18,7 @@ async def fetch_all_arena_items(endpoint: str, items_key: str, source: Optional[
     Returns:
         Flat list of all items across all pages
     """
-    import math
-
-    data = await fetch_arena_data(endpoint, source=source)
-    obj = data.get(items_key, {})
-
-    if not isinstance(obj, dict):
-        return obj if isinstance(obj, list) else []
-
-    items: list = list(obj.get("items", []))
-    total = obj.get("totalCount", len(items))
-    per_page = obj.get("numItemsPerPage", len(items)) or len(items)
-
-    if total > per_page and per_page > 0:
-        sep = "&" if "?" in endpoint else "?"
-        for page in range(2, math.ceil(total / per_page) + 1):
-            page_data = await fetch_arena_data(f"{endpoint}{sep}page={page}", source=source)
-            page_items = page_data.get(items_key, {}).get("items", [])
-            items.extend(page_items)
-
-    return items
+    return await ArenaGateway(source).fetch_all_items(endpoint, items_key, source=source)
 
 
 async def fetch_arena_data(endpoint: str, source: Optional["ArenaSource"] = None):
@@ -51,22 +29,4 @@ async def fetch_arena_data(endpoint: str, source: Optional["ArenaSource"] = None
     Otherwise fall back to the first enabled ArenaSource in the DB
     (used by public endpoints and legacy paths).
     """
-    if source is None:
-        from sqlmodel import Session, select
-        from ..database import engine
-        from ..domain.entities.arena_source import ArenaSource
-
-        with Session(engine) as session:
-            source = session.exec(
-                select(ArenaSource).where(ArenaSource.is_enabled == True)
-            ).first()
-
-        if not source:
-            raise HTTPException(
-                status_code=503,
-                detail="Žiadny aktívny Arena zdroj nie je nakonfigurovaný. Pridajte ho v Settings → Arena Zdroje."
-            )
-
-    token = await get_access_token_for_source(source)
-    url = f"http://{source.host}:{source.port}/api/{settings.arena_api_format}/{endpoint}"
-    return await call_arena_api(url, token)
+    return await ArenaGateway(source).fetch_data(endpoint, source=source)

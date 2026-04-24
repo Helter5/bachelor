@@ -2,6 +2,14 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ApiError, apiClient } from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/config/api'
+import type { DatabaseEventSummary, SyncLogSummary, SyncResult } from './syncFlow'
+import {
+  formatSyncTimestamp,
+  isSyncLogEffectivelyActive,
+  retryWithBackoff,
+  runSyncStage,
+  stepToProgress,
+} from './syncFlow'
 
 interface SyncState {
   isSyncing: boolean
@@ -15,26 +23,6 @@ interface SyncState {
   currentStep: string
   initiatedBy: string
 }
-
-interface SyncResult {
-  count: number
-  created: number
-  updated: number
-  message?: string
-  sync_log_id?: number
-}
-
-interface SyncLogSummary {
-  id: number
-  status: string
-  started_at: string
-  finished_at?: string | null
-  details?: { progress_percent?: number; current_step?: string; initiated_by?: string }
-  user_full_name?: string | null
-}
-
-const MAX_RETRY_ATTEMPTS = 5
-const RETRY_DELAY_MS = 1000
 
 export function useSync(currentUserName?: string) {
   const { t } = useTranslation()
@@ -89,32 +77,6 @@ export function useSync(currentUserName?: string) {
     setSyncState(prev => ({ ...prev, showError: false, errorMessage: '' }))
   }, [])
 
-  const stepToProgress = (step: number, totalSteps: number) => {
-    if (totalSteps <= 0) return 0
-    return Math.round((step / totalSteps) * 100)
-  }
-
-  const isSyncLogEffectivelyActive = useCallback((log: SyncLogSummary) => {
-    if (log.status !== 'in_progress') return false
-
-    const progress = Number(log.details?.progress_percent ?? 0)
-    const step = (log.details?.current_step ?? '').trim().toLowerCase()
-
-    if (progress >= 100 || step === 'completed' || step === 'failed') {
-      return false
-    }
-
-    const startedAtMs = Date.parse(log.started_at)
-    if (!Number.isNaN(startedAtMs)) {
-      const twelveHoursMs = 12 * 60 * 60 * 1000
-      if (Date.now() - startedAtMs > twelveHoursMs) {
-        return false
-      }
-    }
-
-    return true
-  }, [])
-
   const startProgressPolling = useCallback((logId: number) => {
     if (progressIntervalRef.current !== undefined) {
       clearInterval(progressIntervalRef.current)
@@ -147,37 +109,7 @@ export function useSync(currentUserName?: string) {
         // Keep UI state as-is; next poll will retry.
       }
     }, 2500)
-  }, [isSyncLogEffectivelyActive])
-
-  const retryWithBackoff = async <T,>(
-    fn: () => Promise<T>,
-    context: string,
-    maxAttempts = MAX_RETRY_ATTEMPTS
-  ): Promise<T> => {
-    let lastError: unknown
-
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        return await fn()
-      } catch (error) {
-        lastError = error
-
-        if (error instanceof ApiError && error.status === 409) {
-          throw error
-        }
-
-        if (attempt === maxAttempts) {
-          console.error(`${context} failed after ${maxAttempts} attempts:`, error)
-          throw error
-        }
-
-        console.warn(`${context} failed (attempt ${attempt}/${maxAttempts}), retrying...`)
-        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * attempt))
-      }
-    }
-
-    throw lastError
-  }
+  }, [])
 
   const getSyncErrorMessage = useCallback((error: unknown) => {
     if (error instanceof ApiError) {
@@ -245,7 +177,7 @@ export function useSync(currentUserName?: string) {
       }
 
       const dbEventsData = await retryWithBackoff(
-        () => apiClient.get<{ items: Array<{ id: number; uuid: string; name: string }>; total: number }>(
+        () => apiClient.get<{ items: DatabaseEventSummary[]; total: number }>(
           API_ENDPOINTS.SPORT_EVENT_DATABASE
         ),
         'Fetching events from database'
@@ -259,120 +191,75 @@ export function useSync(currentUserName?: string) {
       let refereesCreated = 0, refereesUpdated = 0
       let fightsCreated = 0, fightsUpdated = 0
 
-      const teamResults = await Promise.all(
-        dbEvents.map((event: { id: number; uuid: string; name: string }) =>
-          retryWithBackoff(
-            () => apiClient.post<SyncResult>(API_ENDPOINTS.TEAM_SYNC(event.id), undefined, syncHeaders),
-            `Syncing teams for event ${event.name}`
-          )
-        )
-      )
-      completedSteps += 1
-      if (syncLogId) {
-        await apiClient.patch(API_ENDPOINTS.SYNC_LOG_UPDATE_STATS(syncLogId), {
-          status: 'in_progress',
-          details: {
-            progress_percent: stepToProgress(completedSteps, totalSteps),
-            current_step: 'teams',
-          },
-        })
-      }
-      for (const r of teamResults) {
-        teamsCreated += r.created || 0
-        teamsUpdated += r.updated || 0
-      }
+      const teamsStage = await runSyncStage({
+        dbEvents,
+        endpointForEvent: API_ENDPOINTS.TEAM_SYNC,
+        contextLabel: (eventName) => `Syncing teams for event ${eventName}`,
+        syncLogId,
+        syncHeaders,
+        completedSteps,
+        totalSteps,
+        currentStep: 'teams',
+      })
+      completedSteps = teamsStage.completedSteps
+      teamsCreated = teamsStage.created
+      teamsUpdated = teamsStage.updated
 
-      const wcResults = await Promise.all(
-        dbEvents.map((event: { id: number; uuid: string; name: string }) =>
-          retryWithBackoff(
-            () => apiClient.post<SyncResult>(API_ENDPOINTS.WEIGHT_CATEGORY_SYNC(event.id), undefined, syncHeaders),
-            `Syncing weight categories for event ${event.name}`
-          )
-        )
-      )
-      completedSteps += 1
-      if (syncLogId) {
-        await apiClient.patch(API_ENDPOINTS.SYNC_LOG_UPDATE_STATS(syncLogId), {
-          status: 'in_progress',
-          details: {
-            progress_percent: stepToProgress(completedSteps, totalSteps),
-            current_step: 'categories',
-          },
-        })
-      }
-      for (const r of wcResults) {
-        categoriesCreated += r.created || 0
-        categoriesUpdated += r.updated || 0
-      }
+      const categoriesStage = await runSyncStage({
+        dbEvents,
+        endpointForEvent: API_ENDPOINTS.WEIGHT_CATEGORY_SYNC,
+        contextLabel: (eventName) => `Syncing weight categories for event ${eventName}`,
+        syncLogId,
+        syncHeaders,
+        completedSteps,
+        totalSteps,
+        currentStep: 'categories',
+      })
+      completedSteps = categoriesStage.completedSteps
+      categoriesCreated = categoriesStage.created
+      categoriesUpdated = categoriesStage.updated
 
-      const athleteResults = await Promise.all(
-        dbEvents.map((event: { id: number; uuid: string; name: string }) =>
-          retryWithBackoff(
-            () => apiClient.post<SyncResult>(API_ENDPOINTS.ATHLETE_SYNC(event.id), undefined, syncHeaders),
-            `Syncing athletes for event ${event.name}`
-          )
-        )
-      )
-      completedSteps += 1
-      if (syncLogId) {
-        await apiClient.patch(API_ENDPOINTS.SYNC_LOG_UPDATE_STATS(syncLogId), {
-          status: 'in_progress',
-          details: {
-            progress_percent: stepToProgress(completedSteps, totalSteps),
-            current_step: 'athletes',
-          },
-        })
-      }
-      for (const r of athleteResults) {
-        athletesCreated += r.created || 0
-        athletesUpdated += r.updated || 0
-      }
+      const athletesStage = await runSyncStage({
+        dbEvents,
+        endpointForEvent: API_ENDPOINTS.ATHLETE_SYNC,
+        contextLabel: (eventName) => `Syncing athletes for event ${eventName}`,
+        syncLogId,
+        syncHeaders,
+        completedSteps,
+        totalSteps,
+        currentStep: 'athletes',
+      })
+      completedSteps = athletesStage.completedSteps
+      athletesCreated = athletesStage.created
+      athletesUpdated = athletesStage.updated
 
-      const refereeResults = await Promise.all(
-        dbEvents.map((event: { id: number; uuid: string; name: string }) =>
-          retryWithBackoff(
-            () => apiClient.post<SyncResult>(API_ENDPOINTS.REFEREE_SYNC(event.id), undefined, syncHeaders),
-            `Syncing referees for event ${event.name}`
-          )
-        )
-      )
-      completedSteps += 1
-      if (syncLogId) {
-        await apiClient.patch(API_ENDPOINTS.SYNC_LOG_UPDATE_STATS(syncLogId), {
-          status: 'in_progress',
-          details: {
-            progress_percent: stepToProgress(completedSteps, totalSteps),
-            current_step: 'referees',
-          },
-        })
-      }
-      for (const r of refereeResults) {
-        refereesCreated += r.created || 0
-        refereesUpdated += r.updated || 0
-      }
+      const refereesStage = await runSyncStage({
+        dbEvents,
+        endpointForEvent: API_ENDPOINTS.REFEREE_SYNC,
+        contextLabel: (eventName) => `Syncing referees for event ${eventName}`,
+        syncLogId,
+        syncHeaders,
+        completedSteps,
+        totalSteps,
+        currentStep: 'referees',
+      })
+      completedSteps = refereesStage.completedSteps
+      refereesCreated = refereesStage.created
+      refereesUpdated = refereesStage.updated
 
-      const fightResults = await Promise.all(
-        dbEvents.map((event: { id: number; uuid: string; name: string }) =>
-          retryWithBackoff(
-            () => apiClient.post<SyncResult>(API_ENDPOINTS.FIGHT_SYNC(event.id), undefined, syncHeaders),
-            `Syncing fights for event ${event.name}`
-          )
-        )
-      )
-      completedSteps += 1
-      if (syncLogId) {
-        await apiClient.patch(API_ENDPOINTS.SYNC_LOG_UPDATE_STATS(syncLogId), {
-          status: 'in_progress',
-          details: {
-            progress_percent: stepToProgress(completedSteps, totalSteps),
-            current_step: 'fights',
-          },
-        })
-      }
-      for (const r of fightResults) {
-        fightsCreated += r.created || 0
-        fightsUpdated += r.updated || 0
-      }
+      const fightsStage = await runSyncStage({
+        dbEvents,
+        endpointForEvent: API_ENDPOINTS.FIGHT_SYNC,
+        contextLabel: (eventName) => `Syncing fights for event ${eventName}`,
+        syncLogId,
+        syncHeaders,
+        completedSteps,
+        totalSteps,
+        currentStep: 'fights',
+      })
+      completedSteps = fightsStage.completedSteps
+      fightsCreated = fightsStage.created
+      fightsUpdated = fightsStage.updated
 
       if (syncLogId) {
         try {
@@ -401,8 +288,7 @@ export function useSync(currentUserName?: string) {
         }
       }
 
-      const now = new Date()
-      const formattedDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
+      const formattedDate = formatSyncTimestamp()
 
       localStorage.setItem('lastSyncDate', formattedDate)
 
@@ -452,7 +338,7 @@ export function useSync(currentUserName?: string) {
         initiatedBy: '',
       }))
     }
-  }, [clearTimers, currentUserName, getSyncErrorMessage, retryWithBackoff, startProgressPolling])
+  }, [clearTimers, currentUserName, getSyncErrorMessage, startProgressPolling])
 
   const confirmSync = useCallback(() => {
     setSyncState(prev => ({ ...prev, showConfirm: false }))
@@ -493,7 +379,7 @@ export function useSync(currentUserName?: string) {
     } catch {
       // Ignore on initial load
     }
-  }, [isSyncLogEffectivelyActive, startProgressPolling])
+  }, [startProgressPolling])
 
   useEffect(() => {
     void loadActiveSyncFromLogs()

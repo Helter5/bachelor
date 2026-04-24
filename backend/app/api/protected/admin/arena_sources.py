@@ -8,6 +8,7 @@ from ....domain.entities.user import User
 from ....domain.entities.arena_source import ArenaSource, ArenaSourceBase
 from ....domain.schemas.responses import ArenaSourceOut
 from ....core.dependencies import require_admin, validate_csrf_and_origin
+from ....infrastructure.arena_gateway import ArenaGateway
 from ....services.arena_auth import invalidate_source_token_cache
 
 router = APIRouter(prefix="/admin/arena-sources")
@@ -168,17 +169,8 @@ async def test_arena_source(
             detail=f"Arena source with id {source_id} not found"
         )
 
-    # Test connection to Arena API
-    from ....services.arena_auth import get_access_token_for_source
-    from ....services.arena_request import call_arena_api
-
     try:
-        # Try to get access token
-        token = await get_access_token_for_source(source)
-
-        # Try to fetch events
-        url = f"http://{source.host}:{source.port}/api/json/sport-event/"
-        response = await call_arena_api(url, token)
+        response = await ArenaGateway(source).fetch_data("sport-event/", source=source)
 
         return {
             "success": True,

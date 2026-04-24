@@ -1,46 +1,20 @@
 """Protected Admin API - sync management (requires admin role)"""
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Header, Request
-from sqlmodel import Session, select, col
+from sqlmodel import Session, select
 from typing import Optional
-import asyncio
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 
 from ....database import get_session
 from ....domain.entities.user import User
-from ....domain.entities.sync_log import SyncLog
-from ....domain.entities.arena_source import ArenaSource
-from ....domain.entities.sport_event import SportEvent
 from ....core.dependencies import require_admin, validate_csrf_and_origin
 from ....services.athlete_service import AthleteService
+from ....services.admin_sync_service import AdminSyncService
 from ....services.team_service import TeamService
 from ....services.sport_event_service import SportEventService
 from ....services.weight_category_service import WeightCategoryService
 from ....services.fight_service import FightService
 from ....services.victory_type_service import VictoryTypeService
 from ....services.referee_service import RefereeService
-from ....config import get_settings
-
-_settings = get_settings()
-
-
-def _cleanup_old_sync_logs(session: Session) -> None:
-    """Keep only the most recent sync logs, delete the rest."""
-    keep_ids_stmt = (
-        select(SyncLog.id)
-        .order_by(col(SyncLog.started_at).desc())
-        .limit(_settings.sync_log_max_entries)
-    )
-    keep_ids = [row for row in session.exec(keep_ids_stmt).all()]
-
-    if not keep_ids:
-        return
-
-    old_logs_stmt = select(SyncLog).where(SyncLog.id.notin_(keep_ids))
-    old_logs = session.exec(old_logs_stmt).all()
-    for log in old_logs:
-        session.delete(log)
-    if old_logs:
-        session.commit()
 
 router = APIRouter(prefix="/admin/sync")
 
@@ -52,118 +26,6 @@ router = APIRouter(prefix="/admin/sync")
 #   - Development environments
 #   - Single uvicorn worker (--workers 1)
 #   - Docker Compose with single backend container
-
-# Global locks for sync operations (prevent concurrent syncs for same resource)
-_sync_locks: dict[str, asyncio.Lock] = {}
-_sync_results: dict[str, dict] = {}  # Store results by idempotency key
-
-
-def _as_utc_datetime(value: datetime) -> datetime:
-    """Normalize DB datetimes so comparisons work across naive/aware values."""
-    if value.tzinfo is None:
-        return value.replace(tzinfo=timezone.utc)
-    return value.astimezone(timezone.utc)
-
-
-def _is_sync_log_effectively_active(sync_log: SyncLog) -> bool:
-    """Treat obviously stale/completed in_progress logs as inactive."""
-    if sync_log.status != "in_progress":
-        return False
-
-    details = sync_log.details or {}
-    progress = int(details.get("progress_percent") or 0)
-    step = str(details.get("current_step") or "").strip().lower()
-
-    if progress >= 100 or step in {"completed", "failed"}:
-        return False
-
-    started_at = _as_utc_datetime(sync_log.started_at)
-    if started_at < datetime.now(timezone.utc) - timedelta(hours=12):
-        return False
-
-    return True
-
-
-def _get_active_sync_log(session: Session) -> Optional[SyncLog]:
-    """Return the most recent effectively-active global sync log, if any."""
-    logs = session.exec(
-        select(SyncLog)
-        .where(SyncLog.status == "in_progress")
-        .order_by(col(SyncLog.started_at).desc())
-        .limit(10)
-    ).all()
-
-    for log in logs:
-        if _is_sync_log_effectively_active(log):
-            return log
-
-    return None
-
-
-def _ensure_sync_run_access(
-    session: Session,
-    sync_log_id: Optional[int],
-    *,
-    allow_start_new: bool,
-) -> Optional[SyncLog]:
-    """
-    Enforce a single global sync run.
-
-    - If no active sync exists and allow_start_new=True, caller may start a new one.
-    - If active sync exists, only requests carrying the same sync_log_id may continue it.
-    """
-    active_log = _get_active_sync_log(session)
-    if not active_log:
-        if allow_start_new:
-            return None
-        return None
-
-    if sync_log_id is not None and active_log.id == sync_log_id:
-        return active_log
-
-    raise HTTPException(
-        status_code=status.HTTP_409_CONFLICT,
-        detail=(
-            f"Synchronizácia už prebieha (sync log #{active_log.id}). "
-            "Počkajte na jej dokončenie."
-        ),
-    )
-
-
-def _get_active_arena_source(session: Session, user_id: int) -> ArenaSource:
-    """Return the single active ArenaSource for the given user. Raises 400 if none configured/enabled."""
-    source = session.exec(
-        select(ArenaSource).where(
-            ArenaSource.is_enabled == True,
-            ArenaSource.user_id == user_id,
-        ).order_by(ArenaSource.id)
-    ).first()
-    if not source:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Nemáte nakonfigurovanú Arena inštanciu. Pridajte ju v Nastaveniach → Arena Zdroje.",
-        )
-    return source
-
-
-async def _resolve_event_uuid_for_source(event: SportEvent, source: ArenaSource) -> Optional[str]:
-    """Return the Arena UUID for the given event in the source, or None if not found."""
-    from ....services.arena_auth import get_access_token_for_source
-    from ....services.arena_request import call_arena_api
-
-    token = await get_access_token_for_source(source)
-    url = f"http://{source.host}:{source.port}/api/json/sport-event/"
-    data = await call_arena_api(url, token)
-    items = data.get("events", {}).get("items", [])
-
-    for item in items:
-        if (item.get("name") == event.name and
-                item.get("startDate") == str(event.start_date) and
-                item.get("countryIsoCode") == event.country_iso_code):
-            return str(item["id"])
-
-    return None
-
 
 @router.post("/events")
 async def sync_events(
@@ -183,28 +45,24 @@ async def sync_events(
     Idempotency: Provide X-Idempotency-Key header to safely retry
     Locking: Only one sync of events can run at a time
     """
-    _ensure_sync_run_access(session, None, allow_start_new=True)
+    sync_admin = AdminSyncService(session)
+    sync_admin.ensure_sync_run_access(None, allow_start_new=True)
 
     # Generate idempotency key if not provided
     if not idempotency_key:
         idempotency_key = f"sync_events_{datetime.now(timezone.utc).isoformat()}"
     
     # Check if already processed (idempotency)
-    if idempotency_key in _sync_results:
-        return _sync_results[idempotency_key]
+    cached_result = sync_admin.get_cached_result(idempotency_key)
+    if cached_result:
+        return cached_result
     
     # Acquire lock for events sync (asyncio.Lock for async context)
-    lock_key = "events"
-    if lock_key not in _sync_locks:
-        _sync_locks[lock_key] = asyncio.Lock()
-    lock = _sync_locks[lock_key]
-    
-    # Try to acquire lock without blocking
-    if lock.locked():
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Events sync already in progress. Please wait or retry with same idempotency key."
-        )
+    lock = sync_admin.get_lock("events")
+    sync_admin.ensure_lock_available(
+        lock,
+        "Events sync already in progress. Please wait or retry with same idempotency key.",
+    )
     
     async with lock:
         # Initialize service
@@ -215,26 +73,13 @@ async def sync_events(
         from ....core.security import get_client_ip
         ip_address = get_client_ip(request)
 
-        sync_log = SyncLog(
-            user_id=user.id,
-            status="in_progress",
-            started_at=datetime.now(timezone.utc),
-            details={
-                "progress_percent": 0,
-                "current_step": "events",
-                "initiated_by": f"{user.first_name} {user.last_name}".strip(),
-            },
-            ip_address=ip_address
-        )
-        session.add(sync_log)
-        session.commit()
-        session.refresh(sync_log)
+        sync_log = sync_admin.create_sync_log(user=user, ip_address=ip_address, current_step="events")
 
         start_time = datetime.now(timezone.utc)
 
         try:
             from ....domain import SportEventBase
-            source = _get_active_arena_source(session, user.id)
+            source = sync_admin.get_active_arena_source(user.id)
 
             arena_data = await service.get_all_from_arena_source(source)
             events_list = arena_data.get("events", {}).get("items", [])
@@ -289,32 +134,15 @@ async def sync_events(
                 "total_events": len(total_synced_events),
             }
 
-            sync_log.events_created = events_created_total
-            sync_log.events_updated = events_updated_total
-
             orchestrated = str(sync_orchestrated or "").strip().lower() in {"1", "true", "yes"}
-            if orchestrated:
-                sync_log.status = "in_progress"
-                sync_log.finished_at = None
-                sync_log.duration_seconds = None
-                sync_log.details = {
-                    **details_payload,
-                    "progress_percent": max(int(existing_details.get("progress_percent") or 0), 5),
-                    "current_step": "events",
-                }
-            else:
-                sync_log.status = "success"
-                sync_log.finished_at = datetime.now(timezone.utc)
-                sync_log.duration_seconds = int((sync_log.finished_at - start_time).total_seconds())
-                sync_log.details = {
-                    **details_payload,
-                    "progress_percent": 100,
-                    "current_step": "completed",
-                }
-
-            session.add(sync_log)
-            session.commit()
-            _cleanup_old_sync_logs(session)
+            sync_admin.finalize_events_sync_log(
+                sync_log,
+                start_time=start_time,
+                details_payload=details_payload,
+                events_created_total=events_created_total,
+                events_updated_total=events_updated_total,
+                orchestrated=orchestrated,
+            )
 
             result = {
                 "message": f"Successfully synced {len(total_synced_events)} events",
@@ -324,18 +152,12 @@ async def sync_events(
             }
 
             # Store result for idempotency (cache for 1 hour in production)
-            _sync_results[idempotency_key] = result
+            sync_admin.cache_result(idempotency_key, result)
 
             return result
         except Exception as e:
             # Update sync log with failure
-            sync_log.status = "failed"
-            sync_log.finished_at = datetime.now(timezone.utc)
-            sync_log.duration_seconds = int((sync_log.finished_at - start_time).total_seconds())
-            sync_log.error_message = str(e)
-            session.add(sync_log)
-            session.commit()
-            _cleanup_old_sync_logs(session)
+            sync_admin.fail_sync_log(sync_log, start_time=start_time, error_message=str(e))
 
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -364,63 +186,27 @@ async def sync_teams(
     if not idempotency_key:
         idempotency_key = f"sync_teams_{event_id}_{datetime.now(timezone.utc).isoformat()}"
     
-    # Check if already processed (idempotency)
-    if idempotency_key in _sync_results:
-        return _sync_results[idempotency_key]
+    sync_admin = AdminSyncService(session)
+    service = TeamService(session)
 
-    _ensure_sync_run_access(session, sync_log_id, allow_start_new=False)
-    
-    # Acquire lock for this event's team sync (asyncio.Lock for async context)
-    lock_key = f"teams_{event_id}"
-    if lock_key not in _sync_locks:
-        _sync_locks[lock_key] = asyncio.Lock()
-    lock = _sync_locks[lock_key]
-    
-    # Try to acquire lock without blocking
-    if lock.locked():
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Teams sync for event {event_id} already in progress. Please wait or retry with same idempotency key."
-        )
-    
-    async with lock:
-        from ....domain import SportEvent
-        event = session.exec(select(SportEvent).where(SportEvent.id == event_id)).first()
-        if not event:
-            raise HTTPException(status_code=404, detail=f"Event {event_id} not found")
-
-        source = _get_active_arena_source(session, user.id)
-        service = TeamService(session)
-
-        try:
-            event_uuid = await _resolve_event_uuid_for_source(event, source)
-            if event_uuid is None:
-                return {
-                    "message": f"Udalosť '{event.name}' sa nenachádza v aktívnom zdroji ({source.name}). Nie je čo synchronizovať.",
-                    "skipped": True,
-                    "event_id": event_id,
-                }
-            teams = await service.sync_teams_for_event(event_uuid, event_id=event_id, source=source)
-            result = {
-                "message": f"Successfully synced teams for event {event.name}",
-                "count": teams.get('synced_count', 0) if isinstance(teams, dict) else 0,
-                "created": teams.get('created', 0) if isinstance(teams, dict) else 0,
-                "updated": teams.get('updated', 0) if isinstance(teams, dict) else 0,
-                "event_id": event_id,
-                "idempotency_key": idempotency_key
-            }
-            
-            # Store result for idempotency
-            _sync_results[idempotency_key] = result
-            
-            return result
-        except HTTPException:
-            raise
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Sync failed: {str(e)}"
-            )
+    return await sync_admin.run_event_sync(
+        event_id=event_id,
+        user_id=user.id,
+        idempotency_key=idempotency_key,
+        sync_log_id=sync_log_id,
+        lock_prefix="teams",
+        lock_conflict_detail=f"Teams sync for event {event_id} already in progress. Please wait or retry with same idempotency key.",
+        missing_event_detail=f"Event {event_id} not found",
+        skipped_message_factory=lambda event, source: (
+            f"Udalosť '{event.name}' sa nenachádza v aktívnom zdroji ({source.name}). Nie je čo synchronizovať."
+        ),
+        success_message_factory=lambda event: f"Successfully synced teams for event {event.name}",
+        sync_callable=lambda event_uuid, event_id_arg, source: service.sync_teams_for_event(
+            event_uuid,
+            event_id=event_id_arg,
+            source=source,
+        ),
+    )
 
 
 @router.post("/athletes/{event_id}")
@@ -444,63 +230,27 @@ async def sync_athletes(
     if not idempotency_key:
         idempotency_key = f"sync_athletes_{event_id}_{datetime.now(timezone.utc).isoformat()}"
     
-    # Check if already processed (idempotency)
-    if idempotency_key in _sync_results:
-        return _sync_results[idempotency_key]
+    sync_admin = AdminSyncService(session)
+    service = AthleteService(session)
 
-    _ensure_sync_run_access(session, sync_log_id, allow_start_new=False)
-    
-    # Acquire lock for this event's athlete sync (asyncio.Lock for async context)
-    lock_key = f"athletes_{event_id}"
-    if lock_key not in _sync_locks:
-        _sync_locks[lock_key] = asyncio.Lock()
-    lock = _sync_locks[lock_key]
-    
-    # Try to acquire lock without blocking
-    if lock.locked():
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Athletes sync for event {event_id} already in progress. Please wait or retry with same idempotency key."
-        )
-    
-    async with lock:
-        from ....domain import SportEvent
-        event = session.exec(select(SportEvent).where(SportEvent.id == event_id)).first()
-        if not event:
-            raise HTTPException(status_code=404, detail=f"Event {event_id} not found")
-
-        source = _get_active_arena_source(session, user.id)
-        service = AthleteService(session)
-
-        try:
-            event_uuid = await _resolve_event_uuid_for_source(event, source)
-            if event_uuid is None:
-                return {
-                    "message": f"Udalosť '{event.name}' sa nenachádza v aktívnom zdroji ({source.name}). Nie je čo synchronizovať.",
-                    "skipped": True,
-                    "event_id": event_id,
-                }
-            athletes = await service.sync_athletes_for_event(event_uuid, event_id=event_id, source=source)
-            result = {
-                "message": f"Successfully synced athletes for event {event.name}",
-                "count": athletes.get('synced_count', 0) if isinstance(athletes, dict) else 0,
-                "created": athletes.get('created', 0) if isinstance(athletes, dict) else 0,
-                "updated": athletes.get('updated', 0) if isinstance(athletes, dict) else 0,
-                "event_id": event_id,
-                "idempotency_key": idempotency_key
-            }
-            
-            # Store result for idempotency
-            _sync_results[idempotency_key] = result
-            
-            return result
-        except HTTPException:
-            raise
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Sync failed: {str(e)}"
-            )
+    return await sync_admin.run_event_sync(
+        event_id=event_id,
+        user_id=user.id,
+        idempotency_key=idempotency_key,
+        sync_log_id=sync_log_id,
+        lock_prefix="athletes",
+        lock_conflict_detail=f"Athletes sync for event {event_id} already in progress. Please wait or retry with same idempotency key.",
+        missing_event_detail=f"Event {event_id} not found",
+        skipped_message_factory=lambda event, source: (
+            f"Udalosť '{event.name}' sa nenachádza v aktívnom zdroji ({source.name}). Nie je čo synchronizovať."
+        ),
+        success_message_factory=lambda event: f"Successfully synced athletes for event {event.name}",
+        sync_callable=lambda event_uuid, event_id_arg, source: service.sync_athletes_for_event(
+            event_uuid,
+            event_id=event_id_arg,
+            source=source,
+        ),
+    )
 
 
 @router.post("/categories/{event_id}")
@@ -524,63 +274,27 @@ async def sync_categories(
     if not idempotency_key:
         idempotency_key = f"sync_categories_{event_id}_{datetime.now(timezone.utc).isoformat()}"
     
-    # Check if already processed (idempotency)
-    if idempotency_key in _sync_results:
-        return _sync_results[idempotency_key]
+    sync_admin = AdminSyncService(session)
+    service = WeightCategoryService(session)
 
-    _ensure_sync_run_access(session, sync_log_id, allow_start_new=False)
-    
-    # Acquire lock for this event's category sync (asyncio.Lock for async context)
-    lock_key = f"categories_{event_id}"
-    if lock_key not in _sync_locks:
-        _sync_locks[lock_key] = asyncio.Lock()
-    lock = _sync_locks[lock_key]
-    
-    # Try to acquire lock without blocking
-    if lock.locked():
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Categories sync for event {event_id} already in progress. Please wait or retry with same idempotency key."
-        )
-    
-    async with lock:
-        from ....domain import SportEvent
-        event = session.exec(select(SportEvent).where(SportEvent.id == event_id)).first()
-        if not event:
-            raise HTTPException(status_code=404, detail=f"Event {event_id} not found")
-
-        source = _get_active_arena_source(session, user.id)
-        service = WeightCategoryService(session)
-
-        try:
-            event_uuid = await _resolve_event_uuid_for_source(event, source)
-            if event_uuid is None:
-                return {
-                    "message": f"Udalosť '{event.name}' sa nenachádza v aktívnom zdroji ({source.name}). Nie je čo synchronizovať.",
-                    "skipped": True,
-                    "event_id": event_id,
-                }
-            categories = await service.sync_weight_categories_for_event(event_uuid, event_id=event_id, source=source)
-            result = {
-                "message": f"Successfully synced categories for event {event.name}",
-                "count": categories.get('synced_count', 0) if isinstance(categories, dict) else 0,
-                "created": categories.get('created', 0) if isinstance(categories, dict) else 0,
-                "updated": categories.get('updated', 0) if isinstance(categories, dict) else 0,
-                "event_id": event_id,
-                "idempotency_key": idempotency_key
-            }
-            
-            # Store result for idempotency
-            _sync_results[idempotency_key] = result
-            
-            return result
-        except HTTPException:
-            raise
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Sync failed: {str(e)}"
-            )
+    return await sync_admin.run_event_sync(
+        event_id=event_id,
+        user_id=user.id,
+        idempotency_key=idempotency_key,
+        sync_log_id=sync_log_id,
+        lock_prefix="categories",
+        lock_conflict_detail=f"Categories sync for event {event_id} already in progress. Please wait or retry with same idempotency key.",
+        missing_event_detail=f"Event {event_id} not found",
+        skipped_message_factory=lambda event, source: (
+            f"Udalosť '{event.name}' sa nenachádza v aktívnom zdroji ({source.name}). Nie je čo synchronizovať."
+        ),
+        success_message_factory=lambda event: f"Successfully synced categories for event {event.name}",
+        sync_callable=lambda event_uuid, event_id_arg, source: service.sync_weight_categories_for_event(
+            event_uuid,
+            event_id=event_id_arg,
+            source=source,
+        ),
+    )
 
 
 @router.post("/victory-types/{sport_id}")
@@ -593,7 +307,8 @@ async def sync_victory_types(
     """
     Sync victory types for a specific sport from Arena API config (admin only)
     """
-    source = _get_active_arena_source(session, user.id)
+    sync_admin = AdminSyncService(session)
+    source = sync_admin.get_active_arena_source(user.id)
     service = VictoryTypeService(session)
     result = await service.sync_for_sport(sport_id, source=source)
     return {
@@ -618,58 +333,27 @@ async def sync_fights(
     if not idempotency_key:
         idempotency_key = f"sync_fights_{event_id}_{datetime.now(timezone.utc).isoformat()}"
 
-    if idempotency_key in _sync_results:
-        return _sync_results[idempotency_key]
+    sync_admin = AdminSyncService(session)
+    service = FightService(session)
 
-    _ensure_sync_run_access(session, sync_log_id, allow_start_new=False)
-
-    lock_key = f"fights_{event_id}"
-    if lock_key not in _sync_locks:
-        _sync_locks[lock_key] = asyncio.Lock()
-    lock = _sync_locks[lock_key]
-
-    if lock.locked():
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Fights sync for event {event_id} already in progress."
-        )
-
-    async with lock:
-        from ....domain import SportEvent
-        event = session.exec(select(SportEvent).where(SportEvent.id == event_id)).first()
-        if not event:
-            raise HTTPException(status_code=404, detail=f"Event {event_id} not found")
-
-        source = _get_active_arena_source(session, user.id)
-        service = FightService(session)
-
-        try:
-            event_uuid = await _resolve_event_uuid_for_source(event, source)
-            if event_uuid is None:
-                return {
-                    "message": f"Udalosť '{event.name}' sa nenachádza v aktívnom zdroji ({source.name}). Nie je čo synchronizovať.",
-                    "skipped": True,
-                    "event_id": event_id,
-                }
-            fights = await service.sync_fights_for_event(event_uuid, event_id=event_id, source=source)
-            result = {
-                "message": f"Successfully synced fights for event {event.name}",
-                "count": fights.get('synced_count', 0) if isinstance(fights, dict) else 0,
-                "created": fights.get('created', 0) if isinstance(fights, dict) else 0,
-                "updated": fights.get('updated', 0) if isinstance(fights, dict) else 0,
-                "event_id": event_id,
-                "idempotency_key": idempotency_key
-            }
-
-            _sync_results[idempotency_key] = result
-            return result
-        except HTTPException:
-            raise
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Sync failed: {str(e)}"
-            )
+    return await sync_admin.run_event_sync(
+        event_id=event_id,
+        user_id=user.id,
+        idempotency_key=idempotency_key,
+        sync_log_id=sync_log_id,
+        lock_prefix="fights",
+        lock_conflict_detail=f"Fights sync for event {event_id} already in progress.",
+        missing_event_detail=f"Event {event_id} not found",
+        skipped_message_factory=lambda event, source: (
+            f"Udalosť '{event.name}' sa nenachádza v aktívnom zdroji ({source.name}). Nie je čo synchronizovať."
+        ),
+        success_message_factory=lambda event: f"Successfully synced fights for event {event.name}",
+        sync_callable=lambda event_uuid, event_id_arg, source: service.sync_fights_for_event(
+            event_uuid,
+            event_id=event_id_arg,
+            source=source,
+        ),
+    )
 
 
 @router.post("/referees/{event_id}")
@@ -692,53 +376,24 @@ async def sync_referees(
     if not idempotency_key:
         idempotency_key = f"sync_referees_{event_id}_{datetime.now(timezone.utc).isoformat()}"
 
-    if idempotency_key in _sync_results:
-        return _sync_results[idempotency_key]
+    sync_admin = AdminSyncService(session)
+    service = RefereeService(session)
 
-    lock_key = f"referees_{event_id}"
-    if lock_key not in _sync_locks:
-        _sync_locks[lock_key] = asyncio.Lock()
-    lock = _sync_locks[lock_key]
-
-    if lock.locked():
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Referees sync for event {event_id} already in progress. Please wait or retry with same idempotency key."
-        )
-
-    async with lock:
-        from ....domain import SportEvent
-        event = session.exec(select(SportEvent).where(SportEvent.id == event_id)).first()
-        if not event:
-            raise HTTPException(status_code=404, detail=f"Event {event_id} not found")
-
-        source = _get_active_arena_source(session, user.id)
-        service = RefereeService(session)
-
-        try:
-            event_uuid = await _resolve_event_uuid_for_source(event, source)
-            if event_uuid is None:
-                return {
-                    "message": f"Udalosť '{event.name}' sa nenachádza v aktívnom zdroji ({source.name}). Nie je čo synchronizovať.",
-                    "skipped": True,
-                    "event_id": event_id,
-                }
-            referees = await service.sync_referees_for_event(event_uuid, event_id=event_id, source=source)
-            result = {
-                "message": f"Successfully synced referees for event {event.name}",
-                "count": referees.get('synced_count', 0) if isinstance(referees, dict) else 0,
-                "created": referees.get('created', 0) if isinstance(referees, dict) else 0,
-                "updated": referees.get('updated', 0) if isinstance(referees, dict) else 0,
-                "event_id": event_id,
-                "idempotency_key": idempotency_key
-            }
-
-            _sync_results[idempotency_key] = result
-            return result
-        except HTTPException:
-            raise
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Sync failed: {str(e)}"
-            )
+    return await sync_admin.run_event_sync(
+        event_id=event_id,
+        user_id=user.id,
+        idempotency_key=idempotency_key,
+        sync_log_id=sync_log_id,
+        lock_prefix="referees",
+        lock_conflict_detail=f"Referees sync for event {event_id} already in progress. Please wait or retry with same idempotency key.",
+        missing_event_detail=f"Event {event_id} not found",
+        skipped_message_factory=lambda event, source: (
+            f"Udalosť '{event.name}' sa nenachádza v aktívnom zdroji ({source.name}). Nie je čo synchronizovať."
+        ),
+        success_message_factory=lambda event: f"Successfully synced referees for event {event.name}",
+        sync_callable=lambda event_uuid, event_id_arg, source: service.sync_referees_for_event(
+            event_uuid,
+            event_id=event_id_arg,
+            source=source,
+        ),
+    )

@@ -8,4 +8,5 @@ export { useEvents } from './useEvents'
 export { usePersons } from './usePersons'
 export { useEventStatistics } from './useEventStatistics'
 export { useRankingData, useRankingCategories } from './useRankingData'
+export { useTournamentData } from './useTournamentData'
 

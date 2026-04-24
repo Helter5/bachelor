@@ -26,15 +26,7 @@ class AthleteService(BaseService[Athlete]):
         super().__init__(session, Athlete)
 
     async def get_athletes_from_arena(self, sport_event_id: str) -> Dict[str, Any]:
-        """
-        Fetch athletes for a sport event from Arena API
-
-        Args:
-            sport_event_id: Sport event UUID
-
-        Returns:
-            Arena API response with athletes
-        """
+        """Fetch athletes for a sport event from Arena API."""
         return await fetch_arena_data(f"athlete/{sport_event_id}")
 
     def get_athletes_by_event(
@@ -42,200 +34,182 @@ class AthleteService(BaseService[Athlete]):
         sport_event_id: int,
         team_id: Optional[int] = None
     ) -> List[Athlete]:
-        """
-        Get all athletes for a sport event from database
-
-        Args:
-            sport_event_id: Sport event database ID
-            team_id: Optional team ID to filter athletes by team
-
-        Returns:
-            List of athletes
-        """
-        logger.info(f"Fetching athletes for sport_event_id={sport_event_id}, team_id={team_id}")
+        """Get all athletes for a sport event from database."""
         query = select(Athlete).where(Athlete.sport_event_id == sport_event_id)
-
-        # Filter by team_id if provided
         if team_id:
-            logger.info(f"Filtering by team_id: {team_id}")
             query = query.where(Athlete.team_id == team_id)
-
-        athletes = self.session.exec(query).all()
-        logger.info(f"Found {len(athletes)} athletes")
-        return list(athletes)
+        return list(self.session.exec(query).all())
 
     def get_athletes_by_event_with_teams(
         self,
         sport_event_id: int,
         team_id: Optional[int] = None
     ) -> List[Dict[str, Any]]:
-        """
-        Get all athletes for a sport event with team UUIDs joined
-
-        Args:
-            sport_event_id: Sport event database ID
-            team_id: Optional team ID to filter athletes by team
-
-        Returns:
-            List of athlete dictionaries with team_uid field
-        """
-        logger.info(f"Fetching athletes with teams for sport_event_id={sport_event_id}, team_id={team_id}")
-        
-        # Join athletes with teams and persons to get name and team UUID
+        """Get all athletes for a sport event with team UUIDs joined."""
         query = select(Athlete, Team, Person).join(
             Team, Athlete.team_id == Team.id, isouter=True
         ).join(
             Person, Athlete.person_id == Person.id, isouter=True
         ).where(Athlete.sport_event_id == sport_event_id)
 
-        # Filter by team_id if provided
         if team_id:
-            logger.info(f"Filtering by team_id: {team_id}")
             query = query.where(Athlete.team_id == team_id)
 
         results = self.session.exec(query).all()
-        logger.info(f"Found {len(results)} athletes")
-
-        # Transform to dictionaries with team_uid
-        athletes_with_teams = []
-        for athlete, team, person in results:
-            athletes_with_teams.append({
+        return [
+            {
                 "id": athlete.id,
                 "sport_event_id": athlete.sport_event_id,
                 "person_full_name": person.full_name if person else None,
                 "team_id": team.id if team else None,
                 "weight_category_id": athlete.weight_category_id,
                 "is_competing": athlete.is_competing,
-            })
-        
-        return athletes_with_teams
+            }
+            for athlete, team, person in results
+        ]
 
-    async def sync_athletes_for_event(self, sport_event_uuid: str, event_id: int, source: Optional["ArenaSource"] = None) -> Dict[str, Any]:
-        """
-        Sync athletes for a sport event from Arena API to database
-
-        Args:
-            sport_event_uuid: Sport event UUID from Arena API (used for API call)
-            event_id: Local database ID of the sport event
-
-        Returns:
-            Dict with sync results
-
-        Raises:
-            HTTPException: If event not found or sync fails
-        """
-        try:
-            event = self.session.exec(
-                select(SportEvent).where(SportEvent.id == event_id)
-            ).first()
-
-            if not event:
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"Sport event {event_id} not found"
-                )
-
-            logger.info(f"Syncing athletes for event: {event.name}")
-
-            # Fetch all athletes from Arena API (handles pagination automatically)
+    async def sync_athletes_for_event(
+        self,
+        sport_event_uuid: str,
+        event_id: int,
+        source: Optional["ArenaSource"] = None,
+    ) -> Dict[str, Any]:
+        """Sync athletes for a sport event from Arena API to database."""
+        async def _do_sync(uuid: str, event_db_id: int) -> Optional[Dict[str, int]]:
             try:
-                athletes_list = await fetch_all_arena_items(f"athlete/{sport_event_uuid}", "athletes", source=source)
+                athletes_list = await fetch_all_arena_items(
+                    f"athlete/{uuid}", "athletes", source=source
+                )
             except HTTPException as e:
                 if e.status_code == 404:
-                    logger.warning(f"No athletes found for event {sport_event_uuid}")
-                    return {
-                        "success": True,
-                        "event_id": sport_event_uuid,
-                        "event_name": event.name,
-                        "synced_count": 0,
-                        "message": "No athletes available for this event"
-                    }
+                    logger.warning(f"No athletes found for event {uuid}")
+                    return None
                 raise
 
             if not athletes_list:
-                logger.warning(f"No athletes data in response for event {sport_event_uuid}")
-                return {
-                    "success": True,
-                    "event_id": sport_event_uuid,
-                    "event_name": event.name,
-                    "synced_count": 0,
-                    "message": "No athletes data in response"
-                }
+                logger.warning(f"No athletes data in response for event {uuid}")
+                return None
 
-            # Build in-memory maps for FK resolution (arena uuid → local id)
-            team_uuid_to_id = await self._build_team_uuid_map(sport_event_uuid, event.id, source)
-            wc_key_to_id = self._build_wc_key_map(event.id)
+            team_uuid_to_id = await self._build_team_uuid_map(uuid, event_db_id, source)
+            wc_key_to_id = self._build_wc_key_map(event_db_id)
+            return self._sync_athletes_list(athletes_list, event_db_id, team_uuid_to_id, wc_key_to_id)
 
-            # Sync each athlete
-            result = self._sync_athletes_list(athletes_list, event.id, team_uuid_to_id, wc_key_to_id)
+        return await self._run_arena_sync_for_event(event_id, sport_event_uuid, "athletes", _do_sync)
 
-            self.session.commit()
-            logger.info(f"Athletes for {event.name}: {result['created']} created, {result['updated']} updated")
+    # ------------------------------------------------------------------ #
+    #  Private helpers                                                     #
+    # ------------------------------------------------------------------ #
 
-            return {
-                "success": True,
-                "event_id": sport_event_uuid,
-                "event_name": event.name,
-                "synced_count": result["created"] + result["updated"],
-                "created": result["created"],
-                "updated": result["updated"]
-            }
-
-        except HTTPException:
-            raise
-        except Exception as e:
-            logger.error(f"Failed to sync athletes for event {sport_event_uuid}: {str(e)}", exc_info=True)
-            self.session.rollback()
-            raise HTTPException(status_code=500, detail=f"Failed to sync athletes: {str(e)}")
-
-    def _resolve_person(self, first_name: str, last_name: str, country_iso_code: Optional[str]) -> int:
-        """
-        Find or create a Person record for the given name + country.
-        Returns the person.id.
-        """
-        # Normalize: use empty string for NULL country so unique index works
+    def _resolve_person(
+        self,
+        first_name: str,
+        last_name: str,
+        country_iso_code: Optional[str],
+    ) -> int:
+        """Find or create a Person record. Returns person.id."""
         country = (country_iso_code or "").strip()
-
-        # Try to find existing person
         statement = select(Person).where(
             Person.first_name == first_name,
             Person.last_name == last_name,
-            Person.country_iso_code == (country if country else None)
+            Person.country_iso_code == (country if country else None),
         )
         person = self.session.exec(statement).first()
-
         if person:
             return person.id
 
-        # Create new person
         person = Person(
             first_name=first_name,
             last_name=last_name,
             country_iso_code=country if country else None,
         )
         self.session.add(person)
-        self.session.flush()  # Get the ID without committing
+        self.session.flush()
         logger.info(f"Created new person: {first_name} {last_name} ({country or 'N/A'})")
         return person.id
 
+    def _resolve_team_id(
+        self,
+        athlete_data: Dict[str, Any],
+        team_uuid_to_id: Dict[str, int],
+    ) -> Optional[int]:
+        """Resolve Arena team UUID → local team DB id."""
+        team_uuid = athlete_data.get("sportEventTeamId") or athlete_data.get("teamId")
+        return team_uuid_to_id.get(team_uuid) if team_uuid else None
+
+    def _resolve_weight_category_id(
+        self,
+        athlete_data: Dict[str, Any],
+        wc_key_to_id: Dict[tuple, int],
+    ) -> Optional[int]:
+        """Resolve embedded weight-category data → local WC DB id."""
+        wcs = athlete_data.get("weightCategories") or []
+        if not wcs:
+            return None
+        wc_item = wcs[0]
+        key = (wc_item.get("maxWeight"), wc_item.get("sportId"), wc_item.get("audienceId"))
+        return wc_key_to_id.get(key)
+
+    def _resolve_country_iso(self, team_id_db: Optional[int]) -> Optional[str]:
+        """Resolve country ISO code from a local team record."""
+        if not team_id_db:
+            return None
+        team_obj = self.session.get(Team, team_id_db)
+        if team_obj:
+            return (team_obj.country_iso_code or "").strip() or None
+        return None
+
+    def _upsert_athlete(
+        self,
+        athlete_create: AthleteBase,
+        person_id: Optional[int],
+        event_db_id: int,
+    ) -> Optional[str]:
+        """Insert or update an athlete. Returns 'created', 'updated', or None (no change)."""
+        existing = self.session.exec(
+            select(Athlete).where(
+                Athlete.sport_event_id == event_db_id,
+                Athlete.person_id == person_id,
+                Athlete.weight_category_id == athlete_create.weight_category_id,
+            )
+        ).first() if person_id else None
+
+        if existing:
+            new_data = athlete_create.model_dump(exclude_unset=True)
+            new_data["person_id"] = person_id
+            if self.has_changes(existing, new_data, exclude_fields=set()):
+                for key, value in new_data.items():
+                    setattr(existing, key, value)
+                existing.sync_timestamp = datetime.now(timezone.utc)
+                self.session.add(existing)
+                return "updated"
+            if existing.person_id != person_id:
+                existing.person_id = person_id
+                self.session.add(existing)
+            return None
+
+        new_athlete = Athlete(**athlete_create.model_dump())
+        new_athlete.person_id = person_id
+        self.session.add(new_athlete)
+        self.session.flush()
+        return "created"
+
     def _extract_athletes_list(self, athletes_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """
-        Extract athletes list from Arena API response
-
-        Args:
-            athletes_data: Arena API response
-
-        Returns:
-            List of athlete dictionaries
-        """
+        """Extract athletes list from Arena API response."""
         if "athletes" in athletes_data and "items" in athletes_data["athletes"]:
             return athletes_data["athletes"]["items"]
         return []
 
-    async def _build_team_uuid_map(self, sport_event_uuid: str, event_db_id: int, source) -> Dict[str, int]:
+    async def _build_team_uuid_map(
+        self,
+        sport_event_uuid: str,
+        event_db_id: int,
+        source,
+    ) -> Dict[str, int]:
         """Fetch Arena teams and build {arena_team_uuid: local_team_id} by name matching."""
         try:
-            arena_teams = await fetch_all_arena_items(f"team/{sport_event_uuid}", "sportEventTeams", source=source)
+            arena_teams = await fetch_all_arena_items(
+                f"team/{sport_event_uuid}", "sportEventTeams", source=source
+            )
         except Exception:
             return {}
         db_teams = self.session.exec(select(Team).where(Team.sport_event_id == event_db_id)).all()
@@ -260,45 +234,33 @@ class AthleteService(BaseService[Athlete]):
             for d in self.session.exec(select(Discipline)).all()
         }
         result = {}
-        for wc in self.session.exec(select(WeightCategory).where(WeightCategory.sport_event_id == event_db_id)).all():
+        for wc in self.session.exec(
+            select(WeightCategory).where(WeightCategory.sport_event_id == event_db_id)
+        ).all():
             if wc.discipline_id and wc.discipline_id in disciplines:
                 sport_id, audience_id = disciplines[wc.discipline_id]
                 result[(wc.max_weight, sport_id, audience_id)] = wc.id
         return result
 
-    def _sync_athletes_list(self, athletes_list: List[Dict[str, Any]], event_db_id: int,
-                            team_uuid_to_id: Dict[str, int], wc_key_to_id: Dict[tuple, int]) -> Dict[str, int]:
-        """
-        Sync a list of athletes to the database.
-
-        Args:
-            athletes_list: List of athlete data from Arena API
-            event_db_id: Sport event database ID
-            team_uuid_to_id: {arena_team_uuid: local_team_id}
-            wc_key_to_id: {(max_weight, sport_id, audience_id): local_wc_id}
-        """
+    def _sync_athletes_list(
+        self,
+        athletes_list: List[Dict[str, Any]],
+        event_db_id: int,
+        team_uuid_to_id: Dict[str, int],
+        wc_key_to_id: Dict[tuple, int],
+    ) -> Dict[str, int]:
+        """Sync a list of athletes to the database."""
         created = 0
         updated = 0
 
         for athlete_data in athletes_list:
             try:
-                # Resolve team_id by Arena UUID → local id (built before loop)
-                team_id_db = None
-                team_uuid_str = athlete_data.get("sportEventTeamId") or athlete_data.get("teamId")
-                if team_uuid_str:
-                    team_id_db = team_uuid_to_id.get(team_uuid_str)
+                team_id_db = self._resolve_team_id(athlete_data, team_uuid_to_id)
+                weight_category_id_db = self._resolve_weight_category_id(athlete_data, wc_key_to_id)
 
-                # Resolve weight_category_id from embedded WC data
-                weight_category_id_db = None
-                wcs = athlete_data.get("weightCategories") or []
-                if wcs:
-                    wc_item = wcs[0]
-                    key = (wc_item.get("maxWeight"), wc_item.get("sportId"), wc_item.get("audienceId"))
-                    weight_category_id_db = wc_key_to_id.get(key)
-
-                # Map Arena API fields to database fields
-                # athlete/{eventId} endpoint only provides personFullName (not personGivenName/personFamilyName)
-                # person/{id}/athletes endpoint provides all three — prefer atomic fields when available
+                # Name extraction
+                # athlete/{eventId} only provides personFullName; person/{id}/athletes
+                # provides personGivenName + personFamilyName — prefer atomic fields when available.
                 person_first_name = athlete_data.get("personGivenName") or ""
                 person_last_name = athlete_data.get("personFamilyName") or ""
                 if not person_first_name and not person_last_name:
@@ -308,19 +270,15 @@ class AthleteService(BaseService[Athlete]):
                         parts = full.split()
                         caps_idx = next(
                             (i for i in range(len(parts) - 1, -1, -1) if not parts[i].isupper()),
-                            -1
+                            -1,
                         )
-                        if caps_idx == -1:
-                            # All parts are caps — last word = last name, rest = first name
-                            person_first_name = " ".join(parts[:-1])
-                            person_last_name = parts[-1]
-                        elif caps_idx == len(parts) - 1:
-                            # No caps parts found at end — use last word as last name
+                        if caps_idx == -1 or caps_idx == len(parts) - 1:
                             person_first_name = " ".join(parts[:-1])
                             person_last_name = parts[-1]
                         else:
-                            person_first_name = " ".join(parts[:caps_idx + 1])
-                            person_last_name = " ".join(parts[caps_idx + 1:])
+                            person_first_name = " ".join(parts[: caps_idx + 1])
+                            person_last_name = " ".join(parts[caps_idx + 1 :])
+
                 athlete_create = AthleteBase(
                     team_id=team_id_db,
                     sport_event_id=event_db_id,
@@ -328,52 +286,24 @@ class AthleteService(BaseService[Athlete]):
                     is_competing=athlete_data.get("isCompeting"),
                 )
 
-                # Resolve country from team for person matching
-                # Only use country_iso_code (2-letter ISO); alternate_name may be a full country name
-                # or 3-letter code that would break flag rendering and person deduplication
-                country_iso = None
-                if team_id_db:
-                    team_obj = self.session.get(Team, team_id_db)
-                    if team_obj:
-                        country_iso = (team_obj.country_iso_code or "").strip() or None
+                country_iso = self._resolve_country_iso(team_id_db)
+                person_id = (
+                    self._resolve_person(person_first_name, person_last_name, country_iso)
+                    if (person_first_name or person_last_name)
+                    else None
+                )
 
-                # Resolve person_id before athlete lookup (needed for natural key matching)
-                person_id = self._resolve_person(person_first_name, person_last_name, country_iso) if (person_first_name or person_last_name) else None
-
-                # Match by natural key (sport_event + person + weight_category)
-                existing_athlete = self.session.exec(
-                    select(Athlete).where(
-                        Athlete.sport_event_id == event_db_id,
-                        Athlete.person_id == person_id,
-                        Athlete.weight_category_id == weight_category_id_db,
-                    )
-                ).first() if person_id else None
-
-                if existing_athlete:
-                    new_data = athlete_create.model_dump(exclude_unset=True)
-                    new_data["person_id"] = person_id
-                    if self.has_changes(existing_athlete, new_data, exclude_fields=set()):
-                        for key, value in new_data.items():
-                            setattr(existing_athlete, key, value)
-                        existing_athlete.sync_timestamp = datetime.now(timezone.utc)
-                        self.session.add(existing_athlete)
-                        updated += 1
-                        logger.info(f"Updated athlete id={existing_athlete.id}")
-                    elif existing_athlete.person_id != person_id:
-                        existing_athlete.person_id = person_id
-                        self.session.add(existing_athlete)
-                    the_athlete = existing_athlete
-                else:
-                    new_athlete = Athlete(**athlete_create.model_dump())
-                    new_athlete.person_id = person_id
-                    self.session.add(new_athlete)
-                    self.session.flush()
+                outcome = self._upsert_athlete(athlete_create, person_id, event_db_id)
+                if outcome == "created":
                     created += 1
-                    logger.info(f"Created new athlete id={new_athlete.id}")
-                    the_athlete = new_athlete
+                    logger.info(f"Created new athlete for person_id={person_id}")
+                elif outcome == "updated":
+                    updated += 1
 
             except Exception as e:
-                logger.error(f"Failed to sync athlete {athlete_data.get('id')}: {str(e)}", exc_info=True)
+                logger.error(
+                    f"Failed to sync athlete {athlete_data.get('id')}: {str(e)}", exc_info=True
+                )
                 continue
 
         return {"created": created, "updated": updated}
