@@ -12,9 +12,10 @@ import logging
 if TYPE_CHECKING:
     from ..domain.entities.arena_source import ArenaSource
 
-from ..domain import Athlete, AthleteBase, SportEvent, Team, WeightCategory, Person
+from ..domain import Athlete, AthleteBase, Team, WeightCategory, Person
 from .base_service import BaseService
 from .arena import fetch_arena_data, fetch_all_arena_items
+from .sync_identity import resolve_person_id
 
 logger = logging.getLogger(__name__)
 
@@ -107,25 +108,16 @@ class AthleteService(BaseService[Athlete]):
         country_iso_code: Optional[str],
     ) -> int:
         """Find or create a Person record. Returns person.id."""
-        country = (country_iso_code or "").strip()
-        statement = select(Person).where(
-            Person.first_name == first_name,
-            Person.last_name == last_name,
-            Person.country_iso_code == (country if country else None),
-        )
-        person = self.session.exec(statement).first()
-        if person:
-            return person.id
-
-        person = Person(
+        person_id = resolve_person_id(
+            self.session,
             first_name=first_name,
             last_name=last_name,
-            country_iso_code=country if country else None,
+            country_iso_code=country_iso_code,
+            logger=logger,
         )
-        self.session.add(person)
-        self.session.flush()
-        logger.info(f"Created new person: {first_name} {last_name} ({country or 'N/A'})")
-        return person.id
+        if person_id is None:
+            raise ValueError("Cannot resolve athlete person without a name")
+        return person_id
 
     def _resolve_team_id(
         self,

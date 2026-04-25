@@ -12,12 +12,12 @@ if TYPE_CHECKING:
     from ..domain.entities.arena_source import ArenaSource
 
 from ..domain.entities.referee import Referee
-from ..domain.entities.person import Person
 from ..domain.entities.team import Team
 from ..domain.entities.sport_event import SportEvent
 from ..utils.country_codes import normalize_country_iso_code
 from .base_service import BaseService
-from .arena import fetch_arena_data, fetch_all_arena_items
+from .arena import fetch_all_arena_items
+from .sync_identity import resolve_person_id
 
 logger = logging.getLogger(__name__)
 
@@ -143,32 +143,13 @@ class RefereeService(BaseService[Referee]):
         Find or create a Person record for the given name + country.
         Returns the person.id or None if no name provided.
         """
-        if not first_name and not last_name:
-            return None
-
-        country = (country_iso_code or "").strip() if country_iso_code else None
-
-        # Try to find existing person
-        statement = select(Person).where(
-            Person.first_name == first_name,
-            Person.last_name == last_name,
-            Person.country_iso_code == country
-        )
-        person = self.session.exec(statement).first()
-
-        if person:
-            return person.id
-
-        # Create new person
-        person = Person(
+        return resolve_person_id(
+            self.session,
             first_name=first_name,
             last_name=last_name,
-            country_iso_code=country,
+            country_iso_code=country_iso_code,
+            logger=logger,
         )
-        self.session.add(person)
-        self.session.flush()
-        logger.info(f"Created new person: {first_name} {last_name} ({country or 'N/A'})")
-        return person.id
 
     def _sync_referees_list(
         self,
