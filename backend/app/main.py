@@ -24,6 +24,8 @@ from .api.protected import profile_router
 
 from .api import legacy_views, teams, athletes
 
+_settings = _get_settings()
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     create_db_and_tables()
@@ -35,10 +37,13 @@ app = FastAPI(
     version="2.0.0",
     description="3-Zone API: Public (no auth) | Auth (login/refresh) | Protected (admin only)",
     lifespan=lifespan,
+    docs_url="/docs" if _settings.app_debug else None,
+    redoc_url="/redoc" if _settings.app_debug else None,
+    openapi_url="/openapi.json" if _settings.app_debug else None,
 )
 
 def _cors_origins() -> list[str]:
-    s = _get_settings()
+    s = _settings
     if s.allowed_origins:
         return [o.strip() for o in s.allowed_origins.split(",") if o.strip()]
     return [s.frontend_url]
@@ -90,15 +95,7 @@ app.include_router(athletes.router)
 
 @app.get("/")
 async def root():
-    return {
-        "message": "Wrestling Federation API v2.0",
-        "zones": {
-            "public": "/api/v1/public/* (no auth)",
-            "auth": "/api/v1/auth/* (login/refresh/logout)",
-            "admin": "/api/v1/admin/* (requires admin role)"
-        },
-        "docs": "/docs"
-    }
+    return {"status": "ok"}
 
 @app.get("/health")
 async def health():

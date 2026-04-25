@@ -10,7 +10,7 @@ COPY package*.json ./
 
 # Use Docker BuildKit cache for npm to speed up repeated builds.
 # This requires BuildKit enabled (DOCKER_BUILDKIT=1 or Docker Desktop default).
-RUN --mount=type=cache,id=npm,target=/root/.npm npm ci
+RUN --mount=type=cache,id=npm,target=/root/.npm npm ci --legacy-peer-deps
 
 # Copy application code
 COPY . .

@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     database_port: int = 5432
     database_name: str
     database_echo: bool = False
+    app_debug: bool = False
 
     # Arena API Configuration
     arena_api_format: str = "json"
@@ -65,6 +66,7 @@ class Settings(BaseSettings):
             'database_port': {'env': 'DATABASE_PORT'},
             'database_name': {'env': 'DATABASE_NAME'},
             'database_echo': {'env': 'DATABASE_ECHO'},
+            'app_debug': {'env': 'APP_DEBUG'},
             'arena_api_format': {'env': 'ARENA_API_FORMAT'},
             'jwt_secret_key': {'env': 'JWT_SECRET_KEY'},
             'jwt_algorithm': {'env': 'JWT_ALGORITHM'},

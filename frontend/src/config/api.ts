@@ -3,9 +3,9 @@
  * Centralized configuration for all API-related constants
  */
 
-// Base URL for the backend API
-// In production, set VITE_API_URL environment variable
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+// Base URL for the backend API.
+// Production uses same-origin /api through the frontend Nginx proxy.
+export const API_BASE_URL = import.meta.env.VITE_API_URL || ''
 
 // API Endpoints - centralized for easy maintenance
 export const API_ENDPOINTS = {

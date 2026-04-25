@@ -155,7 +155,7 @@ export function AthletesTab({
                   isDarkMode={isDarkMode}
                   name={athlete.person_full_name ?? '-'}
                   countryCode={athleteTeam?.country_iso_code ?? undefined}
-                  countryFlagUrl={buildArenaFlagUrl(athleteTeam?.alternate_name ?? athleteTeam?.country_iso_code)}
+                  countryFlagUrl={buildArenaFlagUrl(athleteTeam?.alternate_name ?? athleteTeam?.country_iso_code) ?? undefined}
                   metadata={athleteTeam?.name || athleteWeightCategory?.name ? metadata : undefined}
                   statusBadge={{
                     label: athlete.is_competing ? t('fighters.competing') : t('fighters.notCompeting'),

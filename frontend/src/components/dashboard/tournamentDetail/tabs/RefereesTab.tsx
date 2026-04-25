@@ -178,7 +178,7 @@ export function RefereesTab({
                     isDarkMode={isDarkMode}
                     name={referee.person_full_name || '—'}
                     countryCode={referee.country_iso_code || undefined}
-                    countryFlagUrl={buildArenaFlagUrl(referee.team_alternate_name ?? referee.country_iso_code)}
+                    countryFlagUrl={buildArenaFlagUrl(referee.team_alternate_name ?? referee.country_iso_code) ?? undefined}
                     showCountryText={false}
                     badges={badges.length > 0 ? badges : undefined}
                     metadata={referee.team_alternate_name || referee.mat_name ? metadata : undefined}

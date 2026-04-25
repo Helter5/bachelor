@@ -144,7 +144,7 @@ export function TeamsTab({
                     isDarkMode={isDarkMode}
                     name={team.name}
                     countryCode={team.country_iso_code || undefined}
-                    countryFlagUrl={buildArenaFlagUrl(team.alternate_name ?? team.country_iso_code)}
+                    countryFlagUrl={buildArenaFlagUrl(team.alternate_name ?? team.country_iso_code) ?? undefined}
                     metadata={metadata}
                     onClick={() => openTeamDetail({ id: team.id.toString(), name: team.name })}
                   />
