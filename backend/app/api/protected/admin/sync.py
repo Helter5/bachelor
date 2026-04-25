@@ -8,7 +8,7 @@ from ....database import get_session
 from ....domain.entities.user import User
 from ....core.dependencies import require_admin, validate_csrf_and_origin
 from ....services.athlete_service import AthleteService
-from ....services.admin_sync_service import AdminSyncService
+from ....services.admin_sync_service import AdminSyncService, _sync_locks
 from ....services.team_service import TeamService
 from ....services.sport_event_service import SportEventService
 from ....services.weight_category_service import WeightCategoryService
