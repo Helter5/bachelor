@@ -1,16 +1,145 @@
+name: wrestling-prod
+
 services:
+  wf-db:
+    image: postgres:16-alpine
+    container_name: wf-db
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - wf-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  wf-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: wrestling-app-backend
+    container_name: wf-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@wf-db:5432/${DATABASE_NAME}
+      DATABASE_HOST: wf-db
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      ARENA_BASE_URL: ${ARENA_BASE_URL:-}
+      ARENA_CLIENT_ID: ${ARENA_CLIENT_ID:-}
+      ARENA_CLIENT_SECRET: ${ARENA_CLIENT_SECRET:-}
+      ARENA_API_KEY: ${ARENA_API_KEY:-}
+      ARENA_API_FORMAT: ${ARENA_API_FORMAT:-json}
+      APP_DEBUG: "false"
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Wrestling Federation}
+      FRONTEND_URL: ${FRONTEND_URL}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      JWT_REFRESH_TOKEN_EXPIRE_DAYS: ${JWT_REFRESH_TOKEN_EXPIRE_DAYS:-30}
+      COOKIE_SECURE: "true"
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      wf-db:
+        condition: service_healthy
+    networks:
+      - wf-network
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
   wf-web:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    container_name: wf-web
+    restart: unless-stopped
     ports:
       - "8088:80"
+    depends_on:
+      wf-api:
+        condition: service_healthy
+    networks:
+      - wf-network
     healthcheck:
       test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://127.0.0.1:80 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
 
-  wf-pgadmin:
-    profiles:
-      - donotstart
+  wf-cron:
+    image: postgres:16-alpine
+    container_name: wf-cron
+    restart: unless-stopped
+    environment:
+      PGPASSWORD: ${DATABASE_PASSWORD}
+      PGUSER: ${DATABASE_USER}
+      PGDATABASE: ${DATABASE_NAME}
+    depends_on:
+      wf-db:
+        condition: service_healthy
+    networks:
+      - wf-network
+    command:
+      - sh
+      - -c
+      - |
+        cat > /cleanup.sh << 'SCRIPT'
+        #!/bin/sh
+        echo ""
+        echo " [INFO] Running Cron Task: Delete expired tokens"
+        echo ""
+        echo " // Executing command 'cleanup:expired-tokens' ..."
+        echo ""
+        R=$$(psql -h wf-db -U $$PGUSER -d $$PGDATABASE -tAc "WITH d AS (DELETE FROM refresh_tokens WHERE expires_at < NOW() RETURNING 1) SELECT count(*) FROM d;")
+        P=$$(psql -h wf-db -U $$PGUSER -d $$PGDATABASE -tAc "WITH d AS (DELETE FROM password_reset_tokens WHERE expires_at < NOW() RETURNING 1) SELECT count(*) FROM d;")
+        E=$$(psql -h wf-db -U $$PGUSER -d $$PGDATABASE -tAc "WITH d AS (DELETE FROM email_verification_tokens WHERE expires_at < NOW() RETURNING 1) SELECT count(*) FROM d;")
+        echo " refresh_tokens:            $$R deleted"
+        echo " password_reset_tokens:     $$P deleted"
+        echo " email_verification_tokens: $$E deleted"
+        echo ""
+        echo " [INFO] SUCCESS"
+        echo ""
+        echo " // Done!"
+        echo ""
+        SCRIPT
+        chmod +x /cleanup.sh
+        echo "0 * * * * /cleanup.sh" | crontab -
+        crond -f
+
+volumes:
+  postgres_data:
+    name: wf-postgres-data
+  uploads_data:
+    name: wf-uploads-data
+
+networks:
+  wf-network:
+    name: wf-network
+    driver: bridge

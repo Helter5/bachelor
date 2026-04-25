@@ -1,7 +1,6 @@
-name: wrestling-app
+name: wrestling-dev
 
 services:
-  # PostgreSQL Database
   wf-db:
     image: postgres:16-alpine
     container_name: wf-db
@@ -24,7 +23,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Backend API
   wf-api:
     build:
       context: ./backend
@@ -35,27 +33,20 @@ services:
     env_file:
       - .env
     environment:
-      # Database connection
       DATABASE_URL: postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@wf-db:5432/${DATABASE_NAME}
       DATABASE_HOST: wf-db
       DATABASE_PORT: 5432
       DATABASE_NAME: ${DATABASE_NAME}
       DATABASE_USER: ${DATABASE_USER}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-
-      # Arena API configuration
       ARENA_BASE_URL: ${ARENA_BASE_URL:-}
       ARENA_CLIENT_ID: ${ARENA_CLIENT_ID:-}
       ARENA_CLIENT_SECRET: ${ARENA_CLIENT_SECRET:-}
       ARENA_API_KEY: ${ARENA_API_KEY:-}
       ARENA_API_FORMAT: ${ARENA_API_FORMAT:-json}
-
-      # Application settings
       APP_HOST: ${APP_HOST:-0.0.0.0}
       APP_PORT: ${APP_PORT:-8000}
       APP_DEBUG: ${APP_DEBUG:-False}
-
-      # Email/SMTP Configuration
       SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USER: ${SMTP_USER}
@@ -63,12 +54,8 @@ services:
       SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL}
       SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Wrestling Federation}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
-
-      # Google OAuth2 Configuration
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-
-      # Avoid Python bytecode writes on macOS/Docker bind mounts.
       PYTHONDONTWRITEBYTECODE: "1"
     ports:
       - "${APP_PORT:-8000}:8000"
@@ -87,7 +74,6 @@ services:
       retries: 3
       start_period: 20s
 
-  # Frontend - Development mode with Vite dev server
   wf-web:
     build:
       context: ./frontend
@@ -109,8 +95,7 @@ services:
       timeout: 10s
       retries: 3
 
-  # Test runner — spustí seed + pytest a skončí
-  # Použitie: docker compose run --rm wf-tests
+  # Použitie: docker-compose -f docker-compose.dev.yml run --rm wf-tests
   wf-tests:
     image: wrestling-app-backend
     profiles: [tests]
@@ -143,7 +128,6 @@ services:
       - wf-network
     command: ["sh", "-c", "PYTHONPATH=/app python tests/ci_seed.py && pytest tests/sync/ tests/statistics/ -v --tb=short"]
 
-  # Cron — periodic cleanup of expired tokens (runs every hour)
   wf-cron:
     image: postgres:16-alpine
     container_name: wf-cron
@@ -184,7 +168,6 @@ services:
         echo "0 * * * * /cleanup.sh" | crontab -
         crond -f
 
-  # pgAdmin - Database Management GUI
   wf-pgadmin:
     image: dpage/pgadmin4:latest
     container_name: wf-pgadmin
