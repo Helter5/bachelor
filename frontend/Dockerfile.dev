@@ -11,6 +11,9 @@ COPY vite.config.ts tsconfig.json tsconfig.app.json index.html ./
 # Install dependencies (cached unless package files change)
 RUN npm install --legacy-peer-deps
 
+# Copy application code into the image so Vite does not read from a macOS bind mount.
+COPY . .
+
 # Expose Vite dev server port
 EXPOSE 5173
 

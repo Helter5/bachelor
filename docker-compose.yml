@@ -67,11 +67,12 @@ services:
       # Google OAuth2 Configuration
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+
+      # Avoid Python bytecode writes on macOS/Docker bind mounts.
+      PYTHONDONTWRITEBYTECODE: "1"
     ports:
       - "${APP_PORT:-8000}:8000"
     volumes:
-      - ./backend:/app
-      - /app/__pycache__
       - uploads_data:/app/uploads
     depends_on:
       wf-db:
@@ -95,9 +96,6 @@ services:
     restart: unless-stopped
     env_file:
       - .env
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     ports:
       - "5173:5173"
     depends_on:
@@ -106,7 +104,7 @@ services:
     networks:
       - wf-network
     healthcheck:
-      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:5173 || exit 1"]
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://127.0.0.1:5173 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -132,6 +130,7 @@ services:
       ARENA_CLIENT_ID: ${ARENA_CLIENT_ID:-}
       ARENA_CLIENT_SECRET: ${ARENA_CLIENT_SECRET:-}
       ARENA_API_KEY: ${ARENA_API_KEY:-}
+      PYTHONDONTWRITEBYTECODE: "1"
     extra_hosts:
       - "arena-host:host-gateway"
     volumes:
