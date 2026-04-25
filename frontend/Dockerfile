@@ -1,16 +1,10 @@
-# syntax=docker/dockerfile:1.4
-# Frontend Dockerfile - Multi-stage build
 FROM node:20-alpine AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
 
-# Use Docker BuildKit cache for npm to speed up repeated builds.
-# This requires BuildKit enabled (DOCKER_BUILDKIT=1 or Docker Desktop default).
-RUN --mount=type=cache,id=npm,target=/root/.npm npm ci --legacy-peer-deps
+RUN npm ci --legacy-peer-deps
 
 # Copy application code
 COPY . .
