@@ -5,6 +5,7 @@ __pycache__/
 
 # virtual env
 venv/
+.venv/
 backend/venv/
 .venv_convert/
 

@@ -22,6 +22,11 @@ interface ArenaSourcesSettingsProps {
   isDarkMode: boolean
 }
 
+function buildArenaBaseUrl(host: string, port: number) {
+  const normalizedHost = host.replace(/^https?:\/\//, "").replace(/\/+$/, "")
+  return `http://${normalizedHost}:${port}`
+}
+
 function SectionCard({ isDarkMode, children }: { isDarkMode: boolean; children: React.ReactNode }) {
   return (
     <div className={`rounded-2xl p-6 ${isDarkMode ? 'bg-[#0f172a]/60 border border-white/8' : 'bg-white border border-gray-200 shadow-sm'}`}>
@@ -152,6 +157,67 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
       })
     } catch (err) {
       setToast({ show: true, variant: "error", title: t("arenaSources.testError"), message: err instanceof Error ? err.message : String(err) })
+    }
+  }
+
+  const handleBrowserTest = async (source: ArenaSource) => {
+    if (!source.client_id || !source.client_secret || !source.api_key) {
+      setToast({
+        show: true,
+        variant: "error",
+        title: t("arenaSources.browserTestFailed"),
+        message: t("arenaSources.missingCredentials"),
+      })
+      return
+    }
+
+    const baseUrl = buildArenaBaseUrl(source.host, source.port)
+    const tokenParams = new URLSearchParams({
+      grant_type: "https://arena.uww.io/grants/api_key",
+      client_id: source.client_id,
+      client_secret: source.client_secret,
+      api_key: source.api_key,
+    })
+
+    try {
+      const tokenResponse = await fetch(`${baseUrl}/oauth/v2/token?${tokenParams.toString()}`, {
+        method: "POST",
+      })
+
+      if (!tokenResponse.ok) {
+        throw new Error(`Token request failed: ${tokenResponse.status} ${tokenResponse.statusText}`)
+      }
+
+      const tokenData = await tokenResponse.json()
+      if (!tokenData.access_token) {
+        throw new Error("Token response did not include access_token")
+      }
+
+      const eventsResponse = await fetch(`${baseUrl}/api/json/sport-event/`, {
+        headers: {
+          Authorization: `Bearer ${tokenData.access_token}`,
+        },
+      })
+
+      if (!eventsResponse.ok) {
+        throw new Error(`Events request failed: ${eventsResponse.status} ${eventsResponse.statusText}`)
+      }
+
+      const eventsData = await eventsResponse.json()
+      setToast({
+        show: true,
+        variant: "success",
+        title: t("arenaSources.browserTestSuccess"),
+        message: t("arenaSources.testEventsCount", { count: eventsData?.events?.totalCount ?? 0 }),
+      })
+    } catch (err) {
+      const message = err instanceof Error && err.message ? err.message : String(err)
+      setToast({
+        show: true,
+        variant: "error",
+        title: t("arenaSources.browserTestFailed"),
+        message: t("arenaSources.browserTestHint", { message }),
+      })
     }
   }
 
@@ -312,6 +378,16 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
                         }`}
                       >
                         Test
+                      </button>
+                      <button
+                        onClick={() => handleBrowserTest(source)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+                          isDarkMode
+                            ? 'bg-cyan-500/10 border-cyan-500/20 text-cyan-300 hover:bg-cyan-500/20'
+                            : 'bg-cyan-50 border-cyan-200 text-cyan-700 hover:bg-cyan-100'
+                        }`}
+                      >
+                        {t("arenaSources.browserTest")}
                       </button>
                       <button
                         onClick={() => handleToggle(source.id)}
