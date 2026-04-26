@@ -124,25 +124,107 @@ async def fetch_all_items(
     return items
 
 
-async def build_bundle(source: ArenaSource) -> dict[str, Any]:
+async def report_progress(
+    client: httpx.AsyncClient,
+    server_url: str,
+    upload_token: str,
+    current_step: str,
+    progress_percent: int,
+    current_event: str | None = None,
+) -> None:
+    try:
+        payload: dict[str, Any] = {
+            "current_step": current_step,
+            "progress_percent": progress_percent,
+        }
+        if current_event:
+            payload["current_event"] = current_event
+        await client.patch(
+            f"{server_url.rstrip('/')}/api/v1/admin/local-sync/progress",
+            json=payload,
+            headers={"Authorization": f"Bearer {upload_token}"},
+        )
+    except Exception as exc:
+        logger.warning("Could not report progress: %s", exc)
+
+
+def collect_progress(event_index: int, event_total: int, stage_index: int, stage_total: int) -> int:
+    if event_total <= 0 or stage_total <= 0:
+        return 2
+    completed_units = (event_index * stage_total) + stage_index
+    total_units = event_total * stage_total
+    return min(45, 2 + int((completed_units / total_units) * 43))
+
+
+async def build_bundle(request: SyncRequest, progress_client: httpx.AsyncClient) -> dict[str, Any]:
+    source = request.arena_source
+    server_url = request.server_url.rstrip("/")
     async with httpx.AsyncClient(timeout=60.0) as client:
+        await report_progress(progress_client, server_url, request.upload_token, "agent", 2)
         token = await get_arena_token(client, source)
+        await report_progress(progress_client, server_url, request.upload_token, "events", 5)
         events = await fetch_all_items(client, source, token, "sport-event/", "events")
         event_payloads: dict[str, dict[str, Any]] = {}
+        stage_order = ["teams", "categories", "athletes", "referees", "fights"]
 
-        for event in events:
+        for event_index, event in enumerate(events):
             event_uuid = event.get("id")
             if not event_uuid:
                 continue
+            event_name = event.get("name")
 
+            await report_progress(
+                progress_client,
+                server_url,
+                request.upload_token,
+                "categories",
+                collect_progress(event_index, len(events), 0, len(stage_order)),
+                event_name,
+            )
             category_data = await fetch_arena_json(client, source, token, f"weight-category/{event_uuid}")
+            await report_progress(
+                progress_client,
+                server_url,
+                request.upload_token,
+                "fights",
+                collect_progress(event_index, len(events), 1, len(stage_order)),
+                event_name,
+            )
             fight_data = await fetch_arena_json(client, source, token, f"fight/{event_uuid}")
 
+            await report_progress(
+                progress_client,
+                server_url,
+                request.upload_token,
+                "teams",
+                collect_progress(event_index, len(events), 2, len(stage_order)),
+                event_name,
+            )
+            teams = await fetch_all_items(client, source, token, f"team/{event_uuid}", "sportEventTeams")
+            await report_progress(
+                progress_client,
+                server_url,
+                request.upload_token,
+                "athletes",
+                collect_progress(event_index, len(events), 3, len(stage_order)),
+                event_name,
+            )
+            athletes = await fetch_all_items(client, source, token, f"athlete/{event_uuid}", "athletes")
+            await report_progress(
+                progress_client,
+                server_url,
+                request.upload_token,
+                "referees",
+                collect_progress(event_index, len(events), 4, len(stage_order)),
+                event_name,
+            )
+            referees = await fetch_all_items(client, source, token, f"referee/{event_uuid}", "referees")
+
             event_payloads[str(event_uuid)] = {
-                "teams": await fetch_all_items(client, source, token, f"team/{event_uuid}", "sportEventTeams"),
+                "teams": teams,
                 "categories": category_data.get("weightCategories", []),
-                "athletes": await fetch_all_items(client, source, token, f"athlete/{event_uuid}", "athletes"),
-                "referees": await fetch_all_items(client, source, token, f"referee/{event_uuid}", "referees"),
+                "athletes": athletes,
+                "referees": referees,
                 "fights": fight_data.get("fights", []),
             }
 
@@ -161,15 +243,16 @@ async def health() -> dict[str, str]:
 async def sync(request: SyncRequest) -> dict[str, Any]:
     try:
         logger.info("Starting local sync from Arena %s:%s", request.arena_source.host, request.arena_source.port)
-        bundle = await build_bundle(request.arena_source)
-        logger.info(
-            "Arena bundle ready: %s events, %s event payloads",
-            len(bundle.get("events", [])),
-            len(bundle.get("event_payloads", {})),
-        )
         server_url = request.server_url.rstrip("/")
         timeout = httpx.Timeout(600.0, connect=30.0)
         async with httpx.AsyncClient(timeout=timeout) as client:
+            bundle = await build_bundle(request, client)
+            logger.info(
+                "Arena bundle ready: %s events, %s event payloads",
+                len(bundle.get("events", [])),
+                len(bundle.get("event_payloads", {})),
+            )
+            await report_progress(client, server_url, request.upload_token, "agent", 48)
             upload_url = f"{server_url}/api/v1/admin/local-sync/run"
             logger.info("Uploading local sync bundle to %s", upload_url)
             response = await client.post(

@@ -407,3 +407,36 @@ async def run_local_sync_upload(
         session.rollback()
         sync_admin.fail_sync_log(sync_log, start_time=start_time, error_message=str(exc))
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Local sync failed: {exc}") from exc
+
+
+@router.patch("/progress", response_model=dict)
+async def patch_local_sync_progress(
+    payload: dict[str, Any],
+    authorization: Optional[str] = Header(None),
+    session: Session = Depends(get_session),
+):
+    """Allow the local agent to report progress while reading Arena data."""
+    token_payload = _decode_local_sync_token(_bearer_token(authorization))
+    user_id = int(token_payload["sub"])
+    sync_log_id = int(token_payload["sync_log_id"])
+
+    sync_log = session.get(SyncLog, sync_log_id)
+    if not sync_log or sync_log.user_id != user_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Local sync run not found")
+    if sync_log.status != "in_progress":
+        return {"success": True}
+
+    progress = max(0, min(99, int(payload.get("progress_percent") or 0)))
+    current_step = str(payload.get("current_step") or "agent")
+    current_event = payload.get("current_event")
+    details = {
+        **(sync_log.details or {}),
+        "progress_percent": progress,
+        "current_step": current_step,
+    }
+    if current_event:
+        details["current_event"] = str(current_event)
+    sync_log.details = details
+    session.add(sync_log)
+    session.commit()
+    return {"success": True}
