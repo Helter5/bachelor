@@ -185,7 +185,8 @@ export function useSync(currentUserName?: string) {
             upload_token: localSync.upload_token,
             arena_source: localSync.arena_source,
           }),
-        })
+          targetAddressSpace: 'local',
+        } as RequestInit & { targetAddressSpace?: 'local' })
 
         if (!response.ok) {
           const text = await response.text().catch(() => '')
