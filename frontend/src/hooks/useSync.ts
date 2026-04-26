@@ -24,6 +24,24 @@ interface SyncState {
   initiatedBy: string
 }
 
+interface LocalSyncStartResponse {
+  sync_log_id: number
+  upload_token: string
+  arena_source: {
+    host: string
+    port: number
+    client_id: string
+    client_secret: string
+    api_key: string
+  }
+}
+
+const LOCAL_SYNC_AGENT_URL = import.meta.env.VITE_LOCAL_SYNC_AGENT_URL || 'http://127.0.0.1:8765'
+
+function shouldUseLocalAgentSync() {
+  return import.meta.env.VITE_SYNC_MODE === 'local-agent' || import.meta.env.PROD || window.location.protocol === 'https:'
+}
+
 export function useSync(currentUserName?: string) {
   const { t } = useTranslation()
   const [syncState, setSyncState] = useState<SyncState>(() => {
@@ -147,6 +165,52 @@ export function useSync(currentUserName?: string) {
     }))
 
     try {
+      if (shouldUseLocalAgentSync()) {
+        const localSync = await apiClient.post<LocalSyncStartResponse>(API_ENDPOINTS.LOCAL_SYNC_START, {})
+        currentSyncLogId = localSync.sync_log_id
+
+        setSyncState(prev => ({
+          ...prev,
+          activeSyncLogId: localSync.sync_log_id,
+          currentStep: 'agent',
+          progressPercent: 1,
+        }))
+        startProgressPolling(localSync.sync_log_id)
+
+        const response = await fetch(`${LOCAL_SYNC_AGENT_URL}/sync`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            server_url: window.location.origin,
+            upload_token: localSync.upload_token,
+            arena_source: localSync.arena_source,
+          }),
+        })
+
+        if (!response.ok) {
+          const text = await response.text().catch(() => '')
+          throw new Error(text || `Local sync agent failed: ${response.status} ${response.statusText}`)
+        }
+
+        const formattedDate = formatSyncTimestamp()
+        localStorage.setItem('lastSyncDate', formattedDate)
+
+        setSyncState(prev => ({
+          ...prev,
+          isSyncing: false,
+          showSuccess: true,
+          lastSyncDate: formattedDate,
+          progressPercent: 100,
+          currentStep: 'completed',
+          activeSyncLogId: null,
+        }))
+
+        successTimeoutRef.current = setTimeout(() => {
+          setSyncState(prev => ({ ...prev, showSuccess: false }))
+        }, 3000)
+        return
+      }
+
       const totalSteps = 6
       let completedSteps = 0
 

@@ -199,6 +199,7 @@
       "athletes": "athletes",
       "referees": "referees",
       "fights": "fights",
+      "agent": "local agent",
       "completed": "completed",
       "failed": "failed"
     },
