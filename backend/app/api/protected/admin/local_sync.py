@@ -155,14 +155,31 @@ def _athlete_uuid_map(
     return result
 
 
-def _update_progress(sync_admin: AdminSyncService, sync_log, current_step: str, progress: int) -> None:
+def _update_progress(
+    sync_admin: AdminSyncService,
+    sync_log: SyncLog,
+    current_step: str,
+    progress: int,
+    current_event: Optional[str] = None,
+) -> None:
     sync_log.details = {
         **(sync_log.details or {}),
         "current_step": current_step,
         "progress_percent": progress,
     }
+    if current_event:
+        sync_log.details["current_event"] = current_event
     sync_admin.session.add(sync_log)
     sync_admin.session.commit()
+
+
+def _stage_progress(event_index: int, event_total: int, stage_index: int, stage_total: int) -> int:
+    """Map local-agent event/stage progress into 5..95 percent."""
+    if event_total <= 0 or stage_total <= 0:
+        return 5
+    completed_units = (event_index * stage_total) + stage_index
+    total_units = event_total * stage_total
+    return min(95, 5 + int((completed_units / total_units) * 90))
 
 
 @router.post("/start", response_model=dict)
@@ -269,23 +286,49 @@ async def run_local_sync_upload(
             elif result.get("matched_by") == "updated":
                 totals["events_updated"] += 1
 
-        for idx, (arena_uuid, event_db_id) in enumerate(event_id_by_arena_uuid.items(), start=1):
+        event_items = list(event_id_by_arena_uuid.items())
+        stage_order = ["teams", "categories", "athletes", "referees", "fights"]
+
+        for event_idx, (arena_uuid, event_db_id) in enumerate(event_items):
             bundle = event_payloads.get(arena_uuid) or {}
             teams = bundle.get("teams") or []
             categories = bundle.get("categories") or []
             athletes = bundle.get("athletes") or []
             referees = bundle.get("referees") or []
             fights = bundle.get("fights") or []
+            event_name = next((item.get("name") for item in events if str(item.get("id")) == arena_uuid), None)
 
+            _update_progress(
+                sync_admin,
+                sync_log,
+                "teams",
+                _stage_progress(event_idx, len(event_items), 0, len(stage_order)),
+                event_name,
+            )
             team_result = team_service._sync_teams_list(teams, event_db_id)
             totals["teams_created"] += team_result["created"]
             totals["teams_updated"] += team_result["updated"]
+            session.commit()
 
+            _update_progress(
+                sync_admin,
+                sync_log,
+                "categories",
+                _stage_progress(event_idx, len(event_items), 1, len(stage_order)),
+                event_name,
+            )
             wc_result = wc_service._sync_weight_categories_list(categories, event_db_id)
             totals["weight_categories_created"] += wc_result["created"]
             totals["weight_categories_updated"] += wc_result["updated"]
             session.commit()
 
+            _update_progress(
+                sync_admin,
+                sync_log,
+                "athletes",
+                _stage_progress(event_idx, len(event_items), 2, len(stage_order)),
+                event_name,
+            )
             athlete_result = athlete_service._sync_athletes_list(
                 athletes,
                 event_db_id,
@@ -294,12 +337,28 @@ async def run_local_sync_upload(
             )
             totals["athletes_created"] += athlete_result["created"]
             totals["athletes_updated"] += athlete_result["updated"]
+            session.commit()
 
+            _update_progress(
+                sync_admin,
+                sync_log,
+                "referees",
+                _stage_progress(event_idx, len(event_items), 3, len(stage_order)),
+                event_name,
+            )
             team_by_alt_name, team_by_name = referee_service._build_team_maps(event_db_id)
             referee_result = referee_service._sync_referees_list(referees, event_db_id, team_by_alt_name, team_by_name)
             totals["referees_created"] += referee_result["created"]
             totals["referees_updated"] += referee_result["updated"]
+            session.commit()
 
+            _update_progress(
+                sync_admin,
+                sync_log,
+                "fights",
+                _stage_progress(event_idx, len(event_items), 4, len(stage_order)),
+                event_name,
+            )
             fight_result = fight_service._sync_fights_list(
                 fights,
                 event_db_id,
@@ -309,9 +368,6 @@ async def run_local_sync_upload(
             totals["fights_created"] += fight_result["created"]
             totals["fights_updated"] += fight_result["updated"]
             session.commit()
-
-            progress = 5 + int((idx / max(len(event_id_by_arena_uuid), 1)) * 90)
-            _update_progress(sync_admin, sync_log, "events", min(progress, 95))
 
         sync_log.events_created = totals["events_created"]
         sync_log.events_updated = totals["events_updated"]
