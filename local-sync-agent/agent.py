@@ -6,6 +6,7 @@ data bundle to the deployed BP backend.
 from typing import Any
 from urllib.parse import urlencode
 import logging
+import os
 
 import httpx
 from fastapi import FastAPI, HTTPException
@@ -46,7 +47,8 @@ class SyncRequest(BaseModel):
 
 
 def arena_base_url(source: ArenaSource) -> str:
-    host = source.host.replace("http://", "").replace("https://", "").strip("/")
+    host = os.getenv("BP_ARENA_HOST_OVERRIDE") or source.host
+    host = host.replace("http://", "").replace("https://", "").strip("/")
     return f"http://{host}:{source.port}"
 
 
