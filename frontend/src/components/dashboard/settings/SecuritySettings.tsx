@@ -143,7 +143,7 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
 
       {/* Active Sessions */}
       <SectionCard isDarkMode={isDarkMode}>
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-2">
           <div>
             <h3 className={`text-base font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               {t('security.activeSessions')}
@@ -155,7 +155,7 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
           {sessions.length > 1 && (
             <button
               onClick={handleRevokeAllSessions}
-              className="px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 text-sm font-medium transition-colors"
+              className="px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 text-sm font-medium transition-colors shrink-0 self-start sm:self-auto"
             >
               {t('security.revokeAll')}
             </button>
@@ -176,7 +176,7 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
               {sessions.map((session) => (
                 <div
                   key={session.id}
-                  className={`flex items-center justify-between p-4 rounded-xl border ${
+                  className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-xl border ${
                     session.is_current
                       ? isDarkMode
                         ? 'bg-purple-500/10 border-purple-500/20'
@@ -186,16 +186,16 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
                         : 'bg-gray-50 border-gray-200'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`w-9 h-9 shrink-0 rounded-xl flex items-center justify-center ${
                       session.is_current
                         ? 'bg-purple-500/20 text-purple-400'
                         : isDarkMode ? 'bg-white/8 text-gray-400' : 'bg-gray-200 text-gray-500'
                     }`}>
                       <IconMonitor />
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                           {getBrowserInfo(session.user_agent)}
                         </span>
@@ -205,7 +205,7 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
                           </span>
                         )}
                       </div>
-                      <div className={`text-xs mt-0.5 space-x-3 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                      <div className={`text-xs mt-0.5 flex flex-wrap gap-x-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
                         <span>{session.ip_address || t('security.unknownIp')}</span>
                         <span>·</span>
                         <span>{t('security.lastActivity')}: {formatDate(session.last_used_at)}</span>
@@ -215,7 +215,7 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
                   {!session.is_current && (
                     <button
                       onClick={() => handleRevokeSession(session.id)}
-                      className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 text-xs font-medium transition-colors"
+                      className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 text-xs font-medium transition-colors self-start sm:self-auto shrink-0"
                     >
                       {t('security.revokeSession')}
                     </button>
@@ -248,7 +248,8 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
           </p>
         ) : (
           <div className={`rounded-xl overflow-hidden border ${isDarkMode ? 'border-white/8' : 'border-gray-200'}`}>
-            <table className="w-full">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[600px]">
               <thead>
                 <tr className={`border-b text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'border-white/8 bg-white/3 text-gray-400' : 'border-gray-200 bg-gray-50 text-gray-500'}`}>
                   <th className="text-left py-3 px-4">{t('security.tableDate')}</th>
@@ -298,6 +299,7 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         )}
       </SectionCard>

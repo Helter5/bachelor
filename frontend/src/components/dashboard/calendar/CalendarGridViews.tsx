@@ -106,7 +106,7 @@ export function CalendarGridViews({
               <button
                 key={dateKey(date)}
                 onClick={() => selectDate(date)}
-                className={`min-h-[228px] border-r text-left p-3 transition-colors ${
+                className={`min-h-[80px] md:min-h-[150px] lg:min-h-[228px] border-r text-left p-1.5 md:p-3 transition-colors ${
                   selectedMarker
                     ? isDarkMode
                       ? 'bg-sky-500/12 outline outline-1 outline-sky-400 -outline-offset-1'
@@ -158,7 +158,7 @@ export function CalendarGridViews({
             <button
               key={dateKey(date)}
               onClick={() => selectDate(date)}
-              className={`group relative min-h-[152px] border-r border-b text-left p-2.5 md:p-3.5 transition-colors ${
+              className={`group relative min-h-[52px] md:min-h-[100px] lg:min-h-[152px] border-r border-b text-left p-1 md:p-2.5 lg:p-3.5 transition-colors ${
                 selectedMarker
                   ? isDarkMode
                     ? 'bg-sky-500/12 outline outline-1 outline-sky-400 -outline-offset-1'
@@ -172,14 +172,14 @@ export function CalendarGridViews({
                       : 'bg-gray-50 opacity-70 hover:opacity-95'
               } ${isDarkMode ? 'border-white/10' : 'border-gray-200'} ${flashDateKey === dateKey(date) ? isDarkMode ? 'animate-pulse shadow-[0_0_0_2px_rgba(56,189,248,0.45)]' : 'animate-pulse shadow-[0_0_0_2px_rgba(14,165,233,0.35)]' : ''}`}
             >
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center justify-between gap-1">
                 {dateEvents.length > 0 && (
-                  <span className={`inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-[11px] font-semibold ${isDarkMode ? 'bg-sky-500/12 text-sky-300' : 'bg-sky-50 text-sky-700'}`}>
+                  <span className={`hidden md:inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-[11px] font-semibold ${isDarkMode ? 'bg-sky-500/12 text-sky-300' : 'bg-sky-50 text-sky-700'}`}>
                     {dateEvents.length}
                   </span>
                 )}
                 <span
-                  className={`inline-flex h-8 min-w-8 ml-auto items-center justify-center rounded-full text-sm font-semibold transition-colors ${
+                  className={`inline-flex h-5 w-5 md:h-8 md:min-w-8 ml-auto items-center justify-center rounded-full text-[10px] md:text-sm font-semibold transition-colors ${
                     todayMarker
                       ? isDarkMode
                         ? 'bg-sky-500 text-white'
@@ -197,7 +197,7 @@ export function CalendarGridViews({
                 </span>
               </div>
 
-              <div className="mt-3 min-h-[14px]">
+              <div className="mt-1 md:mt-3 min-h-[8px] md:min-h-[14px]">
                 {dateEvents.length > 0 && renderEventDots(dateEvents)}
               </div>
             </button>

@@ -30,7 +30,7 @@ export function CalendarTopBar({
   return (
     <>
       <label
-        className={`mb-4 w-[276px] rounded-xl border px-3 py-2.5 flex items-center gap-2 ${
+        className={`mb-4 w-full max-w-[276px] rounded-xl border px-3 py-2.5 flex items-center gap-2 ${
           isDarkMode
             ? 'bg-white/5 border-white/10 text-gray-200'
             : 'bg-white border-gray-200 text-gray-700'
@@ -50,7 +50,7 @@ export function CalendarTopBar({
       </label>
 
       <div className="flex flex-wrap items-center gap-1 mb-1">
-        <h3 className={`text-lg font-semibold whitespace-nowrap w-[180px] shrink-0 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+        <h3 className={`text-lg font-semibold whitespace-nowrap shrink-0 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
           {monthLabel}
         </h3>
 

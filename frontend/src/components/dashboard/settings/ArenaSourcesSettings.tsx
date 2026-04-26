@@ -232,7 +232,7 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
     <div className="space-y-6">
       <SectionCard isDarkMode={isDarkMode}>
         {/* Header */}
-        <div className="flex items-start justify-between mb-2">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-2">
           <div>
             <h3 className={`text-base font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               {t("arenaSources.title")}
@@ -241,7 +241,7 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
               {t("arenaSources.description")}
             </p>
           </div>
-          <div className="flex gap-2 ml-4">
+          <div className="flex gap-2 sm:ml-4 shrink-0">
             <button
               onClick={handleLoadDefault}
               disabled={formOpen}
@@ -337,7 +337,7 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
                   key={source.id}
                   className={`p-4 rounded-xl border ${isDarkMode ? 'bg-white/3 border-white/8' : 'bg-gray-50 border-gray-200'}`}
                 >
-                  <div className="flex items-center justify-between gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     {/* Left: info */}
                     <div className="flex items-center gap-3 min-w-0">
                       <div className={`w-9 h-9 shrink-0 rounded-xl flex items-center justify-center ${
@@ -368,7 +368,7 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
                     </div>
 
                     {/* Right: actions */}
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex flex-wrap items-center gap-2">
                       <button
                         onClick={() => handleTest(source.id)}
                         className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${

@@ -13,7 +13,7 @@ function SectionCard({ isDarkMode, icon, title, description, children }: {
   children: React.ReactNode
 }) {
   return (
-    <div className={`rounded-2xl overflow-hidden ${isDarkMode ? 'bg-[#0f172a]/60 border border-white/8' : 'bg-white border border-gray-200 shadow-sm'}`}>
+    <div className={`rounded-2xl ${isDarkMode ? 'bg-[#0f172a]/60 border border-white/8' : 'bg-white border border-gray-200 shadow-sm'}`}>
       <div className={`flex items-center gap-3 px-6 py-4 border-b ${isDarkMode ? 'border-white/6 bg-white/2' : 'border-gray-100 bg-gray-50'}`}>
         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
           {icon}
@@ -113,7 +113,7 @@ export function AppearanceSettings({ isDarkMode, toggleDarkMode }: AppearanceSet
         title={t('appearance.languageTitle')}
         description={t('appearance.languageDesc')}
       >
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           {LANGUAGES.map((lang) => {
             const active = currentLang === lang.code
             return (

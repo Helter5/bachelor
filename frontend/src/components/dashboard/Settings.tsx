@@ -75,21 +75,21 @@ export function Settings({ isDarkMode, toggleDarkMode, onUserDataChange }: Setti
 
   return (
     <div className="max-w-6xl mx-auto">
-      <h2 className={`text-3xl font-bold mb-8 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+      <h2 className={`text-2xl md:text-3xl font-bold mb-6 md:mb-8 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
         {t("settings.title")}
       </h2>
 
-      <div className="flex gap-8">
-        {/* Sidebar Nav */}
-        <nav className="w-56 shrink-0">
-          <ul className="space-y-1">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-8">
+        {/* Nav – horizontal scrollable on mobile, vertical sidebar on md+ */}
+        <nav className="md:w-56 md:shrink-0">
+          <ul className="grid grid-cols-2 md:flex md:flex-col gap-1 pb-1 md:pb-0">
             {tabs.map((tab) => {
               const active = activeTab === tab.id
               return (
                 <li key={tab.id}>
                   <button
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                    className={`w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
                       active
                         ? isDarkMode
                           ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
