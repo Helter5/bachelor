@@ -5,12 +5,15 @@ data bundle to the deployed BP backend.
 """
 from typing import Any
 from urllib.parse import urlencode
+import logging
 
 import httpx
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+
+logger = logging.getLogger("bp-local-sync-agent")
 
 app = FastAPI(title="BP Local Sync Agent", version="0.1.0")
 app.add_middleware(
@@ -55,8 +58,16 @@ async def get_arena_token(client: httpx.AsyncClient, source: ArenaSource) -> str
         "api_key": source.api_key,
     }
     url = f"{arena_base_url(source)}/oauth/v2/token?{urlencode(params)}"
-    response = await client.post(url)
-    response.raise_for_status()
+    try:
+        response = await client.post(url)
+        response.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Arena token request failed: {exc.response.status_code} {exc.response.text[:500]}",
+        ) from exc
+    except httpx.RequestError as exc:
+        raise HTTPException(status_code=502, detail=f"Arena token request failed at {url}: {type(exc).__name__}: {exc}") from exc
     data = response.json()
     token = data.get("access_token")
     if not token:
@@ -66,10 +77,18 @@ async def get_arena_token(client: httpx.AsyncClient, source: ArenaSource) -> str
 
 async def fetch_arena_json(client: httpx.AsyncClient, source: ArenaSource, token: str, endpoint: str) -> dict[str, Any]:
     url = f"{arena_base_url(source)}/api/json/{endpoint}"
-    response = await client.get(url, headers={"Authorization": f"Bearer {token}"})
-    if response.status_code == 404 or (endpoint.startswith("fight/") and response.status_code == 500):
-        return {}
-    response.raise_for_status()
+    try:
+        response = await client.get(url, headers={"Authorization": f"Bearer {token}"})
+        if response.status_code == 404 or (endpoint.startswith("fight/") and response.status_code == 500):
+            return {}
+        response.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Arena API request failed at {url}: {exc.response.status_code} {exc.response.text[:500]}",
+        ) from exc
+    except httpx.RequestError as exc:
+        raise HTTPException(status_code=502, detail=f"Arena API request failed at {url}: {type(exc).__name__}: {exc}") from exc
     return response.json()
 
 
@@ -139,18 +158,38 @@ async def health() -> dict[str, str]:
 @app.post("/sync")
 async def sync(request: SyncRequest) -> dict[str, Any]:
     try:
+        logger.info("Starting local sync from Arena %s:%s", request.arena_source.host, request.arena_source.port)
         bundle = await build_bundle(request.arena_source)
+        logger.info(
+            "Arena bundle ready: %s events, %s event payloads",
+            len(bundle.get("events", [])),
+            len(bundle.get("event_payloads", {})),
+        )
         server_url = request.server_url.rstrip("/")
-        async with httpx.AsyncClient(timeout=120.0) as client:
+        timeout = httpx.Timeout(600.0, connect=30.0)
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            upload_url = f"{server_url}/api/v1/admin/local-sync/run"
+            logger.info("Uploading local sync bundle to %s", upload_url)
             response = await client.post(
-                f"{server_url}/api/v1/admin/local-sync/run",
+                upload_url,
                 json=bundle,
                 headers={"Authorization": f"Bearer {request.upload_token}"},
             )
             response.raise_for_status()
             return response.json()
+    except HTTPException as exc:
+        logger.error("Local sync failed: %s", exc.detail)
+        raise
     except httpx.HTTPStatusError as exc:
         detail = exc.response.text
-        raise HTTPException(status_code=502, detail=f"Sync HTTP error: {detail}") from exc
+        logger.error("Server upload failed: %s %s", exc.response.status_code, detail[:1000])
+        raise HTTPException(
+            status_code=502,
+            detail=f"Server upload failed: {exc.response.status_code} {detail[:1000]}",
+        ) from exc
     except httpx.RequestError as exc:
-        raise HTTPException(status_code=502, detail=f"Sync request failed: {exc}") from exc
+        logger.error("Server upload request failed: %s: %s", type(exc).__name__, exc)
+        raise HTTPException(
+            status_code=502,
+            detail=f"Server upload request failed: {type(exc).__name__}: {exc}",
+        ) from exc
