@@ -1,7 +1,10 @@
+import type { CSSProperties } from "react"
+import { alpha3ToAlpha2, isValid } from "i18n-iso-countries"
+
 interface CountryFlagProps {
   code: string | null | undefined
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
   imageUrl?: string | null
   /** If true, only renders for valid 2-letter ISO codes — no badge for non-standard codes */
   flagOnly?: boolean
@@ -18,9 +21,36 @@ export function buildArenaFlagUrl(code: string | null | undefined): string | nul
   return `http://localhost:8080/build/images/flags/4x3/${trimmed}.svg`
 }
 
-/** Renders a flag for valid 2-letter ISO codes. Non-standard codes (e.g. "UWW") show as text badge unless flagOnly=true. */
+export function normalizeCountryCodeToAlpha2(code: string | null | undefined): string | null {
+  const trimmed = code?.trim().toUpperCase()
+  if (!trimmed) return null
+
+  if (trimmed.length === 2 && isValid(trimmed)) {
+    return trimmed.toLowerCase()
+  }
+
+  if (trimmed.length === 3) {
+    return alpha3ToAlpha2(trimmed)?.toLowerCase() ?? null
+  }
+
+  return null
+}
+
+/** Renders a flag for ISO2/ISO3 country codes. Non-standard codes (e.g. "UWW") show as text badge unless flagOnly=true. */
 export function CountryFlag({ code, className = "", style, imageUrl, flagOnly = false }: CountryFlagProps) {
   if (!code) return null
+
+  const alpha2Code = normalizeCountryCodeToAlpha2(code)
+
+  if (alpha2Code) {
+    return (
+      <span
+        className={`fi fi-${alpha2Code} fis rounded-sm ${className}`}
+        style={style}
+        title={code}
+      />
+    )
+  }
 
   if (imageUrl) {
     return (
@@ -28,16 +58,6 @@ export function CountryFlag({ code, className = "", style, imageUrl, flagOnly = 
         src={normalizeArenaAssetUrl(imageUrl)}
         alt={code}
         className={`inline-block h-[0.9rem] w-auto rounded-sm object-cover align-[-0.125em] ${className}`}
-        style={style}
-        title={code}
-      />
-    )
-  }
-
-  if (code.trim().length === 2) {
-    return (
-      <span
-        className={`fi fi-${code.trim().toLowerCase()} fis rounded-sm ${className}`}
         style={style}
         title={code}
       />
