@@ -81,6 +81,8 @@ export function StatisticsTab({
                   </Pie>
                   <Tooltip
                     contentStyle={tooltipStyle}
+                    labelStyle={{ color: isDarkMode ? '#e2e8f0' : '#1f2937' }}
+                    itemStyle={{ color: isDarkMode ? '#e2e8f0' : '#1f2937' }}
                     formatter={(value: number | string | undefined, name: string | undefined) => [value ?? 0, name ?? '']}
                   />
                   <Legend
