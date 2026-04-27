@@ -159,11 +159,6 @@ export function RefereesTab({
 
                 const metadata = (
                   <>
-                    {referee.team_alternate_name && (
-                      <span className={`px-2.5 py-1 rounded-full text-xs ${isDarkMode ? 'bg-white/5 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
-                        {referee.team_alternate_name}
-                      </span>
-                    )}
                     {referee.mat_name && (
                       <span className={`px-2.5 py-1 rounded-full text-xs ${isDarkMode ? 'bg-white/5 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
                         Mat: {referee.mat_name}
@@ -177,11 +172,10 @@ export function RefereesTab({
                     key={referee.id}
                     isDarkMode={isDarkMode}
                     name={referee.person_full_name || '—'}
-                    countryCode={referee.country_iso_code || undefined}
+                    countryCode={referee.team_alternate_name ?? referee.country_iso_code ?? undefined}
                     countryFlagUrl={buildArenaFlagUrl(referee.team_alternate_name ?? referee.country_iso_code) ?? undefined}
-                    showCountryText={false}
                     badges={badges.length > 0 ? badges : undefined}
-                    metadata={referee.team_alternate_name || referee.mat_name ? metadata : undefined}
+                    metadata={referee.mat_name ? metadata : undefined}
                   />
                 )
               })}

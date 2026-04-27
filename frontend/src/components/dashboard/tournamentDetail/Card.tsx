@@ -1,5 +1,5 @@
 import type { ReactNode } from "react"
-import { CountryFlag } from "../CountryFlag"
+import { CountryFlag, normalizeCountryCodeToAlpha2 } from "../CountryFlag"
 import { StatusBadge } from "../../ui/StatusBadge"
 
 export interface Badge {
@@ -38,6 +38,7 @@ export function Card({
   onClick,
 }: CardProps) {
   const isClickable = !!onClick
+  const displayCountryCode = normalizeCountryCodeToAlpha2(countryCode)?.toUpperCase() ?? countryCode
 
   return (
     <div
@@ -62,7 +63,7 @@ export function Card({
                   <CountryFlag code={countryCode} imageUrl={countryFlagUrl} flagOnly />
                   {showCountryText && (
                     <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-                      {countryCode}
+                      {displayCountryCode}
                     </span>
                   )}
                 </div>

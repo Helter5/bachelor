@@ -154,7 +154,7 @@ export function AthletesTab({
                   key={athlete.id}
                   isDarkMode={isDarkMode}
                   name={athlete.person_full_name ?? '-'}
-                  countryCode={athleteTeam?.country_iso_code ?? undefined}
+                  countryCode={athleteTeam?.alternate_name ?? athleteTeam?.country_iso_code ?? undefined}
                   countryFlagUrl={buildArenaFlagUrl(athleteTeam?.alternate_name ?? athleteTeam?.country_iso_code) ?? undefined}
                   metadata={athleteTeam?.name || athleteWeightCategory?.name ? metadata : undefined}
                   statusBadge={{
