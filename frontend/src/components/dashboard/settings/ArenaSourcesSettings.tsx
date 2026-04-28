@@ -167,6 +167,9 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
       const result = await response.json().catch(() => null) as { success?: boolean; message?: string; detail?: string; events_count?: number } | null
 
       if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error(t("arenaSources.localAgentOutdated"))
+        }
         throw new Error(result?.detail || result?.message || `${response.status} ${response.statusText}`)
       }
 

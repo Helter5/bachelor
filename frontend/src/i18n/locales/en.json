@@ -665,6 +665,7 @@
     "testFailed": "Connection failed",
     "testError": "Connection error",
     "localAgentUnavailable": "The local sync agent is not running or is not reachable on this computer.",
+    "localAgentOutdated": "The local sync agent is running an old version. Restart it from the latest code.",
     "never": "Never"
   },
   "security": {

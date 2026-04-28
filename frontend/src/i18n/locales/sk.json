@@ -668,6 +668,7 @@
     "testFailed": "Neúspešné pripojenie",
     "testError": "Chyba pripojenia",
     "localAgentUnavailable": "Local sync agent nebeží alebo nie je dostupný na tomto počítači.",
+    "localAgentOutdated": "Local sync agent beží v starej verzii. Reštartujte ho z aktuálneho kódu.",
     "never": "Nikdy"
   },
   "security": {

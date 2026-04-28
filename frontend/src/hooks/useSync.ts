@@ -60,6 +60,7 @@ export function useSync(currentUserName?: string) {
 
   const syncTimeoutRef = useRef<number | undefined>(undefined)
   const successTimeoutRef = useRef<number | undefined>(undefined)
+  const completionTimeoutRef = useRef<number | undefined>(undefined)
   const progressIntervalRef = useRef<number | undefined>(undefined)
 
   const clearTimers = useCallback(() => {
@@ -70,6 +71,10 @@ export function useSync(currentUserName?: string) {
     if (successTimeoutRef.current !== undefined) {
       clearTimeout(successTimeoutRef.current)
       successTimeoutRef.current = undefined
+    }
+    if (completionTimeoutRef.current !== undefined) {
+      clearTimeout(completionTimeoutRef.current)
+      completionTimeoutRef.current = undefined
     }
     if (progressIntervalRef.current !== undefined) {
       clearInterval(progressIntervalRef.current)
@@ -124,7 +129,7 @@ export function useSync(currentUserName?: string) {
       } catch {
         // Keep UI state as-is; next poll will retry.
       }
-    }, 2500)
+    }, 1000)
   }, [])
 
   const getSyncErrorMessage = useCallback((error: unknown) => {
@@ -148,6 +153,30 @@ export function useSync(currentUserName?: string) {
 
     return t('dashboard.syncErrors.generic')
   }, [t])
+
+  const completeSync = useCallback((formattedDate: string) => {
+    localStorage.setItem('lastSyncDate', formattedDate)
+
+    setSyncState(prev => ({
+      ...prev,
+      isSyncing: true,
+      showSuccess: true,
+      lastSyncDate: formattedDate,
+      progressPercent: 100,
+      currentStep: 'completed',
+      activeSyncLogId: null,
+    }))
+
+    completionTimeoutRef.current = window.setTimeout(() => {
+      setSyncState(prev => ({ ...prev, isSyncing: false }))
+      completionTimeoutRef.current = undefined
+    }, 1200)
+
+    successTimeoutRef.current = window.setTimeout(() => {
+      setSyncState(prev => ({ ...prev, showSuccess: false }))
+      successTimeoutRef.current = undefined
+    }, 3000)
+  }, [])
 
   const triggerSync = useCallback(async () => {
     let currentSyncLogId: number | null = null
@@ -192,21 +221,7 @@ export function useSync(currentUserName?: string) {
         }
 
         const formattedDate = formatSyncTimestamp()
-        localStorage.setItem('lastSyncDate', formattedDate)
-
-        setSyncState(prev => ({
-          ...prev,
-          isSyncing: false,
-          showSuccess: true,
-          lastSyncDate: formattedDate,
-          progressPercent: 100,
-          currentStep: 'completed',
-          activeSyncLogId: null,
-        }))
-
-        successTimeoutRef.current = setTimeout(() => {
-          setSyncState(prev => ({ ...prev, showSuccess: false }))
-        }, 3000)
+        completeSync(formattedDate)
         return
       }
 
@@ -352,22 +367,7 @@ export function useSync(currentUserName?: string) {
       }
 
       const formattedDate = formatSyncTimestamp()
-
-      localStorage.setItem('lastSyncDate', formattedDate)
-
-      setSyncState(prev => ({
-        ...prev,
-        isSyncing: false,
-        showSuccess: true,
-        lastSyncDate: formattedDate,
-        progressPercent: 100,
-        currentStep: 'completed',
-        activeSyncLogId: null,
-      }))
-
-      successTimeoutRef.current = setTimeout(() => {
-        setSyncState(prev => ({ ...prev, showSuccess: false }))
-      }, 3000)
+      completeSync(formattedDate)
     } catch (error) {
       console.error('Sync error:', error)
       const errorMessage = getSyncErrorMessage(error)
@@ -401,7 +401,7 @@ export function useSync(currentUserName?: string) {
         initiatedBy: '',
       }))
     }
-  }, [clearTimers, currentUserName, getSyncErrorMessage, startProgressPolling])
+  }, [clearTimers, completeSync, currentUserName, getSyncErrorMessage, startProgressPolling])
 
   const confirmSync = useCallback(() => {
     setSyncState(prev => ({ ...prev, showConfirm: false }))
