@@ -1,7 +1,4 @@
-"""
-Base Service Class
-Provides common functionality for all service classes
-"""
+"""Shared CRUD helpers for service classes."""
 from fastapi import HTTPException
 from sqlmodel import Session, select
 from typing import Generic, TypeVar, Type, Optional, List, Dict, Any, Callable, Awaitable
@@ -13,36 +10,29 @@ logger = logging.getLogger(__name__)
 
 
 class BaseService(Generic[ModelType]):
-    """Base service with common CRUD operations"""
-
     def __init__(self, session: Session, model: Type[ModelType]):
         self.session = session
         self.model = model
 
     def get_by_id(self, id: int) -> Optional[ModelType]:
-        """Get entity by ID"""
         return self.session.get(self.model, id)
 
     def get_all(self) -> List[ModelType]:
-        """Get all entities"""
         return list(self.session.exec(select(self.model)).all())
 
     def create(self, entity: ModelType) -> ModelType:
-        """Create new entity"""
         self.session.add(entity)
         self.session.commit()
         self.session.refresh(entity)
         return entity
 
     def update(self, entity: ModelType) -> ModelType:
-        """Update existing entity"""
         self.session.add(entity)
         self.session.commit()
         self.session.refresh(entity)
         return entity
 
     def delete(self, id: int) -> bool:
-        """Delete entity by ID"""
         entity = self.get_by_id(id)
         if entity:
             self.session.delete(entity)
@@ -52,7 +42,7 @@ class BaseService(Generic[ModelType]):
 
     @staticmethod
     def has_changes(existing, new_data: dict, exclude_fields: set = None) -> bool:
-        """Compare new data with existing DB record. Returns True if any field actually changed."""
+        """Return true when persisted values differ from incoming sync data."""
         exclude = exclude_fields or set()
         for key, new_value in new_data.items():
             if key in exclude:
@@ -73,12 +63,10 @@ class BaseService(Generic[ModelType]):
         entity_label: str,
         do_sync: Callable[[str, int], Awaitable[Optional[Dict[str, int]]]],
     ) -> Dict[str, Any]:
-        """
-        Shared boilerplate for Arena entity sync per event.
+        """Run the common Arena event sync flow.
 
-        do_sync(sport_event_uuid, event_db_id) must return:
-          {"created": int, "updated": int}  — on success
-          None                               — if nothing to sync (empty / Arena 404)
+        ``do_sync`` returns created/updated counts, or ``None`` for an empty
+        Arena response that should still be treated as a successful sync.
         """
         from ..domain.entities.sport_event import SportEvent
 

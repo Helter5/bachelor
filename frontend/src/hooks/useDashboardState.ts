@@ -95,7 +95,7 @@ function parseLocationState() {
     }
   }
 
-  // Backward compatibility for existing query links
+  // Preserve old shared links that used query params instead of path segments.
   if (params.get('section') && VALID_SECTIONS.has(params.get('section') as string)) {
     section = params.get('section') as string
   }
@@ -125,7 +125,6 @@ export function useDashboardState(isAdmin = false) {
     }
   })
 
-  // Handle browser back/forward navigation
   useEffect(() => {
     const handlePopState = () => {
       const { section, personId, tournamentId } = parseLocationState()

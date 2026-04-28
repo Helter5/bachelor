@@ -160,8 +160,6 @@ export function TeamComparisonView({ isDarkMode, onBack }: TeamComparisonViewPro
       title={t("teamComparison.title")}
       subtitle={t("teamComparison.subtitle")}
     >
-
-        {/* Event selector */}
         <div className="mb-6">
           <label className={`block text-sm font-medium mb-2 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
             {t("teamComparison.tournament")}
@@ -175,21 +173,18 @@ export function TeamComparisonView({ isDarkMode, onBack }: TeamComparisonViewPro
           />
         </div>
 
-        {/* Loading spinner */}
         {loading && (
           <div className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
             {t("teamComparison.loadingTeams")}
           </div>
         )}
 
-        {/* No teams found */}
         {!loading && selectedEventId && teams.length === 0 && (
           <div className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
             {t("teamComparison.noTeams")}
           </div>
         )}
 
-        {/* Team pickers */}
         {!loading && teams.length >= 2 && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -241,12 +236,9 @@ export function TeamComparisonView({ isDarkMode, onBack }: TeamComparisonViewPro
           </>
         )}
 
-        {/* Results */}
         {showResults && team1 && team2 && (
           <div className="mt-8">
-            {/* Header */}
             <div className={`rounded-xl overflow-hidden ${isDarkMode ? "bg-[#0f172a]/80 border border-white/5" : "bg-gray-50 border border-gray-200"}`}>
-              {/* Team names */}
               <div className="flex items-center">
                 <TeamNameBlock isDarkMode={isDarkMode} team={team1} align="right" />
                 <div className={`w-40 text-center py-4 font-black text-sm ${isDarkMode ? "text-gray-500" : "text-gray-400"} uppercase tracking-widest`}>
@@ -255,17 +247,14 @@ export function TeamComparisonView({ isDarkMode, onBack }: TeamComparisonViewPro
                 <TeamNameBlock isDarkMode={isDarkMode} team={team2} align="left" />
               </div>
 
-              {/* Divider */}
               <div className={`h-px ${isDarkMode ? "bg-white/5" : "bg-gray-200"}`} />
 
-              {/* Stat rows */}
               <StatRow label={t("teamComparison.statFights")} v1={team1.total_fights} v2={team2.total_fights} isDarkMode={isDarkMode} />
               <StatRow label={t("teamComparison.statWins")} v1={team1.wins} v2={team2.wins} isDarkMode={isDarkMode} />
               <StatRow label={t("teamComparison.statLosses")} v1={team1.losses} v2={team2.losses} isDarkMode={isDarkMode} higherIsBetter={false} />
               <StatRow label={t("teamComparison.statWinRate")} v1={team1.win_rate.toFixed(1)} v2={team2.win_rate.toFixed(1)} isDarkMode={isDarkMode} suffix="%" />
             </div>
 
-            {/* Quick verdict */}
             {team1.win_rate !== team2.win_rate && (
               <div className={`mt-4 text-center text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
                 {team1.win_rate > team2.win_rate

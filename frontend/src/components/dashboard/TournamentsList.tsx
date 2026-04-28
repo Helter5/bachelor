@@ -228,13 +228,11 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Athlete filter state
   const [selectedPerson, setSelectedPerson] = useState<{ id: number; name: string } | null>(null)
   const [personEventIds, setPersonEventIds] = useState<Set<number>>(new Set())
 
   const itemsPerPage = 20
 
-  // Fetch events from database on mount
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -254,7 +252,6 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
     fetchEvents()
   }, [])
 
-  // Fetch event IDs when a person is selected
   const handleSelectPerson = useCallback(async (personId: number, fullName: string) => {
     setSelectedPerson({ id: personId, name: fullName })
     setCurrentPage(1)
@@ -288,25 +285,21 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
     hasActiveFilters,
   } = useTournamentFilters(events)
 
-  // Apply person filter on top of base filters
   const displayedEvents = useMemo(
     () => selectedPerson ? filteredAndSortedEvents.filter(e => personEventIds.has(e.id)) : filteredAndSortedEvents,
     [filteredAndSortedEvents, selectedPerson, personEventIds]
   )
 
-  // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1)
   }, [searchQuery, locationFilter, sortBy, sortOrder, selectedPerson])
 
-  // Pagination
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
   const currentEvents = displayedEvents.slice(startIndex, endIndex)
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h2 className={`text-3xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
           {t("tournaments.title")}

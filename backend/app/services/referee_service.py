@@ -1,6 +1,6 @@
-"""
-Referee Service
-Business logic for referee operations
+"""Referee synchronization service.
+
+Arena API reference: https://arena.uww.org/api/doc/
 """
 from sqlmodel import Session, select
 from typing import List, Dict, Any, Optional, TYPE_CHECKING

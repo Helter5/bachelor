@@ -1,9 +1,3 @@
-/**
- * API Client Service
- * Centralized HTTP client for all API requests with automatic authentication
- * and token refresh on 401 responses
- */
-
 import { API_BASE_URL, API_ENDPOINTS } from '@/config/api'
 import { clearAuthSessionHint } from '@/services/authSession'
 
@@ -37,23 +31,16 @@ class ApiClient {
     this.baseUrl = baseUrl
   }
 
-  /**
-   * Get CSRF token from sessionStorage (stored after login)
-   */
   private getCsrfToken(): string | null {
     return sessionStorage.getItem('csrf_token')
   }
 
-  /**
-   * Build headers with CSRF token and Device ID for cookie-based auth
-   */
   private buildHeaders(options: RequestOptions = {}): HeadersInit {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...options.headers,
     }
 
-    // Add CSRF token header for state-changing requests
     if (options.requireAuth !== false) {
       const csrfToken = this.getCsrfToken()
       if (csrfToken) {
@@ -64,10 +51,6 @@ class ApiClient {
     return headers
   }
 
-  /**
-   * Build headers for multipart/form-data requests.
-   * Note: Content-Type is intentionally omitted so browser can set boundary.
-   */
   private buildFormHeaders(options: RequestOptions = {}): HeadersInit {
     const headers: Record<string, string> = {
       ...options.headers,
@@ -83,9 +66,6 @@ class ApiClient {
     return headers
   }
 
-  /**
-   * Build URL with query parameters
-   */
   private buildUrl(endpoint: string, params?: Record<string, string | number>): string {
     const url = `${this.baseUrl}${endpoint}`
 
@@ -102,13 +82,7 @@ class ApiClient {
     return `${url}${separator}${searchParams.toString()}`
   }
 
-  /**
-   * Try to refresh the access token using the refresh token.
-   * Returns true if refresh was successful, false otherwise.
-   * Uses a shared promise to prevent concurrent refresh calls.
-   */
   private async tryRefreshToken(): Promise<boolean> {
-    // If a refresh is already in progress, wait for it
     if (this.refreshPromise) {
       return this.refreshPromise
     }
@@ -132,7 +106,6 @@ class ApiClient {
 
       if (response.ok) {
         const data = await response.json()
-        // Update CSRF token with the new one from refresh response
         if (data.csrf_token) {
           sessionStorage.setItem('csrf_token', data.csrf_token)
         }
@@ -144,9 +117,6 @@ class ApiClient {
     }
   }
 
-  /**
-   * Core request method with automatic 401 → refresh → retry logic
-   */
   private async request<T>(
     method: string,
     endpoint: string,
@@ -165,14 +135,11 @@ class ApiClient {
     })
 
     if (!response.ok) {
-      // On 401, try to refresh the token (only once, and only if user was authenticated)
       if (response.status === 401 && !isRetry && this.getCsrfToken()) {
         const refreshed = await this.tryRefreshToken()
         if (refreshed) {
-          // Retry the original request with refreshed tokens
           return this.request<T>(method, endpoint, data, options, true)
         }
-        // Refresh failed → session is invalid (revoked or expired), force logout
         sessionStorage.removeItem('csrf_token')
         clearAuthSessionHint()
         window.location.href = '/'
@@ -188,7 +155,6 @@ class ApiClient {
       throw new ApiError(response.status, response.statusText, errorMessage)
     }
 
-    // Handle empty responses (204 No Content, etc.)
     const contentType = response.headers.get('content-type')
     if (!contentType || !contentType.includes('application/json')) {
       return {} as T
@@ -197,16 +163,10 @@ class ApiClient {
     return response.json()
   }
 
-  /**
-   * GET request
-   */
   async get<T = unknown>(endpoint: string, options: RequestOptions = {}): Promise<T> {
     return this.request<T>('GET', endpoint, undefined, options)
   }
 
-  /**
-   * POST request
-   */
   async post<T = unknown>(
     endpoint: string,
     data?: unknown,
@@ -215,9 +175,6 @@ class ApiClient {
     return this.request<T>('POST', endpoint, data, options)
   }
 
-  /**
-   * PUT request
-   */
   async put<T = unknown>(
     endpoint: string,
     data?: unknown,
@@ -226,16 +183,10 @@ class ApiClient {
     return this.request<T>('PUT', endpoint, data, options)
   }
 
-  /**
-   * DELETE request
-   */
   async delete<T = unknown>(endpoint: string, options: RequestOptions = {}): Promise<T> {
     return this.request<T>('DELETE', endpoint, undefined, options)
   }
 
-  /**
-   * PATCH request
-   */
   async patch<T = unknown>(
     endpoint: string,
     data?: unknown,
@@ -244,9 +195,6 @@ class ApiClient {
     return this.request<T>('PATCH', endpoint, data, options)
   }
 
-  /**
-   * GET request that returns a Blob (for file downloads)
-   */
   async getBlob(endpoint: string, options: RequestOptions = {}): Promise<Blob> {
     const url = this.buildUrl(endpoint, options.params)
     const headers = this.buildHeaders(options)
@@ -258,7 +206,6 @@ class ApiClient {
     })
 
     if (!response.ok) {
-      // Try refresh on 401 for blob requests too
       if (response.status === 401 && this.getCsrfToken()) {
         const refreshed = await this.tryRefreshToken()
         if (refreshed) {
@@ -288,9 +235,6 @@ class ApiClient {
     return response.blob()
   }
 
-  /**
-   * POST multipart/form-data request
-   */
   async postForm<T = unknown>(endpoint: string, formData: FormData, options: RequestOptions = {}): Promise<T> {
     const url = this.buildUrl(endpoint, options.params)
     const headers = this.buildFormHeaders(options)
@@ -337,10 +281,8 @@ class ApiClient {
   }
 }
 
-// Export singleton instance
 export const apiClient = new ApiClient(API_BASE_URL)
 
-// Export convenience methods for direct import
 export const { get, post, put, patch, delete: del } = {
   get: <T = unknown>(endpoint: string, options?: RequestOptions) =>
     apiClient.get<T>(endpoint, options),

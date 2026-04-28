@@ -1,5 +1,3 @@
-// Shared type definitions for Athlete entity
-
 export interface Athlete {
   id: number
   person_full_name: string

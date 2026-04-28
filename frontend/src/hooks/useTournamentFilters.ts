@@ -7,7 +7,6 @@ export function useTournamentFilters(events: Event[]) {
   const [sortBy, setSortBy] = useState<"name" | "date">("name")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
 
-  // Get unique locations for filter dropdown
   const uniqueLocations = useMemo(() => {
     const locations = events
       .map(event => event.address_locality || event.continent)
@@ -15,7 +14,6 @@ export function useTournamentFilters(events: Event[]) {
     return Array.from(new Set(locations)).sort()
   }, [events])
 
-  // Filter and sort events
   const filteredAndSortedEvents = useMemo(() => {
     const filtered = events.filter(event => {
       const matchesSearch = event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -28,7 +26,6 @@ export function useTournamentFilters(events: Event[]) {
       return matchesSearch && matchesLocation
     })
 
-    // Sort events
     filtered.sort((a, b) => {
       let comparison = 0
       if (sortBy === "name") {

@@ -1,6 +1,6 @@
-"""
-Fight Service
-Business logic for fight/match operations
+"""Fight synchronization service.
+
+Arena API reference: https://arena.uww.org/api/doc/
 """
 from sqlmodel import Session, select
 from typing import List, Dict, Any, Optional, TYPE_CHECKING
@@ -23,15 +23,11 @@ logger = logging.getLogger(__name__)
 
 
 class FightService(BaseService[Fight]):
-    """Service for fight operations"""
-
     def __init__(self, session: Session):
         super().__init__(session, Fight)
 
     async def sync_fights_for_event(self, sport_event_uuid: str, event_id: int, source: Optional["ArenaSource"] = None) -> Dict[str, Any]:
-        """
-        Sync fights for a sport event from Arena API to database
-        """
+        """Sync fights for one sport event from Arena into the local database."""
         try:
             event = self.session.exec(
                 select(SportEvent).where(SportEvent.id == event_id)
@@ -45,7 +41,6 @@ class FightService(BaseService[Fight]):
 
             logger.info(f"Syncing fights for event: {event.name}")
 
-            # Fetch fights from Arena API
             try:
                 fights_data = await fetch_arena_data(f"fight/{sport_event_uuid}", source=source)
             except HTTPException as e:
@@ -89,15 +84,13 @@ class FightService(BaseService[Fight]):
                     "message": "No fights data in response"
                 }
 
-            # Sync victory types for the event's sports before processing fights
-            # (needed for FK constraint on fights.victory_type)
+            # Fight rows have an FK to victory_type; keep reference data in place first.
             try:
                 from .victory_type_service import VictoryTypeService
                 await VictoryTypeService(self.session).sync_for_event(event.id, source=source)
             except Exception as vt_err:
                 logger.warning(f"Victory type sync failed (non-fatal): {vt_err}")
 
-            # Build in-memory maps for FK resolution
             athlete_uuid_to_id = await self._build_athlete_uuid_map(sport_event_uuid, event.id, source)
             wc_key_to_id = self._build_wc_key_map(event.id)
 
@@ -217,11 +210,10 @@ class FightService(BaseService[Fight]):
 
         for fight_data in fights_list:
             try:
-                # Resolve fighter IDs from in-memory map (arena athlete uuid → local id)
                 fighter_one_id = athlete_uuid_to_id.get(fight_data.get("fighter1AthleteId") or "")
                 fighter_two_id = athlete_uuid_to_id.get(fight_data.get("fighter2AthleteId") or "")
 
-                # Winner: winnerFighter uses fighter*Id space, map back to athlete DB id
+                # winnerFighter uses fighter*Id values, not athlete IDs.
                 winner_id = None
                 winner_fighter = fight_data.get("winnerFighter")
                 if winner_fighter:
@@ -230,7 +222,6 @@ class FightService(BaseService[Fight]):
                     elif winner_fighter == fight_data.get("fighter2Id") or winner_fighter == fight_data.get("fighter2"):
                         winner_id = fighter_two_id
 
-                # Resolve WC from embedded fight data (no DB lookup needed)
                 weight_category_id = wc_key_to_id.get((
                     fight_data.get("weightCategoryMaxWeight"),
                     fight_data.get("sportId"),
@@ -240,7 +231,7 @@ class FightService(BaseService[Fight]):
                 cp_one = fight_data.get("fighter1RankingPoint")
                 cp_two = fight_data.get("fighter2RankingPoint")
 
-                # Technical points: parse from result text "CP1-CP2(TP1-TP2) by TYPE"
+                # Arena only exposes technical points inside result text.
                 tp_one = None
                 tp_two = None
                 result_text = fight_data.get("result", "")
@@ -269,8 +260,7 @@ class FightService(BaseService[Fight]):
                     fight_number=fight_number,
                 )
 
-                # Natural key: fight_number is the canonical identifier (globally unique per event)
-                # Fallback to fighters only when fight_number is absent (legacy data)
+                # Legacy Arena data can miss fight_number, so fall back to the fighter pair.
                 existing_fight = None
                 if fight_number is not None:
                     existing_fight = self.session.exec(

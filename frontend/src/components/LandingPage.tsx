@@ -47,7 +47,6 @@ export function LandingPage({ onLogin }: LandingPageProps) {
   const handleLoginClick = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Basic validation
     if (!loginData.username.trim() || !loginData.password.trim()) {
       showToast("warning", t("landing.toasts.fillAllFields"))
       return
@@ -63,23 +62,15 @@ export function LandingPage({ onLogin }: LandingPageProps) {
         { requireAuth: false }
       )
 
-      // Success - CSRF token stored in cookie AND in memory for headers
-      // Cookies are HttpOnly (access_token, refresh_token)
-      // CSRF token is NOT HttpOnly (client needs to read it)
-      
-      // Store CSRF token in sessionStorage for X-CSRF-Token header
       sessionStorage.setItem("csrf_token", data.csrf_token)
       setAuthSessionHint()
 
-      // Call parent onLogin callback
       onLogin();
     } catch (error) {
       console.error("Login error:", error)
       if (error instanceof ApiError && error.status === 401) {
         showToast("error", t("landing.toasts.invalidCredentials"))
       } else if (error instanceof ApiError && error.status === 403) {
-        // Email not verified - show resend verification form
-        // Pre-fill email field with the username/email used for login
         setResendEmail(loginData.username)
         setShowResendVerification(true)
         showToast("warning", t("landing.toasts.emailNotVerified"), t("landing.toasts.emailNotVerifiedMsg"))
@@ -150,11 +141,9 @@ export function LandingPage({ onLogin }: LandingPageProps) {
         { requireAuth: false }
       )
 
-      // Store CSRF token
       sessionStorage.setItem("csrf_token", data.csrf_token)
       setAuthSessionHint()
 
-      // Call parent onLogin callback
       onLogin();
     } catch (error) {
       console.error("Google login error:", error)
@@ -186,7 +175,6 @@ export function LandingPage({ onLogin }: LandingPageProps) {
       return
     }
 
-    // Clear errors and proceed with registration
     setErrors({})
 
     try {
@@ -202,10 +190,8 @@ export function LandingPage({ onLogin }: LandingPageProps) {
         { requireAuth: false }
       )
 
-      // Success
       showToast("success", t("landing.toasts.registrationSuccess"), t("landing.toasts.registrationSuccessMsg"))
       setIsRegister(false)
-      // Reset form
       setFormData({
         username: "",
         firstName: "",
@@ -235,7 +221,6 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
-    // Clear error for this field when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: "" }))
     }
@@ -264,17 +249,13 @@ export function LandingPage({ onLogin }: LandingPageProps) {
         onClose={() => setToast(prev => ({ ...prev, show: false }))}
       />
       <div className="flex min-h-screen">
-        {/* Left Side - Branding */}
         <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#1e293b] to-[#0f172a] p-12 flex-col justify-between relative overflow-hidden">
-          {/* Background glow effects */}
           <div className="absolute -top-20 -right-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
           <div className="absolute top-1/2 -left-32 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl" />
           <div className="absolute -bottom-20 right-20 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl" />
 
-          {/* Subtle grid pattern overlay */}
           <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] opacity-30" />
 
-          {/* Gradient overlay for depth */}
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5" />
 
           <div className="relative z-10">
@@ -335,9 +316,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
           </div>
         </div>
 
-        {/* Right Side - Login/Register Form */}
         <div className="flex-1 flex items-center justify-center p-8 bg-[#0f172a] relative overflow-hidden">
-          {/* Background glow effects */}
           <div className="absolute top-20 -left-20 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl" />
           <div className="absolute bottom-20 -right-20 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl" />
 
@@ -351,22 +330,17 @@ export function LandingPage({ onLogin }: LandingPageProps) {
               </p>
             </div>
 
-            {/* Animated glow border wrapper */}
             <div className="relative rounded-xl p-[1px]">
             <div className="login-glow-border absolute inset-0 rounded-xl" />
             <div className="login-glow-border absolute inset-[-5px] rounded-xl blur-[10px] opacity-50" />
             <Card className="border-0 rounded-xl bg-[#1e293b]/80 backdrop-blur-xl shadow-2xl relative overflow-hidden">
-              {/* Top gradient reflection */}
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
 
-              {/* Corner accent */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-transparent rounded-bl-full" />
 
-              {/* Subtle grid pattern overlay */}
               <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:20px_20px] [mask-image:radial-gradient(ellipse_at_center,black_50%,transparent_100%)]" />
               <CardContent className="pt-6 relative z-10">
                 {showForgotPassword ? (
-                  // Forgot Password Form
                   <form onSubmit={handleForgotPassword} className="space-y-5">
                     <div className="text-center mb-4">
                       <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -406,7 +380,6 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                     </Button>
                   </form>
                 ) : showResendVerification ? (
-                  // Resend Verification Form
                   <form onSubmit={handleResendVerification} className="space-y-5">
                     <div className="text-center mb-4">
                       <div className="w-12 h-12 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -446,9 +419,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                     </Button>
                   </form>
                 ) : !isRegister ? (
-                  // Login Form
                   <div className="space-y-5">
-                    {/* Google Sign In - Top */}
                     <button
                       type="button"
                       onClick={() => {
@@ -466,7 +437,6 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                       {t("landing.loginWithGoogle")}
                     </button>
 
-                    {/* Divider */}
                     <div className="relative">
                       <div className="absolute inset-0 flex items-center">
                         <div className="w-full border-t border-white/10"></div>
@@ -476,7 +446,6 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                       </div>
                     </div>
 
-                    {/* Local Login Form */}
                     <form onSubmit={handleLoginClick} className="space-y-4">
                       <div className="space-y-2">
                         <label htmlFor="username" className="text-sm font-medium text-gray-300">
@@ -536,7 +505,6 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                       </Button>
                     </form>
 
-                    {/* Hidden Google Button */}
                     <div ref={googleButtonRef} className="hidden">
                       <GoogleLogin
                         onSuccess={(credentialResponse) => {
@@ -547,7 +515,6 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                     </div>
                   </div>
                 ) : (
-                  // Registration Form
                   <form onSubmit={handleRegisterSubmit} className="space-y-4">
                     <div className="space-y-2">
                       <label htmlFor="username" className="text-sm font-medium text-gray-300">
@@ -665,7 +632,6 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                   </form>
                 )}
 
-                {/* Toggle between Login and Register */}
                 <div className="mt-6 text-center text-sm text-gray-400">
                   {isRegister ? t("landing.hasAccount") : t("landing.noAccount")}
                   <button
@@ -691,7 +657,6 @@ export function LandingPage({ onLogin }: LandingPageProps) {
             </Card>
             </div>
 
-            {/* Mobile branding */}
             <div className="lg:hidden mt-8 text-center">
               <h3 className="font-semibold text-white mb-2">Wrestling Federation</h3>
               <p className="text-gray-400 text-sm">

@@ -40,7 +40,6 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState<"landing" | "verify" | "reset" | "dashboard">("landing");
 
-  // Fetch user data from API
   const fetchUserData = async () => {
     try {
       const data = await apiClient.get<ApiUserDto>(API_ENDPOINTS.AUTH_ME);
@@ -48,13 +47,10 @@ function App() {
       setIsLoggedIn(true);
       setAuthSessionHint();
     } catch (error) {
-      // Token is invalid, clear CSRF token from sessionStorage
       if (error instanceof ApiError && error.status === 401) {
         sessionStorage.removeItem("csrf_token");
         clearAuthSessionHint();
-        // 401 is expected when not logged in, don't log it as error
       } else {
-        // Log only unexpected errors (not 401)
         console.error("Error fetching user data:", error);
       }
       setIsLoggedIn(false);
@@ -63,7 +59,6 @@ function App() {
     }
   };
 
-  // Check if user is already logged in on component mount
   useEffect(() => {
     ensureLocalePrefixInPath();
 
@@ -71,39 +66,33 @@ function App() {
     const token = urlParams.get("token");
     const path = window.location.pathname;
 
-    // Check for verify-email page
     if (path.includes("verify-email") && token) {
       setCurrentPage("verify");
       setIsLoading(false);
       return;
     }
 
-    // Check for reset-password page
     if (path.includes("reset-password") && token) {
       setCurrentPage("reset");
       setIsLoading(false);
       return;
     }
 
-    // Only check protected user data if this browser has logged in before.
-    // Brand-new anonymous visitors should not hit /auth/me and produce a visible 401.
+    // Avoid a visible 401 on first visit; HttpOnly auth cookies cannot be probed directly.
     if (!hasAuthSessionHint()) {
       setIsLoading(false);
       return;
     }
 
-    // Cookies are HttpOnly and sent automatically.
     fetchUserData();
   }, []);
 
   const handleLogin = async () => {
-    // Cookies are set by server, just fetch user data
     await fetchUserData();
     setCurrentPage("dashboard");
   };
 
   const handleBackToLogin = () => {
-    // Clear URL params and go back to landing
     const locale = getPreferredLocale();
     window.history.replaceState({}, "", `/${locale}`);
     setCurrentPage("landing");
@@ -111,17 +100,14 @@ function App() {
 
   const handleLogout = async () => {
     try {
-      // Call logout endpoint to clear cookies on server
       await apiClient.post(API_ENDPOINTS.AUTH_LOGOUT, {});
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
-      // Clear CSRF token from sessionStorage
       sessionStorage.removeItem("csrf_token");
       clearAuthSessionHint();
       setUserData(null);
       setIsLoggedIn(false);
-      // Clear URL query params (e.g. ?section=logs)
       const locale = getPreferredLocale();
       window.history.replaceState({}, "", `/${locale}`);
     }
@@ -131,7 +117,6 @@ function App() {
     setUserData(updatedUser)
   }, [])
 
-  // Show loading state
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
@@ -140,14 +125,12 @@ function App() {
     );
   }
 
-  // Render verify email page
   if (currentPage === "verify") {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get("token");
     return <VerifyEmail token={token} onBackToLogin={handleBackToLogin} />;
   }
 
-  // Render reset password page
   if (currentPage === "reset") {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get("token");

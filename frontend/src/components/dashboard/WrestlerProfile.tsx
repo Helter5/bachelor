@@ -288,7 +288,6 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center gap-4">
         <button
           onClick={onBack}
@@ -313,7 +312,6 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
         </div>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {[
           { label: t("wrestlerProfile.cards.fights"), value: stats.totalFights, color: "text-blue-500" },
@@ -327,9 +325,7 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
         ))}
       </div>
 
-      {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Win/Loss Pie */}
         <SectionCard isDarkMode={isDarkMode} className="min-h-[400px]">
           <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>{t("wrestlerProfile.charts.winLoss")}</h3>
           <ResponsiveContainer width="100%" height={320}>
@@ -344,7 +340,6 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
           </ResponsiveContainer>
         </SectionCard>
 
-        {/* Victory Type Bar */}
         <SectionCard isDarkMode={isDarkMode} className="min-h-[400px]">
           <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>{t("wrestlerProfile.charts.winTypes")}</h3>
           <ResponsiveContainer width="100%" height={300}>
@@ -362,7 +357,6 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
           </ResponsiveContainer>
         </SectionCard>
 
-        {/* TP/CP per Tournament Line */}
         <SectionCard isDarkMode={isDarkMode} className="min-h-[400px]">
           <div className="flex items-center justify-between mb-4">
             <h3 className={`text-lg font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>
@@ -408,7 +402,6 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
         </SectionCard>
       </div>
 
-      {/* Events Cards */}
       <SectionCard isDarkMode={isDarkMode}>
         <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>{t("wrestlerProfile.tournamentsSection")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -431,7 +424,6 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
             })}
         </div>
 
-        {/* Events pagination */}
         {person.events.length > EVENTS_PER_PAGE && (
           <div className="flex items-center justify-center gap-2 mt-4">
             <button
@@ -455,7 +447,6 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
         )}
       </SectionCard>
 
-      {/* Fights grouped by event */}
       <SectionCard isDarkMode={isDarkMode}>
         <div ref={fightsRef}>
         <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">

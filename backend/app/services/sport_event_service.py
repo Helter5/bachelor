@@ -1,6 +1,6 @@
-"""
-Sport Event Service
-Business logic for sport event operations
+"""Sport event synchronization and lookup service.
+
+Arena API reference: https://arena.uww.org/api/doc/
 """
 from sqlmodel import Session, select
 from typing import List, Optional, Dict, Any, TYPE_CHECKING

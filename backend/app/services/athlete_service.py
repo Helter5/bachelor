@@ -1,6 +1,6 @@
-"""
-Athlete Service
-Business logic for athlete operations
+"""Athlete synchronization and lookup service.
+
+Arena API reference: https://arena.uww.org/api/doc/
 """
 from sqlmodel import Session, select
 from typing import List, Dict, Any, Optional, TYPE_CHECKING
@@ -21,8 +21,6 @@ logger = logging.getLogger(__name__)
 
 
 class AthleteService(BaseService[Athlete]):
-    """Service for athlete operations"""
-
     def __init__(self, session: Session):
         super().__init__(session, Athlete)
 
@@ -96,10 +94,6 @@ class AthleteService(BaseService[Athlete]):
             return self._sync_athletes_list(athletes_list, event_db_id, team_uuid_to_id, wc_key_to_id)
 
         return await self._run_arena_sync_for_event(event_id, sport_event_uuid, "athletes", _do_sync)
-
-    # ------------------------------------------------------------------ #
-    #  Private helpers                                                     #
-    # ------------------------------------------------------------------ #
 
     def _resolve_person(
         self,
@@ -250,7 +244,6 @@ class AthleteService(BaseService[Athlete]):
                 team_id_db = self._resolve_team_id(athlete_data, team_uuid_to_id)
                 weight_category_id_db = self._resolve_weight_category_id(athlete_data, wc_key_to_id)
 
-                # Name extraction
                 # athlete/{eventId} only provides personFullName; person/{id}/athletes
                 # provides personGivenName + personFamilyName — prefer atomic fields when available.
                 person_first_name = athlete_data.get("personGivenName") or ""
@@ -258,7 +251,7 @@ class AthleteService(BaseService[Athlete]):
                 if not person_first_name and not person_last_name:
                     full = (athlete_data.get("personFullName") or "").strip()
                     if full:
-                        # Arena format: "GivenName(s) FAMILYNAME(S)" — family name is all-caps at end
+                        # Arena full names usually end with an all-caps family name.
                         parts = full.split()
                         caps_idx = next(
                             (i for i in range(len(parts) - 1, -1, -1) if not parts[i].isupper()),

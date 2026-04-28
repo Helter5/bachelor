@@ -1,6 +1,6 @@
-"""
-Weight Category Service
-Business logic for weight category operations
+"""Weight category synchronization and lookup service.
+
+Arena API reference: https://arena.uww.org/api/doc/
 """
 from sqlmodel import Session, select
 from typing import List, Dict, Any, Optional, TYPE_CHECKING
@@ -21,50 +21,18 @@ logger = logging.getLogger(__name__)
 
 
 class WeightCategoryService(BaseService[WeightCategory]):
-    """Service for weight category operations"""
-
     def __init__(self, session: Session):
         super().__init__(session, WeightCategory)
 
     async def get_weight_categories_from_arena(self, sport_event_id: str) -> Dict[str, Any]:
-        """
-        Fetch weight categories for a sport event from Arena API
-
-        Args:
-            sport_event_id: Sport event UUID
-
-        Returns:
-            Arena API response with weight categories
-        """
         return await fetch_arena_data(f"weight-category/{sport_event_id}")
 
     def get_weight_categories_by_event(self, sport_event_id: int) -> List[WeightCategory]:
-        """
-        Get all weight categories for a sport event from database
-
-        Args:
-            sport_event_id: Sport event database ID
-
-        Returns:
-            List of weight categories
-        """
         statement = select(WeightCategory).where(WeightCategory.sport_event_id == sport_event_id)
         return list(self.session.exec(statement).all())
 
     async def sync_weight_categories_for_event(self, sport_event_uuid: str, event_id: int, source: Optional["ArenaSource"] = None) -> Dict[str, Any]:
-        """
-        Sync weight categories for a sport event from Arena API to database
-
-        Args:
-            sport_event_uuid: Sport event UUID from Arena API (used for API call)
-            event_id: Local database ID of the sport event
-
-        Returns:
-            Dict with sync results
-
-        Raises:
-            HTTPException: If event not found or sync fails
-        """
+        """Sync weight categories for one sport event from Arena."""
         try:
             event = self.session.exec(
                 select(SportEvent).where(SportEvent.id == event_id)
@@ -78,7 +46,6 @@ class WeightCategoryService(BaseService[WeightCategory]):
 
             logger.info(f"Syncing weight categories for event: {event.name}")
 
-            # Fetch weight categories from Arena API
             try:
                 wc_data = await fetch_arena_data(f"weight-category/{sport_event_uuid}", source=source)
             except HTTPException as e:
@@ -93,7 +60,6 @@ class WeightCategoryService(BaseService[WeightCategory]):
                     }
                 raise
 
-            # Extract weight categories list from Arena API response
             wc_list = self._extract_weight_categories_list(wc_data)
 
             if not wc_list:
@@ -106,7 +72,6 @@ class WeightCategoryService(BaseService[WeightCategory]):
                     "message": "No weight categories data in response"
                 }
 
-            # Sync each weight category
             result = self._sync_weight_categories_list(wc_list, event.id, source=source)
 
             self.session.commit()
@@ -129,37 +94,17 @@ class WeightCategoryService(BaseService[WeightCategory]):
             raise HTTPException(status_code=500, detail=f"Failed to sync weight categories: {str(e)}")
 
     def _extract_weight_categories_list(self, wc_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """
-        Extract weight categories list from Arena API response
-
-        Args:
-            wc_data: Arena API response
-
-        Returns:
-            List of weight category dictionaries
-        """
         if "weightCategories" in wc_data:
             return wc_data["weightCategories"]
         return []
 
     def _sync_weight_categories_list(self, wc_list: List[Dict[str, Any]], event_db_id: int, source: Optional["ArenaSource"] = None) -> Dict[str, int]:
-        """
-        Sync a list of weight categories to the database
-
-        Args:
-            wc_list: List of weight category data from Arena API
-            event_db_id: Sport event database ID
-            source: Optional ArenaSource — when provided, records per-source UUID mappings
-
-        Returns:
-            Dict with created and updated counts
-        """
+        """Sync weight categories and create missing discipline records."""
         created = 0
         updated = 0
 
         for wc in wc_list:
             try:
-                # Resolve or create discipline based on sport_id + audience_id
                 sport_id = wc.get("sportId")
                 audience_id = wc.get("audienceId")
                 discipline_id = None
@@ -192,7 +137,6 @@ class WeightCategoryService(BaseService[WeightCategory]):
                         self.session.add(discipline)
                     discipline_id = discipline.id
 
-                # Map Arena API fields to database fields
                 wc_create = WeightCategoryBase(
                     discipline_id=discipline_id,
                     max_weight=wc.get("maxWeight"),
@@ -202,7 +146,6 @@ class WeightCategoryService(BaseService[WeightCategory]):
                     sport_event_id=event_db_id,
                 )
 
-                # Match by natural key (sport_event + max_weight + discipline)
                 existing_wc = self.session.exec(
                     select(WeightCategory).where(
                         WeightCategory.sport_event_id == event_db_id,

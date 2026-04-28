@@ -1,6 +1,6 @@
-"""
-Team Service
-Business logic for team operations
+"""Team synchronization and lookup service.
+
+Arena API reference: https://arena.uww.org/api/doc/
 """
 from sqlmodel import Session, select
 from typing import List, Dict, Any, Optional, TYPE_CHECKING
@@ -19,8 +19,6 @@ logger = logging.getLogger(__name__)
 
 
 class TeamService(BaseService[Team]):
-    """Service for team operations"""
-
     def __init__(self, session: Session):
         super().__init__(session, Team)
 
@@ -72,10 +70,7 @@ class TeamService(BaseService[Team]):
         event_db_id: int,
         source: Optional["ArenaSource"] = None,
     ) -> Dict[str, int]:
-        """
-        Sync a list of teams to the database.
-        Matches by natural key (sport_event_id, name). Arena UUIDs stored in TeamSourceUid.
-        """
+        """Sync teams by natural key; source-specific Arena UUIDs are stored separately."""
         created = 0
         updated = 0
 

@@ -1,4 +1,4 @@
-"""Ranking service - computes wrestler rankings per weight category"""
+"""Ranking calculations per weight category."""
 from collections import defaultdict
 from sqlmodel import Session, select, col
 from typing import Optional, List
@@ -9,7 +9,6 @@ from ..domain.entities.sport_event import SportEvent
 from ..domain.entities.person import Person
 from ..domain.entities.weight_category import WeightCategory
 
-# Victory type bonus points
 VICTORY_BONUS = {
     "VFA": 5, "VFA1": 5,           # fall / pin
     "VSU": 3, "VSU1": 3,           # technical superiority
@@ -39,19 +38,15 @@ class RankingService:
 
     def get_ranking(self, weight_category_name: str, last_n: int = 3, date_from: Optional[str] = None) -> list[dict]:
         """Compute ranking for a weight category using last_n most recent tournaments."""
-        # Collect all fights in this weight category that have both fighters resolved
         fights = self._get_fights_for_category(weight_category_name, date_from)
         if not fights:
             return []
 
-        # Group fights by (person_id, sport_event_id)
-        # Each entry: list of dicts with fight info
         person_events: dict[int, dict[int, list[dict]]] = defaultdict(lambda: defaultdict(list))
         person_info: dict[int, dict] = {}
         event_info: dict[int, dict] = {}
 
         for f in fights:
-            # Process fighter one
             if f["person1_id"]:
                 person_events[f["person1_id"]][f["sport_event_id"]].append({
                     "is_winner": f["winner_athlete_id"] == f["fighter_one_id"],
@@ -62,7 +57,6 @@ class RankingService:
                         "full_name": f["person1_name"],
                         "country_iso_code": f["person1_country"],
                     }
-            # Process fighter two
             if f["person2_id"]:
                 person_events[f["person2_id"]][f["sport_event_id"]].append({
                     "is_winner": f["winner_athlete_id"] == f["fighter_two_id"],
@@ -80,16 +74,13 @@ class RankingService:
                     "start_date": f["start_date"],
                 }
 
-        # Compute scores per person
         rankings = []
         for person_id, events in person_events.items():
-            # Sort events by start_date descending (most recent first)
             sorted_event_ids = sorted(
                 events.keys(),
                 key=lambda eid: event_info[eid]["start_date"] or "",
                 reverse=True,
             )
-            # Take only last_n most recent
             counted_events = sorted_event_ids[:last_n]
 
             total_score = 0.0
@@ -104,10 +95,8 @@ class RankingService:
                 total_wins += wins
                 total_fights += n_fights
 
-                # performance_points = (wins / total_fights) * 20
                 perf_pts = (wins / n_fights) * 20 if n_fights > 0 else 0.0
 
-                # victory_bonus = sum of bonuses for each win
                 vic_bonus = 0.0
                 for f in fight_list:
                     if f["is_winner"] and f["victory_type"]:
@@ -142,10 +131,8 @@ class RankingService:
                 "breakdown": breakdown,
             })
 
-        # Sort by total_score descending
         rankings.sort(key=lambda r: r["total_score"], reverse=True)
 
-        # Add rank
         for i, r in enumerate(rankings):
             r["rank"] = i + 1
 
@@ -153,7 +140,6 @@ class RankingService:
 
     def _get_fights_for_category(self, weight_category_name: str, date_from: Optional[str] = None) -> list[dict]:
         """Get all fights for a weight category with person info resolved via athletes."""
-        # Parse "65 kg" → 65
         try:
             max_weight = int(weight_category_name.replace(" kg", "").strip())
         except ValueError:

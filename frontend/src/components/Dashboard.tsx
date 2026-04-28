@@ -85,7 +85,6 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
   const { t } = useTranslation()
   const isAdmin = userData?.role === 'admin'
   const currentUserName = `${userData?.first_name ?? ''} ${userData?.last_name ?? ''}`.trim() || userData?.username || ''
-  // Custom hooks for state management
   const { syncState, handleSyncClick, confirmSync, cancelSync, dismissError } = useSync(currentUserName)
   const { isDarkMode, toggleDarkMode } = useDarkMode()
   const {
@@ -102,7 +101,6 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
 
   return (
     <div className={`flex h-screen ${isDarkMode ? 'bg-[#0f172a]' : 'bg-gray-50'}`}>
-      {/* Sync Confirm Modal */}
       <SyncConfirmModal
         isOpen={syncState.showConfirm}
         onConfirm={confirmSync}
@@ -111,7 +109,6 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
         isDarkMode={isDarkMode}
       />
 
-      {/* Sync Toast Notifications */}
       <Toast
         show={syncState.showSuccess}
         variant="success"
@@ -126,7 +123,6 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
         onClose={dismissError}
       />
 
-      {/* Mobile Header */}
       <div className={`lg:hidden fixed top-0 left-0 right-0 z-50 ${isDarkMode ? 'bg-[#1e293b] shadow-lg shadow-black/20' : 'bg-white border-b border-gray-200'}`}>
         <div className="flex items-center justify-between p-4">
           <h1 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Wrestling Federation</h1>
@@ -146,7 +142,6 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
         </div>
       </div>
 
-      {/* Sidebar */}
       <Sidebar
         activeSection={dashboardState.activeSection}
         setActiveSection={setActiveSection}
@@ -157,7 +152,6 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
         userData={userData}
       />
 
-      {/* Mobile Menu Overlay */}
       {dashboardState.isMobileMenuOpen && (
         <div
           className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
@@ -165,12 +159,9 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
         />
       )}
 
-      {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden flex-col lg:flex-row">
-        {/* Center Content */}
         <main className="flex-1 overflow-auto pt-16 lg:pt-0">
           <div className="p-4 md:p-8">
-            {/* Conditional rendering based on active section */}
             {dashboardState.activeSection === 'calendar' ? (
               <CalendarSection isDarkMode={isDarkMode} />
             ) : dashboardState.activeSection === 'tournaments' ? (
@@ -230,7 +221,6 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
               </div>
             ) : (
               <>
-                {/* Header */}
                 <div className="mb-8">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                     <div>
@@ -238,7 +228,6 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
                       <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>{t("dashboard.welcome")}</p>
                     </div>
 
-                    {/* Sync Button — admin only */}
                     {isAdmin && (
                       <div className="flex flex-wrap items-center justify-end gap-3">
                         {syncState.isSyncing && (
@@ -302,7 +291,6 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
                   </div>
                 </div>
 
-                {/* Mobile Details Button */}
                 <button
                   onClick={toggleDetailsMobile}
                   className="xl:hidden w-full mb-6 p-4 bg-white rounded-lg border border-gray-200 flex items-center justify-between hover:bg-gray-50 transition-colors"
@@ -320,7 +308,6 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
                   </svg>
                 </button>
 
-                {/* Mobile Details Section */}
                 {dashboardState.showDetailsMobile && (
                   <div className="xl:hidden mb-6">
                     <RightSidebar isDarkMode={isDarkMode} />
@@ -332,7 +319,6 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
           </div>
         </main>
 
-        {/* Right Sidebar - Desktop only */}
         {dashboardState.activeSection === 'home' && (
           <RightSidebar isDarkMode={isDarkMode} />
         )}

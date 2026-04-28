@@ -1,6 +1,6 @@
-"""
-Victory Type Service
-Business logic for syncing victory type reference data from Arena API
+"""Victory type reference-data synchronization.
+
+Arena API reference: https://arena.uww.org/api/doc/
 """
 from sqlmodel import Session, select
 from typing import Dict, Any, Optional, TYPE_CHECKING

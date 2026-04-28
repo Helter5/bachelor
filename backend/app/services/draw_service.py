@@ -1,7 +1,4 @@
-"""
-Draw Service
-Generates seeded tournament brackets with penalty-based optimization.
-"""
+"""Seeded bracket generation with penalty-based placement."""
 from sqlmodel import Session, select
 from sqlalchemy import select as sa_select, func, and_
 from typing import Optional
@@ -35,7 +32,6 @@ class DrawService:
         wc = self.session.get(WeightCategory, weight_category_id)
         wc_name = f"{wc.max_weight} kg" if wc else str(weight_category_id)
 
-        # Score each athlete for seeding
         for a in athletes:
             a["score"] = self._compute_seed_score(a["person_id"], wc.max_weight if wc else None, last_n)
         athletes.sort(key=lambda x: x["score"], reverse=True)
@@ -46,7 +42,6 @@ class DrawService:
         bracket_size = self._next_power_of_2(n)
         byes = bracket_size - n
 
-        # Assign fixed seed positions in the bracket
         slots: list[Optional[dict]] = [None] * bracket_size
         seed_positions = self._seed_positions(bracket_size)
 
@@ -54,14 +49,12 @@ class DrawService:
             if i < len(seed_positions):
                 slots[seed_positions[i]] = athlete
 
-        # Remaining athletes go to empty slots with penalty optimization
         placed = set(seed_positions[:n])
         unseeded = [a for a in athletes if a["seed"] > len(seed_positions)]
         empty_slots = [i for i in range(bracket_size) if i not in placed and slots[i] is None]
 
         self._place_with_penalty_opt(slots, unseeded, empty_slots, last_n)
 
-        # Build first-round match pairs
         bracket = []
         for i in range(bracket_size // 2):
             a = slots[i * 2]
@@ -99,10 +92,6 @@ class DrawService:
             ],
             "bracket": bracket,
         }
-
-    # -------------------------------------------------------------------------
-    # Internal helpers
-    # -------------------------------------------------------------------------
 
     def _get_athletes(self, event_id: int, weight_category_id: int) -> list[dict]:
         rows = self.session.exec(
@@ -152,7 +141,6 @@ class DrawService:
 
         rows = self.session.exec(stmt).all()  # type: ignore
         if not rows:
-            # Also check as fighter two
             a2 = Athlete.__table__.alias("a2")
             p2 = Person.__table__.alias("p2")
             stmt2 = (
@@ -176,7 +164,6 @@ class DrawService:
         if not rows:
             return 0.0
 
-        # Group by event, sort by date desc, take last_n
         from collections import defaultdict
         event_fights: dict[int, list] = defaultdict(list)
         event_dates: dict[int, str] = {}
@@ -194,7 +181,6 @@ class DrawService:
             wins = 0
             for f in fights:
                 row = dict(f._mapping) if hasattr(f, "_mapping") else f
-                # winner_id is athlete_id; we matched by person so check fighter slots
                 if row.get("winner_id") == row.get("fighter_one_id") or row.get("winner_id") == row.get("fighter_two_id"):
                     wins += 1
             weight = RECENCY_WEIGHTS[i] if i < len(RECENCY_WEIGHTS) else 0.1
@@ -208,12 +194,10 @@ class DrawService:
         penalty = 0
         reasons = []
 
-        # Same team
         if a["team_id"] and b["team_id"] and a["team_id"] == b["team_id"]:
             penalty += SAME_TEAM_PENALTY
             reasons.append(f"Rovnaký tím ({a['team_name']}): +{SAME_TEAM_PENALTY}")
 
-        # Fight history
         total, recent = self._count_fights_between(a["person_id"], b["person_id"], last_n)
         if total > 0:
             p = total * FIGHT_HISTORY_PENALTY
@@ -256,12 +240,11 @@ class DrawService:
 
         total = len(rows)
 
-        # Count unique recent events (last_n)
         seen_events: set = set()
         recent = 0
         for r in rows:
             row = dict(r._mapping) if hasattr(r, "_mapping") else r._asdict()
-            # We don't have event_id directly, approximate via start_date grouping
+            # event_id is not selected here, so start_date is the best available grouping key.
             date = row.get("start_date", "")
             if len(seen_events) < last_n or date in seen_events:
                 seen_events.add(date)
@@ -288,7 +271,6 @@ class DrawService:
 
             for ai, athlete in enumerate(remaining_athletes):
                 for si, slot_idx in enumerate(remaining_slots):
-                    # Opponent is the adjacent slot in the first round
                     pair_slot = slot_idx ^ 1  # XOR with 1 gives pair partner
                     opponent = slots[pair_slot]
                     p, _ = self._compute_pair_penalty(athlete, opponent, last_n)
