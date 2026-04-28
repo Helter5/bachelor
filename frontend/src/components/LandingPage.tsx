@@ -7,6 +7,7 @@ import { Toast } from "@/components/ui/Toast"
 import { GoogleLogin } from '@react-oauth/google'
 import type { CredentialResponse } from '@react-oauth/google'
 import { apiClient, ApiError } from "@/services/apiClient"
+import { setAuthSessionHint } from "@/services/authSession"
 import { API_ENDPOINTS } from "@/config/api"
 import { validateUsername, validateRequired, validateEmail, validatePassword, validatePasswordMatch } from "@/utils/validation"
 
@@ -68,6 +69,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
       
       // Store CSRF token in sessionStorage for X-CSRF-Token header
       sessionStorage.setItem("csrf_token", data.csrf_token)
+      setAuthSessionHint()
 
       // Call parent onLogin callback
       onLogin();
@@ -150,6 +152,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
       // Store CSRF token
       sessionStorage.setItem("csrf_token", data.csrf_token)
+      setAuthSessionHint()
 
       // Call parent onLogin callback
       onLogin();

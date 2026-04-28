@@ -4,6 +4,7 @@ import { Dashboard } from "@/components/Dashboard"
 import { VerifyEmail } from "@/components/VerifyEmail"
 import { ResetPassword } from "@/components/ResetPassword"
 import { apiClient, ApiError } from "@/services/apiClient"
+import { clearAuthSessionHint, hasAuthSessionHint, setAuthSessionHint } from "@/services/authSession"
 import { API_ENDPOINTS } from "@/config/api"
 import { mapApiUserDto, type ApiUserDto, type AppUser } from "@/domain/user"
 
@@ -45,10 +46,12 @@ function App() {
       const data = await apiClient.get<ApiUserDto>(API_ENDPOINTS.AUTH_ME);
       setUserData(mapApiUserDto(data));
       setIsLoggedIn(true);
+      setAuthSessionHint();
     } catch (error) {
       // Token is invalid, clear CSRF token from sessionStorage
       if (error instanceof ApiError && error.status === 401) {
         sessionStorage.removeItem("csrf_token");
+        clearAuthSessionHint();
         // 401 is expected when not logged in, don't log it as error
       } else {
         // Log only unexpected errors (not 401)
@@ -82,8 +85,14 @@ function App() {
       return;
     }
 
-    // Cookies are HttpOnly and sent automatically
-    // Just try to fetch user data - if cookies exist, it will work
+    // Only check protected user data if this browser has logged in before.
+    // Brand-new anonymous visitors should not hit /auth/me and produce a visible 401.
+    if (!hasAuthSessionHint()) {
+      setIsLoading(false);
+      return;
+    }
+
+    // Cookies are HttpOnly and sent automatically.
     fetchUserData();
   }, []);
 
@@ -109,6 +118,7 @@ function App() {
     } finally {
       // Clear CSRF token from sessionStorage
       sessionStorage.removeItem("csrf_token");
+      clearAuthSessionHint();
       setUserData(null);
       setIsLoggedIn(false);
       // Clear URL query params (e.g. ?section=logs)

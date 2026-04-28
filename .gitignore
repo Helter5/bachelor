@@ -40,6 +40,9 @@ htmlcov/
 # claude
 .claude
 
+# local search/tooling ignores
+.ignore
+
 # node
 node_modules/
 npm-debug.log*

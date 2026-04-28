@@ -5,6 +5,7 @@
  */
 
 import { API_BASE_URL, API_ENDPOINTS } from '@/config/api'
+import { clearAuthSessionHint } from '@/services/authSession'
 
 export class ApiError extends Error {
   status: number
@@ -173,6 +174,7 @@ class ApiClient {
         }
         // Refresh failed → session is invalid (revoked or expired), force logout
         sessionStorage.removeItem('csrf_token')
+        clearAuthSessionHint()
         window.location.href = '/'
 
       }
@@ -270,6 +272,7 @@ class ApiClient {
           }
         }
         sessionStorage.removeItem('csrf_token')
+        clearAuthSessionHint()
         window.location.href = '/'
       }
 
@@ -310,6 +313,7 @@ class ApiClient {
           response = await makeRequest(this.buildFormHeaders(options))
         } else {
           sessionStorage.removeItem('csrf_token')
+          clearAuthSessionHint()
           window.location.href = '/'
         }
       }
