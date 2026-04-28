@@ -28,6 +28,8 @@ from ....services.weight_category_service import WeightCategoryService
 
 router = APIRouter(prefix="/admin/local-sync")
 settings = get_settings()
+SERVER_PROGRESS_START = 50
+SERVER_PROGRESS_END = 99
 
 
 def _create_local_sync_token(user_id: int, sync_log_id: int) -> str:
@@ -162,10 +164,11 @@ def _update_progress(
     progress: int,
     current_event: Optional[str] = None,
 ) -> None:
+    previous_progress = int((sync_log.details or {}).get("progress_percent") or 0)
     sync_log.details = {
         **(sync_log.details or {}),
         "current_step": current_step,
-        "progress_percent": progress,
+        "progress_percent": max(previous_progress, progress),
     }
     if current_event:
         sync_log.details["current_event"] = current_event
@@ -174,12 +177,12 @@ def _update_progress(
 
 
 def _stage_progress(event_index: int, event_total: int, stage_index: int, stage_total: int) -> int:
-    """Map local-agent event/stage progress into 5..95 percent."""
     if event_total <= 0 or stage_total <= 0:
-        return 5
+        return SERVER_PROGRESS_START
     completed_units = (event_index * stage_total) + stage_index
     total_units = event_total * stage_total
-    return min(95, 5 + int((completed_units / total_units) * 90))
+    span = SERVER_PROGRESS_END - SERVER_PROGRESS_START
+    return min(SERVER_PROGRESS_END, SERVER_PROGRESS_START + int((completed_units / total_units) * span))
 
 
 @router.post("/start", response_model=dict)
@@ -275,7 +278,7 @@ async def run_local_sync_upload(
         }
 
         event_id_by_arena_uuid: dict[str, int] = {}
-        _update_progress(sync_admin, sync_log, "events", 5)
+        _update_progress(sync_admin, sync_log, "events", SERVER_PROGRESS_START)
         for event_data in events:
             arena_uuid = event_data.get("id")
             result = await sport_event_service.sync_event(_event_payload_to_base(event_data))
@@ -426,7 +429,9 @@ async def patch_local_sync_progress(
     if sync_log.status != "in_progress":
         return {"success": True}
 
-    progress = max(0, min(99, int(payload.get("progress_percent") or 0)))
+    reported_progress = max(0, min(99, int(payload.get("progress_percent") or 0)))
+    previous_progress = int((sync_log.details or {}).get("progress_percent") or 0)
+    progress = max(previous_progress, reported_progress)
     current_step = str(payload.get("current_step") or "agent")
     current_event = payload.get("current_event")
     details = {

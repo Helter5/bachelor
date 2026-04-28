@@ -650,10 +650,6 @@
     "inactive": "Inactive",
     "lastSync": "Last synchronised:",
     "testConnection": "Test connection",
-    "browserTest": "Browser test",
-    "browserTestSuccess": "Browser connected to the local Arena",
-    "browserTestFailed": "Browser could not connect to the local Arena",
-    "browserTestHint": "{{message}}. If the page is served over HTTPS and Arena is on HTTP localhost, or Arena does not send CORS headers, the browser will block this access.",
     "missingCredentials": "The source is missing Client ID, Client Secret, or API key.",
     "deactivate": "Deactivate",
     "activate": "Activate",
@@ -668,6 +664,7 @@
     "testEventsCount": "Events count: {{count}}",
     "testFailed": "Connection failed",
     "testError": "Connection error",
+    "localAgentUnavailable": "The local sync agent is not running or is not reachable on this computer.",
     "never": "Never"
   },
   "security": {

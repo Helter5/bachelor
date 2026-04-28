@@ -46,6 +46,10 @@ class SyncRequest(BaseModel):
     arena_source: ArenaSource
 
 
+AGENT_PROGRESS_START = 2
+AGENT_PROGRESS_END = 50
+
+
 def arena_base_url(source: ArenaSource) -> str:
     host = os.getenv("BP_ARENA_HOST_OVERRIDE") or source.host
     host = host.replace("http://", "").replace("https://", "").strip("/")
@@ -150,10 +154,11 @@ async def report_progress(
 
 def collect_progress(event_index: int, event_total: int, stage_index: int, stage_total: int) -> int:
     if event_total <= 0 or stage_total <= 0:
-        return 2
+        return AGENT_PROGRESS_START
     completed_units = (event_index * stage_total) + stage_index
     total_units = event_total * stage_total
-    return min(45, 2 + int((completed_units / total_units) * 43))
+    span = AGENT_PROGRESS_END - AGENT_PROGRESS_START
+    return min(AGENT_PROGRESS_END, AGENT_PROGRESS_START + int((completed_units / total_units) * span))
 
 
 async def build_bundle(request: SyncRequest, progress_client: httpx.AsyncClient) -> dict[str, Any]:
@@ -239,6 +244,18 @@ async def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.post("/test")
+async def test_connection(source: ArenaSource) -> dict[str, Any]:
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        token = await get_arena_token(client, source)
+        events_data = await fetch_arena_json(client, source, token, "sport-event/")
+        return {
+            "success": True,
+            "message": "Successfully connected to Arena",
+            "events_count": events_data.get("events", {}).get("totalCount", 0),
+        }
+
+
 @app.post("/sync")
 async def sync(request: SyncRequest) -> dict[str, Any]:
     try:
@@ -252,7 +269,7 @@ async def sync(request: SyncRequest) -> dict[str, Any]:
                 len(bundle.get("events", [])),
                 len(bundle.get("event_payloads", {})),
             )
-            await report_progress(client, server_url, request.upload_token, "agent", 48)
+            await report_progress(client, server_url, request.upload_token, "agent", AGENT_PROGRESS_END)
             upload_url = f"{server_url}/api/v1/admin/local-sync/run"
             logger.info("Uploading local sync bundle to %s", upload_url)
             response = await client.post(

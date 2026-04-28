@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
-import { API_ENDPOINTS } from "@/config/api"
+import { API_ENDPOINTS, LOCAL_SYNC_AGENT_URL } from "@/config/api"
 import { Toast } from "../../ui/Toast"
 import { ErrorAlert } from "../../ui/ErrorAlert"
 
@@ -20,11 +20,6 @@ interface ArenaSource {
 
 interface ArenaSourcesSettingsProps {
   isDarkMode: boolean
-}
-
-function buildArenaBaseUrl(host: string, port: number) {
-  const normalizedHost = host.replace(/^https?:\/\//, "").replace(/\/+$/, "")
-  return `http://${normalizedHost}:${port}`
 }
 
 function SectionCard({ isDarkMode, children }: { isDarkMode: boolean; children: React.ReactNode }) {
@@ -144,79 +139,54 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
     }
   }
 
-  const handleTest = async (id: number) => {
-    try {
-      const result = await apiClient.post<{ success: boolean; message: string; events_count?: number }>(
-        `${API_ENDPOINTS.ARENA_SOURCES}/${id}/test`, {}
-      )
-      setToast({
-        show: true,
-        variant: result.success ? "success" : "error",
-        title: result.success ? t("arenaSources.testSuccess") : t("arenaSources.testFailed"),
-        message: result.success ? t("arenaSources.testEventsCount", { count: result.events_count }) : result.message,
-      })
-    } catch (err) {
-      setToast({ show: true, variant: "error", title: t("arenaSources.testError"), message: err instanceof Error ? err.message : String(err) })
-    }
-  }
-
-  const handleBrowserTest = async (source: ArenaSource) => {
+  const handleTest = async (source: ArenaSource) => {
     if (!source.client_id || !source.client_secret || !source.api_key) {
       setToast({
         show: true,
         variant: "error",
-        title: t("arenaSources.browserTestFailed"),
+        title: t("arenaSources.testFailed"),
         message: t("arenaSources.missingCredentials"),
       })
       return
     }
 
-    const baseUrl = buildArenaBaseUrl(source.host, source.port)
-    const tokenParams = new URLSearchParams({
-      grant_type: "https://arena.uww.io/grants/api_key",
-      client_id: source.client_id,
-      client_secret: source.client_secret,
-      api_key: source.api_key,
-    })
-
     try {
-      const tokenResponse = await fetch(`${baseUrl}/oauth/v2/token?${tokenParams.toString()}`, {
+      const response = await fetch(`${LOCAL_SYNC_AGENT_URL}/test`, {
         method: "POST",
-      })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          host: source.host,
+          port: source.port,
+          client_id: source.client_id,
+          client_secret: source.client_secret,
+          api_key: source.api_key,
+        }),
+        targetAddressSpace: "loopback",
+      } as RequestInit & { targetAddressSpace?: "loopback" })
 
-      if (!tokenResponse.ok) {
-        throw new Error(`Token request failed: ${tokenResponse.status} ${tokenResponse.statusText}`)
+      const result = await response.json().catch(() => null) as { success?: boolean; message?: string; detail?: string; events_count?: number } | null
+
+      if (!response.ok) {
+        throw new Error(result?.detail || result?.message || `${response.status} ${response.statusText}`)
       }
 
-      const tokenData = await tokenResponse.json()
-      if (!tokenData.access_token) {
-        throw new Error("Token response did not include access_token")
-      }
-
-      const eventsResponse = await fetch(`${baseUrl}/api/json/sport-event/`, {
-        headers: {
-          Authorization: `Bearer ${tokenData.access_token}`,
-        },
-      })
-
-      if (!eventsResponse.ok) {
-        throw new Error(`Events request failed: ${eventsResponse.status} ${eventsResponse.statusText}`)
-      }
-
-      const eventsData = await eventsResponse.json()
       setToast({
         show: true,
-        variant: "success",
-        title: t("arenaSources.browserTestSuccess"),
-        message: t("arenaSources.testEventsCount", { count: eventsData?.events?.totalCount ?? 0 }),
+        variant: result?.success === false ? "error" : "success",
+        title: result?.success === false ? t("arenaSources.testFailed") : t("arenaSources.testSuccess"),
+        message: result?.success === false
+          ? result?.message
+          : t("arenaSources.testEventsCount", { count: result?.events_count ?? 0 }),
       })
     } catch (err) {
-      const message = err instanceof Error && err.message ? err.message : String(err)
+      const message = err instanceof TypeError
+        ? t("arenaSources.localAgentUnavailable")
+        : err instanceof Error && err.message ? err.message : String(err)
       setToast({
         show: true,
         variant: "error",
-        title: t("arenaSources.browserTestFailed"),
-        message: t("arenaSources.browserTestHint", { message }),
+        title: t("arenaSources.testError"),
+        message,
       })
     }
   }
@@ -370,24 +340,14 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
                     {/* Right: actions */}
                     <div className="flex flex-wrap items-center gap-2">
                       <button
-                        onClick={() => handleTest(source.id)}
+                        onClick={() => handleTest(source)}
                         className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
                           isDarkMode
                             ? 'bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/20'
                             : 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100'
                         }`}
                       >
-                        Test
-                      </button>
-                      <button
-                        onClick={() => handleBrowserTest(source)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
-                          isDarkMode
-                            ? 'bg-cyan-500/10 border-cyan-500/20 text-cyan-300 hover:bg-cyan-500/20'
-                            : 'bg-cyan-50 border-cyan-200 text-cyan-700 hover:bg-cyan-100'
-                        }`}
-                      >
-                        {t("arenaSources.browserTest")}
+                        {t("arenaSources.testConnection")}
                       </button>
                       <button
                         onClick={() => handleToggle(source.id)}

@@ -6,6 +6,7 @@
 // Base URL for the backend API.
 // Production uses same-origin /api through the frontend Nginx proxy.
 export const API_BASE_URL = import.meta.env.VITE_API_URL || ''
+export const LOCAL_SYNC_AGENT_URL = import.meta.env.VITE_LOCAL_SYNC_AGENT_URL || 'http://127.0.0.1:8765'
 
 // API Endpoints - centralized for easy maintenance
 export const API_ENDPOINTS = {

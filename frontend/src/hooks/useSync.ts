@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ApiError, apiClient } from '@/services/apiClient'
-import { API_ENDPOINTS } from '@/config/api'
+import { API_ENDPOINTS, LOCAL_SYNC_AGENT_URL } from '@/config/api'
 import type { DatabaseEventSummary, SyncLogSummary, SyncResult } from './syncFlow'
 import {
   formatSyncTimestamp,
@@ -35,8 +35,6 @@ interface LocalSyncStartResponse {
     api_key: string
   }
 }
-
-const LOCAL_SYNC_AGENT_URL = import.meta.env.VITE_LOCAL_SYNC_AGENT_URL || 'http://127.0.0.1:8765'
 
 function shouldUseLocalAgentSync() {
   return import.meta.env.VITE_SYNC_MODE === 'local-agent' || import.meta.env.PROD || window.location.protocol === 'https:'

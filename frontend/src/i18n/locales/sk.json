@@ -653,10 +653,6 @@
     "inactive": "Neaktívny",
     "lastSync": "Posledná synchronizácia:",
     "testConnection": "Otestovať pripojenie",
-    "browserTest": "Browser test",
-    "browserTestSuccess": "Browser sa pripojil k lokálnej Arene",
-    "browserTestFailed": "Browser sa nepripojil k lokálnej Arene",
-    "browserTestHint": "{{message}}. Ak je stránka na HTTPS a Arena je na HTTP localhoste, alebo Arena neposiela CORS hlavičky, browser tento prístup zablokuje.",
     "missingCredentials": "Zdroj nemá vyplnený Client ID, Client Secret alebo API kľúč.",
     "deactivate": "Deaktivovať",
     "activate": "Aktivovať",
@@ -671,6 +667,7 @@
     "testEventsCount": "Počet eventov: {{count}}",
     "testFailed": "Neúspešné pripojenie",
     "testError": "Chyba pripojenia",
+    "localAgentUnavailable": "Local sync agent nebeží alebo nie je dostupný na tomto počítači.",
     "never": "Nikdy"
   },
   "security": {
