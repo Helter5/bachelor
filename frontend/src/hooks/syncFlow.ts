@@ -1,5 +1,5 @@
 import { apiClient, ApiError } from '@/services/apiClient'
-import { API_ENDPOINTS } from '@/config/api'
+import { API_ENDPOINTS, LOCAL_SYNC_AGENT_URL } from '@/config/api'
 
 export interface SyncResult {
   count: number
@@ -24,8 +24,32 @@ export interface DatabaseEventSummary {
   name: string
 }
 
+interface LocalSyncStartResponse {
+  sync_log_id: number
+  upload_token: string
+  arena_source: {
+    host: string
+    port: number
+    client_id: string
+    client_secret: string
+    api_key: string
+  }
+}
+
+interface RunSyncOptions {
+  onStarted?: (syncLogId: number) => void
+}
+
 export const MAX_RETRY_ATTEMPTS = 5
 export const RETRY_DELAY_MS = 1000
+
+export function shouldUseLocalAgentSync() {
+  return (
+    import.meta.env.VITE_SYNC_MODE === 'local-agent' ||
+    import.meta.env.PROD ||
+    window.location.protocol === 'https:'
+  )
+}
 
 export function stepToProgress(step: number, totalSteps: number) {
   if (totalSteps <= 0) return 0
@@ -135,4 +159,135 @@ export async function runSyncStage({
     created: results.reduce((sum, result) => sum + (result.created || 0), 0),
     updated: results.reduce((sum, result) => sum + (result.updated || 0), 0),
   }
+}
+
+export async function runLocalAgentSync({ onStarted }: RunSyncOptions = {}) {
+  const localSync = await apiClient.post<LocalSyncStartResponse>(API_ENDPOINTS.LOCAL_SYNC_START, {})
+  onStarted?.(localSync.sync_log_id)
+
+  const response = await fetch(`${LOCAL_SYNC_AGENT_URL}/sync`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      server_url: window.location.origin,
+      upload_token: localSync.upload_token,
+      arena_source: localSync.arena_source,
+    }),
+    targetAddressSpace: 'loopback',
+  } as RequestInit & { targetAddressSpace?: 'loopback' })
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(text || `Local sync agent failed: ${response.status} ${response.statusText}`)
+  }
+
+  return { syncLogId: localSync.sync_log_id }
+}
+
+export async function runBrowserSync({ onStarted }: RunSyncOptions = {}) {
+  const totalSteps = 6
+  let completedSteps = 0
+
+  const eventsSyncResult = await retryWithBackoff(
+    () => apiClient.post<SyncResult>(
+      API_ENDPOINTS.SPORT_EVENT_SYNC,
+      undefined,
+      { headers: { 'X-Sync-Orchestrated': 'true' } }
+    ),
+    'Syncing sport events'
+  )
+
+  const syncLogId = eventsSyncResult.sync_log_id ?? null
+  if (syncLogId) {
+    onStarted?.(syncLogId)
+
+    completedSteps += 1
+    await apiClient.patch(API_ENDPOINTS.SYNC_LOG_UPDATE_STATS(syncLogId), {
+      status: 'in_progress',
+      details: {
+        progress_percent: stepToProgress(completedSteps, totalSteps),
+        current_step: 'events',
+      },
+    })
+  }
+
+  const dbEventsData = await retryWithBackoff(
+    () => apiClient.get<{ items: DatabaseEventSummary[]; total: number }>(
+      API_ENDPOINTS.SPORT_EVENT_DATABASE
+    ),
+    'Fetching events from database'
+  )
+  const dbEvents = dbEventsData.items || []
+  const syncHeaders = syncLogId ? { headers: { 'X-Sync-Log-Id': String(syncLogId) } } : undefined
+
+  const stages = [
+    {
+      counterPrefix: 'teams',
+      endpointForEvent: API_ENDPOINTS.TEAM_SYNC,
+      contextLabel: (eventName: string) => `Syncing teams for event ${eventName}`,
+      currentStep: 'teams',
+    },
+    {
+      counterPrefix: 'weight_categories',
+      endpointForEvent: API_ENDPOINTS.WEIGHT_CATEGORY_SYNC,
+      contextLabel: (eventName: string) => `Syncing weight categories for event ${eventName}`,
+      currentStep: 'categories',
+    },
+    {
+      counterPrefix: 'athletes',
+      endpointForEvent: API_ENDPOINTS.ATHLETE_SYNC,
+      contextLabel: (eventName: string) => `Syncing athletes for event ${eventName}`,
+      currentStep: 'athletes',
+    },
+    {
+      counterPrefix: 'referees',
+      endpointForEvent: API_ENDPOINTS.REFEREE_SYNC,
+      contextLabel: (eventName: string) => `Syncing referees for event ${eventName}`,
+      currentStep: 'referees',
+    },
+    {
+      counterPrefix: 'fights',
+      endpointForEvent: API_ENDPOINTS.FIGHT_SYNC,
+      contextLabel: (eventName: string) => `Syncing fights for event ${eventName}`,
+      currentStep: 'fights',
+    },
+  ] as const
+
+  const totals: Record<string, number> = {}
+
+  for (const stage of stages) {
+    const result = await runSyncStage({
+      dbEvents,
+      endpointForEvent: stage.endpointForEvent,
+      contextLabel: stage.contextLabel,
+      syncLogId,
+      syncHeaders,
+      completedSteps,
+      totalSteps,
+      currentStep: stage.currentStep,
+    })
+    completedSteps = result.completedSteps
+    totals[`${stage.counterPrefix}_created`] = result.created
+    totals[`${stage.counterPrefix}_updated`] = result.updated
+  }
+
+  if (syncLogId) {
+    try {
+      await apiClient.patch(
+        API_ENDPOINTS.SYNC_LOG_UPDATE_STATS(syncLogId),
+        {
+          ...totals,
+          status: 'success',
+          details: {
+            progress_percent: 100,
+            current_step: 'completed',
+          },
+        }
+      )
+    } catch (error) {
+      console.warn('Could not update sync log stats:', error)
+    }
+  }
+
+  return { syncLogId }
 }
