@@ -195,7 +195,7 @@ async def test_fight_winner_correct(db, synced_events):
         section(event.name)
         for key, f in arena.items():
             db_f = db_fights.get(key)
-            if not db_f or not f.get("winnerFighter"):
+            if not db_f:
                 continue
             f1_db = uid_map.get(f.get("fighter1AthleteId") or "")
             f2_db = uid_map.get(f.get("fighter2AthleteId") or "")
@@ -203,6 +203,10 @@ async def test_fight_winner_correct(db, synced_events):
             if winner_fighter == f.get("fighter1Id") or winner_fighter == f.get("fighter1"):
                 expected_winner = f1_db
             elif winner_fighter == f.get("fighter2Id") or winner_fighter == f.get("fighter2"):
+                expected_winner = f2_db
+            elif (f.get("victoryType") or "").startswith("1"):
+                expected_winner = f1_db
+            elif (f.get("victoryType") or "").startswith("2"):
                 expected_winner = f2_db
             else:
                 expected_winner = None
