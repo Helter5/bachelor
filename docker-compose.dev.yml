@@ -30,8 +30,6 @@ services:
     image: wrestling-app-backend
     container_name: wf-api
     restart: unless-stopped
-    env_file:
-      - .env
     environment:
       DATABASE_URL: postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@wf-db:5432/${DATABASE_NAME}
       DATABASE_HOST: wf-db
@@ -39,13 +37,8 @@ services:
       DATABASE_NAME: ${DATABASE_NAME}
       DATABASE_USER: ${DATABASE_USER}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-      ARENA_BASE_URL: ${ARENA_BASE_URL:-}
-      ARENA_CLIENT_ID: ${ARENA_CLIENT_ID:-}
-      ARENA_CLIENT_SECRET: ${ARENA_CLIENT_SECRET:-}
-      ARENA_API_KEY: ${ARENA_API_KEY:-}
+      DATABASE_ECHO: ${DATABASE_ECHO:-false}
       ARENA_API_FORMAT: ${ARENA_API_FORMAT:-json}
-      APP_HOST: ${APP_HOST:-0.0.0.0}
-      APP_PORT: ${APP_PORT:-8000}
       APP_DEBUG: ${APP_DEBUG:-False}
       SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
       SMTP_PORT: ${SMTP_PORT:-587}
@@ -54,6 +47,14 @@ services:
       SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL}
       SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Wrestling Federation}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:5173}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      JWT_REFRESH_TOKEN_EXPIRE_DAYS: ${JWT_REFRESH_TOKEN_EXPIRE_DAYS:-30}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      SEND_EMAILS: ${SEND_EMAILS:-true}
+      SYNC_LOG_MAX_ENTRIES: ${SYNC_LOG_MAX_ENTRIES:-10}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       PYTHONDONTWRITEBYTECODE: "1"
@@ -80,8 +81,11 @@ services:
       dockerfile: Dockerfile.dev
     container_name: wf-web
     restart: unless-stopped
-    env_file:
-      - .env
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+      VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      VITE_LOCAL_SYNC_AGENT_URL: ${VITE_LOCAL_SYNC_AGENT_URL:-http://127.0.0.1:8765}
+      VITE_SYNC_MODE: ${VITE_SYNC_MODE:-}
     ports:
       - "5173:5173"
     depends_on:
@@ -107,13 +111,11 @@ services:
         - action: rebuild
           path: ./frontend/vite.config.ts
 
-  # Použitie: docker-compose -f docker-compose.dev.yml run --rm wf-tests
+  # Použitie: docker compose --env-file .env --env-file .env.tests -f docker-compose.dev.yml run --rm wf-tests
   wf-tests:
     image: wrestling-app-backend
     profiles: [tests]
     restart: no
-    env_file:
-      - .env
     environment:
       DATABASE_URL: postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@wf-db:5432/${DATABASE_NAME}
       DATABASE_HOST: wf-db
@@ -121,12 +123,25 @@ services:
       DATABASE_NAME: ${DATABASE_NAME}
       DATABASE_USER: ${DATABASE_USER}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_ECHO: ${DATABASE_ECHO:-false}
       ARENA_API_FORMAT: ${ARENA_API_FORMAT:-json}
       ARENA_HOST: ${ARENA_HOST:-arena-host}
       ARENA_PORT: ${ARENA_PORT:-8080}
       ARENA_CLIENT_ID: ${ARENA_CLIENT_ID:-}
       ARENA_CLIENT_SECRET: ${ARENA_CLIENT_SECRET:-}
       ARENA_API_KEY: ${ARENA_API_KEY:-}
+      APP_DEBUG: ${APP_DEBUG:-False}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:5173}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      JWT_REFRESH_TOKEN_EXPIRE_DAYS: ${JWT_REFRESH_TOKEN_EXPIRE_DAYS:-30}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      SEND_EMAILS: "false"
+      SYNC_LOG_MAX_ENTRIES: ${SYNC_LOG_MAX_ENTRIES:-10}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       PYTHONDONTWRITEBYTECODE: "1"
     extra_hosts:
       - "arena-host:host-gateway"
@@ -184,8 +199,6 @@ services:
     image: dpage/pgadmin4:latest
     container_name: wf-pgadmin
     restart: unless-stopped
-    env_file:
-      - .env
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@admin.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}

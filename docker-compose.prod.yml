@@ -28,8 +28,6 @@ services:
     image: wrestling-app-backend
     container_name: wf-api
     restart: unless-stopped
-    env_file:
-      - .env
     environment:
       DATABASE_URL: postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@wf-db:5432/${DATABASE_NAME}
       DATABASE_HOST: wf-db
@@ -37,10 +35,7 @@ services:
       DATABASE_NAME: ${DATABASE_NAME}
       DATABASE_USER: ${DATABASE_USER}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-      ARENA_BASE_URL: ${ARENA_BASE_URL:-}
-      ARENA_CLIENT_ID: ${ARENA_CLIENT_ID:-}
-      ARENA_CLIENT_SECRET: ${ARENA_CLIENT_SECRET:-}
-      ARENA_API_KEY: ${ARENA_API_KEY:-}
+      DATABASE_ECHO: ${DATABASE_ECHO:-false}
       ARENA_API_FORMAT: ${ARENA_API_FORMAT:-json}
       APP_DEBUG: "false"
       SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
@@ -56,6 +51,8 @@ services:
       JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-30}
       JWT_REFRESH_TOKEN_EXPIRE_DAYS: ${JWT_REFRESH_TOKEN_EXPIRE_DAYS:-30}
       COOKIE_SECURE: "true"
+      SEND_EMAILS: ${SEND_EMAILS:-true}
+      SYNC_LOG_MAX_ENTRIES: ${SYNC_LOG_MAX_ENTRIES:-10}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       PYTHONDONTWRITEBYTECODE: "1"
@@ -78,6 +75,11 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-}
+        VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+        VITE_LOCAL_SYNC_AGENT_URL: ${VITE_LOCAL_SYNC_AGENT_URL:-}
+        VITE_SYNC_MODE: ${VITE_SYNC_MODE:-}
     container_name: wf-web
     restart: unless-stopped
     ports:
