@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, type Dispatch, type SetStateAction, type ReactNode } from "react"
+import { useState, useEffect, useMemo, useRef, type Dispatch, type SetStateAction } from "react"
 import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
@@ -7,173 +7,10 @@ import { Checkbox } from "@/components/ui/Checkbox"
 import { WrestlerPicker } from "./WrestlerPicker"
 import type { Person, PickerMode } from "./WrestlerPicker"
 import { usePersons } from "@/hooks/usePersons"
-import { formatDuration, pluralizeSk } from "@/utils/format"
 import { DashboardStatsShell } from "./DashboardStatsShell"
-
-interface ComparisonPerson {
-  id: number
-  name: string
-  country: string | null
-}
-
-interface ComparisonFight {
-  fight_id: number
-  sport_event_name: string | null
-  weight_category: string | null
-  person1_name: string
-  person2_name: string
-  person1_tp: number | null
-  person2_tp: number | null
-  person1_cp: number | null
-  person2_cp: number | null
-  victory_type: string | null
-  duration: number | null
-  winner: "person1" | "person2" | null
-  winner_name: string | null
-}
-
-interface OpponentSummary {
-  wins?: number
-  losses?: number
-  avg_tp?: number
-  avg_cp?: number
-}
-
-interface CommonOpponent {
-  opponent: ComparisonPerson
-  person1_summary: OpponentSummary
-  person2_summary: OpponentSummary
-}
-
-interface ComparisonResult {
-  person1: ComparisonPerson
-  person2: ComparisonPerson
-  total_fights: number
-  person1_wins: number
-  person2_wins: number
-  fights: ComparisonFight[]
-  common_opponents?: CommonOpponent[]
-  error?: string
-}
-
-interface FightHistoryTableProps {
-  isDarkMode: boolean
-  fights: ComparisonFight[]
-}
-
-function FightHistoryTable({ isDarkMode, fights }: FightHistoryTableProps) {
-  const { t } = useTranslation()
-  return (
-    <div>
-      <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-        {t("comparison.fightHistory")}
-      </h3>
-      <div className={`rounded-lg overflow-hidden ${isDarkMode ? 'shadow-lg' : 'border border-gray-200'}`}>
-        <table className="w-full">
-          <thead>
-            <tr className={`border-b ${isDarkMode ? 'border-white/5 bg-white/5' : 'border-gray-200 bg-gray-50'}`}>
-              <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t("comparison.tableHeaders.tournament")}</th>
-              <th className={`text-left py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t("comparison.tableHeaders.category")}</th>
-              <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t("comparison.tableHeaders.winner")}</th>
-              <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t("comparison.tableHeaders.winType")}</th>
-              <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t("comparison.tableHeaders.cp")}</th>
-              <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t("comparison.tableHeaders.tp")}</th>
-              <th className={`text-center py-3 px-4 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t("comparison.tableHeaders.time")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {fights.map((fight, idx) => (
-              <tr
-                key={fight.fight_id || idx}
-                className={`border-b last:border-b-0 ${isDarkMode ? 'border-white/5 hover:bg-white/5' : 'border-gray-100 hover:bg-gray-50'}`}
-              >
-                <td className={`py-3 px-4 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  {fight.sport_event_name || '-'}
-                </td>
-                <td className={`py-3 px-4 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {fight.weight_category || '-'}
-                </td>
-                <td className="py-3 px-4 text-center">
-                  {fight.winner ? (
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                      fight.winner === 'person1' ? 'bg-green-900/30 text-green-400' : 'bg-blue-900/30 text-blue-400'
-                    }`}>
-                      {fight.winner_name}
-                    </span>
-                  ) : (
-                    <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>-</span>
-                  )}
-                </td>
-                <td className={`py-3 px-4 text-center text-sm font-medium ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}>
-                  {fight.victory_type || '-'}
-                </td>
-                <td className={`py-3 px-4 text-center text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  <span className={fight.winner === 'person1' ? 'font-bold' : ''}>{fight.person1_cp ?? '-'}</span>
-                  <span className={isDarkMode ? 'text-gray-500' : 'text-gray-400'}> : </span>
-                  <span className={fight.winner === 'person2' ? 'font-bold' : ''}>{fight.person2_cp ?? '-'}</span>
-                </td>
-                <td className={`py-3 px-4 text-center text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  <span className={fight.winner === 'person1' ? 'font-bold' : ''}>{fight.person1_tp ?? '-'}</span>
-                  <span className={isDarkMode ? 'text-gray-500' : 'text-gray-400'}> : </span>
-                  <span className={fight.winner === 'person2' ? 'font-bold' : ''}>{fight.person2_tp ?? '-'}</span>
-                </td>
-                <td className={`py-3 px-4 text-center text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {fight.duration ? formatDuration(fight.duration) : '-'}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )
-}
-
-interface CommonOpponentCardProps {
-  isDarkMode: boolean
-  opp: CommonOpponent
-  person1Name: string
-  person2Name: string
-}
-
-function CommonOpponentCard({ isDarkMode, opp, person1Name, person2Name }: CommonOpponentCardProps) {
-  const { t } = useTranslation()
-  return (
-    <div className={`rounded-lg p-5 ${isDarkMode ? 'bg-[#0f172a]/60 border border-white/5' : 'bg-gray-50 border border-gray-200'}`}>
-      <div className={`text-sm font-bold mb-4 flex items-center gap-1.5 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-        vs
-        {opp.opponent.country && (
-          <span className={`fi fi-${opp.opponent.country.toLowerCase()} rounded-sm`} style={{ fontSize: '0.9rem' }} />
-        )}
-        {opp.opponent.name}
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        {[
-          { name: person1Name, summary: opp.person1_summary },
-          { name: person2Name, summary: opp.person2_summary },
-        ].map(({ name, summary }) => (
-          <div key={name} className={`rounded-lg p-3 ${isDarkMode ? 'bg-white/5' : 'bg-white border border-gray-100'}`}>
-            <div className={`text-xs font-medium mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{name}</div>
-            {summary && summary.wins !== undefined ? (
-              <div className="flex items-center gap-3">
-                <span className="text-green-500 font-bold text-lg">{summary.wins}V</span>
-                <span className={`font-bold text-lg ${isDarkMode ? 'text-red-400' : 'text-red-500'}`}>{summary.losses}P</span>
-                {(summary.avg_cp ?? 0) > 0 && (
-                  <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>Ø CP: {summary.avg_cp}</span>
-                )}
-                {(summary.avg_tp ?? 0) > 0 && (
-                  <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>Ø TP: {summary.avg_tp}</span>
-                )}
-              </div>
-            ) : (
-              <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>{t("comparison.noFights")}</span>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
+import { ComparisonFightSection } from "./ComparisonFightSummary"
+import { CommonOpponentCard } from "./CommonOpponentCard"
+import type { ComparisonResult } from "./comparisonTypes"
 
 interface ComparisonViewProps {
   isDarkMode: boolean
@@ -580,68 +417,11 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
         {comparisonResult && comparedWith && (
           <div className="mt-8 space-y-8">
             {comparedWith.fights && (
-              <div className={`rounded-xl p-6 ${isDarkMode ? 'bg-[#0f172a]/80 border border-white/5' : 'bg-gray-50 border border-gray-200'}`}>
-                <h3 className={`text-lg font-bold mb-6 text-center ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                  {t("comparison.headToHead")}
-                </h3>
-                <div className="flex items-center justify-center gap-6">
-                  {[
-                    { person: comparisonResult.person1, wins: comparisonResult.person1_wins, otherWins: comparisonResult.person2_wins },
-                    { person: comparisonResult.person2, wins: comparisonResult.person2_wins, otherWins: comparisonResult.person1_wins },
-                  ].map(({ person, wins, otherWins }) => (
-                    <div key={person.id} className="text-center flex-1">
-                      <div className={`text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        {person.country && (
-                          <span className={`fi fi-${person.country.toLowerCase()} rounded-sm mr-1.5`} style={{ fontSize: '0.9rem' }} />
-                        )}
-                        {onSelectPerson ? (
-                          <button onClick={() => onSelectPerson({ id: person.id, name: person.name })} className={`hover:underline ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                            {person.name}
-                          </button>
-                        ) : person.name}
-                      </div>
-                      <div className={`text-5xl font-black ${
-                        wins > otherWins ? 'text-green-500'
-                          : wins < otherWins ? isDarkMode ? 'text-red-400' : 'text-red-500'
-                          : isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                      }`}>
-                        {wins}
-                      </div>
-                      <div className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                        {pluralizeSk(wins, t("comparison.wins"), t("comparison.winsFew"), t("comparison.winsMany"))}
-                      </div>
-                    </div>
-                  )).reduce<ReactNode[]>((acc, el, i) => {
-                    if (i === 1) {
-                      acc.push(
-                        <div key="vs" className="flex flex-col items-center">
-                          <div className={`text-sm font-bold px-4 py-2 rounded-full ${isDarkMode ? 'bg-white/5 text-gray-400' : 'bg-gray-200 text-gray-500'}`}>
-                            {comparisonResult.total_fights} {pluralizeSk(comparisonResult.total_fights, t("comparison.fights"), t("comparison.fightsFew"), t("comparison.fightsMany"))}
-                          </div>
-                        </div>
-                      )
-                    }
-                    acc.push(el)
-                    return acc
-                  }, [])}
-                </div>
-
-                {comparisonResult.fights && comparisonResult.fights.length > 0 && (
-                  <div className="mt-6">
-                    <FightHistoryTable isDarkMode={isDarkMode} fights={comparisonResult.fights} />
-                  </div>
-                )}
-
-                {comparisonResult.total_fights === 0 && (
-                  <div className={`text-center py-6 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <svg className={`mx-auto h-10 w-10 mb-3 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                    </svg>
-                    <p className="font-medium">{t("comparison.noHeadToHead")}</p>
-                    <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>{t("comparison.noHeadToHeadDesc")}</p>
-                  </div>
-                )}
-              </div>
+              <ComparisonFightSection
+                isDarkMode={isDarkMode}
+                result={comparisonResult}
+                onSelectPerson={onSelectPerson}
+              />
             )}
 
             {comparedWith.opponents && (

@@ -486,6 +486,14 @@
     "fights": "zápas",
     "fightsFew": "zápasy",
     "fightsMany": "zápasov",
+    "avgTpFor": "Priem. TP",
+    "avgTpAgainst": "TP súpera",
+    "avgCpFor": "Priem. CP",
+    "avgCpAgainst": "CP súpera",
+    "tpDiff": "Rozdiel TP",
+    "recentForm": "Forma",
+    "winsByType": "Výhry podľa ukončenia",
+    "lossesByType": "Prehry podľa ukončenia",
     "betterWinRate": "{{name}} má lepšiu úspešnosť o {{diff}}%"
   },
   "teamComparison": {

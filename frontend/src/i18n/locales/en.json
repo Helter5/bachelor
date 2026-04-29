@@ -483,6 +483,14 @@
     "fights": "fight",
     "fightsFew": "fights",
     "fightsMany": "fights",
+    "avgTpFor": "Avg. TP",
+    "avgTpAgainst": "Opponent TP",
+    "avgCpFor": "Avg. CP",
+    "avgCpAgainst": "Opponent CP",
+    "tpDiff": "TP diff",
+    "recentForm": "Form",
+    "winsByType": "Wins by finish",
+    "lossesByType": "Losses by finish",
     "betterWinRate": "{{name}} has a better win rate by {{diff}}%"
   },
   "teamComparison": {
