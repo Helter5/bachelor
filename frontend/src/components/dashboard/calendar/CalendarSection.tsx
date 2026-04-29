@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useTournaments } from '@/hooks/useTournaments'
-import { CalendarTopBar } from './calendar/CalendarTopBar'
-import { CalendarGridViews } from './calendar/CalendarGridViews'
-import { CalendarSidebar } from './calendar/CalendarSidebar'
-import type { CalendarEvent, CalendarViewMode, RightPanelMode } from './calendar/types'
+import { CalendarTopBar } from './CalendarTopBar'
+import { CalendarGridViews } from './CalendarGridViews'
+import { CalendarSidebar } from './CalendarSidebar'
+import type { CalendarEvent, CalendarViewMode, RightPanelMode } from './types'
 
 interface CalendarSectionProps {
   isDarkMode: boolean

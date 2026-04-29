@@ -2,9 +2,9 @@ import { useState, useEffect, useRef, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useRankingCategories, useRankingData } from "@/hooks/useRankingData"
 import type { RankingEntry } from "@/hooks/useRankingData"
-import { LoadingSpinner } from "../ui/LoadingSpinner"
-import { EmptyState } from "../ui/EmptyState"
-import { Select } from "../ui/Select"
+import { LoadingSpinner } from "../../ui/LoadingSpinner"
+import { EmptyState } from "../../ui/EmptyState"
+import { Select } from "../../ui/Select"
 import { DashboardStatsShell } from "./DashboardStatsShell"
 
 interface RankingTableRowProps {

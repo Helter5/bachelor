@@ -6,7 +6,7 @@ import { LoadingSpinner } from "../../../ui/LoadingSpinner"
 import { ErrorAlert } from "../../../ui/ErrorAlert"
 import { DetailHeader } from "../../../ui/DetailHeader"
 import { WeightCategoryGrid } from "../WeightCategoryGrid"
-import { Pagination } from "../Pagination"
+import { Pagination } from "../../shared/Pagination"
 import { ResultsView } from "../ResultsView"
 import { Card } from "../Card"
 

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
-import { DashboardBackButton } from "./DashboardBackButton"
-import { DashboardPanel } from "./DashboardPanel"
+import { DashboardBackButton } from "../layout/DashboardBackButton"
+import { DashboardPanel } from "../layout/DashboardPanel"
 
 interface DashboardStatsShellProps {
   isDarkMode: boolean

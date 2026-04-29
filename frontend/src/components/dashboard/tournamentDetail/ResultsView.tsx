@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { CountryFlag } from '../CountryFlag'
+import { CountryFlag } from '../shared/CountryFlag'
 import type { FightResult } from './types'
 
 interface ResultsViewProps {

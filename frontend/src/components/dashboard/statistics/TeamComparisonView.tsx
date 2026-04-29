@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 import { useEvents } from "@/hooks/useEvents"
 import { useEventStatistics } from "@/hooks/useEventStatistics"
 import type { TeamPerformance } from "@/hooks/useEventStatistics"
-import { Select } from "../ui/Select"
+import { Select } from "../../ui/Select"
 import { DashboardStatsShell } from "./DashboardStatsShell"
 
 interface TeamComparisonViewProps {

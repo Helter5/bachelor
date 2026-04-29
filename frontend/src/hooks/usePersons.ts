@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
-import type { Person } from "@/components/dashboard/WrestlerPicker"
+import type { Person } from "@/components/dashboard/statistics/WrestlerPicker"
 
 const PERSONS_LIMIT = 1000
 

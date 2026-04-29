@@ -1,10 +1,10 @@
 import { useState, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Pagination } from "./Pagination"
-import { SearchInput } from "./SearchInput"
-import { Select } from "../ui/Select"
-import { LoadingSpinner } from "../ui/LoadingSpinner"
-import { ErrorAlert } from "../ui/ErrorAlert"
+import { Pagination } from "../shared/Pagination"
+import { SearchInput } from "../shared/SearchInput"
+import { Select } from "../../ui/Select"
+import { LoadingSpinner } from "../../ui/LoadingSpinner"
+import { ErrorAlert } from "../../ui/ErrorAlert"
 import { useFightersData } from "@/hooks/useFightersData"
 
 interface FightersListProps {

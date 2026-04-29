@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next"
 import type { WeightCategory } from "./types"
 import { StatusBadge } from "../../ui/StatusBadge"
-import { Pagination } from "../Pagination"
+import { Pagination } from "../shared/Pagination"
 import { ITEMS_PER_PAGE } from "./types"
 
 function FighterCountPill({ count, isDarkMode, label }: { count: number; isDarkMode: boolean; label: string }) {
