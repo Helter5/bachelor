@@ -502,6 +502,15 @@
     "statWins": "Wins",
     "statLosses": "Losses",
     "statWinRate": "Win rate",
+    "avgTpFor": "Avg. TP",
+    "avgTpAgainst": "Opponent TP",
+    "avgCpFor": "Avg. CP",
+    "avgCpAgainst": "Opponent CP",
+    "topFinish": "Top finish",
+    "topPerformer": "Top wrestler",
+    "winsByType": "Winning finishes",
+    "lossesByType": "Losing finishes",
+    "noFinishData": "No finish data",
     "betterWinRate": "{{name}} has a better win rate by {{diff}}%"
   },
   "wrestlerProfile": {

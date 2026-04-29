@@ -61,6 +61,14 @@ class EventTopPerformerOut(BaseModel):
     country: Optional[str] = None
 
 
+class EventTeamTopPerformerOut(BaseModel):
+    name: str
+    wins: int
+    total_fights: int
+    win_rate: float
+    person_id: Optional[int] = None
+
+
 class EventTeamPerformanceOut(BaseModel):
     """Team performance entry for event statistics."""
     name: str
@@ -69,6 +77,14 @@ class EventTeamPerformanceOut(BaseModel):
     losses: int
     total_fights: int
     win_rate: float
+    wins_by_type: dict[str, int] = Field(default_factory=dict)
+    losses_by_type: dict[str, int] = Field(default_factory=dict)
+    dominant_victory_type: Optional[str] = None
+    avg_tp_for: float = 0.0
+    avg_tp_against: float = 0.0
+    avg_cp_for: float = 0.0
+    avg_cp_against: float = 0.0
+    top_performer: Optional[EventTeamTopPerformerOut] = None
 
 
 class EventStatisticsOut(BaseModel):

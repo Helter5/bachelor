@@ -2,7 +2,7 @@
 from collections import Counter
 from fastapi import HTTPException, status
 from sqlmodel import Session, select
-from typing import Iterable
+from typing import Any, Iterable
 
 from ..domain.entities.athlete import Athlete
 from ..domain.entities.fight import Fight
@@ -85,7 +85,7 @@ class EventStatisticsService:
 
         athlete_map, team_map, person_map = self._load_related_maps(athlete_stats.keys())
         top_performers = self._build_top_performers(athlete_stats, athlete_map, team_map, person_map)
-        team_performance = self._build_team_performance(athlete_stats, athlete_map, team_map)
+        team_performance = self._build_team_performance(athlete_stats, athlete_map, team_map, person_map, fights)
 
         return EventStatisticsOut(
             event_id=event_id,
@@ -158,8 +158,10 @@ class EventStatisticsService:
         athlete_stats: dict[int, dict[str, int]],
         athlete_map: dict[int, Athlete],
         team_map: dict[int, Team],
+        person_map: dict[int, Person],
+        fights: list[Fight],
     ) -> list[dict]:
-        team_stats: dict[int, dict[str, object]] = {}
+        team_stats: dict[int, dict[str, Any]] = {}
 
         for athlete_id, stats in athlete_stats.items():
             athlete = athlete_map.get(athlete_id)
@@ -175,6 +177,15 @@ class EventStatisticsService:
                     "wins": 0,
                     "losses": 0,
                     "total_fights": 0,
+                    "wins_by_type": Counter(),
+                    "losses_by_type": Counter(),
+                    "tp_for": 0,
+                    "tp_against": 0,
+                    "tp_count": 0,
+                    "cp_for": 0,
+                    "cp_against": 0,
+                    "cp_count": 0,
+                    "top_performer": None,
                 }
 
             team_stats[team_id]["wins"] += stats["wins"]
@@ -183,10 +194,35 @@ class EventStatisticsService:
                 team_stats[team_id]["total_fights"] - team_stats[team_id]["wins"]
             )
 
+            person = person_map.get(athlete.person_id) if athlete.person_id else None
+            win_rate = round(stats["wins"] / stats["total"] * 100, 1) if stats["total"] > 0 else 0
+            performer = {
+                "name": person.full_name if person else "Unknown",
+                "wins": stats["wins"],
+                "total_fights": stats["total"],
+                "win_rate": win_rate,
+                "person_id": athlete.person_id,
+            }
+            current = team_stats[team_id]["top_performer"]
+            if (
+                current is None
+                or performer["wins"] > current["wins"]
+                or (performer["wins"] == current["wins"] and performer["win_rate"] > current["win_rate"])
+            ):
+                team_stats[team_id]["top_performer"] = performer
+
+        for fight in fights:
+            self._add_team_fight_metrics(team_stats, athlete_map, fight)
+
         team_performance = []
         for stats in team_stats.values():
             total_fights = int(stats["total_fights"])
             wins = int(stats["wins"])
+            wins_by_type = dict(stats["wins_by_type"])
+            dominant_victory_type = (
+                max(wins_by_type.items(), key=lambda item: (item[1], item[0]))[0]
+                if wins_by_type else None
+            )
             team_performance.append({
                 "name": stats["name"],
                 "country": stats["country"],
@@ -194,7 +230,60 @@ class EventStatisticsService:
                 "losses": int(stats["losses"]),
                 "total_fights": total_fights,
                 "win_rate": round(wins / total_fights * 100, 1) if total_fights > 0 else 0,
+                "wins_by_type": wins_by_type,
+                "losses_by_type": dict(stats["losses_by_type"]),
+                "dominant_victory_type": dominant_victory_type,
+                "avg_tp_for": round(stats["tp_for"] / stats["tp_count"], 1) if stats["tp_count"] > 0 else 0.0,
+                "avg_tp_against": round(stats["tp_against"] / stats["tp_count"], 1) if stats["tp_count"] > 0 else 0.0,
+                "avg_cp_for": round(stats["cp_for"] / stats["cp_count"], 1) if stats["cp_count"] > 0 else 0.0,
+                "avg_cp_against": round(stats["cp_against"] / stats["cp_count"], 1) if stats["cp_count"] > 0 else 0.0,
+                "top_performer": stats["top_performer"],
             })
 
         team_performance.sort(key=lambda item: (-item["win_rate"], -item["wins"]))
         return team_performance
+
+    def _add_team_fight_metrics(
+        self,
+        team_stats: dict[int, dict[str, Any]],
+        athlete_map: dict[int, Athlete],
+        fight: Fight,
+    ) -> None:
+        sides = [
+            (fight.fighter_one_id, fight.tp_one, fight.tp_two, fight.cp_one, fight.cp_two),
+            (fight.fighter_two_id, fight.tp_two, fight.tp_one, fight.cp_two, fight.cp_one),
+        ]
+
+        for athlete_id, tp_for, tp_against, cp_for, cp_against in sides:
+            athlete = athlete_map.get(athlete_id) if athlete_id else None
+            if not athlete or not athlete.team_id or athlete.team_id not in team_stats:
+                continue
+
+            stats = team_stats[athlete.team_id]
+            if tp_for is not None:
+                stats["tp_for"] += tp_for
+                stats["tp_count"] += 1
+            if tp_against is not None:
+                stats["tp_against"] += tp_against
+            if cp_for is not None:
+                stats["cp_for"] += cp_for
+                stats["cp_count"] += 1
+            if cp_against is not None:
+                stats["cp_against"] += cp_against
+
+        if not fight.victory_type or fight.winner_id is None:
+            return
+
+        winner = athlete_map.get(fight.winner_id)
+        if winner and winner.team_id in team_stats:
+            team_stats[winner.team_id]["wins_by_type"][fight.victory_type] += 1
+
+        loser_id = None
+        if fight.fighter_one_id == fight.winner_id:
+            loser_id = fight.fighter_two_id
+        elif fight.fighter_two_id == fight.winner_id:
+            loser_id = fight.fighter_one_id
+
+        loser = athlete_map.get(loser_id) if loser_id else None
+        if loser and loser.team_id in team_stats:
+            team_stats[loser.team_id]["losses_by_type"][fight.victory_type] += 1

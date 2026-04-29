@@ -505,6 +505,15 @@
     "statWins": "Výhry",
     "statLosses": "Prehry",
     "statWinRate": "Úspešnosť",
+    "avgTpFor": "Priem. TP",
+    "avgTpAgainst": "TP súperov",
+    "avgCpFor": "Priem. CP",
+    "avgCpAgainst": "CP súperov",
+    "topFinish": "Najč. ukončenie",
+    "topPerformer": "Najlepší zápasník",
+    "winsByType": "Ukončenia pri výhrach",
+    "lossesByType": "Ukončenia pri prehrách",
+    "noFinishData": "Bez dát o ukončeniach",
     "betterWinRate": "{{name}} má lepšiu úspešnosť o {{diff}}%"
   },
   "wrestlerProfile": {
