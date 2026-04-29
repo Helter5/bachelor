@@ -17,6 +17,7 @@ interface Person {
   full_name: string
   country_iso_code: string | null
   fight_count: number
+  tournament_count?: number
 }
 
 interface AthletesListProps {
@@ -182,6 +183,7 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
                       fullName={person.full_name}
                       countryCode={person.country_iso_code}
                       fightCount={person.fight_count}
+                      tournamentCount={person.tournament_count ?? 0}
                       isDarkMode={isDarkMode}
                       onClick={() => onSelectPerson({ id: person.id, name: person.full_name })}
                     />

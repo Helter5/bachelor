@@ -198,6 +198,7 @@ class PersonOut(BaseModel):
     country_iso_code: Optional[str] = None
     created_at: datetime
     fight_count: int = 0
+    tournament_count: int = 0
 
     @model_validator(mode="after")
     def set_full_name(self) -> "PersonOut":

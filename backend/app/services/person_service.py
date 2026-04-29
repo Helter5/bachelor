@@ -42,14 +42,21 @@ class PersonService(BaseService[Person]):
         )
 
         athlete_persons_sub = (
-            select(col(Athlete.person_id).label("person_id"))
+            select(
+                col(Athlete.person_id).label("person_id"),
+                func.count(func.distinct(Athlete.sport_event_id)).label("tournament_count"),
+            )
             .where(col(Athlete.person_id).is_not(None))
             .group_by(col(Athlete.person_id))
             .subquery()
         )
 
         statement = (
-            select(Person, func.coalesce(fight_count_sub.c.fight_count, 0).label("fight_count"))
+            select(
+                Person,
+                func.coalesce(fight_count_sub.c.fight_count, 0).label("fight_count"),
+                func.coalesce(athlete_persons_sub.c.tournament_count, 0).label("tournament_count"),
+            )
             .join(athlete_persons_sub, Person.id == athlete_persons_sub.c.person_id)
             .outerjoin(fight_count_sub, Person.id == fight_count_sub.c.person_id)
         )
@@ -69,9 +76,10 @@ class PersonService(BaseService[Person]):
         ).all()
 
         result = []
-        for person, fight_count in rows:
+        for person, fight_count, tournament_count in rows:
             item = PersonOut.model_validate(person, from_attributes=True)
             item.fight_count = int(fight_count or 0)
+            item.tournament_count = int(tournament_count or 0)
             result.append(item)
 
         return result

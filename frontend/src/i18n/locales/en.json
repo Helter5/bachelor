@@ -230,7 +230,10 @@
     "showPaged": "Show paginated",
     "fightCount_one": "fight",
     "fightCount_few": "fights",
-    "fightCount_many": "fights"
+    "fightCount_many": "fights",
+    "tournamentCount_one": "tournament",
+    "tournamentCount_few": "tournaments",
+    "tournamentCount_many": "tournaments"
   },
   "tournaments": {
     "title": "Tournaments",
@@ -746,9 +749,6 @@
     "sortZa": "Sort A-Z",
     "loading": "Loading...",
     "loadingTournaments": "Loading tournaments...",
-    "countOne": "tournament",
-    "countFew": "tournaments",
-    "countMany": "tournaments",
     "notFound": "No tournaments found",
     "cancel": "Cancel",
     "preview": "Preview",

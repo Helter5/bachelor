@@ -233,7 +233,10 @@
     "showPaged": "Zobraziť po stránkach",
     "fightCount_one": "zápas",
     "fightCount_few": "zápasy",
-    "fightCount_many": "zápasov"
+    "fightCount_many": "zápasov",
+    "tournamentCount_one": "turnaj",
+    "tournamentCount_few": "turnaje",
+    "tournamentCount_many": "turnajov"
   },
   "tournaments": {
     "title": "Turnaje",
@@ -749,9 +752,6 @@
     "sortZa": "Zoradiť A-Z",
     "loading": "Načítavam...",
     "loadingTournaments": "Načítavam turnaje...",
-    "countOne": "turnaj",
-    "countFew": "turnaje",
-    "countMany": "turnajov",
     "notFound": "Žiadne turnaje nenájdené",
     "cancel": "Zrušiť",
     "preview": "Zobraziť",
