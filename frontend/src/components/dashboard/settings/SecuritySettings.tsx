@@ -108,8 +108,9 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
       setError(null)
       setSuccess(null)
       await apiClient.post(API_ENDPOINTS.PROFILE_REVOKE_ALL_SESSIONS, {})
-      await apiClient.post(API_ENDPOINTS.AUTH_LOGOUT, {})
-      window.location.href = '/'
+      setSuccess(t('security.revokeAllSuccess'))
+      setTimeout(() => setSuccess(null), 3000)
+      await loadSessions()
     } catch {
       setError(t('security.revokeAllError'))
     }

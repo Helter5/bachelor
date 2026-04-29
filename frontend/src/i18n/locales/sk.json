@@ -695,9 +695,10 @@
     "unknownBrowser": "Neznámy",
     "unknownUser": "Neznámy prehliadač",
     "confirmRevoke": "Naozaj chcete odhlásiť túto reláciu?",
-    "confirmRevokeAll": "Naozaj chcete odhlásiť všetky ostatné relácie? Budete musieť sa znova prihlásiť.",
+    "confirmRevokeAll": "Naozaj chcete odhlásiť všetky ostatné relácie?",
     "revokeSuccess": "Relácia bola úspešne odhlásená",
     "revokeError": "Nepodarilo sa odhlásiť reláciu",
+    "revokeAllSuccess": "Ostatné relácie boli úspešne odhlásené",
     "revokeAllError": "Nepodarilo sa odhlásiť relácie",
     "loadError": "Nepodarilo sa načítať aktívne relácie"
   },

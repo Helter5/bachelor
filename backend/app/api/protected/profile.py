@@ -1,5 +1,5 @@
 """Protected API - user profile management (requires authentication)"""
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Request
+from fastapi import APIRouter, Cookie, Depends, HTTPException, status, UploadFile, File
 from sqlmodel import Session, select
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, List
@@ -9,11 +9,11 @@ from datetime import datetime, timezone
 
 from ...database import get_session
 from ...domain.entities.user import User
-from ...domain.entities.refresh_token import RefreshToken
 from ...domain.entities.login_history import LoginHistory
 from ...domain.schemas.responses import UserOut
 from ...core.dependencies import require_user, validate_csrf_and_origin
 from ...core.security import hash_password, verify_password
+from ...services.session_service import SessionService
 
 router = APIRouter(prefix="/profile")
 
@@ -115,7 +115,8 @@ async def change_password(
     password_data: ChangePasswordRequest,
     _: None = Depends(validate_csrf_and_origin),
     user: User = Depends(require_user),
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    refresh_token: Optional[str] = Cookie(None)
 ):
     """
     Change current user's password
@@ -143,17 +144,7 @@ async def change_password(
     session.add(user)
     session.commit()
 
-    # Revoke all other sessions for security
-    statement = select(RefreshToken).where(
-        RefreshToken.user_id == user.id,
-        RefreshToken.is_revoked == False
-    )
-    tokens = session.exec(statement).all()
-    for token in tokens:
-        token.is_revoked = True
-        session.add(token)
-
-    session.commit()
+    SessionService(session).revoke_other_sessions(user.id, refresh_token)
 
     return {"message": "Password changed successfully. All other sessions have been logged out."}
 
@@ -248,36 +239,27 @@ async def delete_avatar(
 
 @router.get("/sessions", response_model=List[ActiveSessionOut])
 async def get_active_sessions(
-    request: Request,
     user: User = Depends(require_user),
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    refresh_token: Optional[str] = Cookie(None)
 ):
     """
     Get all active sessions for current user
 
     Requires: Authentication
     """
-    # Get current token from cookies
-    current_token = request.cookies.get("refresh_token")
-
-    statement = select(RefreshToken).where(
-        RefreshToken.user_id == user.id,
-        RefreshToken.is_revoked == False,
-        RefreshToken.expires_at > datetime.now(timezone.utc)
-    ).order_by(RefreshToken.created_at.desc())
-
-    tokens = session.exec(statement).all()
+    active_sessions = SessionService(session).list_active_sessions(user.id, refresh_token)
 
     return [
         ActiveSessionOut(
-            id=token.id,
-            created_at=token.created_at,
-            last_used_at=token.last_used_at,
-            ip_address=token.ip_address,
-            user_agent=token.user_agent,
-            is_current=(token.token == current_token)
+            id=active_session.token.id,
+            created_at=active_session.token.created_at,
+            last_used_at=active_session.token.last_used_at,
+            ip_address=active_session.token.ip_address,
+            user_agent=active_session.token.user_agent,
+            is_current=active_session.is_current
         )
-        for token in tokens
+        for active_session in active_sessions
     ]
 
 
@@ -293,17 +275,12 @@ async def revoke_session(
 
     Requires: Authentication + CSRF token + Origin validation
     """
-    token = session.get(RefreshToken, session_id)
-
-    if not token or token.user_id != user.id:
+    revoked = SessionService(session).revoke_session(user.id, session_id)
+    if not revoked:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Session not found"
         )
-
-    token.is_revoked = True
-    session.add(token)
-    session.commit()
 
     return {"message": "Session revoked successfully"}
 
@@ -312,28 +289,17 @@ async def revoke_session(
 async def revoke_all_sessions(
     _: None = Depends(validate_csrf_and_origin),
     user: User = Depends(require_user),
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    refresh_token: Optional[str] = Cookie(None)
 ):
     """
     Revoke all sessions except current one
 
     Requires: Authentication + CSRF token + Origin validation
     """
-    statement = select(RefreshToken).where(
-        RefreshToken.user_id == user.id,
-        RefreshToken.is_revoked == False
-    )
+    revoked_count = SessionService(session).revoke_other_sessions(user.id, refresh_token)
 
-    tokens = session.exec(statement).all()
-
-    # Revoke all tokens
-    for token in tokens:
-        token.is_revoked = True
-        session.add(token)
-
-    session.commit()
-
-    return {"message": f"All {len(tokens)} sessions have been revoked. Please log in again."}
+    return {"message": f"{revoked_count} other sessions have been revoked."}
 
 
 @router.get("/login-history", response_model=List[LoginHistoryOut])

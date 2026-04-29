@@ -692,9 +692,10 @@
     "unknownBrowser": "Unknown",
     "unknownUser": "Unknown browser",
     "confirmRevoke": "Are you sure you want to log out this session?",
-    "confirmRevokeAll": "Are you sure you want to log out all other sessions? You will need to log in again.",
+    "confirmRevokeAll": "Are you sure you want to log out all other sessions?",
     "revokeSuccess": "Session logged out successfully",
     "revokeError": "Failed to log out session",
+    "revokeAllSuccess": "Other sessions logged out successfully",
     "revokeAllError": "Failed to log out sessions",
     "loadError": "Failed to load active sessions"
   },

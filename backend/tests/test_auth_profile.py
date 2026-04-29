@@ -623,32 +623,62 @@ class TestChangePassword:
         create_user(uname, f"{uname}@example.com", pwd)
 
         client, csrf = make_authenticated_client(uname, pwd)
+        other_client, _ = make_authenticated_client(uname, pwd)
         client.post(
             "/api/v1/profile/change-password",
             json={"current_password": pwd, "new_password": new_pwd},
             headers={"X-CSRF-Token": csrf, "Origin": ORIGIN},
         )
-        # After password change, current session should be revoked
-        resp = client.get("/api/v1/profile/me")
+        current_resp = client.get("/api/v1/profile/me")
+        other_resp = other_client.get("/api/v1/profile/me")
         client.close()
+        other_client.close()
         delete_user(uname)
 
-        # Sessions revoked — expect 401
-        assert resp.status_code == 401
+        assert current_resp.status_code == 200
+        assert other_resp.status_code == 401
 
 
 class TestSessions:
 
     def test_revoke_all_sessions_returns_200(self):
-        """POST /profile/sessions/revoke-all vráti 200."""
-        client, csrf = make_authenticated_client(PROF_USERNAME, PROF_PASSWORD)
+        """POST /profile/sessions/revoke-all odhlási ostatné relácie."""
+        u = uid()
+        uname = f"sessions_{u}"
+        pwd = "SessionsPass123"
+        create_user(uname, f"{uname}@example.com", pwd)
+
+        client, csrf = make_authenticated_client(uname, pwd)
+        other_client, _ = make_authenticated_client(uname, pwd)
         resp = client.post(
             "/api/v1/profile/sessions/revoke-all",
             headers={"X-CSRF-Token": csrf, "Origin": ORIGIN},
         )
+        current_resp = client.get("/api/v1/profile/me")
+        other_resp = other_client.get("/api/v1/profile/me")
         client.close()
+        other_client.close()
+        delete_user(uname)
+
         assert resp.status_code == 200
         assert "revoked" in resp.json()["message"].lower()
+        assert current_resp.status_code == 200
+        assert other_resp.status_code == 401
+
+    def test_active_sessions_marks_current_session(self):
+        """GET /profile/sessions označí aktuálnu reláciu podľa refresh cookie."""
+        u = uid()
+        uname = f"current_session_{u}"
+        pwd = "CurrentPass123"
+        create_user(uname, f"{uname}@example.com", pwd)
+
+        client, _ = make_authenticated_client(uname, pwd)
+        resp = client.get("/api/v1/profile/sessions")
+        client.close()
+        delete_user(uname)
+
+        assert resp.status_code == 200
+        assert sum(1 for item in resp.json() if item["is_current"]) == 1
 
     def test_revoke_nonexistent_session_returns_404(self):
         """DELETE /profile/sessions/99999999 pre neexistujúcu session vráti 404."""
