@@ -29,8 +29,6 @@ interface TournamentsToolbarProps {
   sortOrder: "asc" | "desc"
   uniqueLocations: string[]
   selectedPerson: { id: number; name: string } | null
-  displayedCount: number
-  totalCount: number
   hasActiveFilters: boolean
   onSearchChange: (value: string) => void
   onLocationChange: (value: string) => void
@@ -92,8 +90,6 @@ function TournamentsToolbar({
   sortOrder,
   uniqueLocations,
   selectedPerson,
-  displayedCount,
-  totalCount,
   hasActiveFilters,
   onSearchChange,
   onLocationChange,
@@ -118,9 +114,6 @@ function TournamentsToolbar({
             <h3 className={`text-sm font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               {t("tournaments.filtersTitle")}
             </h3>
-            <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              ({displayedCount}/{totalCount})
-            </span>
           </div>
 
           {(hasActiveFilters || !!selectedPerson) && (
@@ -174,7 +167,7 @@ function TournamentsToolbar({
           <span className="text-xs">{t("tournaments.sortLabel")}</span>
           <div className={`flex rounded-lg overflow-hidden border ${isDarkMode ? 'border-white/10' : 'border-gray-200'}`}>
             {([
-              { key: "name", label: t("tournaments.sortByName"), icon: "M7 20l4-16m2 16l4-16M6 9h14M4 15h14" },
+              { key: "name", label: t("tournaments.sortByName"), icon: "M4 6h10M4 12h16M4 18h7" },
               { key: "date", label: t("tournaments.sortByDate"), icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" },
             ] as const).map(({ key, label, icon }) => (
               <SortToggleButton
@@ -342,8 +335,6 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
           sortOrder={sortOrder}
           uniqueLocations={uniqueLocations}
           selectedPerson={selectedPerson}
-          displayedCount={displayedEvents.length}
-          totalCount={events.length}
           hasActiveFilters={hasActiveFilters}
           onSearchChange={(v) => handleFilterChange(v, locationFilter)}
           onLocationChange={(v) => handleFilterChange(searchQuery, v)}

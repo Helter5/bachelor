@@ -27,6 +27,21 @@ interface TeamsTabProps {
   onSelectPerson?: (id: number, name: string) => void
 }
 
+function AthleteCountPill({ count, isDarkMode, label }: { count: number; isDarkMode: boolean; label: string }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs ${isDarkMode ? 'bg-white/5 text-gray-300' : 'bg-gray-200 text-gray-600'}`}
+      title={`${count} ${label}`}
+      aria-label={`${count} ${label}`}
+    >
+      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 0115 0" />
+      </svg>
+      {count}
+    </span>
+  )
+}
+
 export function TeamsTab({
   isDarkMode,
   teams,
@@ -133,9 +148,11 @@ export function TeamsTab({
               .slice((teamsPage - 1) * ITEMS_PER_PAGE, teamsPage * ITEMS_PER_PAGE)
               .map((team) => {
                 const metadata = team.athlete_count !== null ? (
-                  <span className={`px-2.5 py-1 rounded-full text-xs ${isDarkMode ? 'bg-white/5 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
-                    {t('tournamentDetail.athleteCount', { count: team.athlete_count })}
-                  </span>
+                  <AthleteCountPill
+                    count={team.athlete_count}
+                    isDarkMode={isDarkMode}
+                    label={t('tournamentDetail.athletesTitle').toLowerCase()}
+                  />
                 ) : undefined
 
                 return (

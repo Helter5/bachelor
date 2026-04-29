@@ -194,11 +194,6 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
     }
   }
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return t("arenaSources.never")
-    return new Date(dateString).toLocaleString("sk-SK")
-  }
-
   const formOpen = isAddingNew || editingSource !== null
 
   return (
@@ -334,9 +329,6 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
                             {source.is_enabled ? t("arenaSources.active") : t("arenaSources.inactive")}
                           </span>
                         </div>
-                        <p className={`text-xs mt-0.5 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                          {t("arenaSources.lastSync")} {formatDate(source.last_sync_at)}
-                        </p>
                       </div>
                     </div>
 

@@ -11,9 +11,51 @@ interface FightersListProps {
   isDarkMode: boolean
 }
 
+function SortButton({
+  isDarkMode,
+  active,
+  label,
+  icon,
+  sortOrder,
+  onClick,
+}: {
+  isDarkMode: boolean
+  active: boolean
+  label: string
+  icon: string
+  sortOrder: "asc" | "desc"
+  onClick: () => void
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+        active
+          ? isDarkMode ? "bg-blue-500 text-white" : "bg-blue-600 text-white"
+          : isDarkMode ? "bg-[#0f172a] text-gray-300 hover:bg-white/5" : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+      }`}
+    >
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icon} />
+      </svg>
+      {label}
+      {active && (
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2.5}
+            d={sortOrder === "asc" ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7"}
+          />
+        </svg>
+      )}
+    </button>
+  )
+}
+
 export function FightersList({ isDarkMode }: FightersListProps) {
   const { t } = useTranslation()
-  const { athletes, sportEventsById, teamsById, weightCategoriesById, loading, error } = useFightersData()
+  const { athletes, teamsById, weightCategoriesById, loading, error } = useFightersData()
   const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState("")
   const [competingFilter, setCompetingFilter] = useState("")
@@ -29,12 +71,6 @@ export function FightersList({ isDarkMode }: FightersListProps) {
 
   const itemsPerPage = 20
 
-  const getSportEventUuid = (sportEventId: number) => {
-    const event = sportEventsById.get(sportEventId)
-    if (!event) return null
-    return event.uuid || String(event.id)
-  }
-
   const getTeamName = (teamId: string | null) => {
     if (!teamId) return 'N/A'
     const team = teamsById.get(teamId)
@@ -47,7 +83,6 @@ export function FightersList({ isDarkMode }: FightersListProps) {
     return category ? category.name : null
   }
 
-  // Get unique values for filters
   const uniqueAccreditationStatuses = useMemo(() => {
     return Array.from(new Set(athletes.map(a => a.accreditationStatus).filter((s): s is string => Boolean(s)))).sort()
   }, [athletes])
@@ -57,7 +92,6 @@ export function FightersList({ isDarkMode }: FightersListProps) {
     ...uniqueAccreditationStatuses.map((s) => ({ value: s, label: s })),
   ], [uniqueAccreditationStatuses, t])
 
-  // Filter and sort athletes
   const filteredAndSortedAthletes = useMemo(() => {
     const filtered = athletes.filter(athlete => {
       const matchesSearch = athlete.personFullName?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -81,7 +115,6 @@ export function FightersList({ isDarkMode }: FightersListProps) {
     return filtered
   }, [athletes, searchQuery, competingFilter, accreditationFilter, sortBy, sortOrder])
 
-  // Pagination
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
   const currentAthletes = filteredAndSortedAthletes.slice(startIndex, endIndex)
@@ -117,7 +150,6 @@ export function FightersList({ isDarkMode }: FightersListProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h2 className={`text-3xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
           {t('fighters.title')}
@@ -127,10 +159,8 @@ export function FightersList({ isDarkMode }: FightersListProps) {
         </p>
       </div>
 
-      {/* Filters and Search */}
       <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-[#1e293b]' : 'bg-white'}`}>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Search */}
           <div className="md:col-span-2">
             <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               {t('fighters.searchLabel')}
@@ -143,7 +173,6 @@ export function FightersList({ isDarkMode }: FightersListProps) {
             />
           </div>
 
-          {/* Competing Filter */}
           <div>
             <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               {t('fighters.competingLabel')}
@@ -157,7 +186,6 @@ export function FightersList({ isDarkMode }: FightersListProps) {
             />
           </div>
 
-          {/* Accreditation Filter */}
           <div>
             <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               {t('fighters.accreditationLabel')}
@@ -172,46 +200,34 @@ export function FightersList({ isDarkMode }: FightersListProps) {
           </div>
         </div>
 
-        {/* Sort Options */}
         <div className="mt-4">
           <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
             {t('fighters.sortLabel')}
           </label>
-          <div className="flex gap-2">
-            <button
+          <div className="flex flex-wrap gap-2">
+            <SortButton
+              isDarkMode={isDarkMode}
+              active={sortBy === "name"}
+              label={t('fighters.sortName')}
+              icon="M4 6h10M4 12h16M4 18h7"
+              sortOrder={sortOrder}
               onClick={() => handleSort("name")}
-              className={`flex-1 px-4 py-2 rounded-lg font-medium transition-all ${
-                sortBy === "name"
-                  ? isDarkMode ? "bg-blue-500 text-white" : "bg-blue-600 text-white"
-                  : isDarkMode ? "bg-[#0f172a] text-gray-300 hover:bg-white/5" : "bg-gray-50 text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              {t('fighters.sortName')} {sortBy === "name" && (sortOrder === "asc" ? "↑" : "↓")}
-            </button>
-            <button
+            />
+            <SortButton
+              isDarkMode={isDarkMode}
+              active={sortBy === "competing"}
+              label={t('fighters.sortCompeting')}
+              icon="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              sortOrder={sortOrder}
               onClick={() => handleSort("competing")}
-              className={`flex-1 px-4 py-2 rounded-lg font-medium transition-all ${
-                sortBy === "competing"
-                  ? isDarkMode ? "bg-blue-500 text-white" : "bg-blue-600 text-white"
-                  : isDarkMode ? "bg-[#0f172a] text-gray-300 hover:bg-white/5" : "bg-gray-50 text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              {t('fighters.sortCompeting')} {sortBy === "competing" && (sortOrder === "asc" ? "↑" : "↓")}
-            </button>
+            />
           </div>
-        </div>
-
-        {/* Results count */}
-        <div className={`mt-4 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          {t('fighters.foundCount', { count: filteredAndSortedAthletes.length })}
         </div>
       </div>
 
-      {/* Athletes Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {currentAthletes.length > 0 ? (
           currentAthletes.map((athlete) => {
-            const eventUuid = getSportEventUuid(athlete.sportEventId)
             const teamName = getTeamName(athlete.teamId)
             const weightCategory = getWeightCategoryWeight(athlete.weightCategoryId)
 
@@ -225,13 +241,24 @@ export function FightersList({ isDarkMode }: FightersListProps) {
                 }`}
               >
                 <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                      {athlete.personFullName || 'N/A'}
-                    </h3>
-                    <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                      ID: {athlete.id.substring(0, 8)}...
-                    </p>
+                  <div className="flex items-start gap-3 min-w-0">
+                    {athlete.personPhoto && (
+                      <img
+                        src={athlete.personPhoto}
+                        alt={athlete.personFullName || 'Athlete'}
+                        className="w-12 h-12 rounded-lg object-cover shrink-0"
+                      />
+                    )}
+                    <div className="min-w-0">
+                      <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {athlete.personFullName || 'N/A'}
+                      </h3>
+                      {athlete.accreditationStatus && (
+                        <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          {athlete.accreditationStatus}
+                        </p>
+                      )}
+                    </div>
                   </div>
                   <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
                     athlete.isCompeting
@@ -239,31 +266,6 @@ export function FightersList({ isDarkMode }: FightersListProps) {
                       : isDarkMode ? 'bg-gray-500/20 text-gray-400' : 'bg-gray-100 text-gray-700'
                   }`}>
                     {athlete.isCompeting ? t('fighters.competing') : t('fighters.notCompeting')}
-                  </div>
-                </div>
-
-                {athlete.personPhoto && (
-                  <div className="mb-3">
-                    <img
-                      src={athlete.personPhoto}
-                      alt={athlete.personFullName || 'Athlete'}
-                      className="w-20 h-20 rounded-lg object-cover"
-                    />
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-4 mb-3">
-                  <div>
-                    <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('fighters.accreditationField')}</p>
-                    <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                      {athlete.accreditationStatus || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('fighters.tournamentUuid')}</p>
-                    <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                      {eventUuid ? `${eventUuid.substring(0, 8)}...` : 'N/A'}
-                    </p>
                   </div>
                 </div>
 

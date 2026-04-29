@@ -46,10 +46,9 @@ export function StatisticsTab({
       ) : eventStats ? (
         <div className="space-y-8">
           {/* Summary Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
               { label: t('statistics.totalFights'), value: eventStats.total_fights, color: "text-blue-500" },
-              { label: t('statistics.avgDuration'), value: eventStats.avg_duration > 0 ? `${Math.floor(eventStats.avg_duration / 60)}:${String(eventStats.avg_duration % 60).padStart(2, '0')}` : "-", color: "text-green-500" },
               { label: t('statistics.avgTp'), value: eventStats.avg_tp, color: "text-purple-500" },
               { label: t('statistics.avgCp'), value: eventStats.avg_cp, color: "text-yellow-500" },
             ].map((card) => (

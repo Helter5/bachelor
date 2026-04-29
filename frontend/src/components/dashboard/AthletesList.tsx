@@ -166,9 +166,6 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
                   isDarkMode={isDarkMode}
                 />
               </div>
-              <div className={`mt-2 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                {t("athletes.countOf", { count: filtered.length, total: persons.length })}
-              </div>
             </div>
 
             {/* Grid */}
