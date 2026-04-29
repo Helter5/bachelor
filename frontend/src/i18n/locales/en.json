@@ -509,7 +509,11 @@
     "loadError": "Failed to load wrestler profile",
     "loadErrorGeneric": "Failed to load profile",
     "back": "Back",
-    "subtitle": "{{fights}} fights in {{tournaments}} tournaments",
+    "subtitle": "{{fights}} {{fightLabel}} in {{tournaments}} {{tournamentLabel}}",
+    "fightsOne": "fight",
+    "fightsOther": "fights",
+    "tournamentsOne": "tournament",
+    "tournamentsOther": "tournaments",
     "cards": {
       "fights": "Fights",
       "winRate": "Win rate",

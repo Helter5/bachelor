@@ -14,6 +14,12 @@ interface WrestlerProfileProps {
   onBack: () => void
 }
 
+function slovakPluralLabel(count: number, one: string, few: string, many: string) {
+  if (count === 1) return one
+  if (count >= 2 && count <= 4) return few
+  return many
+}
+
 interface PersonDetail {
   id: number
   full_name: string
@@ -151,7 +157,7 @@ function FightGroupHeader({ isDarkMode, eventName, weightCategory }: { isDarkMod
 }
 
 export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfileProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [person, setPerson] = useState<PersonDetail | null>(null)
   const [fightsData, setFightsData] = useState<PersonFightsResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -283,6 +289,28 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
     )
   }
 
+  const isSlovak = i18n.language.toLowerCase().startsWith("sk")
+  const fightLabel = isSlovak
+    ? slovakPluralLabel(
+      stats.totalFights,
+      t("wrestlerProfile.fightsOne"),
+      t("wrestlerProfile.fightsFew"),
+      t("wrestlerProfile.fightsMany"),
+    )
+    : stats.totalFights === 1
+      ? t("wrestlerProfile.fightsOne")
+      : t("wrestlerProfile.fightsOther")
+  const tournamentLabel = isSlovak
+    ? slovakPluralLabel(
+      stats.numTournaments,
+      t("wrestlerProfile.tournamentsOne"),
+      t("wrestlerProfile.tournamentsFew"),
+      t("wrestlerProfile.tournamentsMany"),
+    )
+    : stats.numTournaments === 1
+      ? t("wrestlerProfile.tournamentsOne")
+      : t("wrestlerProfile.tournamentsOther")
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -303,7 +331,12 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
               {person.full_name}
             </h2>
             <p className={`text-sm mt-1 ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
-              {t("wrestlerProfile.subtitle", { fights: stats.totalFights, tournaments: stats.numTournaments })}
+              {t("wrestlerProfile.subtitle", {
+                fights: stats.totalFights,
+                fightLabel,
+                tournaments: stats.numTournaments,
+                tournamentLabel,
+              })}
             </p>
           </div>
         </div>
