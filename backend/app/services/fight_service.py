@@ -202,16 +202,6 @@ class FightService(BaseService[Fight]):
             self.session.flush()
         return code
 
-    @staticmethod
-    def _winner_id_from_victory_type(code: str | None, fighter_one_id: int | None, fighter_two_id: int | None) -> int | None:
-        if not code:
-            return None
-        if code.startswith("1"):
-            return fighter_one_id
-        if code.startswith("2"):
-            return fighter_two_id
-        return None
-
     def _sync_fights_list(self, fights_list: List[Dict[str, Any]], event_db_id: int,
                          athlete_uuid_to_id: Dict[str, int], wc_key_to_id: Dict[tuple, int]) -> Dict[str, int]:
         """Sync a list of fights to the database."""
@@ -231,12 +221,6 @@ class FightService(BaseService[Fight]):
                         winner_id = fighter_one_id
                     elif winner_fighter == fight_data.get("fighter2Id") or winner_fighter == fight_data.get("fighter2"):
                         winner_id = fighter_two_id
-                if winner_id is None:
-                    winner_id = self._winner_id_from_victory_type(
-                        fight_data.get("victoryType"),
-                        fighter_one_id,
-                        fighter_two_id,
-                    )
 
                 weight_category_id = wc_key_to_id.get((
                     fight_data.get("weightCategoryMaxWeight"),
