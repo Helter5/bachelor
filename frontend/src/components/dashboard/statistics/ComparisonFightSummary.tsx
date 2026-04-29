@@ -7,9 +7,7 @@ interface WrestlerFightProfile {
   winsByType: Record<string, number>
   lossesByType: Record<string, number>
   avgTpFor: number
-  avgTpAgainst: number
   avgCpFor: number
-  avgCpAgainst: number
   tpDiff: number
   form: ("W" | "L" | "-")[]
 }
@@ -23,7 +21,6 @@ function buildWrestlerFightProfile(fights: ComparisonFight[], personKey: "person
   const tpFor: number[] = []
   const tpAgainst: number[] = []
   const cpFor: number[] = []
-  const cpAgainst: number[] = []
   const winsByType: Record<string, number> = {}
   const lossesByType: Record<string, number> = {}
   const form = fights.slice(-5).map((fight) => {
@@ -35,12 +32,10 @@ function buildWrestlerFightProfile(fights: ComparisonFight[], personKey: "person
     const ownTp = isPerson1 ? fight.person1_tp : fight.person2_tp
     const otherTp = isPerson1 ? fight.person2_tp : fight.person1_tp
     const ownCp = isPerson1 ? fight.person1_cp : fight.person2_cp
-    const otherCp = isPerson1 ? fight.person2_cp : fight.person1_cp
 
     if (ownTp !== null) tpFor.push(ownTp)
     if (otherTp !== null) tpAgainst.push(otherTp)
     if (ownCp !== null) cpFor.push(ownCp)
-    if (otherCp !== null) cpAgainst.push(otherCp)
 
     if (!fight.victory_type || !fight.winner) continue
     const bucket = fight.winner === personKey ? winsByType : lossesByType
@@ -54,9 +49,7 @@ function buildWrestlerFightProfile(fights: ComparisonFight[], personKey: "person
     winsByType,
     lossesByType,
     avgTpFor,
-    avgTpAgainst,
     avgCpFor: average(cpFor),
-    avgCpAgainst: average(cpAgainst),
     tpDiff: Math.round((avgTpFor - avgTpAgainst) * 10) / 10,
     form,
   }
@@ -127,9 +120,7 @@ function WrestlerProfilePanel({
       </div>
       <div className="grid grid-cols-2 gap-2">
         <ProfileStat label={t("comparison.avgTpFor")} value={profile.avgTpFor.toFixed(1)} isDarkMode={isDarkMode} />
-        <ProfileStat label={t("comparison.avgTpAgainst")} value={profile.avgTpAgainst.toFixed(1)} isDarkMode={isDarkMode} />
         <ProfileStat label={t("comparison.avgCpFor")} value={profile.avgCpFor.toFixed(1)} isDarkMode={isDarkMode} />
-        <ProfileStat label={t("comparison.avgCpAgainst")} value={profile.avgCpAgainst.toFixed(1)} isDarkMode={isDarkMode} />
         <ProfileStat label={t("comparison.tpDiff")} value={profile.tpDiff.toFixed(1)} isDarkMode={isDarkMode} />
         <div className={`rounded-lg px-3 py-2 ${isDarkMode ? "bg-white/5" : "bg-white border border-gray-100"}`}>
           <div className={`text-[11px] font-medium uppercase tracking-wider ${isDarkMode ? "text-gray-500" : "text-gray-400"}`}>{t("comparison.recentForm")}</div>
