@@ -302,12 +302,10 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
         </p>
       </div>
 
-      {/* Loading State */}
       {loading && (
         <LoadingSpinner text={t("tournaments.loading")} isDarkMode={isDarkMode} variant="inline" size="md" />
       )}
 
-      {/* Error State */}
       {error && !loading && (
         <ErrorAlert
           message={`${t("tournaments.loadError")}: ${error}`}
@@ -315,7 +313,6 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
         />
       )}
 
-      {/* Empty State */}
       {!loading && !error && events.length === 0 && (
         <EmptyState
           icon="calendar"

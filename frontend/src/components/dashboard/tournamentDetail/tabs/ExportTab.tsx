@@ -44,7 +44,6 @@ function ExportCard({
         ? 'bg-[#0f172a] border border-white/[0.06] hover:border-white/10'
         : 'bg-white border border-gray-200 hover:border-gray-300 hover:shadow-md'
     }`}>
-      {/* Card header */}
       <div className="p-5 flex items-start gap-4 flex-1">
         <div className={`shrink-0 w-11 h-11 rounded-xl flex items-center justify-center ${iconBg}`}>
           {icon}
@@ -69,10 +68,8 @@ function ExportCard({
         </div>
       </div>
 
-      {/* Divider */}
       <div className={isDarkMode ? 'border-t border-white/[0.05]' : 'border-t border-gray-100'} />
 
-      {/* Actions */}
       <div className="px-5 py-3 flex items-center gap-2">
         {onPreview && (
           <button

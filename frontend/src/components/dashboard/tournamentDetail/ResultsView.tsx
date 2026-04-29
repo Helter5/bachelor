@@ -29,7 +29,6 @@ export function ResultsView({ isDarkMode, sortedRounds, teamCountryByName }: Res
       .trim()
 
   const [expandedRounds, setExpandedRounds] = useState<Set<string>>(() => {
-    // By default, expand finals and last few rounds
     const expanded = new Set<string>()
     const isFinal = (name: string) => {
       const normalized = normalizeRoundName(name)
@@ -38,7 +37,6 @@ export function ResultsView({ isDarkMode, sortedRounds, teamCountryByName }: Res
     sortedRounds.forEach(([name]) => {
       if (isFinal(name)) expanded.add(name)
     })
-    // Also expand the last 2 rounds
     if (sortedRounds.length <= 2) {
       sortedRounds.forEach(([name]) => expanded.add(name))
     } else {
@@ -145,7 +143,6 @@ export function ResultsView({ isDarkMode, sortedRounds, teamCountryByName }: Res
 
         return (
           <div key={roundName}>
-            {/* Round header - clickable */}
             <button
               onClick={() => toggleRound(roundName)}
               className={`w-full mb-4 pb-3 border-b-2 transition-all text-left ${roundTheme.headerBorder}`}
@@ -169,7 +166,6 @@ export function ResultsView({ isDarkMode, sortedRounds, teamCountryByName }: Res
               </div>
             </button>
 
-            {/* Fights grid - conditional render */}
             {isExpanded && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
               {validFights
@@ -190,7 +186,6 @@ export function ResultsView({ isDarkMode, sortedRounds, teamCountryByName }: Res
                       key={fight.id}
                       className={`rounded-xl border-2 overflow-hidden transition-all hover:shadow-lg ${roundTheme.card}`}
                     >
-                      {/* Match number and victory type */}
                       <div
                         className={`px-3 py-2 border-b flex items-center justify-between text-xs font-semibold ${
                           isDarkMode
@@ -212,7 +207,6 @@ export function ResultsView({ isDarkMode, sortedRounds, teamCountryByName }: Res
                         )}
                       </div>
 
-                      {/* Fighter 1 */}
                       <div
                         className={`px-3 py-3 border-b ${
                           w1
@@ -275,7 +269,6 @@ export function ResultsView({ isDarkMode, sortedRounds, teamCountryByName }: Res
                         </div>
                       </div>
 
-                      {/* Fighter 2 */}
                       <div
                         className={`px-3 py-3 ${
                           w2
@@ -338,7 +331,6 @@ export function ResultsView({ isDarkMode, sortedRounds, teamCountryByName }: Res
                         </div>
                       </div>
 
-                      {/* Footer with time */}
                       {timeStr && (
                         <div
                           className={`px-3 py-2 text-xs text-center font-mono ${

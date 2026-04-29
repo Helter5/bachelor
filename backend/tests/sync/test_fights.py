@@ -17,9 +17,6 @@ from tests.conftest import arena_fetch
 from tests.utils import check, section, result
 
 
-# ─────────────────────────────────────────────
-# Pomocné funkcie
-# ─────────────────────────────────────────────
 
 def _fight_natural_key(fight_number) -> str:
     return str(fight_number)
@@ -121,9 +118,6 @@ def _parse_tp(result_text: str | None) -> tuple[int | None, int | None]:
     return None, None
 
 
-# ─────────────────────────────────────────────
-# 1. Počet
-# ─────────────────────────────────────────────
 
 async def test_fights_count_matches_arena(db, synced_events):
     """Počet zápasov v DB sa zhoduje s Arena API pre každé podujatie."""
@@ -138,9 +132,6 @@ async def test_fights_count_matches_arena(db, synced_events):
     result(errors, "Nesúlad počtu zápasov:")
 
 
-# ─────────────────────────────────────────────
-# 2. Chýbajúce / navyše
-# ─────────────────────────────────────────────
 
 async def test_no_missing_fights_in_db(db, synced_events):
     """Každý zápas z Arena API musí existovať v DB (podľa fight_number)."""
@@ -170,9 +161,6 @@ async def test_no_extra_fights_in_db(db, synced_events):
     result(errors, "DB obsahuje zápasy ktoré nie sú v Aréne:")
 
 
-# ─────────────────────────────────────────────
-# 3. Polia
-# ─────────────────────────────────────────────
 
 async def test_fight_fighters_correct(db, synced_events):
     """fighter_one_id a fighter_two_id zodpovedajú Arena API."""
@@ -310,9 +298,6 @@ async def test_fight_victory_type_correct(db, synced_events):
     result(errors, "Nesprávny victory_type:")
 
 
-# ─────────────────────────────────────────────
-# 4. Integrita DB
-# ─────────────────────────────────────────────
 
 async def test_no_fights_without_sport_event(db):
     """Každý zápas musí byť priradený k podujatiu."""

@@ -65,7 +65,6 @@ export function TeamsTab({
   if (selectedTeam) {
     return (
       <div>
-        {/* Detail View Header */}
         <DetailHeader
           isDarkMode={isDarkMode}
           onBack={closeTeamDetail}
@@ -81,7 +80,6 @@ export function TeamsTab({
           }
         />
 
-        {/* Athletes in Team */}
         {loadingTeamAthletes ? (
           <LoadingSpinner text={t('tournamentDetail.errors.loadingAthletes')} isDarkMode={isDarkMode} />
         ) : teamAthletes.length > 0 ? (

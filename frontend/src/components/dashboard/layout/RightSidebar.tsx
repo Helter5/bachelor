@@ -11,7 +11,6 @@ export function RightSidebar({ isDarkMode }: RightSidebarProps) {
       <div className="p-8">
         <h3 className={`text-xl font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t("rightSidebar.title")}</h3>
 
-        {/* Arena info card */}
         <div className={`rounded-xl p-6 mb-6 ${isDarkMode ? 'bg-[#0f172a]/60 border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
           <div className="flex items-center gap-3 mb-4">
             <div className={`p-2.5 rounded-lg ${isDarkMode ? 'bg-orange-500/20' : 'bg-orange-100'}`}>
@@ -53,7 +52,6 @@ export function RightSidebar({ isDarkMode }: RightSidebarProps) {
           </a>
         </div>
 
-        {/* How it works */}
         <div className={`rounded-xl p-6 ${isDarkMode ? 'bg-[#0f172a]/60 border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
           <h4 className={`font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t("rightSidebar.howItWorksTitle")}</h4>
           <div className="space-y-4">

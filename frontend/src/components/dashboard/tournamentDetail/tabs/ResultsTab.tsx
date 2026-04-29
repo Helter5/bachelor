@@ -58,7 +58,6 @@ export function ResultsTab({
 
   useEffect(() => { setWcPage(1) }, [selectedSportType])
 
-  // ── Level 3: Fight detail ────────────────────────────────────────────────────
   if (selectedWeightCategoryForResults) {
     const categoryFights = results.filter(r => r.weightCategoryName === selectedWeightCategoryForResults.name)
     const validFights = categoryFights.filter(f =>
@@ -125,7 +124,6 @@ export function ResultsTab({
     )
   }
 
-  // ── Level 2: Weight categories for selected sport type ───────────────────────
   if (selectedSportType) {
     const filtered = weightCategories.filter(
       wc => `${wc.sport_name} • ${wc.audience_name}` === selectedSportType
@@ -150,7 +148,6 @@ export function ResultsTab({
     )
   }
 
-  // ── Level 1: Sport type cards ────────────────────────────────────────────────
   const SPORT_TYPES_PER_PAGE = 12
   const sportTypes = weightCategories.reduce((acc, wc) => {
     const key = `${wc.sport_name} • ${wc.audience_name}`

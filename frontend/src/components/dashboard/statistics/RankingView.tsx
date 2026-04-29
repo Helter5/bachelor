@@ -277,7 +277,6 @@ export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewP
           />
         )}
 
-        {/* Controls */}
         <div className="flex flex-wrap items-start gap-4 mb-6">
           <div className="flex flex-col">
             <label className={`block text-sm font-medium mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>

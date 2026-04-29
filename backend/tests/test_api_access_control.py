@@ -27,7 +27,6 @@ from app.domain.entities.password_reset_token import PasswordResetToken
 from app.domain.entities.login_history import LoginHistory
 from app.core.security import hash_password
 
-# ── Testovacie prihlasovacie údaje ──────────────────────────────────────────
 
 _SUFFIX = uuid.uuid4().hex[:8]
 REGULAR_USERNAME = f"testuser_{_SUFFIX}"
@@ -46,7 +45,6 @@ HTTPS_BASE = "https://testserver"
 ORIGIN     = "http://localhost:5173"
 
 
-# ── Fixtures ─────────────────────────────────────────────────────────────────
 
 @pytest.fixture(scope="module", autouse=True)
 def create_test_users():
@@ -78,7 +76,6 @@ def create_test_users():
         session.commit()
 
 
-# ── Pomocné funkcie ───────────────────────────────────────────────────────────
 
 def make_client() -> TestClient:
     return TestClient(app, raise_server_exceptions=False, base_url=HTTPS_BASE)
@@ -100,9 +97,6 @@ def do_logout(client: TestClient, csrf: str) -> None:
     client.close()
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# 1. JEDINÝ SKUTOČNE VEREJNÝ ENDPOINT — /version
-# ════════════════════════════════════════════════════════════════════════════
 
 def test_version_endpoint_is_public():
     """/version je prístupný bez autentifikácie."""
@@ -112,9 +106,6 @@ def test_version_endpoint_is_public():
     assert "version" in resp.json()
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# 2. CHRÁNENÉ ENDPOINTY — vyžadujú autentifikáciu (401 bez tokenu)
-# ════════════════════════════════════════════════════════════════════════════
 
 PROTECTED_PUBLIC_GET_ENDPOINTS = [
     # events
@@ -164,9 +155,6 @@ def test_public_endpoint_accessible_after_login(url):
         do_logout(client, csrf)
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# 2. AUTH ENDPOINTY — verejné (registrácia, reset hesla, verifikácia)
-# ════════════════════════════════════════════════════════════════════════════
 
 def test_auth_register_is_public():
     """POST /auth/register je verejný — nevyžaduje autentifikáciu."""
@@ -227,9 +215,6 @@ def test_auth_google_is_public():
     assert resp.status_code != 403
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# 3. PROFILE ENDPOINTY — vyžadujú autentifikáciu (401 bez tokenu)
-# ════════════════════════════════════════════════════════════════════════════
 
 PROFILE_ENDPOINTS_401 = [
     # GET endpointy
@@ -255,9 +240,6 @@ def test_profile_endpoint_requires_auth(method, url):
     )
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# 4. ADMIN ENDPOINTY — 401 bez auth, 403 pre bežného používateľa
-# ════════════════════════════════════════════════════════════════════════════
 
 ADMIN_ENDPOINTS = [
     # users
@@ -333,9 +315,6 @@ def test_admin_get_accessible_for_admin(method, url):
         do_logout(client, csrf)
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# 5. CSRF OCHRANA
-# ════════════════════════════════════════════════════════════════════════════
 
 def test_profile_put_blocked_without_csrf():
     """PUT /profile/me bez X-CSRF-Token musí vrátiť 403."""
@@ -399,9 +378,6 @@ def test_sync_locked_returns_409():
         do_logout(client, csrf)
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# 6. AUTH FLOW
-# ════════════════════════════════════════════════════════════════════════════
 
 def test_login_wrong_password_returns_401():
     with make_client() as c:

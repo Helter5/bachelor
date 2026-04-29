@@ -45,7 +45,6 @@ export function StatisticsTab({
         <LoadingSpinner text={t('statistics.loadingStats')} isDarkMode={isDarkMode} />
       ) : eventStats ? (
         <div className="space-y-8">
-          {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
               { label: t('statistics.totalFights'), value: eventStats.total_fights, color: "text-blue-500" },
@@ -59,7 +58,6 @@ export function StatisticsTab({
             ))}
           </div>
 
-          {/* Victory Type Pie Chart */}
           {Object.keys(eventStats.victory_type_distribution).length > 0 && (
             <div className={`rounded-xl p-6 ${isDarkMode ? 'bg-[#0f172a]/50' : 'bg-gray-50 border border-gray-200'}`}>
               <h4 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t('statistics.victoryTypes')}</h4>
@@ -96,7 +94,6 @@ export function StatisticsTab({
             </div>
           )}
 
-          {/* Top Performers */}
           {eventStats.top_performers.length > 0 && (
             <div>
               <h4 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t('statistics.topPerformers')}</h4>
@@ -153,7 +150,6 @@ export function StatisticsTab({
             </div>
           )}
 
-          {/* Team Performance */}
           {eventStats.team_performance.length > 0 && (
             <div>
               <h4 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t('statistics.teamPerformance')}</h4>

@@ -234,7 +234,6 @@ async def seed(event_id: str = DEFAULT_EVENT_ID):
         token = await get_token(client)
         print("[arena-seed] Token OK")
 
-        # 1. Váhové kategórie
         print("\n[arena-seed] === Váhové kategórie ===")
 
         def parse_wc_list(raw) -> list:
@@ -262,7 +261,6 @@ async def seed(event_id: str = DEFAULT_EVENT_ID):
         wc_ids = [wc_name_to_id.get(wc["name"]) for wc in WEIGHT_CATEGORIES]
         print(f"  WC UUID map: { {wc['name']: wc_name_to_id.get(wc['name']) for wc in WEIGHT_CATEGORIES} }")
 
-        # 2. Osoby + atléti + fighteri
         print("\n[arena-seed] === Osoby / Atléti ===")
 
         for ath_data in ATHLETES_DATA:
@@ -284,7 +282,6 @@ async def seed(event_id: str = DEFAULT_EVENT_ID):
             wc_name = WEIGHT_CATEGORIES[wc_idx]["name"]
             print(f"  Fighter: {ath_data['familyName']} {ath_data['givenName']} → {wc_name} {'✓' if ok else '✗'}")
 
-        # 3. Generovanie zápasov
         print("\n[arena-seed] === Draw / Generovanie zápasov ===")
         for i, wc in enumerate(WEIGHT_CATEGORIES):
             wc_id = wc_ids[i]

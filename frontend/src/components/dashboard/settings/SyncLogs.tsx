@@ -157,7 +157,6 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
         </div>
       )}
 
-      {/* Logs List */}
       <div className={`rounded-lg p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'}`}>
         <h3 className={`text-xl font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
           {t('syncLogs.title')}
@@ -239,7 +238,6 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
         )}
       </div>
 
-      {/* Log Detail Modal */}
       {selectedLog && (
         <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4">
           <div className={`max-w-4xl w-full max-h-[90vh] overflow-y-auto rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
@@ -258,7 +256,6 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
             </div>
 
             <div className="p-6 space-y-6">
-              {/* Overview */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <DetailField
                   label={t('syncLogs.detailUser')}
@@ -286,7 +283,6 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
                 />
               </div>
 
-              {/* Statistics */}
               <div>
                 <h4 className={`text-lg font-semibold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                   {t('syncLogs.statsTitle')}
@@ -304,7 +300,6 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
                 </div>
               </div>
 
-              {/* Error Message */}
               {selectedLog.error_message && (
                 <div>
                   <h4 className={`text-lg font-semibold mb-3 text-red-600`}>
@@ -316,7 +311,6 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
                 </div>
               )}
 
-              {/* Details */}
               {selectedLog.details && (
                 <div>
                   <h4 className={`text-lg font-semibold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -345,7 +339,6 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
                 </div>
               )}
 
-              {/* Close Button */}
               <div className="flex justify-end">
                 <button
                   onClick={() => setSelectedLog(null)}

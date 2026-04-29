@@ -24,7 +24,6 @@ from app.services.referee_service import RefereeService
 async def seed() -> None:
     with Session(engine) as session:
 
-        # ── 1. ArenaSource ────────────────────────────────────────────────
         source = session.exec(
             select(ArenaSource).where(ArenaSource.is_enabled == True)
         ).first()
@@ -46,7 +45,6 @@ async def seed() -> None:
         else:
             print(f"[seed] ArenaSource existuje: {source.host}:{source.port}")
 
-        # ── 2. Sport events ───────────────────────────────────────────────
         events = session.exec(select(SportEvent)).all()
 
         event_service = SportEventService(session)
@@ -100,7 +98,6 @@ async def seed() -> None:
                     uuid_map[event.id] = arena_uuid
                     break
 
-        # ── 3. Kategórie + tímy + atléti pre každý event ─────────────────
         from app.domain.entities.athlete import Athlete
         from app.domain.entities.referee import Referee
 

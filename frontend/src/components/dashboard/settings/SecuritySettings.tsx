@@ -142,7 +142,6 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
         </div>
       )}
 
-      {/* Active Sessions */}
       <SectionCard isDarkMode={isDarkMode}>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-2">
           <div>
@@ -228,7 +227,6 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
         </div>
       </SectionCard>
 
-      {/* Login History */}
       <SectionCard isDarkMode={isDarkMode}>
         <div className="mb-5">
           <h3 className={`text-base font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>

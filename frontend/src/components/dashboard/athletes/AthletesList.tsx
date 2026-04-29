@@ -82,7 +82,6 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
   return (
     <div className="space-y-6">
 
-      {/* Header */}
       <div>
         <h2 className={`text-3xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
           {t("athletes.title")}
@@ -117,7 +116,6 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
 
       {!loading && !error && persons.length > 0 && (
         <>
-          {/* Search + Filters */}
           <div className={`rounded-lg overflow-hidden ${isDarkMode ? 'bg-[#1e293b] shadow-lg' : 'bg-white border border-gray-200'}`}>
             <div className="p-4">
               <div className="flex items-end gap-3 flex-wrap">
@@ -169,7 +167,6 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
               </div>
             </div>
 
-            {/* Grid */}
             <div className="p-4">
               {currentPersons.length === 0 ? (
                 <p className={`text-center py-8 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>

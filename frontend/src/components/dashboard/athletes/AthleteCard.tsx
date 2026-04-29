@@ -46,7 +46,6 @@ export function AthleteCard({
           : 'bg-white hover:shadow-xl border border-gray-200 shadow-sm'
       }`}
     >
-      {/* Flag area */}
       <div className={`flex items-center justify-center py-5 ${isDarkMode ? 'bg-white/5' : 'bg-gray-50'}`}>
         {countryCode?.trim().length === 2 ? (
           <span
@@ -60,7 +59,6 @@ export function AthleteCard({
           </svg>
         )}
       </div>
-      {/* Info */}
       <div className="px-3 py-2">
         <p className={`text-sm font-semibold leading-tight line-clamp-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
           {fullName}

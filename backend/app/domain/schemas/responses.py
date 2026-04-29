@@ -4,7 +4,6 @@ from typing import Optional, List
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
-# ==================== User/Auth Responses ====================
 
 class UserOut(BaseModel):
     """Public user data (no password)"""
@@ -29,7 +28,6 @@ class TokenResponse(BaseModel):
     expires_in: int  # Access token expiration in seconds
 
 
-# ==================== Competition/Event Responses ====================
 
 class SportEventOut(BaseModel):
     """Public competition/event data"""
@@ -86,7 +84,6 @@ class EventStatisticsOut(BaseModel):
     team_performance: list[EventTeamPerformanceOut]
 
 
-# ==================== Team Responses ====================
 
 class TeamOut(BaseModel):
     """Public team data"""
@@ -101,7 +98,6 @@ class TeamOut(BaseModel):
     sync_timestamp: Optional[datetime] = None
 
 
-# ==================== Athlete Responses ====================
 
 class AthleteMinimal(BaseModel):
     """Minimal athlete data for nested responses"""
@@ -139,7 +135,6 @@ class AthleteWithDetails(BaseModel):
     sync_timestamp: Optional[datetime] = None
 
 
-# ==================== Referee Responses ====================
 
 class RefereeOut(BaseModel):
     """Public referee data"""
@@ -160,7 +155,6 @@ class RefereeOut(BaseModel):
     mat_name: Optional[str] = None
     deactivated: bool = False
 
-# ==================== Weight Category Responses ====================
 
 class WeightCategoryOut(BaseModel):
     """Public weight category data"""
@@ -174,7 +168,6 @@ class WeightCategoryOut(BaseModel):
     is_completed: Optional[bool] = None
     sport_event_id: Optional[int] = None
     discipline_id: Optional[int] = None
-    # From disciplines (joined)
     sport_name: Optional[str] = None
     sport_id: Optional[str] = None
     audience_name: Optional[str] = None
@@ -185,7 +178,6 @@ class WeightCategoryOut(BaseModel):
     sync_timestamp: Optional[datetime] = None
 
 
-# ==================== Person Responses ====================
 
 class PersonOut(BaseModel):
     """Public person data (master wrestler identity)"""
@@ -226,7 +218,6 @@ class PersonWithEventsOut(BaseModel):
         return self
 
 
-# ==================== Admin Responses ====================
 
 class SyncRunOut(BaseModel):
     """Sync run status (admin only)"""
@@ -280,7 +271,6 @@ class SyncLogOut(BaseModel):
     details: Optional[dict] = None
     ip_address: Optional[str] = None
 
-    # Joined data
     username: Optional[str] = None
     user_full_name: Optional[str] = None
     arena_source_name: Optional[str] = None

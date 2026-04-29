@@ -199,7 +199,6 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
   return (
     <div className="space-y-6">
       <SectionCard isDarkMode={isDarkMode}>
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-2">
           <div>
             <h3 className={`text-base font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -233,7 +232,6 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
 
         {error && <ErrorAlert message={error} isDarkMode={isDarkMode} className="mt-4" />}
 
-        {/* Add/Edit Form */}
         {formOpen && (
           <div className={`mt-5 p-5 rounded-xl border ${isDarkMode ? 'bg-white/3 border-white/8' : 'bg-gray-50 border-gray-200'}`}>
             <h4 className={`text-sm font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -285,7 +283,6 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
           </div>
         )}
 
-        {/* Sources List */}
         <div className="mt-5">
           {loading ? (
             <div className="flex justify-center py-8">
@@ -306,7 +303,6 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
                   className={`p-4 rounded-xl border ${isDarkMode ? 'bg-white/3 border-white/8' : 'bg-gray-50 border-gray-200'}`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    {/* Left: info */}
                     <div className="flex items-center gap-3 min-w-0">
                       <div className={`w-9 h-9 shrink-0 rounded-xl flex items-center justify-center ${
                         source.is_enabled
@@ -332,7 +328,6 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
                       </div>
                     </div>
 
-                    {/* Right: actions */}
                     <div className="flex flex-wrap items-center gap-2">
                       <button
                         onClick={() => handleTest(source)}

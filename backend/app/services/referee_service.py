@@ -93,7 +93,6 @@ class RefereeService(BaseService[Referee]):
             # Build in-memory maps for FK resolution
             team_by_alt_name, team_by_name = self._build_team_maps(event.id)
 
-            # Sync each referee
             result = self._sync_referees_list(
                 referees_list,
                 event.id,

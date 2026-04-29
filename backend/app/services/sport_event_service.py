@@ -189,7 +189,6 @@ class SportEventService(BaseService[SportEvent]):
         
         sport_event = data.get("sportEvent", {})
         
-        # Extract useful information
         filtered_data = {
             "event_info": {
                 "id": sport_event.get("id"),

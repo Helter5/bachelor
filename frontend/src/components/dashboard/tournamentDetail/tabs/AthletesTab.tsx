@@ -88,7 +88,6 @@ export function AthletesTab({
         {t('tournamentDetail.athletesTitle')}
       </h3>
 
-      {/* Filter row */}
       <div className="flex items-center gap-2 mb-4 flex-wrap">
         <input
           type="text"

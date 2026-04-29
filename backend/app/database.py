@@ -20,22 +20,19 @@ from .domain.entities.password_reset_token import PasswordResetToken  # noqa: F4
 from .domain.entities.email_verification_token import EmailVerificationToken  # noqa: F401
 from .domain.entities.victory_type import VictoryType  # noqa: F401
 
-# Create engine with centralized configuration
 engine = create_engine(
     settings.database_url,
     echo=settings.database_echo,
-    pool_pre_ping=True,  # Verify connections before using them
-    pool_size=5,  # Connection pool size
-    max_overflow=10,  # Maximum overflow connections
+    pool_pre_ping=True,
+    pool_size=5,
+    max_overflow=10,
 )
 
 
 def create_db_and_tables():
-    """Create all tables in the database"""
     SQLModel.metadata.create_all(engine)
 
 
 def get_session():
-    """Dependency for getting database sessions"""
     with Session(engine) as session:
         yield session

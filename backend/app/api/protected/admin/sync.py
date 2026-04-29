@@ -18,46 +18,29 @@ from ....services.referee_service import RefereeService
 
 router = APIRouter(prefix="/admin/sync")
 
-# PRODUCTION WARNING: These in-memory locks/cache only work for single-instance deployments
-# For multi-worker or multi-instance production:
-#   - Move locks to Redis (redlock algorithm) or PostgreSQL advisory locks
-#   - Move cache to Redis with TTL expiry
-# Current implementation is suitable for:
-#   - Development environments
-#   - Single uvicorn worker (--workers 1)
-#   - Docker Compose with single backend container
+# In-memory sync locks/cache are safe only for a single backend process.
+# Multi-worker or multi-instance deployments need Redis or PostgreSQL advisory locks.
 
 @router.post("/events")
 async def sync_events(
     background_tasks: BackgroundTasks,
     request: Request,
-    _: None = Depends(validate_csrf_and_origin),  # CSRF + Origin validation
+    _: None = Depends(validate_csrf_and_origin),
     user: User = Depends(require_admin),
     session: Session = Depends(get_session),
     idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key"),
     sync_orchestrated: Optional[str] = Header(None, alias="X-Sync-Orchestrated")
 ):
-    """
-    Sync sport events from Arena API (admin only)
-    
-    Requires: Admin role + CSRF token + Origin validation
-    
-    Idempotency: Provide X-Idempotency-Key header to safely retry
-    Locking: Only one sync of events can run at a time
-    """
     sync_admin = AdminSyncService(session)
     sync_admin.ensure_sync_run_access(None, allow_start_new=True)
 
-    # Generate idempotency key if not provided
     if not idempotency_key:
         idempotency_key = f"sync_events_{datetime.now(timezone.utc).isoformat()}"
     
-    # Check if already processed (idempotency)
     cached_result = sync_admin.get_cached_result(idempotency_key)
     if cached_result:
         return cached_result
     
-    # Acquire lock for events sync (asyncio.Lock for async context)
     lock = sync_admin.get_lock("events")
     sync_admin.ensure_lock_available(
         lock,
@@ -65,11 +48,8 @@ async def sync_events(
     )
     
     async with lock:
-        # Initialize service
         service = SportEventService(session)
 
-        # Create sync log entry
-        # Get IP address
         from ....core.security import get_client_ip
         ip_address = get_client_ip(request)
 
@@ -151,12 +131,10 @@ async def sync_events(
                 "sync_log_id": sync_log.id
             }
 
-            # Store result for idempotency (cache for 1 hour in production)
             sync_admin.cache_result(idempotency_key, result)
 
             return result
         except Exception as e:
-            # Update sync log with failure
             sync_admin.fail_sync_log(sync_log, start_time=start_time, error_message=str(e))
 
             raise HTTPException(
@@ -168,21 +146,12 @@ async def sync_events(
 @router.post("/teams/{event_id}")
 async def sync_teams(
     event_id: int,
-    _: None = Depends(validate_csrf_and_origin),  # CSRF + Origin validation
+    _: None = Depends(validate_csrf_and_origin),
     user: User = Depends(require_admin),
     session: Session = Depends(get_session),
     idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key"),
     sync_log_id: Optional[int] = Header(None, alias="X-Sync-Log-Id")
 ):
-    """
-    Sync teams for specific event from Arena API (admin only)
-    
-    Requires: Admin role + CSRF token + Origin validation
-    
-    Idempotency: Provide X-Idempotency-Key header to safely retry
-    Locking: Only one sync per event can run at a time
-    """
-    # Generate idempotency key if not provided
     if not idempotency_key:
         idempotency_key = f"sync_teams_{event_id}_{datetime.now(timezone.utc).isoformat()}"
     
@@ -212,21 +181,12 @@ async def sync_teams(
 @router.post("/athletes/{event_id}")
 async def sync_athletes(
     event_id: int,
-    _: None = Depends(validate_csrf_and_origin),  # CSRF + Origin validation
+    _: None = Depends(validate_csrf_and_origin),
     user: User = Depends(require_admin),
     session: Session = Depends(get_session),
     idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key"),
     sync_log_id: Optional[int] = Header(None, alias="X-Sync-Log-Id")
 ):
-    """
-    Sync athletes for specific event from Arena API (admin only)
-    
-    Requires: Admin role + CSRF token + Origin validation
-    
-    Idempotency: Provide X-Idempotency-Key header to safely retry
-    Locking: Only one sync per event can run at a time
-    """
-    # Generate idempotency key if not provided
     if not idempotency_key:
         idempotency_key = f"sync_athletes_{event_id}_{datetime.now(timezone.utc).isoformat()}"
     
@@ -256,21 +216,12 @@ async def sync_athletes(
 @router.post("/categories/{event_id}")
 async def sync_categories(
     event_id: int,
-    _: None = Depends(validate_csrf_and_origin),  # CSRF + Origin validation
+    _: None = Depends(validate_csrf_and_origin),
     user: User = Depends(require_admin),
     session: Session = Depends(get_session),
     idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key"),
     sync_log_id: Optional[int] = Header(None, alias="X-Sync-Log-Id")
 ):
-    """
-    Sync weight categories for specific event from Arena API (admin only)
-    
-    Requires: Admin role + CSRF token + Origin validation
-    
-    Idempotency: Provide X-Idempotency-Key header to safely retry
-    Locking: Only one sync per event can run at a time
-    """
-    # Generate idempotency key if not provided
     if not idempotency_key:
         idempotency_key = f"sync_categories_{event_id}_{datetime.now(timezone.utc).isoformat()}"
     
@@ -304,9 +255,6 @@ async def sync_victory_types(
     user: User = Depends(require_admin),
     session: Session = Depends(get_session),
 ):
-    """
-    Sync victory types for a specific sport from Arena API config (admin only)
-    """
     sync_admin = AdminSyncService(session)
     source = sync_admin.get_active_arena_source(user.id)
     service = VictoryTypeService(session)
@@ -327,9 +275,6 @@ async def sync_fights(
     idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key"),
     sync_log_id: Optional[int] = Header(None, alias="X-Sync-Log-Id")
 ):
-    """
-    Sync fights for specific event from Arena API (admin only)
-    """
     if not idempotency_key:
         idempotency_key = f"sync_fights_{event_id}_{datetime.now(timezone.utc).isoformat()}"
 
@@ -365,14 +310,6 @@ async def sync_referees(
     idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key"),
     sync_log_id: Optional[int] = Header(None, alias="X-Sync-Log-Id")
 ):
-    """
-    Sync referees for specific event from Arena API (admin only)
-
-    Requires: Admin role + CSRF token + Origin validation
-
-    Idempotency: Provide X-Idempotency-Key header to safely retry
-    Locking: Only one sync per event can run at a time
-    """
     if not idempotency_key:
         idempotency_key = f"sync_referees_{event_id}_{datetime.now(timezone.utc).isoformat()}"
 

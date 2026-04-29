@@ -80,7 +80,6 @@ export function Settings({ isDarkMode, toggleDarkMode, onUserDataChange }: Setti
       </h2>
 
       <div className="flex flex-col md:flex-row gap-4 md:gap-8">
-        {/* Nav – horizontal scrollable on mobile, vertical sidebar on md+ */}
         <nav className="md:w-56 md:shrink-0">
           <ul className="grid grid-cols-2 md:flex md:flex-col gap-1 pb-1 md:pb-0">
             {tabs.map((tab) => {
@@ -108,7 +107,6 @@ export function Settings({ isDarkMode, toggleDarkMode, onUserDataChange }: Setti
           </ul>
         </nav>
 
-        {/* Content */}
         <div className="flex-1 min-w-0">
           {activeTab === 'profile' && (
             <ProfileSettings

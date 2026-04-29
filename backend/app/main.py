@@ -14,7 +14,6 @@ from .core.dependencies import require_user
 from .database import create_db_and_tables
 from .config import get_settings as _get_settings
 
-# Import new 3-zone API structure
 from .api.auth import router as auth_router
 from .api.public import events_router, athletes_router, teams_router, persons_router, referees_router, rankings_router, event_statistics_router, draw_router, exports_router
 from .api.public.weight_categories import router as weight_categories_router
@@ -56,14 +55,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve user-uploaded assets (e.g. profile avatars)
 os.makedirs("uploads", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
-# Auth
 app.include_router(auth_router, prefix="/api/v1")
 
-# Data (requires authentication)
 _auth = [Depends(require_user)]
 app.include_router(events_router, prefix="/api/v1", dependencies=_auth)
 app.include_router(athletes_router, prefix="/api/v1", dependencies=_auth)
@@ -76,20 +72,16 @@ app.include_router(rankings_router, prefix="/api/v1", dependencies=_auth)
 app.include_router(event_statistics_router, prefix="/api/v1", dependencies=_auth)
 app.include_router(draw_router, prefix="/api/v1", dependencies=_auth)
 
-# Public exports (no auth required - for fans, coaches, etc.)
 app.include_router(exports_router, prefix="/api/v1")
 
-# Profile
 app.include_router(profile_router, prefix="/api/v1")
 
-# Admin
 app.include_router(sync_router, prefix="/api/v1")
 app.include_router(users_router, prefix="/api/v1")
 app.include_router(arena_sources_router, prefix="/api/v1")
 app.include_router(sync_logs_router, prefix="/api/v1")
 app.include_router(local_sync_router, prefix="/api/v1")
 
-# Legacy routes
 app.include_router(legacy_views.router)
 app.include_router(teams.router)
 app.include_router(athletes.router)

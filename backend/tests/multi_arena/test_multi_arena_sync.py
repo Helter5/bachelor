@@ -39,7 +39,6 @@ from tests.multi_arena.conftest import (
     resolve_uuid,
 )
 
-# ── Expected data ──────────────────────────────────────────────────────────────
 
 MULTI_CUP_EXPECTED_TEAMS = {"SLOVAKIA", "CZECHIA", "POLAND", "AUSTRIA"}
 MULTI_CUP_EXPECTED_WCS = [(65, "fs", "seniors"), (74, "gr", "seniors")]
@@ -62,7 +61,6 @@ EXCLUSIVE_CUP_EXPECTED_ATHLETES = [
 ]
 
 
-# ── GROUP 1: Event deduplication ───────────────────────────────────────────────
 
 def test_no_duplicate_multi_cup(db):
     """Three Arena sources with the same event must produce exactly 1 record."""
@@ -100,7 +98,6 @@ def test_total_test_event_count(db):
     )
 
 
-# ── GROUP 2: Multi-Arena Test Cup — weight categories ─────────────────────────
 
 def test_multi_cup_wc_count(db, multi_cup):
     """WCs from all three Arenas must merge to exactly 2 (no duplicates)."""
@@ -135,7 +132,6 @@ def test_multi_cup_wcs_present(db, multi_cup):
     result(errors, "Chýbajúce weight categories:")
 
 
-# ── GROUP 3: Multi-Arena Test Cup — teams ─────────────────────────────────────
 
 def test_multi_cup_team_count(db, multi_cup):
     """4 unique teams: SVK/CZE/POL from A+B, AUSTRIA added by C."""
@@ -179,7 +175,6 @@ def test_multi_cup_no_duplicate_teams(db, multi_cup):
     result(errors, "Duplikátne tímy:")
 
 
-# ── GROUP 4: Multi-Arena Test Cup — athletes ──────────────────────────────────
 
 def test_multi_cup_athlete_count(db, multi_cup):
     """6 athletes: 4 from Arena B + 2 new from Arena C (NOVAK+CERNY deduplicated)."""
@@ -262,7 +257,6 @@ def test_multi_cup_arena_c_athletes_created(db, multi_cup):
     result(errors, "Chýbajúci atléti z Arény C:")
 
 
-# ── GROUP 5: Arena C Exclusive Cup ────────────────────────────────────────────
 
 def test_exclusive_cup_wc_count(db, exclusive_cup):
     """Exclusive Cup must have exactly 1 weight category."""
@@ -346,7 +340,6 @@ def test_exclusive_cup_athletes(db, exclusive_cup):
     result(errors, "Chýbajúci atléti v Exclusive Cup:")
 
 
-# ── GROUP 6: Sync routing — which source has which event ──────────────────────
 
 def test_multi_cup_in_source_a(source_a):
     """Multi-Arena Test Cup must be resolvable in Arena A (UUID starts aaaa...)."""

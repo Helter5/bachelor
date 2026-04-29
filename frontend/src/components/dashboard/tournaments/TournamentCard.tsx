@@ -22,9 +22,7 @@ export function TournamentCard({ event, isDarkMode, onSelect }: TournamentCardPr
           : 'bg-white hover:shadow-xl border border-gray-200 shadow-lg'
       }`}
     >
-      {/* Card Content */}
       <div className="flex h-full">
-        {/* Left Side - Country Flag */}
         <div className={`w-32 flex-shrink-0 flex items-center justify-center p-4 ${
           isDarkMode ? 'bg-white/5' : 'bg-gray-50'
         }`}>
@@ -51,17 +49,13 @@ export function TournamentCard({ event, isDarkMode, onSelect }: TournamentCardPr
           )}
         </div>
 
-        {/* Right Side - Info */}
         <div className="flex-1 p-4 flex flex-col justify-between">
-          {/* Tournament Name */}
           <div>
             <h3 className={`text-lg font-bold mb-3 line-clamp-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               {event.name}
             </h3>
 
-            {/* Info Items */}
             <div className="space-y-2 text-sm">
-              {/* Date */}
               <div className={`flex items-start gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -79,7 +73,6 @@ export function TournamentCard({ event, isDarkMode, onSelect }: TournamentCardPr
                 </div>
               </div>
 
-              {/* Location */}
               {event.address_locality && (
                 <div className={`flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                   <svg className="w-4 h-4 flex-shrink-0 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -90,7 +83,6 @@ export function TournamentCard({ event, isDarkMode, onSelect }: TournamentCardPr
                 </div>
               )}
 
-              {/* Continent */}
               {event.continent && (
                 <div className={`flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                   <svg className="w-4 h-4 flex-shrink-0 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -100,7 +92,6 @@ export function TournamentCard({ event, isDarkMode, onSelect }: TournamentCardPr
                 </div>
               )}
 
-              {/* Tournament Type Badge */}
               {event.tournament_type && (
                 <div className="pt-1">
                   <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${

@@ -193,7 +193,6 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
     const avgTp = tpValues.length > 0 ? (tpValues.reduce((a, b) => a + b, 0) / tpValues.length).toFixed(1) : "0"
     const avgCp = cpValues.length > 0 ? (cpValues.reduce((a, b) => a + b, 0) / cpValues.length).toFixed(1) : "0"
 
-    // Most common victory type
     const victoryTypes: Record<string, number> = {}
     fights.forEach(f => {
       if (f.is_winner && f.victory_type) {
@@ -204,7 +203,6 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
 
     const numTournaments = person.events.length
 
-    // Victory type bar chart data (all victory types, including losses by type)
     const allVictoryTypes: Record<string, number> = {}
     fights.forEach(f => {
       if (f.victory_type) {
@@ -215,7 +213,6 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
       .sort((a, b) => b[1] - a[1])
       .map(([name, value]) => ({ name, value }))
 
-    // TP and CP per tournament
     const eventMetricMap: Record<string, { tpTotal: number; tpCount: number; cpTotal: number; cpCount: number }> = {}
     fights.forEach(f => {
       const eventName = f.event_name || "Unknown"

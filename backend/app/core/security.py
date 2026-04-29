@@ -120,9 +120,9 @@ def create_access_token(user_id: int, role: str, session_id: int = None) -> tupl
         "role": role,
         "exp": expires_at,
         "iat": datetime.now(timezone.utc),
-        "jti": jti,  # JWT ID for token tracking/revocation
-        "iss": JWT_ISSUER,  # Issuer
-        "aud": JWT_AUDIENCE,  # Audience
+        "jti": jti,
+        "iss": JWT_ISSUER,
+        "aud": JWT_AUDIENCE,
     }
 
     if session_id is not None:

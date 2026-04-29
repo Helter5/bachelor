@@ -11,7 +11,6 @@ interface ProfileSettingsProps {
   onUserUpdated: (user: AppUser) => void
 }
 
-// --- Icons ---
 const IconPerson = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -33,7 +32,6 @@ const IconCheck = () => (
   </svg>
 )
 
-// --- Sub-components ---
 
 function SectionCard({ isDarkMode, icon, title, description, children }: {
   isDarkMode: boolean
@@ -44,7 +42,6 @@ function SectionCard({ isDarkMode, icon, title, description, children }: {
 }) {
   return (
     <div className={`rounded-2xl overflow-hidden ${isDarkMode ? 'bg-[#0f172a]/60 border border-white/8' : 'bg-white border border-gray-200 shadow-sm'}`}>
-      {/* Section header strip */}
       <div className={`flex items-center gap-3 px-6 py-4 border-b ${isDarkMode ? 'border-white/6 bg-white/2' : 'border-gray-100 bg-gray-50'}`}>
         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
           {icon}
@@ -154,7 +151,6 @@ function AvatarActionButton({
   )
 }
 
-// --- Main component ---
 
 export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsProps) {
   const { t } = useTranslation()
@@ -358,7 +354,6 @@ export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsPr
         </div>
       )}
 
-      {/* Identity card */}
       <div className={`rounded-2xl p-5 flex items-center gap-4 ${isDarkMode ? 'bg-blue-500/8 border border-blue-500/15' : 'bg-blue-50 border border-blue-100'}`}>
         <img
           src={avatarUrl}
@@ -413,7 +408,6 @@ export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsPr
         </div>
       </div>
 
-      {/* Personal data */}
       <SectionCard
         isDarkMode={isDarkMode}
         icon={<IconPerson />}
@@ -472,7 +466,6 @@ export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsPr
         </form>
       </SectionCard>
 
-      {/* Change password */}
       <SectionCard
         isDarkMode={isDarkMode}
         icon={<IconLock />}

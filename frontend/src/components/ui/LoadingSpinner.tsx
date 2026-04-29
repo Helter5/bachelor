@@ -1,6 +1,3 @@
-// variant "center" — spinner above text, centered (used in tabs)
-// variant "inline" — spinner and text side by side (used in list views)
-
 interface LoadingSpinnerProps {
   isDarkMode: boolean
   text?: string

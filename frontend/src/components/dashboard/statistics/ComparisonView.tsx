@@ -261,7 +261,6 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
 
   const anyOptionSelected = includeFights || includeCommonOpponents
 
-  // When wrestler 2 is selected (and wrestler 1 is not), fetch opponents of wrestler 2 to filter picker 1
   useEffect(() => {
     if (!selectedWrestler2) {
       setOpponentsOfP2(null)
@@ -279,7 +278,6 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
     )
   }, [selectedWrestler2])
 
-  // Filter list for picker 1 — active only when wrestler 2 is selected and wrestler 1 is not yet chosen
   const filterListForP1 = useMemo<Person[] | null>(() => {
     if (selectedWrestler1 || !selectedWrestler2 || !anyOptionSelected) return null
     if (includeFights && includeCommonOpponents) {
@@ -298,7 +296,6 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
     return basePersons1.filter(p => p.full_name.toLowerCase().includes(wrestler1Search.toLowerCase()))
   }, [basePersons1, wrestler1Search])
 
-  // When wrestler 1 is selected, fetch both direct opponents and common-opponent candidates in parallel
   useEffect(() => {
     if (!selectedWrestler1) {
       setOpponentsOfP1(null)
@@ -316,7 +313,6 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
     )
   }, [selectedWrestler1])
 
-  // Compute the filter list based on which checkboxes are active
   const filterList = useMemo<Person[] | null>(() => {
     if (!anyOptionSelected) return null
     if (includeFights && includeCommonOpponents) {
@@ -583,7 +579,6 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
 
         {comparisonResult && comparedWith && (
           <div className="mt-8 space-y-8">
-            {/* Head-to-head summary — only when direct fights were requested */}
             {comparedWith.fights && (
               <div className={`rounded-xl p-6 ${isDarkMode ? 'bg-[#0f172a]/80 border border-white/5' : 'bg-gray-50 border border-gray-200'}`}>
                 <h3 className={`text-lg font-bold mb-6 text-center ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -649,7 +644,6 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
               </div>
             )}
 
-            {/* Common opponents — only when requested */}
             {comparedWith.opponents && (
               <>
                 {comparisonResult.common_opponents && comparisonResult.common_opponents.length > 0 ? (

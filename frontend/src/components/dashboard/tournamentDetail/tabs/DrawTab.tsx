@@ -108,14 +108,12 @@ export function DrawTab({
     if (!weightCategories.length || !hasEventAthletes) return
     setGeneratingAll(true)
 
-    // Init loading state for all
     const initial: Record<number, CategoryDraw> = {}
     for (const wc of weightCategories) {
       initial[wc.id] = { wc, result: null, loading: true, error: null }
     }
     setDraws(initial)
 
-    // Fire all requests in parallel
     const results = await Promise.allSettled(
       weightCategories.map(wc => generateForCategory(wc, lastN))
     )
@@ -131,7 +129,6 @@ export function DrawTab({
     })
     setDraws(updated)
 
-    // Auto-expand first non-error category
     const first = weightCategories.find(wc => updated[wc.id]?.result && !updated[wc.id]?.error)
     if (first) setExpandedId(first.id)
 
@@ -170,7 +167,6 @@ export function DrawTab({
         </div>
       </div>
 
-      {/* Info panel */}
       <div className={`rounded-lg border overflow-hidden ${isDarkMode ? 'border-white/5' : 'border-gray-200'}`}>
         <button
           onClick={toggleInfo}
@@ -247,7 +243,6 @@ export function DrawTab({
         </div>
       )}
 
-      {/* Category cards */}
       <div className="space-y-2">
         {weightCategories.map(wc => {
           const entry = draws[wc.id]
@@ -257,7 +252,6 @@ export function DrawTab({
             <div key={wc.id} className={`rounded-lg border overflow-hidden transition-all ${
               isDarkMode ? 'border-white/5' : 'border-gray-200'
             }`}>
-              {/* Header row — always visible */}
               <button
                 onClick={() => setExpandedId(isExpanded ? null : wc.id)}
                 className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
@@ -283,7 +277,6 @@ export function DrawTab({
                 </div>
               </button>
 
-              {/* Expanded content */}
               {isExpanded && entry?.result && !entry.error && (
                 <div className={`px-4 pb-4 pt-2 ${isDarkMode ? 'bg-[#1e293b]' : 'bg-white'}`}>
                   <DrawContent result={entry.result} teamsByName={teamsByName} isDarkMode={isDarkMode} />
@@ -297,7 +290,6 @@ export function DrawTab({
   )
 }
 
-// ── Sub-components ────────────────────────────────────────────────────────────
 
 function ChevronIcon({ expanded, isDarkMode }: { expanded: boolean; isDarkMode: boolean }) {
   return (
@@ -346,7 +338,6 @@ function DrawContent({
 
   return (
     <div className="space-y-4 mt-2">
-      {/* Stats row */}
       <div className="flex gap-5 text-sm flex-wrap">
         <span className={sub}>{t("draw.bracketLabel")} <span className={`font-medium ${text}`}>{result.bracket_size}</span></span>
         {result.byes_count > 0 && (
@@ -356,7 +347,6 @@ function DrawContent({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Bracket */}
         <div>
           <p className={`text-xs font-semibold uppercase tracking-wide ${sub} mb-2`}>{t("draw.round1")}</p>
           <div className="space-y-1.5">
@@ -378,7 +368,6 @@ function DrawContent({
           </div>
         </div>
 
-        {/* Seeding */}
         <div>
           <p className={`text-xs font-semibold uppercase tracking-wide ${sub} mb-2`}>{t("draw.seeding")}</p>
           <div className={`rounded-lg overflow-hidden border ${isDarkMode ? 'border-white/5' : 'border-gray-200'}`}>

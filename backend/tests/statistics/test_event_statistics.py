@@ -13,9 +13,7 @@ from app.domain.entities.weight_category import WeightCategory
 from tests.utils import check, section, result
 
 
-# ─────────────────────────────────────────────
 # Pomocná funkcia — vypočíta štatistiky priamo z DB
-# ─────────────────────────────────────────────
 
 def _compute_stats(db, event) -> dict:
     """Recompute event statistics directly from DB (mirrors event_statistics.py logic)."""
@@ -64,9 +62,6 @@ def _compute_stats(db, event) -> dict:
     }
 
 
-# ─────────────────────────────────────────────
-# 1. Celkový počet zápasov
-# ─────────────────────────────────────────────
 
 def test_total_fights_matches_db(db, synced_events):
     """total_fights sa zhoduje s počtom fights v DB pre daný event."""
@@ -83,9 +78,6 @@ def test_total_fights_matches_db(db, synced_events):
     result(errors, "Nesúlad total_fights:")
 
 
-# ─────────────────────────────────────────────
-# 2. Victory type distribúcia
-# ─────────────────────────────────────────────
 
 def test_victory_type_distribution_sum(db, synced_events):
     """Súčet victory_type_distribution == počet zápasov s nastaveným victory_type."""
@@ -101,9 +93,6 @@ def test_victory_type_distribution_sum(db, synced_events):
     result(errors, "Nesúlad victory_type_distribution:")
 
 
-# ─────────────────────────────────────────────
-# 3. Top performers — atlét patrí do eventu
-# ─────────────────────────────────────────────
 
 def test_top_performers_belong_to_event(db, synced_events):
     """Každý top performer musí byť atlét priradený k danému eventu."""
@@ -124,9 +113,6 @@ def test_top_performers_belong_to_event(db, synced_events):
     result(errors, "Top performer nepatrí do eventu:")
 
 
-# ─────────────────────────────────────────────
-# 4. Top performers — meno a krajina z DB
-# ─────────────────────────────────────────────
 
 def test_top_performers_name_and_country(db, synced_events):
     """Každý top performer má v DB priradené meno (person) a krajinu (team)."""
@@ -162,9 +148,6 @@ def test_top_performers_name_and_country(db, synced_events):
     result(errors, "Top performer nemá meno alebo krajinu:")
 
 
-# ─────────────────────────────────────────────
-# 5. Top performers — počet výhier a zápasov
-# ─────────────────────────────────────────────
 
 def test_top_performers_wins_match_fights(db, synced_events):
     """Počet výhier každého atléta sedí s fights tabuľkou."""
@@ -196,9 +179,6 @@ def test_top_performers_wins_match_fights(db, synced_events):
     result(errors, "Nesprávny počet výhier / zápasov:")
 
 
-# ─────────────────────────────────────────────
-# 6. Win rate konzistencia
-# ─────────────────────────────────────────────
 
 def test_win_rate_is_consistent(db, synced_events):
     """win_rate == wins / total_fights * 100 pre každého atléta."""
@@ -219,9 +199,6 @@ def test_win_rate_is_consistent(db, synced_events):
     result(errors, "Nekonzistentný win_rate:")
 
 
-# ─────────────────────────────────────────────
-# 7. Team performance konzistencia
-# ─────────────────────────────────────────────
 
 def test_team_performance_wins_not_exceed_total(db, synced_events):
     """wins <= total_fights pre každý tím."""

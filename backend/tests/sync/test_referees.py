@@ -78,9 +78,6 @@ def _db_team_maps(db, event) -> tuple[dict[str, int], dict[str, int]]:
     return by_alt_name, by_name
 
 
-# ─────────────────────────────────────────────
-# 1. Počet
-# ─────────────────────────────────────────────
 
 async def test_referees_count_matches_arena(db, synced_events):
     """Počet rozhodcov v DB sa zhoduje s Arena API pre každé podujatie."""
@@ -95,9 +92,6 @@ async def test_referees_count_matches_arena(db, synced_events):
     result(errors, "Nesúlad počtu rozhodcov:")
 
 
-# ─────────────────────────────────────────────
-# 2. Chýbajúce / navyše
-# ─────────────────────────────────────────────
 
 async def test_no_missing_referees_in_db(db, synced_events):
     """Každý rozhodca z Arena API musí existovať v DB (podľa natural key)."""
@@ -131,9 +125,6 @@ async def test_no_extra_referees_in_db(db, synced_events):
     result(errors, "DB obsahuje rozhodcov ktorí nie sú v Aréne:")
 
 
-# ─────────────────────────────────────────────
-# 3. Polia
-# ─────────────────────────────────────────────
 
 async def test_referee_core_fields_correct(db, synced_events):
     """Mapované polia rozhodcov zodpovedajú Arena API."""
@@ -261,9 +252,6 @@ async def test_referee_team_resolution_correct(db, synced_events):
     result(errors, "Nesprávne mapovanie rozhodca -> team:")
 
 
-# ─────────────────────────────────────────────
-# 4. Integrita DB
-# ─────────────────────────────────────────────
 
 async def test_no_referees_without_sport_event(db):
     """Každý rozhodca musí byť priradený k podujatiu."""

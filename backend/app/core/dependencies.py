@@ -18,25 +18,15 @@ async def validate_csrf_and_origin(
     referer: Optional[str] = Header(None)
 ) -> None:
     """
-    Validate CSRF token and request origin for unsafe methods
-
-    Only validates for POST/PUT/PATCH/DELETE (not GET)
-    Combines:
-    - Double-submit CSRF cookie pattern
-    - Origin/Referer validation (defense-in-depth)
-
-    Raises: 403 if validation fails
+    Validate unsafe requests with double-submit CSRF and Origin/Referer checks.
     """
-    # Only check for unsafe methods
     if request.method in ["POST", "PUT", "PATCH", "DELETE"]:
-        # CSRF double-submit validation
         if not csrf_token_cookie or not csrf_token_header or csrf_token_cookie != csrf_token_header:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="CSRF token validation failed"
             )
 
-        # Origin/Referer validation (additional layer)
         if not validate_request_origin(origin, referer):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -49,17 +39,7 @@ async def require_user(
     session: Session = Depends(get_session)
 ) -> User:
     """
-    Extract user from access_token HttpOnly cookie
-
-    Checks:
-    - Token exists
-    - Token is valid (not expired, valid iss/aud)
-    - User exists in database
-    - User is active
-    - Session is not revoked (sid check in JWT)
-
-    Returns: User object
-    Raises: 401 if authentication fails, 403 if account inactive
+    Resolve the current user and reject revoked JWT sessions.
     """
     if not access_token:
         raise HTTPException(
@@ -67,7 +47,6 @@ async def require_user(
             detail="Not authenticated - access token not found"
         )
 
-    # Decode JWT (validates exp, iss, aud)
     payload = decode_access_token(access_token)
 
     if not payload:
@@ -105,7 +84,6 @@ async def require_user(
             detail="User account is inactive"
         )
 
-    # Check if the session has been revoked via session ID embedded in JWT
     sid = payload.get("sid")
     if sid is not None:
         token_record = session.get(RefreshToken, int(sid))
@@ -119,12 +97,6 @@ async def require_user(
 
 
 async def require_admin(user: User = Depends(require_user)) -> User:
-    """
-    Dependency to require admin role
-    
-    Raises:
-        HTTPException: 403 if user is not admin
-    """
     if user.role != UserRole.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

@@ -55,7 +55,6 @@ export function Card({
             {name}
           </h4>
 
-          {/* Country + Metadata */}
           {(countryCode || metadata) && (
             <div className="flex items-center gap-1 text-xs mt-0.5 flex-wrap">
               {countryCode && (
@@ -72,7 +71,6 @@ export function Card({
             </div>
           )}
 
-          {/* Badges */}
           {badges && badges.length > 0 && (
             <div className="flex items-center gap-1.5 mt-2 flex-wrap">
               {badges.map((badge, idx) => (

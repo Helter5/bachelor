@@ -26,13 +26,11 @@ from app.core.security import (
     create_password_reset_token,
 )
 
-# ── Konštanty ─────────────────────────────────────────────────────────────────
 
 HTTPS_BASE = "https://testserver"
 ORIGIN     = "http://localhost:5173"
 
 
-# ── Pomocné funkcie ───────────────────────────────────────────────────────────
 
 def uid() -> str:
     return uuid.uuid4().hex[:8]
@@ -93,9 +91,6 @@ def delete_user(username: str) -> None:
         session.commit()
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# 1. REGISTRÁCIA
-# ════════════════════════════════════════════════════════════════════════════
 
 class TestRegistration:
 
@@ -200,9 +195,6 @@ class TestRegistration:
         delete_user(username)
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# 2. PRIHLÁSENIE
-# ════════════════════════════════════════════════════════════════════════════
 
 _LOGIN_SUFFIX   = uid()
 LOGIN_USERNAME  = f"logintest_{_LOGIN_SUFFIX}"
@@ -292,9 +284,6 @@ class TestLogin:
         assert resp.status_code == 403
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# 3. EMAIL VERIFIKÁCIA
-# ════════════════════════════════════════════════════════════════════════════
 
 _EV_SUFFIX      = uid()
 EV_USERNAME     = f"toverif_{_EV_SUFFIX}"
@@ -392,9 +381,6 @@ class TestEmailVerification:
         assert resp.status_code == 200
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# 4. PASSWORD RESET
-# ════════════════════════════════════════════════════════════════════════════
 
 _PR_SUFFIX      = uid()
 PR_USERNAME     = f"resetuser_{_PR_SUFFIX}"
@@ -451,9 +437,6 @@ class TestPasswordReset:
         assert resp.status_code == 401
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# 5. PROFILE FUNKČNOSŤ
-# ════════════════════════════════════════════════════════════════════════════
 
 _PROF_SUFFIX  = uid()
 PROF_USERNAME = f"profuser_{_PROF_SUFFIX}"
@@ -691,9 +674,6 @@ class TestSessions:
         assert resp.status_code == 404
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# 6. INPUT VALIDÁCIA (422)
-# ════════════════════════════════════════════════════════════════════════════
 
 _VAL_SUFFIX  = uid()
 VAL_USERNAME = f"valuser_{_VAL_SUFFIX}"

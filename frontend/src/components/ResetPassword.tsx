@@ -14,7 +14,7 @@ export function ResetPassword({ token, onBackToLogin }: ResetPasswordProps) {
   const { t } = useTranslation()
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading")
   const [message, setMessage] = useState("")
-  const hasReset = useRef(false) // Prevent double reset in React Strict Mode
+  const hasReset = useRef(false)
 
   useEffect(() => {
     if (!token) {
@@ -23,7 +23,6 @@ export function ResetPassword({ token, onBackToLogin }: ResetPasswordProps) {
       return
     }
 
-    // Prevent double API call in React 18 Strict Mode (development)
     if (hasReset.current) {
       return
     }

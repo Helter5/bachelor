@@ -27,9 +27,6 @@ def _db_teams_by_name(db, event) -> dict[str, Team]:
     return {t.name: t for t in teams}
 
 
-# ─────────────────────────────────────────────
-# 1. Počet
-# ─────────────────────────────────────────────
 
 async def test_teams_count_matches_arena(db, synced_events):
     """Počet tímov v DB sa zhoduje s Arena API pre každé podujatie."""
@@ -44,9 +41,6 @@ async def test_teams_count_matches_arena(db, synced_events):
     result(errors, "Nesúlad počtu tímov:")
 
 
-# ─────────────────────────────────────────────
-# 2. Chýbajúce / navyše
-# ─────────────────────────────────────────────
 
 async def test_no_missing_teams_in_db(db, synced_events):
     """Každý tím z Arena API musí existovať v DB (podľa name)."""
@@ -76,9 +70,6 @@ async def test_no_extra_teams_in_db(db, synced_events):
     result(errors, "DB obsahuje tímy ktoré nie sú v Aréne:")
 
 
-# ─────────────────────────────────────────────
-# 3. Polia
-# ─────────────────────────────────────────────
 
 async def test_team_alternate_names_correct(db, synced_events):
     """`alternate_name` každého tímu zodpovedá Arena API."""
@@ -158,9 +149,6 @@ async def test_team_final_rank_correct(db, synced_events):
     result(errors, "Nesprávne final_rank:")
 
 
-# ─────────────────────────────────────────────
-# 4. Integrita DB
-# ─────────────────────────────────────────────
 
 async def test_no_teams_without_sport_event(db):
     """Každý tím musí byť priradený k podujatiu."""

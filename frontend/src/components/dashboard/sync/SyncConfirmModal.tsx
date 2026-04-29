@@ -21,13 +21,11 @@ export function SyncConfirmModal({
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
         onClick={onCancel}
       />
 
-      {/* Modal Content */}
       <div className={`relative rounded-xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
         <div className="flex items-start gap-4 mb-6">
           <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">

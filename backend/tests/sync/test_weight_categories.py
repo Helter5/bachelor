@@ -39,9 +39,6 @@ def _db_wcs_by_natural_key(db, event) -> dict[str, WeightCategory]:
     return result_map
 
 
-# ─────────────────────────────────────────────
-# 1. Počet
-# ─────────────────────────────────────────────
 
 async def test_weight_categories_count_matches_arena(db, synced_events):
     """Počet váhových kategórií v DB sa zhoduje s Arena API pre každé podujatie."""
@@ -56,9 +53,6 @@ async def test_weight_categories_count_matches_arena(db, synced_events):
     result(errors, "Nesúlad počtu váhových kategórií:")
 
 
-# ─────────────────────────────────────────────
-# 2. Chýbajúce / navyše
-# ─────────────────────────────────────────────
 
 async def test_no_missing_weight_categories_in_db(db, synced_events):
     """Každá váhová kategória z Arena API musí existovať v DB (podľa natural key)."""
@@ -89,9 +83,6 @@ async def test_no_extra_weight_categories_in_db(db, synced_events):
     result(errors, "DB obsahuje váhové kategórie ktoré nie sú v Aréne:")
 
 
-# ─────────────────────────────────────────────
-# 3. Polia
-# ─────────────────────────────────────────────
 
 async def test_weight_category_count_fighters_correct(db, synced_events):
     """`count_fighters` každej kategórie zodpovedá Arena API."""
@@ -222,9 +213,6 @@ async def test_weight_category_discipline_audience_name_correct(db, synced_event
     result(errors, "Nesprávne audience_name (disciplína):")
 
 
-# ─────────────────────────────────────────────
-# 4. Integrita DB
-# ─────────────────────────────────────────────
 
 async def test_no_weight_categories_without_sport_event(db):
     """Každá váhová kategória musí byť priradená k podujatiu."""

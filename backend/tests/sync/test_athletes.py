@@ -15,9 +15,6 @@ from tests.conftest import arena_fetch
 from tests.utils import check, section, result
 
 
-# ─────────────────────────────────────────────
-# Pomocné funkcie
-# ─────────────────────────────────────────────
 
 def _athlete_natural_key(full_name: str | None, team_name: str | None, max_weight: int | None) -> str:
     return f"{full_name}|{team_name}|{max_weight}"
@@ -76,9 +73,6 @@ def _db_wc_max_weight_map(db, event) -> dict[int, int]:
     return {wc.id: wc.max_weight for wc in wcs}
 
 
-# ─────────────────────────────────────────────
-# 1. Počet
-# ─────────────────────────────────────────────
 
 async def test_athletes_count_matches_arena(db, synced_events):
     """Počet atlétov v DB sa zhoduje s Arena API pre každé podujatie."""
@@ -98,9 +92,6 @@ async def test_athletes_count_matches_arena(db, synced_events):
     result(errors, "Nesúlad počtu atlétov:")
 
 
-# ─────────────────────────────────────────────
-# 2. Chýbajúce / navyše
-# ─────────────────────────────────────────────
 
 async def test_no_missing_athletes_in_db(db, synced_events):
     """Každý atlét z Arena API musí existovať v DB (podľa natural key)."""
@@ -133,9 +124,6 @@ async def test_no_extra_athletes_in_db(db, synced_events):
     result(errors, "DB obsahuje atlétov ktorí nie sú v Aréne:")
 
 
-# ─────────────────────────────────────────────
-# 3. Polia
-# ─────────────────────────────────────────────
 
 async def test_athlete_is_competing_correct(db, synced_events):
     """`is_competing` každého atléta zodpovedá Arena API."""
@@ -177,9 +165,6 @@ async def test_athlete_person_name_correct(db, synced_events):
     result(errors, "Nesprávne meno atléta:")
 
 
-# ─────────────────────────────────────────────
-# 4. Integrita DB
-# ─────────────────────────────────────────────
 
 async def test_no_athletes_without_person(db):
     """Každý atlét musí mať priradenú osobu (person_id)."""

@@ -20,7 +20,6 @@ async def verify_google_token(token: str) -> Optional[dict]:
     Returns:
         dict: User info (email, name, picture) if valid, None otherwise
     """
-    # Google's token verification endpoint
     url = f"https://oauth2.googleapis.com/tokeninfo?id_token={token}"
 
     try:
@@ -32,15 +31,12 @@ async def verify_google_token(token: str) -> Optional[dict]:
 
             data = response.json()
 
-            # Verify the token is for our app
             if data.get("aud") != settings.google_client_id:
                 return None
 
-            # Verify email is verified
             if not data.get("email_verified"):
                 return None
 
-            # Extract user info
             return {
                 "email": data.get("email"),
                 "given_name": data.get("given_name", ""),

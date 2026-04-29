@@ -8,9 +8,6 @@ from tests.conftest import arena_fetch
 from tests.utils import check, section, result
 
 
-# ─────────────────────────────────────────────
-# Pomocné funkcie
-# ─────────────────────────────────────────────
 
 async def _fetch_arena_events() -> list[dict]:
     """Stiahne všetky podujatia z Arena API."""
@@ -31,9 +28,6 @@ def _arena_natural_key(item: dict) -> tuple:
     return _natural_key(item.get("name"), item.get("startDate"), item.get("countryIsoCode"))
 
 
-# ─────────────────────────────────────────────
-# 1. Počet
-# ─────────────────────────────────────────────
 
 async def test_sport_events_count_matches_arena(db):
     """Počet podujatí v DB sa zhoduje s Arena API."""
@@ -47,9 +41,6 @@ async def test_sport_events_count_matches_arena(db):
     result(errors, "Nesúlad počtu podujatí:")
 
 
-# ─────────────────────────────────────────────
-# 2. Chýbajúce / navyše
-# ─────────────────────────────────────────────
 
 async def test_no_missing_sport_events_in_db(db):
     """Každé podujatie z Arena API musí existovať v DB (podľa natural key)."""
@@ -80,9 +71,6 @@ async def test_no_extra_sport_events_in_db(db):
     )
 
 
-# ─────────────────────────────────────────────
-# 3. Polia
-# ─────────────────────────────────────────────
 
 async def test_sport_event_name_correct(db):
     """`name` každého podujatia zodpovedá Arena API."""
@@ -221,9 +209,6 @@ async def test_sport_event_flags_correct(db):
     result(errors, "Nesprávne event flags:")
 
 
-# ─────────────────────────────────────────────
-# 4. Integrita DB
-# ─────────────────────────────────────────────
 
 async def test_sport_events_have_name(db):
     """Každé podujatie musí mať vyplnený názov."""

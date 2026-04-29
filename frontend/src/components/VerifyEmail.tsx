@@ -14,7 +14,7 @@ export function VerifyEmail({ token, onBackToLogin }: VerifyEmailProps) {
   const { t } = useTranslation()
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading")
   const [message, setMessage] = useState("")
-  const hasVerified = useRef(false) // Prevent double verification in React Strict Mode
+  const hasVerified = useRef(false)
 
   useEffect(() => {
     if (!token) {
@@ -23,7 +23,6 @@ export function VerifyEmail({ token, onBackToLogin }: VerifyEmailProps) {
       return
     }
 
-    // Prevent double API call in React 18 Strict Mode (development)
     if (hasVerified.current) {
       return
     }

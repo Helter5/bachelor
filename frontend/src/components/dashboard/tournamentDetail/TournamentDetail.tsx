@@ -39,7 +39,6 @@ export function TournamentDetail({
 }: TournamentDetailProps) {
   const { t } = useTranslation()
 
-  // --- URL helpers ---
 
   const getLocalePrefix = useCallback(() => {
     const first = window.location.pathname.split("/").filter(Boolean)[0]?.toLowerCase()
@@ -89,7 +88,6 @@ export function TournamentDetail({
     return isTabType(urlTab) ? urlTab : "teams"
   }, [isTabType])
 
-  // --- Tab state ---
 
   const [activeTab, setActiveTab] = useState<TabType>(getTabFromUrl)
 
@@ -101,7 +99,6 @@ export function TournamentDetail({
     [getTabPath, pushPathWithCurrentQuery],
   )
 
-  // --- Data (extracted to hook) ---
 
   const {
     teams,
@@ -123,7 +120,6 @@ export function TournamentDetail({
     weightCategoriesLoading,
   } = useTournamentData(tournamentId, tournamentUuid, activeTab)
 
-  // --- Pagination ---
 
   const [teamsPage, setTeamsPage] = useState(1)
   const [athletesPage, setAthletesPage] = useState(1)
@@ -135,7 +131,6 @@ export function TournamentDetail({
     setAthletesPage(1)
   }, [activeTab])
 
-  // --- Team detail ---
 
   const [selectedTeam, setSelectedTeam] = useState<{ id: string; name: string } | null>(null)
   const [teamAthletes, setTeamAthletes] = useState<Athlete[]>([])
@@ -187,7 +182,6 @@ export function TournamentDetail({
     setTeamAthletes([])
   }, [pushCurrentPathWithQuery])
 
-  // --- Results weight category detail ---
 
   const [
     selectedWeightCategoryForResults,
@@ -211,7 +205,6 @@ export function TournamentDetail({
     setSelectedWeightCategoryForResults(null)
   }, [pushCurrentPathWithQuery])
 
-  // --- Weight category status ---
 
   const getWeightCategoryStatus = useCallback(
     (wc: { is_completed?: boolean; is_started?: boolean }): "completed" | "ongoing" | "waiting" => {
@@ -227,7 +220,6 @@ export function TournamentDetail({
     [tournamentStartDate, tournamentEndDate],
   )
 
-  // --- URL / history effects ---
 
   useEffect(() => {
     const handlePopState = () => {
@@ -255,7 +247,6 @@ export function TournamentDetail({
     }
   }, [tournamentId, getTabFromUrl, getTabPath])
 
-  // --- Render ---
 
   const tabs = TABS_ORDER.map((id) => ({ id, label: t(`tournamentDetail.tabs.${id}`) }))
 

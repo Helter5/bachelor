@@ -90,7 +90,6 @@ export function AppearanceSettings({ isDarkMode, toggleDarkMode }: AppearanceSet
 
   return (
     <div className="space-y-5">
-      {/* Theme */}
       <SectionCard
         isDarkMode={isDarkMode}
         icon={<IconSun />}
@@ -106,7 +105,6 @@ export function AppearanceSettings({ isDarkMode, toggleDarkMode }: AppearanceSet
         />
       </SectionCard>
 
-      {/* Language */}
       <SectionCard
         isDarkMode={isDarkMode}
         icon={<IconGlobe />}

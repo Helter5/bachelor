@@ -106,7 +106,6 @@ export function Sidebar({
   const displayEmail = userData?.email || 'user@example.com';
   const isAdmin = userData?.role === 'admin';
 
-  // Filter menu items based on admin role
   const filteredMenuItems = menuItems.filter(item => !item.adminOnly || isAdmin);
 
   return (
@@ -117,12 +116,10 @@ export function Sidebar({
       ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       ${isDarkMode ? 'bg-[#1e293b] shadow-2xl shadow-black/30' : 'bg-white border-r border-gray-200'}
     `}>
-      {/* Logo */}
       <div className={`p-6 ${isDarkMode ? 'border-b border-white/5' : 'border-b border-gray-200'}`}>
         <h1 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Wrestling Federation</h1>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1">
         {filteredMenuItems.map((item) => (
           <button
@@ -147,9 +144,7 @@ export function Sidebar({
         ))}
       </nav>
 
-      {/* User Section */}
       <div className={`p-4 ${isDarkMode ? 'border-t border-white/5' : 'border-t border-gray-200'}`}>
-        {/* User info */}
         <div className="flex items-center gap-3 px-2">
           <img
             src={avatarUrl}
@@ -162,7 +157,6 @@ export function Sidebar({
           </div>
         </div>
 
-        {/* Actions row */}
         <div className="flex items-center gap-2 mt-4">
           <button
             onClick={onLogout}
