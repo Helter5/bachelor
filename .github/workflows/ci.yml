@@ -218,9 +218,9 @@ jobs:
       - name: Load Arena A/B/C backup datasets
         working-directory: arena
         run: |
-          docker compose exec -T mysql mysql --force -u arena -parena arena < arena_a_backup.sql
-          docker compose -p arena-b -f docker-compose-b.yaml exec -T mysql mysql --force -u arena -parena arena < arena_b_backup.sql
-          docker compose -p arena-c -f docker-compose-c.yaml exec -T mysql mysql --force -u arena -parena arena < arena_c_backup.sql
+          docker compose exec -T mysql mysql --force -u arena -parena arena < dumps/arena_a_backup.sql
+          docker compose -p arena-b -f docker-compose-b.yaml exec -T mysql mysql --force -u arena -parena arena < dumps/arena_b_backup.sql
+          docker compose -p arena-c -f docker-compose-c.yaml exec -T mysql mysql --force -u arena -parena arena < dumps/arena_c_backup.sql
 
       - name: Wait for API to be healthy
         run: |

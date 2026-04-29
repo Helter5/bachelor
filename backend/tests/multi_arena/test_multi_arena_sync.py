@@ -1,16 +1,16 @@
 """
 Multi-Arena sync validation (3 sources).
 
-Test data layout after multi_arena_seed.py:
+Test data layout after loading Arena A/B/C dumps and running multi_arena_seed.py:
 
-  Arena A (8080) — test_one.sql:
+  Arena A (8080):
         "Multi-Arena Test Cup": 2 WCs, 3 teams (SVK/CZE/POL), 4 athletes
 
-  Arena B (8081) — test_two.sql:
+  Arena B (8081):
     "Multi-Arena Test Cup": 2 WCs, 3 teams (SVK/CZE/POL), 4 athletes
       Jan NOVAK/SVK, Petr CERNY/CZE, Michal KOWALSKI/POL, Tomas HORAK/SVK
 
-  Arena C (8082) — test_three.sql:
+  Arena C (8082):
     "Multi-Arena Test Cup": 2 WCs, 4 teams (SVK/CZE/POL + AUSTRIA),
       4 athletes — NOVAK+CERNY match B (dedup), WAGNER+BAUER are new
     "Arena C Exclusive Cup": 1 WC (86kg GR), 2 teams (HUNGARY/AUSTRIA), 2 athletes
