@@ -32,6 +32,17 @@ class ApiClient {
   }
 
   private getCsrfToken(): string | null {
+    const cookieToken = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('csrf_token='))
+      ?.split('=')[1]
+
+    if (cookieToken) {
+      const decodedToken = decodeURIComponent(cookieToken)
+      sessionStorage.setItem('csrf_token', decodedToken)
+      return decodedToken
+    }
+
     return sessionStorage.getItem('csrf_token')
   }
 
