@@ -72,7 +72,7 @@ app.include_router(rankings_router, prefix="/api/v1", dependencies=_auth)
 app.include_router(event_statistics_router, prefix="/api/v1", dependencies=_auth)
 app.include_router(draw_router, prefix="/api/v1", dependencies=_auth)
 
-app.include_router(exports_router, prefix="/api/v1")
+app.include_router(exports_router, prefix="/api/v1", dependencies=_auth)
 
 app.include_router(profile_router, prefix="/api/v1")
 

@@ -113,6 +113,9 @@ PROTECTED_PUBLIC_GET_ENDPOINTS = [
     f"/api/v1/events/{FAKE_ID}",
     f"/api/v1/events/{FAKE_ID}/statistics",
     f"/api/v1/events/{FAKE_ID}/categories",
+    f"/api/v1/events/{FAKE_ID}/exports/medal-standings",
+    f"/api/v1/events/{FAKE_ID}/exports/results-summary",
+    f"/api/v1/events/{FAKE_ID}/exports/statistics",
     # athletes
     "/api/v1/athletes",
     f"/api/v1/athletes/{FAKE_ID}",

@@ -1,4 +1,4 @@
-"""Public API - event exports (PDF and Excel)"""
+"""Authenticated API - event exports (PDF and Excel)"""
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import Response
 from sqlmodel import Session
