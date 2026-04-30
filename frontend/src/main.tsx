@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { GoogleOAuthProvider } from '@react-oauth/google'
+import 'flag-icons/css/flag-icons.min.css'
 import './index.css'
 import App from './App.tsx'
 import './i18n'

@@ -26,13 +26,3 @@ export function normalizeCountryCodeToAlpha2(code: string | null | undefined): s
   return null
 }
 
-export function countryCodeToEmoji(code: string | null | undefined): string | null {
-  const alpha2 = normalizeCountryCodeToAlpha2(code)
-  if (!alpha2) return null
-
-  return alpha2
-    .toUpperCase()
-    .split("")
-    .map((char) => String.fromCodePoint(127397 + char.charCodeAt(0)))
-    .join("")
-}

@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react"
-import { countryCodeToEmoji, normalizeArenaAssetUrl, normalizeCountryCodeToAlpha2 } from "./countryFlagUtils"
+import { normalizeArenaAssetUrl, normalizeCountryCodeToAlpha2 } from "./countryFlagUtils"
 
 interface CountryFlagProps {
   code: string | null | undefined
@@ -19,12 +19,10 @@ export function CountryFlag({ code, className = "", style, imageUrl, flagOnly = 
   if (alpha2Code) {
     return (
       <span
-        className={`inline-block leading-none ${className}`}
+        className={`fi fi-${alpha2Code} inline-block ${className}`}
         style={style}
         title={code}
-      >
-        {countryCodeToEmoji(alpha2Code)}
-      </span>
+      />
     )
   }
 
