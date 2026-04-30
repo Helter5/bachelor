@@ -21,8 +21,8 @@ export const API_ENDPOINTS = {
 
   TEAM_SYNC: (eventId: number) => `/api/v1/admin/sync/teams/${eventId}`,
   TEAM_DATABASE: (eventId: number) => `/api/v1/teams?event_id=${eventId}`,
-  TEAM_PRINT: (eventUuid: string) => `/team/${eventUuid}/print`,
-  TEAM_SHOW: (eventUuid: string) => `/show/team/${eventUuid}`,
+  TEAM_PRINT: (eventUuid: string) => `/api/v1/events/${eventUuid}/exports/teams-list`,
+  TEAM_SHOW: (eventUuid: string) => `/api/v1/events/${eventUuid}/exports/teams-list`,
 
   WEIGHT_CATEGORY_SYNC: (eventId: number) => `/api/v1/admin/sync/categories/${eventId}`,
   WEIGHT_CATEGORY_DATABASE: (eventId: number) => `/api/v1/events/${eventId}/categories`,
@@ -32,8 +32,8 @@ export const API_ENDPOINTS = {
   ATHLETE_DATABASE: (eventId: number) => `/api/v1/athletes?event_id=${eventId}`,
   ATHLETE_DATABASE_ALL: '/api/v1/athletes',
   ATHLETE_DATABASE_BY_TEAM: (eventId: number, teamId: number) => `/api/v1/athletes?event_id=${eventId}&team_id=${teamId}`,
-  ATHLETE_PRINT: (eventUuid: string) => `/athlete/${eventUuid}/print`,
-  ATHLETE_SHOW: (eventUuid: string) => `/show/athlete/${eventUuid}`,
+  ATHLETE_PRINT: (eventUuid: string) => `/api/v1/events/${eventUuid}/exports/athletes-list`,
+  ATHLETE_SHOW: (eventUuid: string) => `/api/v1/events/${eventUuid}/exports/athletes-list`,
 
   REFEREE_SYNC: (eventId: number) => `/api/v1/admin/sync/referees/${eventId}`,
   REFEREES: (eventId: number) => `/api/v1/referees?event_id=${eventId}`,
