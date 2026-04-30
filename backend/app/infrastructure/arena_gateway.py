@@ -78,7 +78,7 @@ class ArenaGateway:
         """Fallback to the first enabled Arena source for legacy/public flows."""
         with Session(engine) as session:
             source = session.exec(
-                select(ArenaSource).where(ArenaSource.is_enabled == True)
+                select(ArenaSource).where(ArenaSource.is_enabled.is_(True))
             ).first()
 
         if not source:

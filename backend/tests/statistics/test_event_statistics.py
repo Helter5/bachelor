@@ -9,7 +9,6 @@ from app.domain.entities.fight import Fight
 from app.domain.entities.athlete import Athlete
 from app.domain.entities.team import Team
 from app.domain.entities.person import Person
-from app.domain.entities.weight_category import WeightCategory
 from tests.utils import check, section, result
 
 
@@ -267,8 +266,6 @@ def test_team_performance_name_and_country(db, synced_events):
     """Každý tím vo výkone má vyplnený názov a krajinu (country_iso_code alebo alternate_name)."""
     errors = []
     for event in synced_events:
-        stats = _compute_stats(db, event)
-
         athletes = db.exec(
             select(Athlete).where(Athlete.sport_event_id == event.id)
         ).all()

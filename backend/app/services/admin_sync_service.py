@@ -115,7 +115,7 @@ class AdminSyncService:
         """Return the single active ArenaSource for the given user."""
         source = self.session.exec(
             select(ArenaSource).where(
-                ArenaSource.is_enabled == True,
+                ArenaSource.is_enabled.is_(True),
                 ArenaSource.user_id == user_id,
             ).order_by(ArenaSource.id)
         ).first()

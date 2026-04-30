@@ -11,7 +11,7 @@ import logging
 if TYPE_CHECKING:
     from ..domain.entities.arena_source import ArenaSource
 
-from ..domain import Team, TeamBase, SportEvent
+from ..domain import Team, TeamBase
 from .base_service import BaseService
 from .arena import fetch_arena_data, fetch_all_arena_items
 

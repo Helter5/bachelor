@@ -1,7 +1,7 @@
 """
 Public API - Weight Categories (no authentication required)
 """
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlmodel import Session, select
 from typing import List
 

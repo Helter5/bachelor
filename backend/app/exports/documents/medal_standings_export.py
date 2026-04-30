@@ -4,7 +4,7 @@ Medal Standings PDF Export
 from typing import List, Dict, Any
 from io import BytesIO
 
-from reportlab.platypus import Flowable, Spacer, Image
+from reportlab.platypus import Flowable, Image
 from reportlab.lib.units import inch
 from sqlmodel import Session, select
 import matplotlib.pyplot as plt
@@ -18,7 +18,6 @@ from ..builders.pdf_builder import (
     PDFSpacerBuilder
 )
 from ..utils.styling import ColorPalette
-from ..utils.formatters import formatter
 from ...domain import SportEvent, Team, Athlete, Person
 
 matplotlib.use('Agg')  # Non-GUI backend

@@ -8,7 +8,6 @@ from sqlmodel import select
 from app.domain.entities.athlete import Athlete
 from app.domain.entities.team import Team
 from app.domain.entities.weight_category import WeightCategory
-from app.domain.entities.discipline import Discipline
 from app.domain.entities.person import Person
 from app.services.arena import fetch_all_arena_items
 from tests.conftest import arena_fetch
@@ -168,7 +167,7 @@ async def test_athlete_person_name_correct(db, synced_events):
 
 async def test_no_athletes_without_person(db):
     """Každý atlét musí mať priradenú osobu (person_id)."""
-    orphans = db.exec(select(Athlete).where(Athlete.person_id == None)).all()
+    orphans = db.exec(select(Athlete).where(Athlete.person_id.is_(None))).all()
     section("Integrita DB")
     check("atléti bez person_id", 0, len(orphans))
     result(
@@ -179,7 +178,7 @@ async def test_no_athletes_without_person(db):
 
 async def test_no_athletes_without_sport_event(db):
     """Každý atlét musí byť priradený k podujatiu."""
-    orphans = db.exec(select(Athlete).where(Athlete.sport_event_id == None)).all()
+    orphans = db.exec(select(Athlete).where(Athlete.sport_event_id.is_(None))).all()
     section("Integrita DB")
     check("atléti bez sport_event_id", 0, len(orphans))
     result(

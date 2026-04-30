@@ -1,6 +1,6 @@
 """Seeded bracket generation with penalty-based placement."""
 from sqlmodel import Session, select
-from sqlalchemy import select as sa_select, func, and_
+from sqlalchemy import select as sa_select
 from typing import Optional
 import math
 import logging

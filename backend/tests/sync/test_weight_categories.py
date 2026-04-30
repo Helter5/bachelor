@@ -216,7 +216,7 @@ async def test_weight_category_discipline_audience_name_correct(db, synced_event
 
 async def test_no_weight_categories_without_sport_event(db):
     """Každá váhová kategória musí byť priradená k podujatiu."""
-    orphans = db.exec(select(WeightCategory).where(WeightCategory.sport_event_id == None)).all()
+    orphans = db.exec(select(WeightCategory).where(WeightCategory.sport_event_id.is_(None))).all()
     section("Integrita DB")
     check("kategórie bez sport_event_id", 0, len(orphans))
     result(

@@ -301,7 +301,7 @@ async def test_fight_victory_type_correct(db, synced_events):
 
 async def test_no_fights_without_sport_event(db):
     """Každý zápas musí byť priradený k podujatiu."""
-    orphans = db.exec(select(Fight).where(Fight.sport_event_id == None)).all()
+    orphans = db.exec(select(Fight).where(Fight.sport_event_id.is_(None))).all()
     section("Integrita DB")
     check("zápasy bez sport_event_id", 0, len(orphans))
     result(

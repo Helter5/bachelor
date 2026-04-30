@@ -26,7 +26,7 @@ class SessionService:
             select(RefreshToken)
             .where(
                 RefreshToken.user_id == user_id,
-                RefreshToken.is_revoked == False,
+                RefreshToken.is_revoked.is_(False),
                 RefreshToken.expires_at > datetime.now(timezone.utc),
             )
             .order_by(RefreshToken.created_at.desc())
@@ -54,7 +54,7 @@ class SessionService:
         current_hash = self._hash_current_token(current_refresh_token)
         statement = select(RefreshToken).where(
             RefreshToken.user_id == user_id,
-            RefreshToken.is_revoked == False,
+            RefreshToken.is_revoked.is_(False),
             RefreshToken.expires_at > datetime.now(timezone.utc),
         )
         if current_hash:

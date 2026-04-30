@@ -19,7 +19,7 @@ def _activate_exclusively(session: Session, source: ArenaSource) -> None:
         select(ArenaSource).where(
             ArenaSource.id != source.id,
             ArenaSource.user_id == source.user_id,
-            ArenaSource.is_enabled == True,
+            ArenaSource.is_enabled.is_(True),
         )
     ).all():
         other.is_enabled = False

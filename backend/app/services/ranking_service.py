@@ -1,7 +1,7 @@
 """Ranking calculations per weight category."""
 from collections import defaultdict
-from sqlmodel import Session, select, col
-from typing import Optional, List
+from sqlmodel import Session, select
+from typing import Optional
 
 from ..domain.entities.fight import Fight
 from ..domain.entities.athlete import Athlete
@@ -149,7 +149,7 @@ class RankingService:
         p1 = Person.__table__.alias("p1")
         p2 = Person.__table__.alias("p2")
 
-        from sqlalchemy import select as sa_select, and_
+        from sqlalchemy import select as sa_select
 
         wc = WeightCategory.__table__.alias("wc")
 

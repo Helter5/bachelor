@@ -4,7 +4,6 @@ Arena API reference: https://arena.uww.org/api/doc/
 """
 from sqlmodel import Session, select
 from typing import List, Dict, Any, Optional, TYPE_CHECKING
-from uuid import UUID
 from datetime import datetime, timezone
 from fastapi import HTTPException
 import logging
@@ -163,14 +162,12 @@ class WeightCategoryService(BaseService[WeightCategory]):
                         self.session.add(existing_wc)
                         updated += 1
                         logger.info(f"Updated weight category: {existing_wc.id}")
-                    the_wc = existing_wc
                 else:
                     new_wc = WeightCategory(**wc_create.model_dump())
                     self.session.add(new_wc)
                     self.session.flush()
                     created += 1
                     logger.info(f"Created new weight category: {new_wc.id}")
-                    the_wc = new_wc
 
             except Exception as e:
                 logger.error(f"Failed to sync weight category {wc.get('id')}: {str(e)}", exc_info=True)

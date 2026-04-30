@@ -4,7 +4,7 @@ Arena API reference: https://arena.uww.org/api/doc/
 """
 from sqlmodel import Session, select
 from typing import List, Dict, Any, Optional, TYPE_CHECKING
-from datetime import datetime, timezone
+from datetime import datetime
 from fastapi import HTTPException
 import logging
 

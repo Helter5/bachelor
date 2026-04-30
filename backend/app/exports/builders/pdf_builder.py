@@ -1,12 +1,11 @@
 """Fluent helpers for building ReportLab PDF elements."""
-from typing import List, Optional, Tuple, Union
+from typing import List, Tuple, Union
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from reportlab.lib.units import inch
 from reportlab.lib.styles import ParagraphStyle
-from reportlab.platypus import Table, TableStyle, Spacer, Image, Paragraph, HRFlowable
-from reportlab.lib import colors
+from reportlab.platypus import Table, TableStyle, Spacer, Paragraph, HRFlowable
 
 from ..utils.font_manager import font_manager
 from ..utils.styling import ColorPalette, pdf_style

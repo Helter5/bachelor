@@ -19,7 +19,6 @@ Prerekvizity:
 import asyncio
 import sys
 import httpx
-import json
 
 ARENA_BASE = "http://localhost:8080"
 CLIENT_ID = "d1532eae14baf3ff798b6c7be8a8355f"

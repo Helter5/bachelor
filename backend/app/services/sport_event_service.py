@@ -6,8 +6,7 @@ from sqlmodel import Session, select
 from typing import List, Optional, Dict, Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..domain.entities.arena_source import ArenaSource
-from uuid import UUID
+    pass
 from datetime import datetime, timezone
 import logging
 

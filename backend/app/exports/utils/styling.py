@@ -4,7 +4,6 @@ Styling utilities for PDF and Excel exports
 from typing import List, Tuple
 from reportlab.lib import colors
 from reportlab.lib.units import inch
-from reportlab.platypus import TableStyle
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
 from .font_manager import font_manager

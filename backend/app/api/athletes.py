@@ -4,7 +4,6 @@ Thin controller layer - delegates to AthleteService
 """
 from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import Dict, Any, Optional
-from uuid import UUID
 from sqlmodel import Session
 
 from ..database import get_session

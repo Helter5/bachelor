@@ -1,8 +1,7 @@
 """
 Results Summary PDF Export
 """
-from typing import List, Dict, Any
-from datetime import datetime
+from typing import List
 
 from reportlab.platypus import Flowable
 from sqlmodel import Session, select

@@ -8,7 +8,6 @@ from openpyxl import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.utils import get_column_letter
 
-from ..utils.formatters import formatter
 from ..utils.styling import excel_style
 
 

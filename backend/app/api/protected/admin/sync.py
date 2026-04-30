@@ -1,6 +1,6 @@
 """Protected Admin API - sync management (requires admin role)"""
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Header, Request
-from sqlmodel import Session, select
+from sqlmodel import Session
 from typing import Optional
 from datetime import datetime, timezone
 
@@ -8,7 +8,7 @@ from ....database import get_session
 from ....domain.entities.user import User
 from ....core.dependencies import require_admin, validate_csrf_and_origin
 from ....services.athlete_service import AthleteService
-from ....services.admin_sync_service import AdminSyncService, _sync_locks
+from ....services.admin_sync_service import AdminSyncService, _sync_locks  # noqa: F401
 from ....services.team_service import TeamService
 from ....services.sport_event_service import SportEventService
 from ....services.weight_category_service import WeightCategoryService

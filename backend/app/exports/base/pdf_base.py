@@ -1,7 +1,7 @@
 """Shared PDF export base class."""
 from abc import ABC, abstractmethod
 from io import BytesIO
-from typing import List, Optional, Dict, Any
+from typing import List, Dict, Any
 from datetime import datetime
 
 from reportlab.lib.pagesizes import A4
@@ -9,7 +9,6 @@ from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Flowable
 
 from ..utils.font_manager import font_manager
-from ..utils.formatters import formatter
 
 
 class BasePDFExport(ABC):

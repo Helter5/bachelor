@@ -181,7 +181,7 @@ def verify_refresh_token(token: str, session: Session) -> Optional[tuple[int, in
     
     statement = select(RefreshToken).where(
         RefreshToken.token == token_hash,
-        RefreshToken.is_revoked == False,
+        RefreshToken.is_revoked.is_(False),
         RefreshToken.expires_at > datetime.now(timezone.utc)
     )
     
@@ -191,7 +191,7 @@ def verify_refresh_token(token: str, session: Session) -> Optional[tuple[int, in
         # Check if token was already used (reuse attack detection)
         used_statement = select(RefreshToken).where(
             RefreshToken.token == token_hash,
-            RefreshToken.is_revoked == True
+            RefreshToken.is_revoked.is_(True)
         )
         used_token = session.exec(used_statement).first()
         
@@ -221,7 +221,7 @@ def revoke_all_user_tokens(user_id: int, session: Session) -> None:
     
     statement = select(RefreshToken).where(
         RefreshToken.user_id == user_id,
-        RefreshToken.is_revoked == False
+        RefreshToken.is_revoked.is_(False)
     )
     
     tokens = session.exec(statement).all()
@@ -306,7 +306,7 @@ def create_email_verification_token(user_id: int, session: Session) -> tuple[str
     # Invalidate all previous unused tokens for this user (security best practice)
     statement = select(EmailVerificationToken).where(
         EmailVerificationToken.user_id == user_id,
-        EmailVerificationToken.is_used == False
+        EmailVerificationToken.is_used.is_(False)
     )
     old_tokens = session.exec(statement).all()
     for old_token in old_tokens:
@@ -350,7 +350,7 @@ def verify_email_verification_token(token: str, session: Session) -> Optional[in
 
     statement = select(EmailVerificationToken).where(
         EmailVerificationToken.token == token_hash,
-        EmailVerificationToken.is_used == False,
+        EmailVerificationToken.is_used.is_(False),
         EmailVerificationToken.expires_at > datetime.now(timezone.utc)
     )
 
@@ -417,7 +417,7 @@ def create_password_reset_token(user_id: int, session: Session) -> tuple[str, st
     # Invalidate all previous unused tokens for this user
     statement = select(PasswordResetToken).where(
         PasswordResetToken.user_id == user_id,
-        PasswordResetToken.is_used == False
+        PasswordResetToken.is_used.is_(False)
     )
     old_tokens = session.exec(statement).all()
     for old_token in old_tokens:
@@ -461,7 +461,7 @@ def verify_password_reset_token(token: str, session: Session) -> Optional[int]:
 
     statement = select(PasswordResetToken).where(
         PasswordResetToken.token == token_hash,
-        PasswordResetToken.is_used == False,
+        PasswordResetToken.is_used.is_(False),
         PasswordResetToken.expires_at > datetime.now(timezone.utc)
     )
 

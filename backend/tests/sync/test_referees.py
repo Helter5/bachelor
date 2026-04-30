@@ -255,7 +255,7 @@ async def test_referee_team_resolution_correct(db, synced_events):
 
 async def test_no_referees_without_sport_event(db):
     """Každý rozhodca musí byť priradený k podujatiu."""
-    orphans = db.exec(select(Referee).where(Referee.sport_event_id == None)).all()
+    orphans = db.exec(select(Referee).where(Referee.sport_event_id.is_(None))).all()
     section("Integrita DB")
     check("rozhodcovia bez sport_event_id", 0, len(orphans))
     result([f"  id={r.id}" for r in orphans[:10]], "Rozhodcovia bez sport_event_id:")

@@ -1,27 +1,29 @@
-from contextlib import asynccontextmanager
+import logging
 import os
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-import logging
+
+from .api import legacy_views, teams, athletes
+from .api.auth import router as auth_router
+from .api.protected import profile_router
+from .api.protected.admin import sync_router, users_router, arena_sources_router, sync_logs_router, local_sync_router
+from .api.public import events_router, athletes_router, teams_router, persons_router, referees_router, rankings_router, event_statistics_router, draw_router, exports_router
+from .api.public.results import router as results_router
+from .api.public.weight_categories import router as weight_categories_router
+from .config import get_settings as _get_settings
+from .core.dependencies import require_user
+from .database import create_db_and_tables
+
 
 class _HealthCheckFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         return "GET /health" not in record.getMessage()
 
+
 logging.getLogger("uvicorn.access").addFilter(_HealthCheckFilter())
-from .core.dependencies import require_user
-from .database import create_db_and_tables
-from .config import get_settings as _get_settings
-
-from .api.auth import router as auth_router
-from .api.public import events_router, athletes_router, teams_router, persons_router, referees_router, rankings_router, event_statistics_router, draw_router, exports_router
-from .api.public.weight_categories import router as weight_categories_router
-from .api.public.results import router as results_router
-from .api.protected.admin import sync_router, users_router, arena_sources_router, sync_logs_router, local_sync_router
-from .api.protected import profile_router
-
-from .api import legacy_views, teams, athletes
 
 _settings = _get_settings()
 

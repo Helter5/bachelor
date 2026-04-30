@@ -113,7 +113,7 @@ async def seed() -> None:
     with Session(engine) as session:
         # Borrow credentials from an existing source (CI sets them via env)
         ref = session.exec(
-            select(ArenaSource).where(ArenaSource.is_enabled == True)
+            select(ArenaSource).where(ArenaSource.is_enabled.is_(True))
         ).first()
         creds = {
             "client_id":     (ref.client_id     if ref else None) or os.environ.get("ARENA_CLIENT_ID"),
