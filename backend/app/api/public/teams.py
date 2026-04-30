@@ -18,13 +18,7 @@ def list_teams(
     limit: int = 100,
     session: Session = Depends(get_session)
 ):
-    statement = (
-        select(Team)
-        .join(Athlete, Athlete.team_id == Team.id)
-        .where(col(Athlete.person_id).is_not(None))
-        .distinct()
-        .order_by(Team.name)
-    )
+    statement = select(Team).order_by(Team.name)
     if event_id:
         statement = statement.where(Team.sport_event_id == event_id)
 
