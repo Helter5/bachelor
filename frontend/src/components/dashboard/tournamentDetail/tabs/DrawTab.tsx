@@ -5,7 +5,8 @@ import { API_ENDPOINTS } from "@/config/api"
 import type { Team, WeightCategory } from "../types"
 import { Select } from "../../../ui/Select"
 import { EmptyState } from "../../../ui/EmptyState"
-import { CountryFlag, buildArenaFlagUrl } from "../../shared/CountryFlag"
+import { CountryFlag } from "../../shared/CountryFlag"
+import { buildArenaFlagUrl } from "../../shared/countryFlagUtils"
 
 interface DrawAthlete {
   seed: number

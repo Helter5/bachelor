@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next"
 import type { ReactNode } from "react"
 import { formatDuration, pluralizeSk } from "@/utils/format"
 import type { ComparisonFight, ComparisonPerson, ComparisonResult } from "./comparisonTypes"
+import { CountryFlag } from "../shared/CountryFlag"
 
 interface WrestlerFightProfile {
   winsByType: Record<string, number>
@@ -114,7 +115,7 @@ function WrestlerProfilePanel({
     <div className={`rounded-lg p-4 ${isDarkMode ? "bg-[#0f172a]/60 border border-white/5" : "bg-gray-50 border border-gray-200"}`}>
       <div className={`mb-4 text-sm font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>
         {person.country && (
-          <span className={`fi fi-${person.country.toLowerCase()} rounded-sm mr-1.5`} style={{ fontSize: "0.9rem" }} />
+          <CountryFlag code={person.country} className="mr-1.5" style={{ fontSize: "0.9rem" }} flagOnly />
         )}
         {person.name}
       </div>
@@ -245,7 +246,7 @@ export function ComparisonFightSection({
           <div key={person.id} className="text-center flex-1">
             <div className={`text-sm font-medium mb-1 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
               {person.country && (
-                <span className={`fi fi-${person.country.toLowerCase()} rounded-sm mr-1.5`} style={{ fontSize: "0.9rem" }} />
+                <CountryFlag code={person.country} className="mr-1.5" style={{ fontSize: "0.9rem" }} flagOnly />
               )}
               {onSelectPerson ? (
                 <button onClick={() => onSelectPerson({ id: person.id, name: person.name })} className={`hover:underline ${isDarkMode ? "text-blue-400" : "text-blue-600"}`}>

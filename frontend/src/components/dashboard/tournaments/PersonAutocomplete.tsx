@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
+import { CountryFlag } from "../shared/CountryFlag"
 
 interface PersonSuggestion {
   id: number
@@ -167,10 +168,7 @@ export function PersonAutocomplete({
                   }`}
                 >
                   {person.country_iso_code && (
-                    <span
-                      className={`fi fi-${person.country_iso_code.toLowerCase()} fis rounded-sm`}
-                      style={{ fontSize: "1rem" }}
-                    />
+                    <CountryFlag code={person.country_iso_code} style={{ fontSize: "1rem" }} flagOnly />
                   )}
                   <span className="truncate">{person.full_name}</span>
                 </button>

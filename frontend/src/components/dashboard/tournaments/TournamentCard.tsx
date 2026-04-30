@@ -1,5 +1,6 @@
 import type { Event } from "@/hooks/useTournaments"
 import { formatDate } from "@/utils/dateFormatter"
+import { CountryFlag } from "../shared/CountryFlag"
 
 interface TournamentCardProps {
   event: Event
@@ -27,11 +28,7 @@ export function TournamentCard({ event, isDarkMode, onSelect }: TournamentCardPr
           isDarkMode ? 'bg-white/5' : 'bg-gray-50'
         }`}>
           {event.country_iso_code ? (
-            <span 
-              className={`fi fi-${event.country_iso_code.toLowerCase()} fis rounded-md`}
-              style={{ fontSize: '5rem' }}
-              title={event.country_iso_code}
-            ></span>
+            <CountryFlag code={event.country_iso_code} style={{ fontSize: '5rem' }} flagOnly />
           ) : (
             <svg
               className={`w-20 h-20 ${isDarkMode ? 'text-gray-600' : 'text-gray-300'}`}

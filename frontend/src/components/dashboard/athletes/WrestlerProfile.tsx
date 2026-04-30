@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
+import { CountryFlag } from "../shared/CountryFlag"
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   LineChart, Line, ResponsiveContainer, Legend
@@ -97,7 +98,7 @@ function EventItem({
       }`}
     >
       {event.team_country ? (
-        <span className={`fi fi-${event.team_country.toLowerCase()} fis rounded-sm flex-shrink-0`} style={{ fontSize: "1.5rem" }} title={event.team_name ?? undefined} />
+        <CountryFlag code={event.team_country} className="flex-shrink-0" style={{ fontSize: "1.5rem" }} flagOnly />
       ) : (
         <div className={`w-6 h-6 rounded-sm flex-shrink-0 ${isDarkMode ? "bg-white/10" : "bg-gray-200"}`} />
       )}
@@ -324,7 +325,7 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
         </button>
         <div className="flex items-center gap-3">
           {person.country_iso_code && (
-            <span className={`fi fi-${person.country_iso_code.toLowerCase()} fis rounded-md`} style={{ fontSize: "2.5rem" }} />
+            <CountryFlag code={person.country_iso_code} style={{ fontSize: "2.5rem" }} flagOnly />
           )}
           <div>
             <h2 className={`text-3xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>

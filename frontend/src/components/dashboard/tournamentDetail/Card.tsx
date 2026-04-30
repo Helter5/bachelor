@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
-import { CountryFlag, normalizeCountryCodeToAlpha2 } from "../shared/CountryFlag"
+import { CountryFlag } from "../shared/CountryFlag"
+import { normalizeCountryCodeToAlpha2 } from "../shared/countryFlagUtils"
 import { StatusBadge } from "../../ui/StatusBadge"
 
 export interface Badge {

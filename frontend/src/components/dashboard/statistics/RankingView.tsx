@@ -6,6 +6,7 @@ import { LoadingSpinner } from "../../ui/LoadingSpinner"
 import { EmptyState } from "../../ui/EmptyState"
 import { Select } from "../../ui/Select"
 import { DashboardStatsShell } from "./DashboardStatsShell"
+import { CountryFlag } from "../shared/CountryFlag"
 
 interface RankingTableRowProps {
   isDarkMode: boolean
@@ -49,7 +50,7 @@ function RankingTableRow({ isDarkMode, entry, onSelectPerson }: RankingTableRowP
         </td>
         <td className="py-3 px-3 text-center">
           {entry.country_iso_code ? (
-            <span className={`fi fi-${entry.country_iso_code.toLowerCase()} rounded-sm`} style={{ fontSize: '1.1rem' }} />
+            <CountryFlag code={entry.country_iso_code} style={{ fontSize: '1.1rem' }} flagOnly />
           ) : (
             <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>-</span>
           )}

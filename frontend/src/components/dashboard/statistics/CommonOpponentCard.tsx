@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next"
 import type { CommonOpponent } from "./comparisonTypes"
+import { CountryFlag } from "../shared/CountryFlag"
 
 interface CommonOpponentCardProps {
   isDarkMode: boolean
@@ -16,7 +17,7 @@ export function CommonOpponentCard({ isDarkMode, opp, person1Name, person2Name }
       <div className={`text-sm font-bold mb-4 flex items-center gap-1.5 ${isDarkMode ? "text-white" : "text-gray-900"}`}>
         vs
         {opp.opponent.country && (
-          <span className={`fi fi-${opp.opponent.country.toLowerCase()} rounded-sm`} style={{ fontSize: "0.9rem" }} />
+          <CountryFlag code={opp.opponent.country} style={{ fontSize: "0.9rem" }} flagOnly />
         )}
         {opp.opponent.name}
       </div>

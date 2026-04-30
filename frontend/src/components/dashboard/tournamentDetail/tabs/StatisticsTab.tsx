@@ -6,7 +6,8 @@ import { CHART_COLORS } from "../types"
 import { ErrorAlert } from "../../../ui/ErrorAlert"
 import { LoadingSpinner } from "../../../ui/LoadingSpinner"
 import { EmptyState } from "../../../ui/EmptyState"
-import { CountryFlag, buildArenaFlagUrl } from "../../shared/CountryFlag"
+import { CountryFlag } from "../../shared/CountryFlag"
+import { buildArenaFlagUrl } from "../../shared/countryFlagUtils"
 
 interface StatisticsTabProps {
   isDarkMode: boolean

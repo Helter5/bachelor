@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next"
 import type { ReactNode } from "react"
 import type { TeamPerformance } from "@/hooks/useEventStatistics"
+import { CountryFlag } from "../shared/CountryFlag"
 
 interface TeamComparisonResultsProps {
   isDarkMode: boolean
@@ -51,7 +52,7 @@ function TeamNameBlock({
   return (
     <div className={`flex-1 py-4 px-6 font-bold text-lg ${align === "right" ? "text-right" : "text-left"} ${isDarkMode ? "text-white" : "text-gray-900"}`}>
       {team.country && (
-        <span className={`fi fi-${team.country.toLowerCase()} rounded-sm mr-2`} style={{ fontSize: "1rem" }} />
+        <CountryFlag code={team.country} className="mr-2" style={{ fontSize: "1rem" }} flagOnly />
       )}
       {team.name}
     </div>
