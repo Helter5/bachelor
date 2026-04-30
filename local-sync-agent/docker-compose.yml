@@ -1,0 +1,12 @@
+services:
+  bp-sync-agent:
+    image: ghcr.io/helter5/bp-local-sync-agent:latest
+    container_name: bp-sync-agent
+    restart: unless-stopped
+    ports:
+      - "8765:8765"
+    environment:
+      # Routes Arena requests to the host machine (where UWW Arena is running)
+      BP_ARENA_HOST_OVERRIDE: host.docker.internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

@@ -6,19 +6,17 @@ Small local bridge for production sync:
 deployed BP web app -> http://127.0.0.1:8765 -> local UWW Arena -> deployed BP backend
 ```
 
-Run directly on the trainer's computer:
+## Requirements
+
+- Docker Desktop
+- UWW Arena running at `http://localhost:8080`
+
+## Setup
 
 ```bash
-cd local-sync-agent
-python -m venv .venv
-. .venv/bin/activate
-pip install -r requirements.txt
-uvicorn agent:app --host 127.0.0.1 --port 8765
+docker compose up -d
 ```
 
-Then keep UWW Arena exposed on `http://localhost:8080`, open the deployed BP app,
-and click Synchronize.
+The agent pulls the image from `ghcr.io/helter5/bp-local-sync-agent:latest` and starts on port `8765`.
 
-Docker is possible, but then `localhost` inside the agent container points to the
-agent container. Use `host.docker.internal` as the Arena host, or run the agent
-directly with Python for the simplest local setup.
+Keep it running while synchronizing. Open the web app, go to Settings, configure the Arena source, then click Synchronize.
