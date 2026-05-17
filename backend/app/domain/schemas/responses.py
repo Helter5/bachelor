@@ -1,4 +1,4 @@
-"""Response schemas for public and protected API endpoints"""
+"""Response schemas returned by API endpoints."""
 from datetime import datetime, date
 from typing import Optional, List
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class UserOut(BaseModel):
-    """Public user data (no password)"""
+    """User data returned to clients without password hash."""
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -23,14 +23,14 @@ class UserOut(BaseModel):
 
 class TokenResponse(BaseModel):
     """Auth response with CSRF token for cookie-based auth"""
-    csrf_token: str  # CSRF token for X-CSRF-Token header
-    token_type: str = "cookie"  # Indicates cookie-based auth
-    expires_in: int  # Access token expiration in seconds
+    csrf_token: str
+    token_type: str = "cookie"
+    expires_in: int
 
 
 
 class SportEventOut(BaseModel):
-    """Public competition/event data"""
+    """Sport event response data."""
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -102,7 +102,7 @@ class EventStatisticsOut(BaseModel):
 
 
 class TeamOut(BaseModel):
-    """Public team data"""
+    """Team response data."""
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -124,7 +124,7 @@ class AthleteMinimal(BaseModel):
 
 
 class AthleteOut(BaseModel):
-    """Public athlete data"""
+    """Athlete response data."""
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -153,7 +153,7 @@ class AthleteWithDetails(BaseModel):
 
 
 class RefereeOut(BaseModel):
-    """Public referee data"""
+    """Referee response data."""
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -173,7 +173,7 @@ class RefereeOut(BaseModel):
 
 
 class WeightCategoryOut(BaseModel):
-    """Public weight category data"""
+    """Weight category response data."""
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -196,7 +196,7 @@ class WeightCategoryOut(BaseModel):
 
 
 class PersonOut(BaseModel):
-    """Public person data (master wrestler identity)"""
+    """Person response data for the master wrestler identity."""
     model_config = ConfigDict(from_attributes=True)
 
     id: int

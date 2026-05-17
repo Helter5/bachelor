@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 class RefereeService(BaseService[Referee]):
-    """Service for referee operations"""
+    """Synchronizes and normalizes referee records from Arena."""
 
     def __init__(self, session: Session):
         super().__init__(session, Referee)
@@ -34,20 +34,7 @@ class RefereeService(BaseService[Referee]):
         event_id: int,
         source: Optional["ArenaSource"] = None
     ) -> Dict[str, Any]:
-        """
-        Sync referees for a sport event from Arena API to database
-
-        Args:
-            sport_event_uuid: Sport event UUID from Arena API
-            event_id: Local database ID of the sport event
-            source: Arena source to sync from
-
-        Returns:
-            Dict with sync results
-
-        Raises:
-            HTTPException: If event not found or sync fails
-        """
+        """Sync referee records for one Arena event into the local database."""
         try:
             event = self.session.exec(
                 select(SportEvent).where(SportEvent.id == event_id)
@@ -61,7 +48,6 @@ class RefereeService(BaseService[Referee]):
 
             logger.info(f"Syncing referees for event: {event.name}")
 
-            # Fetch all referees from Arena API
             try:
                 referees_list = await fetch_all_arena_items(
                     f"referee/{sport_event_uuid}",
@@ -90,7 +76,6 @@ class RefereeService(BaseService[Referee]):
                     "message": "No referees data in response"
                 }
 
-            # Build in-memory maps for FK resolution
             team_by_alt_name, team_by_name = self._build_team_maps(event.id)
 
             result = self._sync_referees_list(
@@ -122,7 +107,7 @@ class RefereeService(BaseService[Referee]):
             raise HTTPException(status_code=500, detail=f"Failed to sync referees: {str(e)}")
 
     def _build_team_maps(self, event_db_id: int) -> tuple:
-        """Build team lookup maps by alternate_name and name"""
+        """Build lookup maps for resolving Arena referee team fields."""
         teams = self.session.exec(
             select(Team).where(Team.sport_event_id == event_db_id)
         ).all()
@@ -157,24 +142,12 @@ class RefereeService(BaseService[Referee]):
         team_by_alt_name: Dict[str, int],
         team_by_name: Dict[str, int]
     ) -> Dict[str, int]:
-        """
-        Sync a list of referees to the database.
-
-        Args:
-            referees_list: List of referee data from Arena API
-            event_db_id: Sport event database ID
-            team_by_alt_name: {team.alternate_name: team.id}
-            team_by_name: {team.name: team.id}
-
-        Returns:
-            Dict with created/updated counts
-        """
+        """Upsert referee records by the natural key (event, person)."""
         created = 0
         updated = 0
 
         for referee_data in referees_list:
             try:
-                # Parse full name into first and last name
                 full_name = (referee_data.get("fullName") or "").strip()
                 parts = full_name.split()
 
@@ -188,14 +161,11 @@ class RefereeService(BaseService[Referee]):
                     first_name = ""
                     last_name = ""
 
-                # Get country from origins
                 origins = referee_data.get("origins") or []
                 country_iso_code = normalize_country_iso_code(origins[0] if origins else None)
 
-                # Resolve person
                 person_id = self._resolve_person(first_name, last_name, country_iso_code)
 
-                # Resolve team
                 team_id = None
                 team_alt_name = referee_data.get("teamAlternateName")
                 team_name = referee_data.get("teamName")
@@ -205,7 +175,6 @@ class RefereeService(BaseService[Referee]):
                 elif team_name and team_name in team_by_name:
                     team_id = team_by_name[team_name]
 
-                # Match by natural key (sport_event + person)
                 existing_referee = self.session.exec(
                     select(Referee).where(
                         Referee.sport_event_id == event_db_id,

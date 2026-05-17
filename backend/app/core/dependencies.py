@@ -1,4 +1,4 @@
-"""FastAPI dependencies for authentication and authorization"""
+"""FastAPI dependencies for authentication and authorization."""
 from fastapi import Depends, HTTPException, status, Cookie, Header, Request
 from typing import Optional
 from sqlmodel import Session, select
@@ -97,6 +97,7 @@ async def require_user(
 
 
 async def require_admin(user: User = Depends(require_user)) -> User:
+    """Resolve the current user and require the admin role."""
     if user.role != UserRole.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

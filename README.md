@@ -10,7 +10,7 @@ A web application for managing a wrestling federation — athletes, teams, event
 - Tracks competition events, draws, results, and rankings
 - Synchronizes data from UWW Arena (local competition software) to the web platform
 - Generates exports (PDF, Excel) for events and rankings
-- Role-based access: public read, authenticated admin write
+- Role-based access: authenticated user access and admin-only management/synchronization actions
 
 ---
 
@@ -19,7 +19,7 @@ A web application for managing a wrestling federation — athletes, teams, event
 ```
 backend/           FastAPI application (Python)
 frontend/          React application (TypeScript + Vite)
-local-sync-agent/  Small bridge app — runs on the trainer's PC to connect Arena to the web app
+local-sync-agent/  Small bridge app — runs on the event organizer's PC to connect Arena to the web app
 arena/             UWW Arena test environment used during development
 docker-compose.prod.yml
 docker-compose.dev.yml
@@ -132,13 +132,13 @@ VITE_SYNC_MODE=
 
 ## Local Sync Agent
 
-The sync agent is a small Python app that runs on the trainer's computer. It acts as a bridge between the web application and the locally running UWW Arena software.
+The sync agent is a small Python app that runs on the event organizer's computer. It acts as a bridge between the web application and the locally running UWW Arena software.
 
 ```
 web app --> http://127.0.0.1:8765 --> UWW Arena (localhost:8080) --> web backend
 ```
 
-**Requirements on the trainer's PC:**
+**Requirements on the event organizer's PC:**
 
 - Docker Desktop
 - UWW Arena running and accessible at `http://localhost:8080`
@@ -164,7 +164,7 @@ The agent will be available at `http://127.0.0.1:8765`. Keep it running while sy
      - Client ID + Secret: Settings → Apps → App ID / Secret
      - API Key: Settings → Users → API Key
 
-Then click Synchronize in the web app. The agent contacts Arena on the trainer's machine and uploads the data to the backend.
+Then click Synchronize in the web app. The agent contacts Arena on the organizer's machine and uploads the data to the backend.
 
 ---
 

@@ -77,7 +77,7 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
       const data = await apiClient.get<LoginHistoryEntry[]>(`${API_ENDPOINTS.PROFILE_LOGIN_HISTORY}?limit=20`)
       setLoginHistory(data)
     } catch {
-      // silent
+      // Login history is secondary; the settings page remains usable if it fails.
     } finally {
       setLoadingHistory(false)
     }

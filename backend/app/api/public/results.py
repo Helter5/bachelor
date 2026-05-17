@@ -1,4 +1,4 @@
-"""Public API - results (served from database)"""
+"""Fight result endpoints served from the synchronized database."""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 from sqlalchemy import text

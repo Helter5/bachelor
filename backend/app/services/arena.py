@@ -21,6 +21,6 @@ async def fetch_arena_data(endpoint: str, source: Optional["ArenaSource"] = None
 
     If source is provided, use it directly (preferred — per-user sync).
     Otherwise fall back to the first enabled ArenaSource in the DB
-    (used by public endpoints and legacy paths).
+    (used by application data endpoints and legacy paths).
     """
     return await ArenaGateway(source).fetch_data(endpoint, source=source)

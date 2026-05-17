@@ -21,10 +21,27 @@ RECENCY_WEIGHTS = [1.0, 0.7, 0.4, 0.2, 0.1]
 
 
 class DrawService:
+    """Builds a seeded first-round bracket from synchronized match history."""
+
     def __init__(self, session: Session):
         self.session = session
 
     def generate_draw(self, event_id: int, weight_category_id: int, last_n: int = 3) -> dict:
+        """
+        Generate a bracket proposal for one event and weight category.
+
+        The method first ranks athletes by recent performance, places seeded
+        athletes into standard bracket positions, and then fills remaining
+        slots by minimizing first-round penalties.
+
+        Args:
+            event_id: Local sport event ID.
+            weight_category_id: Local weight category ID.
+            last_n: Number of recent tournaments used for score and penalty checks.
+
+        Returns:
+            Dictionary containing the seeding list, bracket slots, and penalty summary.
+        """
         athletes = self._get_athletes(event_id, weight_category_id)
         if not athletes:
             return {"error": "Žiadni atléti v tejto váhovej kategórii"}
@@ -117,7 +134,7 @@ class DrawService:
         return result
 
     def _compute_seed_score(self, person_id: int, max_weight: Optional[int], last_n: int) -> float:
-        """Score athlete based on wins in recent tournaments at this weight."""
+        """Score an athlete from wins in recent tournaments at the same weight."""
         a1 = Athlete.__table__.alias("a1")
         p1 = Person.__table__.alias("p1")
         wc = WeightCategory.__table__
@@ -211,7 +228,7 @@ class DrawService:
         return penalty, reasons
 
     def _count_fights_between(self, person1_id: int, person2_id: int, last_n: int) -> tuple[int, int]:
-        """Returns (total_fights, recent_fights_in_last_n_events)."""
+        """Return total mutual fights and fights within the recent tournament window."""
         a1 = Athlete.__table__.alias("a1")
         a2 = Athlete.__table__.alias("a2")
         p1 = Person.__table__.alias("p1")
@@ -271,7 +288,7 @@ class DrawService:
 
             for ai, athlete in enumerate(remaining_athletes):
                 for si, slot_idx in enumerate(remaining_slots):
-                    pair_slot = slot_idx ^ 1  # XOR with 1 gives pair partner
+                    pair_slot = slot_idx ^ 1
                     opponent = slots[pair_slot]
                     p, _ = self._compute_pair_penalty(athlete, opponent, last_n)
                     if p < best_penalty:

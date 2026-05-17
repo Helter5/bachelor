@@ -1,4 +1,4 @@
-"""Public API - competitions/events (no authentication required)"""
+"""Sport event read endpoints for authenticated application users."""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select, func
 from typing import Optional
@@ -17,7 +17,7 @@ def list_events(
     name: Optional[str] = None,
     session: Session = Depends(get_session)
 ):
-    """Get list of sport events (public, no auth required)"""
+    """Return sport events with optional name filtering and pagination."""
     statement = select(SportEvent)
     if name:
         statement = statement.where(SportEvent.name.ilike(f"%{name}%"))
@@ -39,7 +39,7 @@ def list_events(
 
 @router.get("/{event_id}", response_model=SportEventOut)
 def get_event(event_id: int, session: Session = Depends(get_session)):
-    """Get specific event by ID (public, no auth required)"""
+    """Return one sport event by database ID."""
     event = session.get(SportEvent, event_id)
     if not event:
         raise HTTPException(

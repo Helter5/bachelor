@@ -6,7 +6,7 @@ services:
     ports:
       - "8765:8765"
     environment:
-      # Routes Arena requests to the host machine (where UWW Arena is running)
+      # Docker containers reach the host machine through this name on macOS/Windows.
       BP_ARENA_HOST_OVERRIDE: host.docker.internal
     extra_hosts:
       - "host.docker.internal:host-gateway"

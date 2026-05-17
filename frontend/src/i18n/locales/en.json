@@ -645,7 +645,7 @@
   },
   "arenaSources": {
     "title": "Arena Sources",
-    "description": "Configuration of Arena instances from which data will be synchronised. You can add multiple trainer Arena Docker instances.",
+    "description": "Configuration of Arena instances from which data will be synchronised. You can add multiple event Arena Docker instances.",
     "loadDefault": "Load default",
     "addNew": "Add new source",
     "defaultName": "Local Arena Server",

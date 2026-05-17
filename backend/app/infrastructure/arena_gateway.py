@@ -75,7 +75,7 @@ class ArenaGateway:
 
     @staticmethod
     def _get_default_source() -> ArenaSource:
-        """Fallback to the first enabled Arena source for legacy/public flows."""
+        """Fallback to the first enabled Arena source for legacy flows."""
         with Session(engine) as session:
             source = session.exec(
                 select(ArenaSource).where(ArenaSource.is_enabled.is_(True))

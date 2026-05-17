@@ -1,4 +1,4 @@
-"""Public API module - no authentication required"""
+"""Application data routers mounted behind authentication in main.py."""
 from .events import router as events_router
 from .athletes import router as athletes_router
 from .teams import router as teams_router

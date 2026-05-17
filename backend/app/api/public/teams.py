@@ -1,4 +1,4 @@
-"""Public API - teams (no authentication required)"""
+"""Team read endpoints for authenticated application users."""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select, func, col
 from typing import Optional
@@ -24,7 +24,7 @@ def list_teams(
 
     teams = session.exec(statement.offset(skip).limit(limit)).all()
 
-    # Count distinct persons per team (deduplicated — same person in multiple weight categories counts once)
+    # Count each person once per team even if the athlete appears in several weight categories.
     team_ids = [t.id for t in teams]
     person_counts: dict[int, int] = {}
     if team_ids:
@@ -46,7 +46,7 @@ def list_teams(
 
 @router.get("/{team_id}", response_model=TeamOut)
 def get_team(team_id: int, session: Session = Depends(get_session)):
-    """Get specific team by ID (public, no auth required)"""
+    """Return one team by database ID."""
     team = session.get(Team, team_id)
     if not team:
         raise HTTPException(

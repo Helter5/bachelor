@@ -1,4 +1,4 @@
-"""Public API - draw/seeding generator"""
+"""Draw and seeding endpoints for authenticated application users."""
 from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session
 

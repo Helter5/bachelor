@@ -1,4 +1,4 @@
-"""Public API - referees (authentication required)"""
+"""Referee read endpoints for authenticated application users."""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 from typing import Optional
@@ -39,7 +39,7 @@ async def list_referees(
     limit: int = 100,
     session: Session = Depends(get_session)
 ):
-    """Get referees for an event"""
+    """Return referees, optionally filtered by event."""
     statement = (
         select(Referee, Person, Team)
         .outerjoin(Person, Referee.person_id == Person.id)
@@ -57,7 +57,7 @@ async def list_referees(
 
 @router.get("/{referee_id}", response_model=RefereeOut)
 async def get_referee(referee_id: int, session: Session = Depends(get_session)):
-    """Get a specific referee"""
+    """Return one referee by database ID."""
     result = session.exec(
         select(Referee, Person, Team)
         .outerjoin(Person, Referee.person_id == Person.id)

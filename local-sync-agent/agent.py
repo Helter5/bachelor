@@ -1,7 +1,7 @@
 """Local BP sync agent.
 
-Runs on the trainer's computer, reads their local UWW Arena, and uploads the
-data bundle to the deployed BP backend.
+Runs on the event organizer's computer, reads the local UWW Arena instance,
+and uploads the data bundle to the deployed BP backend.
 """
 from typing import Any
 from urllib.parse import urlencode

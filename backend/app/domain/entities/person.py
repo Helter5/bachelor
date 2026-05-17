@@ -1,7 +1,7 @@
 """Person entity - master identity for wrestlers across events"""
 from datetime import datetime, timezone
 from typing import Optional
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, SQLModel, UniqueConstraint
 
 
 class PersonBase(SQLModel):
@@ -19,5 +19,8 @@ class PersonBase(SQLModel):
 class Person(PersonBase, table=True):
     """Person model - master identity linking per-event athlete records"""
     __tablename__ = "persons"
+    __table_args__ = (
+        UniqueConstraint("first_name", "last_name", "country_iso_code", name="uq_person_identity"),
+    )
 
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

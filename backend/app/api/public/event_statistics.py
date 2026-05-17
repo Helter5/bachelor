@@ -1,4 +1,4 @@
-"""Public API - event statistics."""
+"""Event statistics endpoints for authenticated application users."""
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 

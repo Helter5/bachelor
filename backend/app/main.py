@@ -36,7 +36,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Wrestling Federation API",
     version="2.0.0",
-    description="3-Zone API: Public (no auth) | Auth (login/refresh) | Protected (admin only)",
+    description="API with auth routes, authenticated application data routes, and admin-only routes",
     lifespan=lifespan,
     docs_url="/docs" if _settings.app_debug else None,
     redoc_url="/redoc" if _settings.app_debug else None,

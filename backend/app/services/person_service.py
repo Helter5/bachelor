@@ -1,4 +1,4 @@
-"""Service for person-centric queries used by the public API."""
+"""Service for person-centric wrestler queries."""
 from fastapi import HTTPException, status
 from sqlmodel import Session, select, or_, and_, col, func
 

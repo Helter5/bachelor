@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 4HKyxltoaKFCbsunHLF8QJD7JQSexQkvmxoBf4CCakOrpPgnmNYE8vDQW1oi9ve
+\restrict XM4OCcoeXS83fXbEKGNvzXR2cPRko24RlXDdG0uOONr41nHQvMy6xQIDCx4rr0N
 
 -- Dumped from database version 16.13
 -- Dumped by pg_dump version 16.13
@@ -18,6 +18,113 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+ALTER TABLE IF EXISTS ONLY public.weight_categories DROP CONSTRAINT IF EXISTS weight_categories_sport_event_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.weight_categories DROP CONSTRAINT IF EXISTS weight_categories_discipline_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.teams DROP CONSTRAINT IF EXISTS teams_sport_event_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.sync_logs DROP CONSTRAINT IF EXISTS sync_logs_user_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.refresh_tokens DROP CONSTRAINT IF EXISTS refresh_tokens_user_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.referees DROP CONSTRAINT IF EXISTS referees_team_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.referees DROP CONSTRAINT IF EXISTS referees_sport_event_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.referees DROP CONSTRAINT IF EXISTS referees_person_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.password_reset_tokens DROP CONSTRAINT IF EXISTS password_reset_tokens_user_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.login_history DROP CONSTRAINT IF EXISTS login_history_user_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.fights DROP CONSTRAINT IF EXISTS fights_winner_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.fights DROP CONSTRAINT IF EXISTS fights_weight_category_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.fights DROP CONSTRAINT IF EXISTS fights_victory_type_fkey;
+ALTER TABLE IF EXISTS ONLY public.fights DROP CONSTRAINT IF EXISTS fights_sport_event_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.fights DROP CONSTRAINT IF EXISTS fights_fighter_two_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.fights DROP CONSTRAINT IF EXISTS fights_fighter_one_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.email_verification_tokens DROP CONSTRAINT IF EXISTS email_verification_tokens_user_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.athletes DROP CONSTRAINT IF EXISTS athletes_weight_category_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.athletes DROP CONSTRAINT IF EXISTS athletes_team_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.athletes DROP CONSTRAINT IF EXISTS athletes_sport_event_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.athletes DROP CONSTRAINT IF EXISTS athletes_person_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.arena_sources DROP CONSTRAINT IF EXISTS arena_sources_user_id_fkey;
+DROP INDEX IF EXISTS public.ix_users_username;
+DROP INDEX IF EXISTS public.ix_users_email;
+DROP INDEX IF EXISTS public.ix_refresh_tokens_user_id;
+DROP INDEX IF EXISTS public.ix_refresh_tokens_token;
+DROP INDEX IF EXISTS public.ix_persons_last_name;
+DROP INDEX IF EXISTS public.ix_persons_first_name;
+DROP INDEX IF EXISTS public.ix_password_reset_tokens_user_id;
+DROP INDEX IF EXISTS public.ix_password_reset_tokens_token;
+DROP INDEX IF EXISTS public.ix_login_history_user_id;
+DROP INDEX IF EXISTS public.ix_email_verification_tokens_user_id;
+DROP INDEX IF EXISTS public.ix_email_verification_tokens_token;
+DROP INDEX IF EXISTS public.ix_arena_sources_user_id;
+ALTER TABLE IF EXISTS ONLY public.weight_categories DROP CONSTRAINT IF EXISTS weight_categories_pkey;
+ALTER TABLE IF EXISTS ONLY public.victory_types DROP CONSTRAINT IF EXISTS victory_types_pkey;
+ALTER TABLE IF EXISTS ONLY public.victory_types DROP CONSTRAINT IF EXISTS victory_types_code_key;
+ALTER TABLE IF EXISTS ONLY public.users DROP CONSTRAINT IF EXISTS users_uid_key;
+ALTER TABLE IF EXISTS ONLY public.users DROP CONSTRAINT IF EXISTS users_pkey;
+ALTER TABLE IF EXISTS ONLY public.weight_categories DROP CONSTRAINT IF EXISTS uq_wc_event_weight_discipline;
+ALTER TABLE IF EXISTS ONLY public.teams DROP CONSTRAINT IF EXISTS uq_team_event_name;
+ALTER TABLE IF EXISTS ONLY public.sport_events DROP CONSTRAINT IF EXISTS uq_sport_event_natural_key;
+ALTER TABLE IF EXISTS ONLY public.referees DROP CONSTRAINT IF EXISTS uq_referee_event_person;
+ALTER TABLE IF EXISTS ONLY public.persons DROP CONSTRAINT IF EXISTS uq_person_identity;
+ALTER TABLE IF EXISTS ONLY public.disciplines DROP CONSTRAINT IF EXISTS uq_disciplines_sport_audience;
+ALTER TABLE IF EXISTS ONLY public.athletes DROP CONSTRAINT IF EXISTS uq_athlete_event_person_wc;
+ALTER TABLE IF EXISTS ONLY public.teams DROP CONSTRAINT IF EXISTS teams_pkey;
+ALTER TABLE IF EXISTS ONLY public.sync_logs DROP CONSTRAINT IF EXISTS sync_logs_pkey;
+ALTER TABLE IF EXISTS ONLY public.sport_events DROP CONSTRAINT IF EXISTS sport_events_pkey;
+ALTER TABLE IF EXISTS ONLY public.refresh_tokens DROP CONSTRAINT IF EXISTS refresh_tokens_pkey;
+ALTER TABLE IF EXISTS ONLY public.referees DROP CONSTRAINT IF EXISTS referees_pkey;
+ALTER TABLE IF EXISTS ONLY public.persons DROP CONSTRAINT IF EXISTS persons_pkey;
+ALTER TABLE IF EXISTS ONLY public.password_reset_tokens DROP CONSTRAINT IF EXISTS password_reset_tokens_pkey;
+ALTER TABLE IF EXISTS ONLY public.login_history DROP CONSTRAINT IF EXISTS login_history_pkey;
+ALTER TABLE IF EXISTS ONLY public.fights DROP CONSTRAINT IF EXISTS fights_pkey;
+ALTER TABLE IF EXISTS ONLY public.email_verification_tokens DROP CONSTRAINT IF EXISTS email_verification_tokens_pkey;
+ALTER TABLE IF EXISTS ONLY public.disciplines DROP CONSTRAINT IF EXISTS disciplines_pkey;
+ALTER TABLE IF EXISTS ONLY public.athletes DROP CONSTRAINT IF EXISTS athletes_pkey;
+ALTER TABLE IF EXISTS ONLY public.arena_sources DROP CONSTRAINT IF EXISTS arena_sources_pkey;
+ALTER TABLE IF EXISTS public.weight_categories ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.victory_types ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.users ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.teams ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.sync_logs ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.sport_events ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.refresh_tokens ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.referees ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.persons ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.password_reset_tokens ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.login_history ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.fights ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.email_verification_tokens ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.disciplines ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.athletes ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.arena_sources ALTER COLUMN id DROP DEFAULT;
+DROP SEQUENCE IF EXISTS public.weight_categories_id_seq;
+DROP TABLE IF EXISTS public.weight_categories;
+DROP SEQUENCE IF EXISTS public.victory_types_id_seq;
+DROP TABLE IF EXISTS public.victory_types;
+DROP SEQUENCE IF EXISTS public.users_id_seq;
+DROP TABLE IF EXISTS public.users;
+DROP SEQUENCE IF EXISTS public.teams_id_seq;
+DROP TABLE IF EXISTS public.teams;
+DROP SEQUENCE IF EXISTS public.sync_logs_id_seq;
+DROP TABLE IF EXISTS public.sync_logs;
+DROP SEQUENCE IF EXISTS public.sport_events_id_seq;
+DROP TABLE IF EXISTS public.sport_events;
+DROP SEQUENCE IF EXISTS public.refresh_tokens_id_seq;
+DROP TABLE IF EXISTS public.refresh_tokens;
+DROP SEQUENCE IF EXISTS public.referees_id_seq;
+DROP TABLE IF EXISTS public.referees;
+DROP SEQUENCE IF EXISTS public.persons_id_seq;
+DROP TABLE IF EXISTS public.persons;
+DROP SEQUENCE IF EXISTS public.password_reset_tokens_id_seq;
+DROP TABLE IF EXISTS public.password_reset_tokens;
+DROP SEQUENCE IF EXISTS public.login_history_id_seq;
+DROP TABLE IF EXISTS public.login_history;
+DROP SEQUENCE IF EXISTS public.fights_id_seq;
+DROP TABLE IF EXISTS public.fights;
+DROP SEQUENCE IF EXISTS public.email_verification_tokens_id_seq;
+DROP TABLE IF EXISTS public.email_verification_tokens;
+DROP SEQUENCE IF EXISTS public.disciplines_id_seq;
+DROP TABLE IF EXISTS public.disciplines;
+DROP SEQUENCE IF EXISTS public.athletes_id_seq;
+DROP TABLE IF EXISTS public.athletes;
+DROP SEQUENCE IF EXISTS public.arena_sources_id_seq;
+DROP TABLE IF EXISTS public.arena_sources;
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -744,6 +851,250 @@ ALTER TABLE ONLY public.weight_categories ALTER COLUMN id SET DEFAULT nextval('p
 
 
 --
+-- Data for Name: arena_sources; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.arena_sources (id, name, host, port, client_id, client_secret, api_key, is_enabled, user_id, last_sync_at, created_at) FROM stdin;
+\.
+
+
+--
+-- Data for Name: athletes; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.athletes (id, team_id, sport_event_id, weight_category_id, is_competing, person_id, sync_timestamp) FROM stdin;
+\.
+
+
+--
+-- Data for Name: disciplines; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.disciplines (id, sport_id, sport_name, audience_id, audience_name, rounds_number, round_duration, tournament_type, sync_timestamp) FROM stdin;
+\.
+
+
+--
+-- Data for Name: email_verification_tokens; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.email_verification_tokens (id, token, user_id, expires_at, created_at, is_used) FROM stdin;
+1	01592f1e1955eb2499655254db26ed84274ecd02adf8862d9df7432c5c20a0f2	1	2026-05-16 16:49:22.875412	2026-05-15 16:49:22.87542	f
+2	deee3402cba1d6144be8cbdcc1cd6a6cb2cce5e48f57d01e04883cd861796fec	2	2026-05-16 16:49:23.110799	2026-05-15 16:49:23.110803	f
+\.
+
+
+--
+-- Data for Name: fights; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.fights (id, sport_event_id, weight_category_id, fighter_one_id, fighter_two_id, winner_id, tp_one, tp_two, cp_one, cp_two, victory_type, duration, round_name, fight_number, sync_timestamp) FROM stdin;
+\.
+
+
+--
+-- Data for Name: login_history; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.login_history (id, user_id, login_at, ip_address, user_agent, success, failure_reason, login_method) FROM stdin;
+\.
+
+
+--
+-- Data for Name: password_reset_tokens; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.password_reset_tokens (id, token, user_id, expires_at, created_at, is_used) FROM stdin;
+\.
+
+
+--
+-- Data for Name: persons; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.persons (id, first_name, last_name, country_iso_code, created_at) FROM stdin;
+\.
+
+
+--
+-- Data for Name: referees; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.referees (id, sport_event_id, person_id, team_id, number, referee_level, referee_group, delegate, matchairman, is_referee, preferred_style, mat_name, deactivated, sync_timestamp) FROM stdin;
+\.
+
+
+--
+-- Data for Name: refresh_tokens; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.refresh_tokens (id, token, user_id, expires_at, created_at, is_revoked, ip_address, user_agent, last_used_at) FROM stdin;
+\.
+
+
+--
+-- Data for Name: sport_events; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.sport_events (id, name, start_date, end_date, country_iso_code, address_locality, is_individual_event, is_team_event, is_beach_wrestling, tournament_type, event_type, continent, timezone, visible, is_sync_enabled, created_at, updated_at) FROM stdin;
+\.
+
+
+--
+-- Data for Name: sync_logs; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.sync_logs (id, user_id, started_at, finished_at, status, duration_seconds, events_created, events_updated, athletes_created, athletes_updated, teams_created, teams_updated, weight_categories_created, weight_categories_updated, fights_created, fights_updated, referees_created, referees_updated, error_message, details, ip_address) FROM stdin;
+\.
+
+
+--
+-- Data for Name: teams; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.teams (id, sport_event_id, name, alternate_name, athlete_count, final_rank, country_iso_code, sync_timestamp) FROM stdin;
+\.
+
+
+--
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.users (id, first_name, last_name, username, email, uid, password_hash, role, is_active, is_verified, avatar_url, created_at, updated_at) FROM stdin;
+1	Test	User	user	user@example.com	4f77c405-8559-47c0-b141-471f9935ef59	$2b$12$Ra92kmWOfgvk8nlsbrJR5edrd9/h7Pj.Wkos7JFrwPG65ZPy4R6EC	user	t	t	\N	2026-05-15 16:49:22.868596	2026-05-15 16:49:22.86862
+2	Test	Admin	admin	admin@example.com	a86f7eeb-c16f-4217-8a83-93ca3d0c9261	$2b$12$VC2okAiYnt0rKA/4wDYnb.CHjmZjJjL1pdSYvcb/lf4qM2o4sZLDa	admin	t	t	\N	2026-05-15 16:49:23.108518	2026-05-15 16:49:23.108527
+\.
+
+
+--
+-- Data for Name: victory_types; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.victory_types (id, code, type, sync_timestamp) FROM stdin;
+\.
+
+
+--
+-- Data for Name: weight_categories; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.weight_categories (id, discipline_id, max_weight, count_fighters, is_started, is_completed, sport_event_id, sync_timestamp) FROM stdin;
+\.
+
+
+--
+-- Name: arena_sources_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.arena_sources_id_seq', 1, false);
+
+
+--
+-- Name: athletes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.athletes_id_seq', 1, false);
+
+
+--
+-- Name: disciplines_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.disciplines_id_seq', 1, false);
+
+
+--
+-- Name: email_verification_tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.email_verification_tokens_id_seq', 2, true);
+
+
+--
+-- Name: fights_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.fights_id_seq', 1, false);
+
+
+--
+-- Name: login_history_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.login_history_id_seq', 1, false);
+
+
+--
+-- Name: password_reset_tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.password_reset_tokens_id_seq', 1, false);
+
+
+--
+-- Name: persons_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.persons_id_seq', 1, false);
+
+
+--
+-- Name: referees_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.referees_id_seq', 1, false);
+
+
+--
+-- Name: refresh_tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.refresh_tokens_id_seq', 1, false);
+
+
+--
+-- Name: sport_events_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.sport_events_id_seq', 1, false);
+
+
+--
+-- Name: sync_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.sync_logs_id_seq', 1, false);
+
+
+--
+-- Name: teams_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.teams_id_seq', 1, false);
+
+
+--
+-- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.users_id_seq', 2, true);
+
+
+--
+-- Name: victory_types_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.victory_types_id_seq', 1, false);
+
+
+--
+-- Name: weight_categories_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.weight_categories_id_seq', 1, false);
+
+
+--
 -- Name: arena_sources arena_sources_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1207,5 +1558,5 @@ ALTER TABLE ONLY public.weight_categories
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 4HKyxltoaKFCbsunHLF8QJD7JQSexQkvmxoBf4CCakOrpPgnmNYE8vDQW1oi9ve
+\unrestrict XM4OCcoeXS83fXbEKGNvzXR2cPRko24RlXDdG0uOONr41nHQvMy6xQIDCx4rr0N
 

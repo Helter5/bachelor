@@ -1,4 +1,4 @@
-"""Public API - athletes (no authentication required)"""
+"""Athlete read endpoints for authenticated application users."""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 from typing import Optional

@@ -1,4 +1,4 @@
-"""Public API - rankings (no authentication required)"""
+"""Ranking endpoints for authenticated application users."""
 from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session
 from typing import Optional

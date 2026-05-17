@@ -17,7 +17,7 @@ app/
 
   api/                 Route handlers
     auth/              Login, register, Google OAuth, password reset, email verification
-    public/            Read-only endpoints, no auth required
+    public/            Read-only application data endpoints (mounted behind auth)
     protected/         Requires authentication
       admin/           Admin-only operations (sync, users, arena sources)
       profile.py       Logged-in user's own profile
@@ -47,11 +47,11 @@ The API is split into three zones based on access level:
 | Zone | Prefix | Auth required | Who |
 |---|---|---|---|
 | Auth | `/api/v1/auth/` | No | Anyone — login, register |
-| Public | `/api/v1/` | No | Anyone — read events, athletes, rankings |
+| Application data | `/api/v1/` | Yes | Logged-in users — events, athletes, rankings |
 | Protected | `/api/v1/` (guarded routes) | Yes | Logged-in users |
 | Admin | `/api/v1/admin/` | Yes + admin role | Admins only |
 
-Auth is enforced via FastAPI dependency injection in `core/dependencies.py`. Routes declare `require_user` or `require_admin` as a dependency.
+Auth is enforced via FastAPI dependency injection in `core/dependencies.py`. Application data routers are mounted with `require_user`; admin routes declare `require_admin`.
 
 ---
 
@@ -63,7 +63,7 @@ JWT-based. Access token (short-lived, in cookie) + refresh token (long-lived, st
 **Arena synchronization**
 Two modes:
 - Remote sync — backend fetches directly from an Arena instance configured in `arena_sources`
-- Local sync — frontend contacts `local-sync-agent` running on the trainer's PC, agent pulls from Arena and POSTs the bundle to `/api/v1/admin/local-sync/run`
+- Local sync — frontend contacts `local-sync-agent` running on the event organizer's PC, agent pulls from Arena and POSTs the bundle to `/api/v1/admin/local-sync/run`
 
 Sync logic lives in `services/admin_sync_service.py` and `services/local_sync_service.py`.
 

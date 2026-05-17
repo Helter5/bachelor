@@ -21,5 +21,8 @@ class Athlete(AthleteBase, table=True):
         UniqueConstraint("sport_event_id", "person_id", "weight_category_id", name="uq_athlete_event_person_wc"),
     )
 
+    team_id: Optional[int] = Field(default=None, foreign_key="teams.id")
+    sport_event_id: Optional[int] = Field(default=None, foreign_key="sport_events.id")
+    weight_category_id: Optional[int] = Field(default=None, foreign_key="weight_categories.id")
     person_id: Optional[int] = Field(default=None, foreign_key="persons.id")
     sync_timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

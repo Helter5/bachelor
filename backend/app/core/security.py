@@ -1,4 +1,4 @@
-"""Security utilities for JWT tokens and password hashing"""
+"""Security helpers for JWT tokens, CSRF tokens, and password hashing."""
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 import secrets
@@ -58,18 +58,16 @@ def validate_request_origin(origin: Optional[str], referer: Optional[str]) -> bo
 
 
 def generate_csrf_token() -> str:
-    """Generate a secure CSRF token"""
+    """Generate an unpredictable CSRF token."""
     return secrets.token_urlsafe(32)
 
 
 def hash_token(token: str) -> str:
     """
-    Hash a token using proper HMAC-SHA256 with server secret
-    
-    HMAC is cryptographically secure for this use case:
-    - Prevents rainbow table attacks (keyed hash)
-    - Resistant to length extension attacks
-    - Standard for token hashing (RFC 2104)
+    Hash a bearer token with HMAC-SHA256 and the server secret.
+
+    The database stores only this keyed digest, so a leaked refresh-token
+    record cannot be used directly as a bearer credential.
     """
     return hmac.new(
         settings.jwt_secret_key.encode(),
@@ -79,23 +77,19 @@ def hash_token(token: str) -> str:
 
 
 def compare_token_hash(hash1: str, hash2: str) -> bool:
-    """
-    Constant-time comparison of token hashes
-    
-    Prevents timing attacks that could leak information about valid tokens.
-    """
+    """Compare token hashes without data-dependent early exit."""
     return hmac.compare_digest(hash1, hash2)
 
 
 def hash_password(password: str) -> str:
-    """Hash a password using bcrypt"""
+    """Hash a user password with bcrypt."""
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
     return hashed.decode('utf-8')
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a password against a hash"""
+    """Verify a plaintext password against a bcrypt hash."""
     try:
         return bcrypt.checkpw(
             plain_password.encode('utf-8'),
@@ -107,13 +101,13 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def create_access_token(user_id: int, role: str, session_id: int = None) -> tuple[str, datetime]:
     """
-    Create a short-lived JWT access token with enhanced claims
+    Create a short-lived JWT access token.
 
     Returns:
         tuple[str, datetime]: (token, expiration_time)
     """
     expires_at = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    jti = secrets.token_urlsafe(16)  # Unique token ID for tracking
+    jti = secrets.token_urlsafe(16)
 
     payload = {
         "sub": str(user_id),
@@ -126,7 +120,7 @@ def create_access_token(user_id: int, role: str, session_id: int = None) -> tupl
     }
 
     if session_id is not None:
-        payload["sid"] = session_id  # Session ID for revocation check
+        payload["sid"] = session_id
 
     token = jwt.encode(payload, settings.jwt_secret_key, algorithm=ALGORITHM)
     return token, expires_at
@@ -134,7 +128,7 @@ def create_access_token(user_id: int, role: str, session_id: int = None) -> tupl
 
 def create_refresh_token(user_id: int, session: Session, ip_address: Optional[str] = None, user_agent: Optional[str] = None) -> tuple[str, str, datetime, int]:
     """
-    Create a long-lived refresh token and store HASHED version in database.
+    Create a long-lived refresh token and store only its HMAC hash.
 
     Args:
         user_id: User ID
@@ -169,15 +163,14 @@ def create_refresh_token(user_id: int, session: Session, ip_address: Optional[st
 
 def verify_refresh_token(token: str, session: Session) -> Optional[tuple[int, int]]:
     """
-    Verify refresh token and return user_id if valid
-    Implements refresh token rotation - marks token as used
-    
+    Verify a refresh token and rotate it by revoking the used record.
+
     Returns:
         Optional[tuple[int, int]]: (user_id, token_db_id) if valid, None otherwise
     """
     from ..domain.entities.refresh_token import RefreshToken
     
-    token_hash = hash_token(token)  # Hash incoming token for comparison
+    token_hash = hash_token(token)
     
     statement = select(RefreshToken).where(
         RefreshToken.token == token_hash,
@@ -188,7 +181,6 @@ def verify_refresh_token(token: str, session: Session) -> Optional[tuple[int, in
     refresh_token = session.exec(statement).first()
     
     if not refresh_token:
-        # Check if token was already used (reuse attack detection)
         used_statement = select(RefreshToken).where(
             RefreshToken.token == token_hash,
             RefreshToken.is_revoked.is_(True)
@@ -196,12 +188,11 @@ def verify_refresh_token(token: str, session: Session) -> Optional[tuple[int, in
         used_token = session.exec(used_statement).first()
         
         if used_token:
-            # Token reuse detected! Security breach - revoke all user tokens
+            # Reuse of a rotated token indicates token theft or replay.
             revoke_all_user_tokens(used_token.user_id, session)
         
         return None
     
-    # Mark token as used (rotation - one-time use only)
     refresh_token.is_revoked = True
     session.add(refresh_token)
     session.commit()
@@ -210,13 +201,7 @@ def verify_refresh_token(token: str, session: Session) -> Optional[tuple[int, in
 
 
 def revoke_all_user_tokens(user_id: int, session: Session) -> None:
-    """
-    Revoke all refresh tokens for a user (security breach response)
-    
-    Args:
-        user_id: User ID whose tokens should be revoked
-        session: Database session
-    """
+    """Revoke all active refresh tokens for one user."""
     from ..domain.entities.refresh_token import RefreshToken
     
     statement = select(RefreshToken).where(
@@ -235,18 +220,12 @@ def revoke_all_user_tokens(user_id: int, session: Session) -> None:
 
 def revoke_refresh_token(token: str, session: Session) -> bool:
     """
-    Revoke a refresh token by hashing it and marking as revoked (logout)
-    
-    Args:
-        token: Plain refresh token to revoke
-        session: Database session
-    
-    Returns:
-        bool: True if revoked, False if not found
+    Revoke a refresh token during logout.
+
+    Returns True when the corresponding hashed token exists.
     """
     from ..domain.entities.refresh_token import RefreshToken
     
-    # Hash token for DB lookup
     token_hash = hash_token(token)
     
     statement = select(RefreshToken).where(RefreshToken.token == token_hash)
@@ -263,24 +242,14 @@ def revoke_refresh_token(token: str, session: Session) -> bool:
 
 
 def decode_access_token(token: str) -> Optional[dict]:
-    """
-    Decode and validate access token with issuer/audience check
-
-    Validates:
-    - Expiration (exp)
-    - Issuer (iss)
-    - Audience (aud)
-
-    Returns:
-        Optional[dict]: Payload if valid, None otherwise
-    """
+    """Decode and validate a JWT access token, including issuer and audience."""
     try:
         payload = jwt.decode(
             token,
             settings.jwt_secret_key,
             algorithms=[ALGORITHM],
-            audience=JWT_AUDIENCE,  # Validate audience
-            issuer=JWT_ISSUER,  # Validate issuer
+            audience=JWT_AUDIENCE,
+            issuer=JWT_ISSUER,
         )
         return payload
     except JWTError:
@@ -289,21 +258,12 @@ def decode_access_token(token: str) -> Optional[dict]:
 
 def create_email_verification_token(user_id: int, session: Session) -> tuple[str, str, datetime]:
     """
-    Create an email verification token and store HASHED version in database
+    Create an email verification token and store only its HMAC hash.
 
-    Security: Invalidates all previous unused tokens for this user to ensure
-    only the latest verification link works.
-
-    Args:
-        user_id: User ID
-        session: Database session
-
-    Returns:
-        tuple[str, str, datetime]: (plain_token, token_hash, expiration_time)
+    Previous unused verification links for the same user are invalidated.
     """
     from ..domain.entities.email_verification_token import EmailVerificationToken
 
-    # Invalidate all previous unused tokens for this user (security best practice)
     statement = select(EmailVerificationToken).where(
         EmailVerificationToken.user_id == user_id,
         EmailVerificationToken.is_used.is_(False)
@@ -313,12 +273,10 @@ def create_email_verification_token(user_id: int, session: Session) -> tuple[str
         old_token.is_used = True
         session.add(old_token)
 
-    # Generate secure random token
     plain_token = secrets.token_urlsafe(32)
     token_hash = hash_token(plain_token)
-    expires_at = datetime.now(timezone.utc) + timedelta(hours=24)  # 24 hour expiry
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=24)
 
-    # Store HASH in database
     verification_token = EmailVerificationToken(
         token=token_hash,
         user_id=user_id,
@@ -334,16 +292,7 @@ def create_email_verification_token(user_id: int, session: Session) -> tuple[str
 
 
 def verify_email_verification_token(token: str, session: Session) -> Optional[int]:
-    """
-    Verify email verification token and return user_id if valid
-
-    Args:
-        token: Plain verification token
-        session: Database session
-
-    Returns:
-        Optional[int]: user_id if valid, None otherwise
-    """
+    """Verify an email verification token and return the matching user ID."""
     from ..domain.entities.email_verification_token import EmailVerificationToken
 
     token_hash = hash_token(token)
@@ -359,7 +308,6 @@ def verify_email_verification_token(token: str, session: Session) -> Optional[in
     if not verification_token:
         return None
 
-    # Mark token as used
     verification_token.is_used = True
     session.add(verification_token)
     session.commit()
@@ -368,21 +316,12 @@ def verify_email_verification_token(token: str, session: Session) -> Optional[in
 
 
 def generate_random_password(length: int = 12) -> str:
-    """
-    Generate a secure random password
-
-    Args:
-        length: Password length (default 12)
-
-    Returns:
-        str: Random password with mix of letters, digits, and special chars
-    """
+    """Generate a random password with letters, digits, and special characters."""
     import string
 
-    # Mix of uppercase, lowercase, digits, and special characters
     characters = string.ascii_letters + string.digits + "!@#$%^&*"
 
-    # Ensure at least one of each type
+    # Ensure every required character class is represented.
     password = [
         secrets.choice(string.ascii_uppercase),
         secrets.choice(string.ascii_lowercase),
@@ -390,10 +329,8 @@ def generate_random_password(length: int = 12) -> str:
         secrets.choice("!@#$%^&*"),
     ]
 
-    # Fill the rest randomly
     password += [secrets.choice(characters) for _ in range(length - 4)]
 
-    # Shuffle to avoid predictable pattern
     secrets.SystemRandom().shuffle(password)
 
     return ''.join(password)
@@ -401,20 +338,12 @@ def generate_random_password(length: int = 12) -> str:
 
 def create_password_reset_token(user_id: int, session: Session) -> tuple[str, str, datetime]:
     """
-    Create a password reset token and store HASHED version in database
+    Create a password reset token and store only its HMAC hash.
 
-    Security: Invalidates all previous unused tokens for this user.
-
-    Args:
-        user_id: User ID
-        session: Database session
-
-    Returns:
-        tuple[str, str, datetime]: (plain_token, token_hash, expiration_time)
+    Previous unused password reset links for the same user are invalidated.
     """
     from ..domain.entities.password_reset_token import PasswordResetToken
 
-    # Invalidate all previous unused tokens for this user
     statement = select(PasswordResetToken).where(
         PasswordResetToken.user_id == user_id,
         PasswordResetToken.is_used.is_(False)
@@ -424,12 +353,10 @@ def create_password_reset_token(user_id: int, session: Session) -> tuple[str, st
         old_token.is_used = True
         session.add(old_token)
 
-    # Generate secure random token
     plain_token = secrets.token_urlsafe(32)
     token_hash = hash_token(plain_token)
-    expires_at = datetime.now(timezone.utc) + timedelta(hours=1)  # 1 hour expiry
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
 
-    # Store HASH in database
     reset_token = PasswordResetToken(
         token=token_hash,
         user_id=user_id,
@@ -445,16 +372,7 @@ def create_password_reset_token(user_id: int, session: Session) -> tuple[str, st
 
 
 def verify_password_reset_token(token: str, session: Session) -> Optional[int]:
-    """
-    Verify password reset token and return user_id if valid
-
-    Args:
-        token: Plain reset token
-        session: Database session
-
-    Returns:
-        Optional[int]: user_id if valid, None otherwise
-    """
+    """Verify a password reset token and return the matching user ID."""
     from ..domain.entities.password_reset_token import PasswordResetToken
 
     token_hash = hash_token(token)
@@ -470,7 +388,6 @@ def verify_password_reset_token(token: str, session: Session) -> Optional[int]:
     if not reset_token:
         return None
 
-    # Mark token as used
     reset_token.is_used = True
     session.add(reset_token)
     session.commit()

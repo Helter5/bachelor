@@ -1,6 +1,4 @@
-"""
-Public API - Weight Categories (no authentication required)
-"""
+"""Weight category read endpoints for authenticated application users."""
 from fastapi import APIRouter, Depends
 from sqlmodel import Session, select
 from typing import List
@@ -18,11 +16,7 @@ def get_weight_categories_by_event(
     event_id: int,
     session: Session = Depends(get_session)
 ):
-    """
-    Get all weight categories for a specific event from database
-
-    Public endpoint - no authentication required
-    """
+    """Return all weight categories for one synchronized event."""
     results = session.exec(
         select(WeightCategory, Discipline)
         .outerjoin(Discipline, WeightCategory.discipline_id == Discipline.id)
