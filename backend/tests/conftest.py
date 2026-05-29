@@ -4,6 +4,10 @@ Run inside Docker: docker compose exec wf-api pytest
 """
 import os
 os.environ["SEND_EMAILS"] = "false"  # Disable email sending during tests
+os.environ["RATE_LIMIT_ENABLED"] = "false"  # Disable rate limiting during tests
+
+from app.config import get_settings
+get_settings.cache_clear()
 
 import math
 import pytest
