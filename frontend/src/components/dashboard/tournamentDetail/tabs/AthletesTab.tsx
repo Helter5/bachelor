@@ -94,6 +94,7 @@ export function AthletesTab({
           type="text"
           value={filterQuery}
           onChange={e => { setFilterQuery(e.target.value); setAthletesPage(1) }}
+          maxLength={100}
           placeholder={t('tournamentDetail.namePlaceholder')}
           className={`flex-1 min-w-[140px] px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
             isDarkMode

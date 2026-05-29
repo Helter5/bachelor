@@ -109,6 +109,7 @@ export function WrestlerPicker({
               type="text"
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
+              maxLength={100}
               placeholder={t("comparison.searchPlaceholder")}
               className={`w-full rounded-2xl border py-3 pl-10 pr-10 text-sm outline-none transition-all ${
                 isDarkMode
