@@ -18,6 +18,7 @@ export function SearchInput({ isDarkMode, value, onChange, placeholder, classNam
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={resolvedPlaceholder}
+        maxLength={100}
         className={`w-full px-3 py-2 pl-9 rounded-lg text-sm transition-all ${
           isDarkMode
             ? 'bg-[#0f172a]/50 text-white focus:bg-[#0f172a] placeholder-gray-500 shadow-inner focus:ring-2 focus:ring-blue-500/30'

@@ -44,6 +44,7 @@ export function CalendarTopBar({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder={`${t('common.search')}...`}
+          maxLength={100}
           className={`w-full bg-transparent border-0 outline-none text-sm placeholder:text-inherit ${isDarkMode ? 'text-gray-100' : 'text-gray-800'}`}
           aria-label={t('common.search')}
         />
