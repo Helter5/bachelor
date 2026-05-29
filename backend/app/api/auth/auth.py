@@ -6,7 +6,7 @@ from ...constants import UserRole
 
 from ...database import get_session
 from ...domain.entities.user import User
-from ...domain.schemas.user_schema import UserCreate, UserLogin, EmailRequest, GoogleLoginRequest
+from ...domain.schemas.user_schema import UserCreate, UserLogin, EmailRequest, GoogleLoginRequest, SetPasswordRequest
 from ...domain.schemas.responses import UserOut, TokenResponse
 from ...core.security import (
     hash_password,
@@ -31,10 +31,13 @@ from ...core.oauth import verify_google_token, generate_username_from_email
 from ...core.dependencies import require_user
 from ...config import get_settings
 from ...domain.entities.login_history import LoginHistory
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 settings = get_settings()
 
 router = APIRouter(prefix="/auth")
+limiter = Limiter(key_func=get_remote_address)
 
 COOKIE_SAMESITE = "lax"
 COOKIE_PATH_AUTH = "/"
@@ -71,7 +74,8 @@ def _set_auth_cookies(response: Response, access_token: str, refresh_token: str,
 
 
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
-async def register(user_data: UserCreate, session: Session = Depends(get_session)):
+@limiter.limit("5/minute")
+async def register(request: Request, user_data: UserCreate, session: Session = Depends(get_session)):
     """Register a new user. Sends email verification link — account must be verified before login."""
     if session.exec(select(User).where(User.username == user_data.username)).first():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already registered")
@@ -103,10 +107,11 @@ async def register(user_data: UserCreate, session: Session = Depends(get_session
 
 
 @router.post("/login", response_model=TokenResponse)
+@limiter.limit("10/minute")
 async def login(
+    request: Request,
     credentials: UserLogin,
     response: Response,
-    request: Request,
     session: Session = Depends(get_session)
 ):
     """Login with username/email + password. Returns CSRF token; sets HttpOnly cookies."""
@@ -211,7 +216,7 @@ async def logout(
     session: Session = Depends(get_session)
 ):
     """Logout — revokes refresh token and clears all auth cookies."""
-    if csrf_token_cookie and csrf_token_header and csrf_token_cookie != csrf_token_header:
+    if not csrf_token_cookie or not csrf_token_header or csrf_token_cookie != csrf_token_header:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="CSRF token validation failed")
 
     if not validate_request_origin(origin, referer):
@@ -276,7 +281,8 @@ async def resend_verification_email(request_data: EmailRequest, session: Session
 
 
 @router.post("/forgot-password")
-async def forgot_password(request_data: EmailRequest, session: Session = Depends(get_session)):
+@limiter.limit("3/minute")
+async def forgot_password(request: Request, request_data: EmailRequest, session: Session = Depends(get_session)):
     user = session.exec(select(User).where(User.email == request_data.email)).first()
 
     # Don't reveal whether email exists (prevent enumeration)
@@ -296,8 +302,18 @@ async def forgot_password(request_data: EmailRequest, session: Session = Depends
 
 
 @router.get("/reset-password/{token}")
-async def reset_password(token: str, session: Session = Depends(get_session)):
-    user_id = verify_password_reset_token(token, session)
+async def verify_reset_token(token: str, session: Session = Depends(get_session)):
+    """Validate a password reset token without consuming it."""
+    user_id = verify_password_reset_token(token, session, consume=False)
+    if not user_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired password reset token")
+    return {"valid": True}
+
+
+@router.post("/reset-password")
+async def reset_password(request_data: SetPasswordRequest, session: Session = Depends(get_session)):
+    """Set a new password using a valid reset token."""
+    user_id = verify_password_reset_token(request_data.token, session, consume=True)
     if not user_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired password reset token")
 
@@ -305,14 +321,12 @@ async def reset_password(token: str, session: Session = Depends(get_session)):
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    new_password = generate_random_password(12)
-    user.password_hash = hash_password(new_password)
-    user.is_verified = True  # clicking reset link proves email ownership
+    user.password_hash = hash_password(request_data.new_password)
+    user.is_verified = True
     session.add(user)
     session.commit()
 
-    email_service.send_new_password_email(to_email=user.email, username=user.username, new_password=new_password)
-    return {"message": "Password reset successful! Check your email for the new password."}
+    return {"message": "Password reset successful. You can now log in with your new password."}
 
 
 @router.post("/google", response_model=TokenResponse)

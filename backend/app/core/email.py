@@ -2,6 +2,7 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from html import escape
 from typing import Optional
 import logging
 
@@ -57,6 +58,7 @@ class EmailService:
 
     def send_verification_email(self, to_email: str, username: str, verification_link: str) -> bool:
         subject = "Overenie e-mailovej adresy"
+        username = escape(username)
 
         html_content = f"""
         <!DOCTYPE html>
@@ -113,6 +115,7 @@ Odkaz je platný 24 hodín. Ak si sa neregistroval, tento e-mail ignoruj.
 
     def send_password_reset_email(self, to_email: str, username: str, reset_link: str) -> bool:
         subject = "Obnovenie hesla"
+        username = escape(username)
 
         html_content = f"""
         <!DOCTYPE html>
@@ -174,6 +177,7 @@ Ak si o obnovenie nežiadal, tento e-mail ignoruj.
 
     def send_new_password_email(self, to_email: str, username: str, new_password: str) -> bool:
         subject = "Tvoje nové heslo"
+        username = escape(username)
 
         html_content = f"""
         <!DOCTYPE html>

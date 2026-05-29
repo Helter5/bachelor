@@ -33,3 +33,9 @@ class EmailRequest(SQLModel):
 class GoogleLoginRequest(SQLModel):
     """Schema for Google OAuth2 login"""
     credential: str
+
+
+class SetPasswordRequest(SQLModel):
+    """Schema for setting a new password via reset token"""
+    token: str
+    new_password: str = Field(min_length=6, max_length=128)

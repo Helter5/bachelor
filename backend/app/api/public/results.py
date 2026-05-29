@@ -102,5 +102,5 @@ def get_results(event_id: int, session: Session = Depends(get_session)):
         logger.error(f"Failed to fetch results for event {event_id}: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch results: {str(e)}",
+            detail="Failed to fetch results. Please try again.",
         )

@@ -12,6 +12,7 @@ export const API_ENDPOINTS = {
   AUTH_RESEND_VERIFICATION: '/api/v1/auth/resend-verification',
   AUTH_FORGOT_PASSWORD: '/api/v1/auth/forgot-password',
   AUTH_RESET_PASSWORD: (token: string) => `/api/v1/auth/reset-password/${token}`,
+  AUTH_SET_PASSWORD: '/api/v1/auth/reset-password',
   AUTH_GOOGLE: '/api/v1/auth/google',
 
   SPORT_EVENT: '/api/v1/events',

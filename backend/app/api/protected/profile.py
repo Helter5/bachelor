@@ -141,8 +141,9 @@ async def upload_avatar(
         )
 
     if user.avatar_url:
-        old_path = user.avatar_url.lstrip("/")
-        if os.path.exists(old_path):
+        old_path = os.path.realpath(user.avatar_url.lstrip("/"))
+        upload_root = os.path.realpath("uploads/avatars")
+        if old_path.startswith(upload_root) and os.path.exists(old_path):
             os.remove(old_path)
 
     upload_dir = "uploads/avatars"
@@ -174,8 +175,9 @@ async def delete_avatar(
     session: Session = Depends(get_session)
 ):
     if user.avatar_url:
-        file_path = user.avatar_url.lstrip("/")
-        if os.path.exists(file_path):
+        file_path = os.path.realpath(user.avatar_url.lstrip("/"))
+        upload_root = os.path.realpath("uploads/avatars")
+        if file_path.startswith(upload_root) and os.path.exists(file_path):
             os.remove(file_path)
 
         user.avatar_url = None

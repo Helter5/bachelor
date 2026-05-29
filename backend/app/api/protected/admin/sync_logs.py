@@ -11,7 +11,7 @@ from ....database import get_session
 from ....domain.entities.user import User
 from ....domain.entities.sync_log import SyncLog
 from ....domain.schemas.responses import SyncLogOut
-from ....core.dependencies import require_admin
+from ....core.dependencies import require_admin, validate_csrf_and_origin
 
 router = APIRouter(prefix="/admin/sync-logs")
 
@@ -105,6 +105,7 @@ async def get_sync_log(
 async def patch_sync_log_stats(
     log_id: int,
     payload: SyncLogStatsPatch,
+    _: None = Depends(validate_csrf_and_origin),
     user: User = Depends(require_admin),
     session: Session = Depends(get_session),
 ):

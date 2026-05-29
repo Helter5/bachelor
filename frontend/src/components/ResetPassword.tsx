@@ -12,9 +12,12 @@ interface ResetPasswordProps {
 
 export function ResetPassword({ token, onBackToLogin }: ResetPasswordProps) {
   const { t } = useTranslation()
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading")
+  const [status, setStatus] = useState<"loading" | "form" | "success" | "error">("loading")
   const [message, setMessage] = useState("")
-  const hasReset = useRef(false)
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [submitting, setSubmitting] = useState(false)
+  const hasVerified = useRef(false)
 
   useEffect(() => {
     if (!token) {
@@ -23,21 +26,17 @@ export function ResetPassword({ token, onBackToLogin }: ResetPasswordProps) {
       return
     }
 
-    if (hasReset.current) {
-      return
-    }
-    hasReset.current = true
+    if (hasVerified.current) return
+    hasVerified.current = true
 
-    const resetPassword = async () => {
+    const verifyToken = async () => {
       try {
-        const response = await apiClient.get<{ message: string }>(
+        await apiClient.get<{ valid: boolean }>(
           API_ENDPOINTS.AUTH_RESET_PASSWORD(token),
           { requireAuth: false }
         )
-        setStatus("success")
-        setMessage(response.message)
+        setStatus("form")
       } catch (error) {
-        console.error("Password reset error:", error)
         setStatus("error")
         if (error instanceof ApiError) {
           setMessage(error.message || t("resetPassword.invalidToken"))
@@ -47,8 +46,34 @@ export function ResetPassword({ token, onBackToLogin }: ResetPasswordProps) {
       }
     }
 
-    resetPassword()
+    verifyToken()
   }, [token, t])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (newPassword !== confirmPassword) {
+      setMessage(t("resetPassword.passwordMismatch") || "Passwords do not match")
+      return
+    }
+    setSubmitting(true)
+    setMessage("")
+    try {
+      await apiClient.post<{ message: string }>(
+        API_ENDPOINTS.AUTH_SET_PASSWORD,
+        { token, new_password: newPassword },
+        { requireAuth: false }
+      )
+      setStatus("success")
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setMessage(error.message || t("resetPassword.invalidToken"))
+      } else {
+        setMessage(t("resetPassword.resetError"))
+      }
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-8">
@@ -63,54 +88,50 @@ export function ResetPassword({ token, onBackToLogin }: ResetPasswordProps) {
               </div>
             )}
 
+            {status === "form" && (
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-2 text-center">{t("resetPassword.setNewPassword") || "Set New Password"}</h2>
+                <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">{t("resetPassword.newPassword") || "New Password"}</label>
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={e => setNewPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      className="w-full px-3 py-2 bg-[#0f172a] border border-white/10 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">{t("resetPassword.confirmPassword") || "Confirm Password"}</label>
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      className="w-full px-3 py-2 bg-[#0f172a] border border-white/10 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  {message && <p className="text-red-400 text-sm">{message}</p>}
+                  <Button type="submit" disabled={submitting} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                    {submitting ? (t("resetPassword.pleaseWait") || "Please wait...") : (t("resetPassword.submit") || "Set Password")}
+                  </Button>
+                </form>
+              </div>
+            )}
+
             {status === "success" && (
               <div className="text-center">
                 <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    className="w-8 h-8 text-green-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
+                  <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
                 <h2 className="text-2xl font-bold text-white mb-2">{t("resetPassword.successTitle")}</h2>
-                <p className="text-gray-400 mb-2">{message}</p>
-                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mb-6">
-                  <div className="flex items-start gap-3">
-                    <svg
-                      className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                      />
-                    </svg>
-                    <div className="text-left">
-                      <p className="text-sm font-medium text-yellow-500 mb-1">
-                        {t("resetPassword.checkEmail")}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {t("resetPassword.checkEmailDesc")}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <Button
-                  onClick={onBackToLogin}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                >
+                <p className="text-gray-400 mb-6">{t("resetPassword.successDesc") || "Your password has been updated. You can now log in."}</p>
+                <Button onClick={onBackToLogin} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                   {t("resetPassword.backToLogin")}
                 </Button>
               </div>
@@ -119,26 +140,13 @@ export function ResetPassword({ token, onBackToLogin }: ResetPasswordProps) {
             {status === "error" && (
               <div className="text-center">
                 <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    className="w-8 h-8 text-red-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
+                  <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </div>
                 <h2 className="text-2xl font-bold text-white mb-2">{t("resetPassword.errorTitle")}</h2>
                 <p className="text-gray-400 mb-6">{message}</p>
-                <Button
-                  onClick={onBackToLogin}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                >
+                <Button onClick={onBackToLogin} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                   {t("resetPassword.backToLoginError")}
                 </Button>
               </div>

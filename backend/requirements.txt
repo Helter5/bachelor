@@ -16,6 +16,7 @@ matplotlib==3.9.0
 qrcode[pil]==7.4.2
 openpyxl==3.1.2
 Pillow==12.2.0
+slowapi==0.1.9
 
 # Testing dependencies
 pytest==9.0.3

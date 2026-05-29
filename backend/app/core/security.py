@@ -256,39 +256,35 @@ def decode_access_token(token: str) -> Optional[dict]:
         return None
 
 
-def create_email_verification_token(user_id: int, session: Session) -> tuple[str, str, datetime]:
-    """
-    Create an email verification token and store only its HMAC hash.
-
-    Previous unused verification links for the same user are invalidated.
-    """
-    from ..domain.entities.email_verification_token import EmailVerificationToken
-
-    statement = select(EmailVerificationToken).where(
-        EmailVerificationToken.user_id == user_id,
-        EmailVerificationToken.is_used.is_(False)
-    )
-    old_tokens = session.exec(statement).all()
-    for old_token in old_tokens:
-        old_token.is_used = True
-        session.add(old_token)
+def _create_single_use_token(user_id: int, session: Session, entity_class, expire_hours: int) -> tuple[str, str, datetime]:
+    old_tokens = session.exec(
+        select(entity_class).where(entity_class.user_id == user_id, entity_class.is_used.is_(False))
+    ).all()
+    for t in old_tokens:
+        t.is_used = True
+        session.add(t)
 
     plain_token = secrets.token_urlsafe(32)
     token_hash = hash_token(plain_token)
-    expires_at = datetime.now(timezone.utc) + timedelta(hours=24)
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=expire_hours)
 
-    verification_token = EmailVerificationToken(
+    token_obj = entity_class(
         token=token_hash,
         user_id=user_id,
         expires_at=expires_at,
         created_at=datetime.now(timezone.utc),
         is_used=False,
     )
-    session.add(verification_token)
+    session.add(token_obj)
     session.commit()
-    session.refresh(verification_token)
-
+    session.refresh(token_obj)
     return plain_token, token_hash, expires_at
+
+
+def create_email_verification_token(user_id: int, session: Session) -> tuple[str, str, datetime]:
+    """Create an email verification token; invalidates previous unused tokens for the user."""
+    from ..domain.entities.email_verification_token import EmailVerificationToken
+    return _create_single_use_token(user_id, session, EmailVerificationToken, 24)
 
 
 def verify_email_verification_token(token: str, session: Session) -> Optional[int]:
@@ -337,42 +333,13 @@ def generate_random_password(length: int = 12) -> str:
 
 
 def create_password_reset_token(user_id: int, session: Session) -> tuple[str, str, datetime]:
-    """
-    Create a password reset token and store only its HMAC hash.
-
-    Previous unused password reset links for the same user are invalidated.
-    """
+    """Create a password reset token; invalidates previous unused tokens for the user."""
     from ..domain.entities.password_reset_token import PasswordResetToken
-
-    statement = select(PasswordResetToken).where(
-        PasswordResetToken.user_id == user_id,
-        PasswordResetToken.is_used.is_(False)
-    )
-    old_tokens = session.exec(statement).all()
-    for old_token in old_tokens:
-        old_token.is_used = True
-        session.add(old_token)
-
-    plain_token = secrets.token_urlsafe(32)
-    token_hash = hash_token(plain_token)
-    expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
-
-    reset_token = PasswordResetToken(
-        token=token_hash,
-        user_id=user_id,
-        expires_at=expires_at,
-        created_at=datetime.now(timezone.utc),
-        is_used=False,
-    )
-    session.add(reset_token)
-    session.commit()
-    session.refresh(reset_token)
-
-    return plain_token, token_hash, expires_at
+    return _create_single_use_token(user_id, session, PasswordResetToken, 1)
 
 
-def verify_password_reset_token(token: str, session: Session) -> Optional[int]:
-    """Verify a password reset token and return the matching user ID."""
+def verify_password_reset_token(token: str, session: Session, consume: bool = True) -> Optional[int]:
+    """Verify a password reset token and return the matching user ID. If consume=True, marks token as used."""
     from ..domain.entities.password_reset_token import PasswordResetToken
 
     token_hash = hash_token(token)
@@ -388,8 +355,9 @@ def verify_password_reset_token(token: str, session: Session) -> Optional[int]:
     if not reset_token:
         return None
 
-    reset_token.is_used = True
-    session.add(reset_token)
-    session.commit()
+    if consume:
+        reset_token.is_used = True
+        session.add(reset_token)
+        session.commit()
 
     return reset_token.user_id

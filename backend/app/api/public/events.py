@@ -1,5 +1,5 @@
 """Sport event read endpoints for authenticated application users."""
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session, select, func
 from typing import Optional
 
@@ -14,7 +14,7 @@ router = APIRouter(prefix="/events")
 def list_events(
     skip: int = 0,
     limit: int = 100,
-    name: Optional[str] = None,
+    name: Optional[str] = Query(None, max_length=100),
     session: Session = Depends(get_session)
 ):
     """Return sport events with optional name filtering and pagination."""

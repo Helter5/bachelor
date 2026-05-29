@@ -7,7 +7,7 @@ from ....constants import UserRole
 from ....database import get_session
 from ....domain.entities.user import User
 from ....domain.schemas.responses import UserOut
-from ....core.dependencies import require_admin
+from ....core.dependencies import require_admin, validate_csrf_and_origin
 
 router = APIRouter(prefix="/admin/users")
 
@@ -71,6 +71,7 @@ async def get_user(
 async def update_user_role(
     user_id: int,
     role: str,
+    _: None = Depends(validate_csrf_and_origin),
     admin: User = Depends(require_admin),
     session: Session = Depends(get_session)
 ):
@@ -108,6 +109,7 @@ async def update_user_role(
 async def toggle_user_status(
     user_id: int,
     is_active: bool,
+    _: None = Depends(validate_csrf_and_origin),
     admin: User = Depends(require_admin),
     session: Session = Depends(get_session)
 ):

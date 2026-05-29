@@ -12,8 +12,8 @@ router = APIRouter(prefix="/persons")
 
 @router.get("", response_model=list[PersonOut])
 def list_persons(
-    name: Optional[str] = None,
-    country: Optional[str] = None,
+    name: Optional[str] = Query(None, max_length=100),
+    country: Optional[str] = Query(None, max_length=10),
     skip: int = 0,
     limit: int = 100,
     session: Session = Depends(get_session)
