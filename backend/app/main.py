@@ -6,7 +6,6 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from .api import legacy_views, teams, athletes
 from .api.auth import router as auth_router
 from .api.protected import profile_router
 from .api.protected.admin import sync_router, users_router, arena_sources_router, sync_logs_router, local_sync_router
@@ -83,10 +82,6 @@ app.include_router(users_router, prefix="/api/v1")
 app.include_router(arena_sources_router, prefix="/api/v1")
 app.include_router(sync_logs_router, prefix="/api/v1")
 app.include_router(local_sync_router, prefix="/api/v1")
-
-app.include_router(legacy_views.router)
-app.include_router(teams.router)
-app.include_router(athletes.router)
 
 @app.get("/")
 async def root():
