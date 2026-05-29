@@ -414,21 +414,23 @@ class TestPasswordReset:
         assert resp.status_code == 400
 
     def test_reset_valid_token_returns_200(self):
-        """Platný reset token zmení heslo a vráti 200."""
+        """Platný reset token vráti valid=True pri GET overení."""
         with Session(engine) as session:
             plain_token, _, _ = create_password_reset_token(PR_USER_ID, session)
         with make_client() as c:
             resp = c.get(f"/api/v1/auth/reset-password/{plain_token}")
         assert resp.status_code == 200
-        assert "reset" in resp.json()["message"].lower()
+        assert resp.json().get("valid") is True
 
     def test_old_password_fails_after_reset(self):
-        """Po resete hesla staré heslo nefunguje (login vráti 401)."""
-        # Reset password
+        """Po resete hesla (POST) staré heslo nefunguje (login vráti 401)."""
+        new_password = "NewResetPass999"
         with Session(engine) as session:
             plain_token, _, _ = create_password_reset_token(PR_USER_ID, session)
         with make_client() as c:
-            c.get(f"/api/v1/auth/reset-password/{plain_token}")
+            c.post("/api/v1/auth/reset-password", json={
+                "token": plain_token, "new_password": new_password,
+            })
         # Try login with old password
         with make_client() as c:
             resp = c.post("/api/v1/auth/login", json={
