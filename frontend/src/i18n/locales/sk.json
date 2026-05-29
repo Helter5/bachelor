@@ -171,7 +171,13 @@
     "checkEmailDesc": "Nové heslo bolo odoslané na váš e-mail. Použite ho na prihlásenie.",
     "errorTitle": "Chyba obnovenia",
     "backToLogin": "Prihlásiť sa",
-    "backToLoginError": "Späť na prihlásenie"
+    "backToLoginError": "Späť na prihlásenie",
+    "setNewPassword": "Nastavte nové heslo",
+    "newPassword": "Nové heslo",
+    "confirmPassword": "Potvrdiť heslo",
+    "passwordMismatch": "Heslá sa nezhodujú",
+    "submit": "Nastaviť heslo",
+    "successDesc": "Heslo bolo úspešne zmenené. Môžete sa prihlásiť."
   },
   "verifyEmail": {
     "invalidLink": "Neplatný verifikačný odkaz",

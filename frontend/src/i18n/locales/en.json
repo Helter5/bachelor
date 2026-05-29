@@ -168,7 +168,13 @@
     "checkEmailDesc": "Your new password has been sent to your email. Use it to log in.",
     "errorTitle": "Reset error",
     "backToLogin": "Log in",
-    "backToLoginError": "Back to login"
+    "backToLoginError": "Back to login",
+    "setNewPassword": "Set new password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "passwordMismatch": "Passwords do not match",
+    "submit": "Set password",
+    "successDesc": "Password changed successfully. You can now log in."
   },
   "verifyEmail": {
     "invalidLink": "Invalid verification link",
