@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     database_name: str
     database_echo: bool = False
     app_debug: bool = False
+    rate_limit_enabled: bool = True
 
     arena_api_format: str = "json"
 

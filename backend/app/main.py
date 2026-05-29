@@ -27,8 +27,8 @@ class _HealthCheckFilter(logging.Filter):
 
 logging.getLogger("uvicorn.access").addFilter(_HealthCheckFilter())
 
-limiter = Limiter(key_func=get_remote_address)
 _settings = _get_settings()
+limiter = Limiter(key_func=get_remote_address, enabled=_settings.rate_limit_enabled)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
