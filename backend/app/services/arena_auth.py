@@ -4,7 +4,7 @@ from urllib.parse import urlencode
 import httpx
 from fastapi import HTTPException
 
-from ..core.http import get_http_client
+from ..core.http import http_client_ctx
 
 logger = logging.getLogger(__name__)
 
@@ -53,8 +53,8 @@ async def get_access_token_for_source(source) -> str:
         logger.info(f"Requesting new access token from Arena source {source_id} ({source.host}:{source.port})")
         full_url = f"{token_url}?{urlencode(params)}"
 
-        client = get_http_client()
-        response = await client.post(full_url, timeout=30.0)
+        async with http_client_ctx() as client:
+            response = await client.post(full_url, timeout=30.0)
         response.raise_for_status()
         token_data = response.json()
 

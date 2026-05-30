@@ -3,7 +3,7 @@ import logging
 from fastapi import HTTPException
 from typing import Optional, Dict, Any
 
-from ..core.http import get_http_client
+from ..core.http import http_client_ctx
 
 logger = logging.getLogger(__name__)
 
@@ -14,19 +14,19 @@ async def call_arena_api(
     data: Optional[Dict[str, Any]] = None,
     json: Optional[Dict[str, Any]] = None
 ):
-    client = get_http_client()
     try:
         headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
         logger.debug(f"Arena API request: {method.upper()} {url}")
 
-        response = await client.request(
-            method=method.upper(),
-            url=url,
-            headers=headers,
-            data=data,
-            json=json,
-            timeout=30.0,
-        )
+        async with http_client_ctx() as client:
+            response = await client.request(
+                method=method.upper(),
+                url=url,
+                headers=headers,
+                data=data,
+                json=json,
+                timeout=30.0,
+            )
         response.raise_for_status()
         logger.debug(f"Arena API response: {response.status_code}")
         return response.json()

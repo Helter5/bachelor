@@ -3,7 +3,7 @@ from typing import Optional
 import logging
 
 from ..config import get_settings
-from .http import get_http_client
+from .http import http_client_ctx
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +23,8 @@ async def verify_google_token(token: str) -> Optional[dict]:
     url = f"https://oauth2.googleapis.com/tokeninfo?id_token={token}"
 
     try:
-        client = get_http_client()
-        response = await client.get(url, timeout=30.0)
+        async with http_client_ctx() as client:
+            response = await client.get(url, timeout=30.0)
 
         if response.status_code != 200:
             return None
