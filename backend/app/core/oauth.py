@@ -1,9 +1,9 @@
 """OAuth2 utilities for Google Sign-In"""
 from typing import Optional
 import logging
-import httpx
 
 from ..config import get_settings
+from .http import get_http_client
 
 logger = logging.getLogger(__name__)
 
@@ -23,27 +23,27 @@ async def verify_google_token(token: str) -> Optional[dict]:
     url = f"https://oauth2.googleapis.com/tokeninfo?id_token={token}"
 
     try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(url)
+        client = get_http_client()
+        response = await client.get(url, timeout=30.0)
 
-            if response.status_code != 200:
-                return None
+        if response.status_code != 200:
+            return None
 
-            data = response.json()
+        data = response.json()
 
-            if data.get("aud") != settings.google_client_id:
-                return None
+        if data.get("aud") != settings.google_client_id:
+            return None
 
-            if not data.get("email_verified"):
-                return None
+        if not data.get("email_verified"):
+            return None
 
-            return {
-                "email": data.get("email"),
-                "given_name": data.get("given_name", ""),
-                "family_name": data.get("family_name", ""),
-                "picture": data.get("picture"),
-                "google_id": data.get("sub"),  # Google's unique user ID
-            }
+        return {
+            "email": data.get("email"),
+            "given_name": data.get("given_name", ""),
+            "family_name": data.get("family_name", ""),
+            "picture": data.get("picture"),
+            "google_id": data.get("sub"),  # Google's unique user ID
+        }
 
     except Exception as e:
         logger.error("Error verifying Google token: %s", e)

@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import Dict, Any, Optional
 from sqlmodel import Session
 
+from ..core.dependencies import validate_csrf_and_origin
 from ..database import get_session
 from ..services.athlete_service import AthleteService
 
@@ -121,6 +122,7 @@ async def get_athletes_from_database(
 @router.post("/sync")
 async def sync_athletes(
     sport_event_id: str = Query(..., description="Sport event UUID from Arena API"),
+    _: None = Depends(validate_csrf_and_origin),
     service: AthleteService = Depends(get_service)
 ) -> Dict[str, Any]:
     """

@@ -3,6 +3,8 @@ import logging
 from fastapi import HTTPException
 from typing import Optional, Dict, Any
 
+from ..core.http import get_http_client
+
 logger = logging.getLogger(__name__)
 
 async def call_arena_api(
@@ -12,21 +14,22 @@ async def call_arena_api(
     data: Optional[Dict[str, Any]] = None,
     json: Optional[Dict[str, Any]] = None
 ):
+    client = get_http_client()
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
-            logger.debug(f"Arena API request: {method.upper()} {url}")
+        headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
+        logger.debug(f"Arena API request: {method.upper()} {url}")
 
-            response = await client.request(
-                method=method.upper(),
-                url=url,
-                headers=headers,
-                data=data,
-                json=json
-            )
-            response.raise_for_status()
-            logger.debug(f"Arena API response: {response.status_code}")
-            return response.json()
+        response = await client.request(
+            method=method.upper(),
+            url=url,
+            headers=headers,
+            data=data,
+            json=json,
+            timeout=30.0,
+        )
+        response.raise_for_status()
+        logger.debug(f"Arena API response: {response.status_code}")
+        return response.json()
 
     except httpx.HTTPStatusError as e:
         logger.exception("Arena API HTTP error %s for %s", e.response.status_code, url)

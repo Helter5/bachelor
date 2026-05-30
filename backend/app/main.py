@@ -2,6 +2,7 @@ import logging
 import os
 from contextlib import asynccontextmanager
 
+import httpx
 from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -17,6 +18,7 @@ from .api.public.results import router as results_router
 from .api.public.weight_categories import router as weight_categories_router
 from .config import get_settings as _get_settings
 from .core.dependencies import require_user, require_admin
+from .core.http import set_http_client
 from .database import create_db_and_tables
 
 
@@ -33,7 +35,16 @@ limiter = Limiter(key_func=get_remote_address, enabled=_settings.rate_limit_enab
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     create_db_and_tables()
-    yield
+    # Single shared HTTP client for outbound calls (Arena API, OAuth verify, etc.)
+    # Reusing the connection pool avoids a TLS handshake on every sync request.
+    client = httpx.AsyncClient(timeout=30.0)
+    app.state.http_client = client
+    set_http_client(client)
+    try:
+        yield
+    finally:
+        set_http_client(None)
+        await client.aclose()
 
 
 app = FastAPI(

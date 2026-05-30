@@ -88,6 +88,14 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
     void loadLoginHistory()
   }, [loadSessions, loadLoginHistory])
 
+  // Auto-dismiss the success banner after 3s, with cleanup on unmount or
+  // when a new success message arrives.
+  useEffect(() => {
+    if (!success) return
+    const t = setTimeout(() => setSuccess(null), 3000)
+    return () => clearTimeout(t)
+  }, [success])
+
   const handleRevokeSession = async (sessionId: number) => {
     if (!confirm(t('security.confirmRevoke'))) return
     try {
@@ -95,7 +103,6 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
       setSuccess(null)
       await apiClient.delete(API_ENDPOINTS.PROFILE_REVOKE_SESSION(sessionId))
       setSuccess(t('security.revokeSuccess'))
-      setTimeout(() => setSuccess(null), 3000)
       await loadSessions()
     } catch {
       setError(t('security.revokeError'))
@@ -109,7 +116,6 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
       setSuccess(null)
       await apiClient.post(API_ENDPOINTS.PROFILE_REVOKE_ALL_SESSIONS, {})
       setSuccess(t('security.revokeAllSuccess'))
-      setTimeout(() => setSuccess(null), 3000)
       await loadSessions()
     } catch {
       setError(t('security.revokeAllError'))

@@ -189,6 +189,26 @@ export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsPr
     loadProfile()
   }, [loadProfile])
 
+  // Auto-dismiss success banners after 3s, with cleanup if the component
+  // unmounts (or a new success arrives) before the timeout fires.
+  useEffect(() => {
+    if (!avatarSuccess) return
+    const t = setTimeout(() => setAvatarSuccess(false), 3000)
+    return () => clearTimeout(t)
+  }, [avatarSuccess])
+
+  useEffect(() => {
+    if (!profileSuccess) return
+    const t = setTimeout(() => setProfileSuccess(false), 3000)
+    return () => clearTimeout(t)
+  }, [profileSuccess])
+
+  useEffect(() => {
+    if (!passwordSuccess) return
+    const t = setTimeout(() => setPasswordSuccess(false), 3000)
+    return () => clearTimeout(t)
+  }, [passwordSuccess])
+
   const getAvatarUrl = (avatarUrl: string | null) => {
     if (!avatarUrl) return user?.role === 'admin' ? '/avatars/default-admin.png' : '/avatars/default-user.png'
     if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) return avatarUrl
@@ -222,7 +242,6 @@ export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsPr
         return updated
       })
       setAvatarSuccess(true)
-      setTimeout(() => setAvatarSuccess(false), 3000)
     } catch {
       setError(t('profile.avatarUploadError'))
     } finally {
@@ -245,7 +264,6 @@ export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsPr
         return updated
       })
       setAvatarSuccess(true)
-      setTimeout(() => setAvatarSuccess(false), 3000)
     } catch {
       setError(t('profile.avatarDeleteError'))
     } finally {
@@ -284,7 +302,6 @@ export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsPr
       setUser(updated)
       onUserUpdated(updated)
       setProfileSuccess(true)
-      setTimeout(() => setProfileSuccess(false), 3000)
     } catch {
       setError(t('profile.updateError'))
     } finally {
@@ -324,7 +341,6 @@ export function ProfileSettings({ isDarkMode, onUserUpdated }: ProfileSettingsPr
       setPasswordSuccess(true)
       setPasswordForm({ current_password: '', new_password: '', confirm_password: '' })
       setPasswordErrors({})
-      setTimeout(() => setPasswordSuccess(false), 3000)
     } catch {
       setError(t('profile.passwordError'))
     } finally {
