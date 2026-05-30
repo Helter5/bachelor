@@ -1,10 +1,13 @@
 """Support services for admin sync orchestration and guard logic."""
 import asyncio
+import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any, Awaitable, Callable, Optional
 
 from fastapi import HTTPException, status
 from sqlmodel import Session, col, select
+
+logger = logging.getLogger(__name__)
 
 from ..config import get_settings
 from ..domain.entities.arena_source import ArenaSource
@@ -284,9 +287,13 @@ class AdminSyncService:
             except HTTPException:
                 raise
             except Exception as exc:
+                logger.exception("Admin sync failed for event %s", event_uuid)
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail=f"Sync failed: {str(exc)}",
+                    detail={
+                        "code": "admin_sync_failed",
+                        "message": "Admin sync failed. See server logs for details.",
+                    },
                 ) from exc
 
             result = {

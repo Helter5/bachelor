@@ -34,7 +34,10 @@ async def get_access_token_for_source(source) -> str:
     if not all([client_id, client_secret, api_key]):
         raise HTTPException(
             status_code=400,
-            detail=f"Arena zdroj '{source.name}' nemá nakonfigurované credentials (client_id, client_secret, api_key). Nastavte ich v Settings → Arena Zdroje."
+            detail={
+                "code": "arena_credentials_missing",
+                "message": "Arena source has no credentials configured (client_id, client_secret, api_key).",
+            },
         )
 
     params = {
@@ -55,8 +58,13 @@ async def get_access_token_for_source(source) -> str:
 
             if "access_token" not in token_data:
                 logger.error(f"Token response missing access_token field for source {source_id}")
-                raise HTTPException(status_code=500,
-                                    detail="Invalid token response: missing access_token")
+                raise HTTPException(
+                    status_code=502,
+                    detail={
+                        "code": "arena_token_invalid_response",
+                        "message": "Arena returned an invalid token response.",
+                    },
+                )
 
             access_token = token_data["access_token"]
             expires_in = token_data.get("expires_in", 3600)
@@ -69,13 +77,30 @@ async def get_access_token_for_source(source) -> str:
             logger.info(f"Access token obtained for source {source_id}, expires in {expires_in}s")
             return access_token
 
-    except httpx.RequestError as e:
-        logger.error(f"Token request failed for source {source_id}: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Token request failed: {str(e)}")
+    except httpx.RequestError:
+        logger.exception("Token request failed for source %s", source_id)
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "code": "arena_token_network_failed",
+                "message": "Cannot reach Arena authentication endpoint. Check the host and port.",
+            },
+        )
     except httpx.HTTPStatusError as e:
-        logger.error(f"Arena token API error for source {source_id}: {e.response.status_code} - {e.response.text}")
-        raise HTTPException(status_code=e.response.status_code,
-                            detail=f"Arena token API error: {e.response.text}")
-    except Exception as e:
-        logger.error(f"Unexpected error getting token for source {source_id}: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+        logger.exception("Arena token API error for source %s: %s", source_id, e.response.status_code)
+        raise HTTPException(
+            status_code=e.response.status_code,
+            detail={
+                "code": "arena_token_rejected",
+                "message": "Arena rejected the credentials. Verify client_id, client_secret and api_key.",
+            },
+        )
+    except Exception:
+        logger.exception("Unexpected error getting token for source %s", source_id)
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "code": "arena_token_unexpected",
+                "message": "Unexpected error obtaining Arena access token.",
+            },
+        )

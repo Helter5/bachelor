@@ -839,6 +839,23 @@
     "fetch_athletes_db_failed": "Nepodarilo sa načítať atlétov pre tento event.",
     "sync_athletes_failed": "Synchronizácia atlétov z Arena API zlyhala. Skús to neskôr.",
     "athletes_pdf_failed": "Nepodarilo sa vygenerovať PDF atlétov.",
-    "arena_connection_failed": "Nepodarilo sa pripojiť k Arena inštancii. Skontroluj prihlasovacie údaje a base URL."
+    "arena_connection_failed": "Nepodarilo sa pripojiť k Arena inštancii. Skontroluj prihlasovacie údaje a base URL.",
+    "arena_api_error": "Arena API vrátilo chybu. Skús to neskôr.",
+    "arena_resource_not_found": "Požadovaný zdroj nie je dostupný v Arena API.",
+    "arena_network_failed": "Arena API je nedostupné. Skontroluj konfiguráciu Arena zdroja.",
+    "arena_unexpected": "Neočakávaná chyba pri komunikácii s Arena API.",
+    "arena_credentials_missing": "Arena zdroj nemá nakonfigurované prihlasovacie údaje. Nastav client_id, client_secret a api_key v Settings → Arena Zdroje.",
+    "arena_token_invalid_response": "Arena vrátila neplatnú token odpoveď.",
+    "arena_token_network_failed": "Arena autentifikačný endpoint je nedostupný. Skontroluj host a port.",
+    "arena_token_rejected": "Arena odmietla prihlasovacie údaje. Skontroluj client_id, client_secret a api_key.",
+    "arena_token_unexpected": "Neočakávaná chyba pri získavaní Arena access tokenu.",
+    "sport_event_not_found": "Športová udalosť nebola nájdená.",
+    "sync_failed": "Nepodarilo sa synchronizovať dáta z Arena API.",
+    "sync_weight_categories_failed": "Nepodarilo sa synchronizovať váhové kategórie z Arena API.",
+    "sync_referees_failed": "Nepodarilo sa synchronizovať rozhodcov z Arena API.",
+    "sync_fights_failed": "Nepodarilo sa synchronizovať zápasy z Arena API.",
+    "admin_sync_failed": "Admin synchronizácia zlyhala. Detaily v serverových logoch.",
+    "export_resource_not_found": "Dáta pre tento export neexistujú.",
+    "export_generation_failed": "Generovanie exportu zlyhalo. Skús to znova."
   }
 }

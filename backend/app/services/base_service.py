@@ -75,7 +75,13 @@ class BaseService(Generic[ModelType]):
                 select(SportEvent).where(SportEvent.id == event_id)
             ).first()
             if not event:
-                raise HTTPException(status_code=404, detail=f"Sport event {event_id} not found")
+                raise HTTPException(
+                    status_code=404,
+                    detail={
+                        "code": "sport_event_not_found",
+                        "message": "Sport event not found.",
+                    },
+                )
 
             logger.info(f"Syncing {entity_label} for event: {event.name}")
 
@@ -107,10 +113,15 @@ class BaseService(Generic[ModelType]):
 
         except HTTPException:
             raise
-        except Exception as e:
-            logger.error(
-                f"Failed to sync {entity_label} for event {sport_event_uuid}: {str(e)}",
-                exc_info=True,
+        except Exception:
+            logger.exception(
+                "Failed to sync %s for event %s", entity_label, sport_event_uuid
             )
             self.session.rollback()
-            raise HTTPException(status_code=500, detail=f"Failed to sync {entity_label}: {str(e)}")
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "code": "sync_failed",
+                    "message": f"Unable to sync {entity_label} from Arena API.",
+                },
+            )

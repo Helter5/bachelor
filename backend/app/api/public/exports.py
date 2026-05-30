@@ -58,11 +58,24 @@ def export_teams_list(
             media_type="application/pdf",
             headers={"Content-Disposition": f"inline; filename=teams-list-{event_id}.pdf"},
         )
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except Exception as e:
-        logger.error("Export failed: %s", e, exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Export generation failed. Please try again.")
+    except ValueError:
+        logger.exception("Export resource not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "code": "export_resource_not_found",
+                "message": "Requested resource for this export does not exist.",
+            },
+        )
+    except Exception:
+        logger.exception("Export generation failed")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "code": "export_generation_failed",
+                "message": "Export generation failed. Please try again.",
+            },
+        )
 
 
 @router.get("/{event_id}/exports/athletes-list")
@@ -110,11 +123,24 @@ def export_athletes_list(
             media_type="application/pdf",
             headers={"Content-Disposition": f"inline; filename=athletes-list-{event_id}.pdf"},
         )
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except Exception as e:
-        logger.error("Export failed: %s", e, exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Export generation failed. Please try again.")
+    except ValueError:
+        logger.exception("Export resource not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "code": "export_resource_not_found",
+                "message": "Requested resource for this export does not exist.",
+            },
+        )
+    except Exception:
+        logger.exception("Export generation failed")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "code": "export_generation_failed",
+                "message": "Export generation failed. Please try again.",
+            },
+        )
 
 
 @router.get("/{event_id}/exports/medal-standings")
@@ -132,11 +158,24 @@ def export_medal_standings(
             media_type="application/pdf",
             headers={"Content-Disposition": f"inline; filename=medal-standings-{event_id}.pdf"},
         )
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except Exception as e:
-        logger.error("Export failed: %s", e, exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Export generation failed. Please try again.")
+    except ValueError:
+        logger.exception("Export resource not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "code": "export_resource_not_found",
+                "message": "Requested resource for this export does not exist.",
+            },
+        )
+    except Exception:
+        logger.exception("Export generation failed")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "code": "export_generation_failed",
+                "message": "Export generation failed. Please try again.",
+            },
+        )
 
 
 @router.get("/{event_id}/exports/results-summary")
@@ -154,11 +193,24 @@ async def export_results_summary(
             media_type="application/pdf",
             headers={"Content-Disposition": f"inline; filename=results-summary-{event_id}.pdf"},
         )
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except Exception as e:
-        logger.error("Export failed: %s", e, exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Export generation failed. Please try again.")
+    except ValueError:
+        logger.exception("Export resource not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "code": "export_resource_not_found",
+                "message": "Requested resource for this export does not exist.",
+            },
+        )
+    except Exception:
+        logger.exception("Export generation failed")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "code": "export_generation_failed",
+                "message": "Export generation failed. Please try again.",
+            },
+        )
 
 
 @router.get("/{event_id}/exports/statistics")
@@ -176,8 +228,21 @@ async def export_statistics(
             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             headers={"Content-Disposition": f"attachment; filename=statistics-{event_id}.xlsx"},
         )
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except Exception as e:
-        logger.error("Export failed: %s", e, exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Export generation failed. Please try again.")
+    except ValueError:
+        logger.exception("Export resource not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "code": "export_resource_not_found",
+                "message": "Requested resource for this export does not exist.",
+            },
+        )
+    except Exception:
+        logger.exception("Export generation failed")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "code": "export_generation_failed",
+                "message": "Export generation failed. Please try again.",
+            },
+        )

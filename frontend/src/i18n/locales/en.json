@@ -834,6 +834,23 @@
     "fetch_athletes_db_failed": "Could not load athletes for this event.",
     "sync_athletes_failed": "Could not sync athletes from the Arena API. Try again later.",
     "athletes_pdf_failed": "Could not generate the athletes PDF.",
-    "arena_connection_failed": "Could not connect to the Arena instance. Verify credentials and the base URL."
+    "arena_connection_failed": "Could not connect to the Arena instance. Verify credentials and the base URL.",
+    "arena_api_error": "Arena API returned an error. Please try again later.",
+    "arena_resource_not_found": "The requested resource is not available in the Arena API.",
+    "arena_network_failed": "Cannot reach the Arena API. Check the Arena source configuration.",
+    "arena_unexpected": "Unexpected error while contacting the Arena API.",
+    "arena_credentials_missing": "Arena source has no credentials configured. Set client_id, client_secret and api_key in Settings → Arena Sources.",
+    "arena_token_invalid_response": "Arena returned an invalid token response.",
+    "arena_token_network_failed": "Cannot reach the Arena authentication endpoint. Verify the host and port.",
+    "arena_token_rejected": "Arena rejected the credentials. Verify client_id, client_secret and api_key.",
+    "arena_token_unexpected": "Unexpected error while obtaining the Arena access token.",
+    "sport_event_not_found": "Sport event not found.",
+    "sync_failed": "Unable to sync data from the Arena API.",
+    "sync_weight_categories_failed": "Unable to sync weight categories from the Arena API.",
+    "sync_referees_failed": "Unable to sync referees from the Arena API.",
+    "sync_fights_failed": "Unable to sync fights from the Arena API.",
+    "admin_sync_failed": "Admin sync failed. See server logs for details.",
+    "export_resource_not_found": "The data for this export does not exist.",
+    "export_generation_failed": "Export generation failed. Please try again."
   }
 }

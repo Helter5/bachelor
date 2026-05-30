@@ -1,8 +1,11 @@
 """Protected Admin API - sync management (requires admin role)"""
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Header, Request
 from sqlmodel import Session
 from typing import Optional
 from datetime import datetime, timezone
+
+logger = logging.getLogger(__name__)
 
 from ....database import get_session
 from ....domain.entities.user import User
@@ -136,10 +139,14 @@ async def sync_events(
             return result
         except Exception as e:
             sync_admin.fail_sync_log(sync_log, start_time=start_time, error_message=str(e))
+            logger.exception("Admin sport-event sync failed (idempotency_key=%s)", idempotency_key)
 
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Sync failed: {str(e)}"
+                detail={
+                    "code": "admin_sync_failed",
+                    "message": "Admin sync failed. See server logs for details.",
+                },
             )
 
 

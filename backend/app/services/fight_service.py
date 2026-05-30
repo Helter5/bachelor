@@ -110,10 +110,16 @@ class FightService(BaseService[Fight]):
 
         except HTTPException:
             raise
-        except Exception as e:
-            logger.error(f"Failed to sync fights for event {sport_event_uuid}: {str(e)}", exc_info=True)
+        except Exception:
+            logger.exception("Failed to sync fights for event %s", sport_event_uuid)
             self.session.rollback()
-            raise HTTPException(status_code=500, detail=f"Failed to sync fights: {str(e)}")
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "code": "sync_fights_failed",
+                    "message": "Unable to sync fights from Arena API.",
+                },
+            )
 
     async def _build_athlete_uuid_map(self, sport_event_uuid: str, event_db_id: int, source) -> Dict[str, int]:
         """Build {arena_athlete_uuid: local_athlete_id} by natural key matching."""

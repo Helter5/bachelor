@@ -101,10 +101,16 @@ class RefereeService(BaseService[Referee]):
 
         except HTTPException:
             raise
-        except Exception as e:
-            logger.error(f"Failed to sync referees for event {sport_event_uuid}: {str(e)}", exc_info=True)
+        except Exception:
+            logger.exception("Failed to sync referees for event %s", sport_event_uuid)
             self.session.rollback()
-            raise HTTPException(status_code=500, detail=f"Failed to sync referees: {str(e)}")
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "code": "sync_referees_failed",
+                    "message": "Unable to sync referees from Arena API.",
+                },
+            )
 
     def _build_team_maps(self, event_db_id: int) -> tuple:
         """Build lookup maps for resolving Arena referee team fields."""

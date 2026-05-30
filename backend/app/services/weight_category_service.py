@@ -87,10 +87,16 @@ class WeightCategoryService(BaseService[WeightCategory]):
 
         except HTTPException:
             raise
-        except Exception as e:
-            logger.error(f"Failed to sync weight categories for event {sport_event_uuid}: {str(e)}", exc_info=True)
+        except Exception:
+            logger.exception("Failed to sync weight categories for event %s", sport_event_uuid)
             self.session.rollback()
-            raise HTTPException(status_code=500, detail=f"Failed to sync weight categories: {str(e)}")
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "code": "sync_weight_categories_failed",
+                    "message": "Unable to sync weight categories from Arena API.",
+                },
+            )
 
     def _extract_weight_categories_list(self, wc_data: Dict[str, Any]) -> List[Dict[str, Any]]:
         if "weightCategories" in wc_data:

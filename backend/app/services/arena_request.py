@@ -29,12 +29,38 @@ async def call_arena_api(
             return response.json()
 
     except httpx.HTTPStatusError as e:
-        logger.error(f"Arena API HTTP error: {e.response.status_code} - {e.response.text}")
-        raise HTTPException(status_code=e.response.status_code,
-                            detail=f"Arena API returned error: {e.response.text}")
-    except httpx.RequestError as e:
-        logger.error(f"Arena API request error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Request to Arena API failed: {str(e)}")
-    except Exception as e:
-        logger.error(f"Unexpected error in Arena API call: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+        logger.exception("Arena API HTTP error %s for %s", e.response.status_code, url)
+        # 404 must be preserved for callers that branch on it (e.g. weight categories).
+        if e.response.status_code == 404:
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "code": "arena_resource_not_found",
+                    "message": "Requested resource was not found in Arena API",
+                },
+            )
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "code": "arena_api_error",
+                "message": "Arena API returned an error",
+            },
+        )
+    except httpx.RequestError:
+        logger.exception("Arena API request error for %s", url)
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "code": "arena_network_failed",
+                "message": "Cannot reach Arena API. Check the Arena source configuration.",
+            },
+        )
+    except Exception:
+        logger.exception("Unexpected error in Arena API call to %s", url)
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "code": "arena_unexpected",
+                "message": "Unexpected error contacting Arena API",
+            },
+        )
