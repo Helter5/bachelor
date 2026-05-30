@@ -840,6 +840,7 @@
     "sync_athletes_failed": "Synchronizácia atlétov z Arena API zlyhala. Skús to neskôr.",
     "athletes_pdf_failed": "Nepodarilo sa vygenerovať PDF atlétov.",
     "arena_connection_failed": "Nepodarilo sa pripojiť k Arena inštancii. Skontroluj prihlasovacie údaje a base URL.",
+    "arena_source_not_found": "Arena zdroj sa nenašiel.",
     "arena_api_error": "Arena API vrátilo chybu. Skús to neskôr.",
     "arena_resource_not_found": "Požadovaný zdroj nie je dostupný v Arena API.",
     "arena_network_failed": "Arena API je nedostupné. Skontroluj konfiguráciu Arena zdroja.",
@@ -856,6 +857,7 @@
     "sync_fights_failed": "Nepodarilo sa synchronizovať zápasy z Arena API.",
     "admin_sync_failed": "Admin synchronizácia zlyhala. Detaily v serverových logoch.",
     "export_resource_not_found": "Dáta pre tento export neexistujú.",
-    "export_generation_failed": "Generovanie exportu zlyhalo. Skús to znova."
+    "export_generation_failed": "Generovanie exportu zlyhalo. Skús to znova.",
+    "fetch_results_failed": "Nepodarilo sa načítať výsledky zápasov."
   }
 }

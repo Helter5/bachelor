@@ -98,9 +98,12 @@ def get_results(event_id: int, session: Session = Depends(get_session)):
         logger.info(f"Returned {len(results)} results from DB for event {event_id}")
         return results
 
-    except Exception as e:
-        logger.error(f"Failed to fetch results for event {event_id}: {str(e)}", exc_info=True)
+    except Exception:
+        logger.exception("Failed to fetch results for event %s", event_id)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to fetch results. Please try again.",
+            detail={
+                "code": "fetch_results_failed",
+                "message": "Unable to fetch results. Please try again.",
+            },
         )

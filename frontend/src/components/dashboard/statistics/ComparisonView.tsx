@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, type Dispatch, type SetStateAction } from "react"
+import { useCallback, useState, useEffect, useMemo, useRef, type Dispatch, type SetStateAction } from "react"
 import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
@@ -183,12 +183,18 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [mode1, mode2])
 
-  useEffect(() => {
-    if (mode1 === "search") searchRef1.current?.focus()
-  }, [mode1])
-  useEffect(() => {
-    if (mode2 === "search") searchRef2.current?.focus()
-  }, [mode2])
+  const handleMode1Change = useCallback((mode: PickerMode) => {
+    setMode1(mode)
+    if (mode === "search") {
+      requestAnimationFrame(() => searchRef1.current?.focus())
+    }
+  }, [])
+  const handleMode2Change = useCallback((mode: PickerMode) => {
+    setMode2(mode)
+    if (mode === "search") {
+      requestAnimationFrame(() => searchRef2.current?.focus())
+    }
+  }, [])
 
   const reset = () => {
     setWrestler1Search("")
@@ -284,7 +290,7 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
               wrestler={1}
               selected={selectedWrestler1}
               mode={mode1}
-              onModeChange={setMode1}
+              onModeChange={handleMode1Change}
               search={wrestler1Search}
               onSearchChange={setWrestler1Search}
               onSelect={setSelectedWrestler1}
@@ -336,7 +342,7 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
               wrestler={2}
               selected={selectedWrestler2}
               mode={mode2}
-              onModeChange={setMode2}
+              onModeChange={handleMode2Change}
               search={wrestler2Search}
               onSearchChange={setWrestler2Search}
               onSelect={setSelectedWrestler2}

@@ -241,8 +241,9 @@ export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewP
   )
 
   useEffect(() => {
-    if (categories.length > 0 && !selectedRankingCategory) {
-      setSelectedRankingCategory(categories[0])
+    const first = categories[0]
+    if (first && !selectedRankingCategory) {
+      setSelectedRankingCategory(first)
     }
   }, [categories, selectedRankingCategory])
 

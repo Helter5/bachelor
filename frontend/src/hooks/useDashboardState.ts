@@ -40,7 +40,7 @@ function getCurrentLocale() {
   const fromPath = getLocaleFromPath()
   if (fromPath) return fromPath
 
-  const resolved = (i18n.resolvedLanguage || i18n.language || DEFAULT_LOCALE).toLowerCase().split('-')[0]
+  const resolved = (i18n.resolvedLanguage || i18n.language || DEFAULT_LOCALE).toLowerCase().split('-')[0] ?? DEFAULT_LOCALE
   return SUPPORTED_LOCALES.has(resolved) ? resolved : DEFAULT_LOCALE
 }
 

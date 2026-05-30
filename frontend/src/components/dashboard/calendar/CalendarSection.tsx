@@ -61,7 +61,9 @@ export function CalendarSection({ isDarkMode }: CalendarSectionProps) {
     const query = searchQuery.trim()
     if (!query || filteredEvents.length === 0) return
 
-    const firstMatch = filteredEvents[0].date
+    const firstEvent = filteredEvents[0]
+    if (!firstEvent) return
+    const firstMatch = firstEvent.date
     const matchKey = dateKey(firstMatch)
     const shouldChangeMonth =
       firstMatch.getFullYear() !== visibleMonth.getFullYear() ||

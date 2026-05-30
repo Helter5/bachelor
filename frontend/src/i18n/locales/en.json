@@ -835,6 +835,7 @@
     "sync_athletes_failed": "Could not sync athletes from the Arena API. Try again later.",
     "athletes_pdf_failed": "Could not generate the athletes PDF.",
     "arena_connection_failed": "Could not connect to the Arena instance. Verify credentials and the base URL.",
+    "arena_source_not_found": "Arena source not found.",
     "arena_api_error": "Arena API returned an error. Please try again later.",
     "arena_resource_not_found": "The requested resource is not available in the Arena API.",
     "arena_network_failed": "Cannot reach the Arena API. Check the Arena source configuration.",
@@ -851,6 +852,7 @@
     "sync_fights_failed": "Unable to sync fights from the Arena API.",
     "admin_sync_failed": "Admin sync failed. See server logs for details.",
     "export_resource_not_found": "The data for this export does not exist.",
-    "export_generation_failed": "Export generation failed. Please try again."
+    "export_generation_failed": "Export generation failed. Please try again.",
+    "fetch_results_failed": "Could not load fight results."
   }
 }

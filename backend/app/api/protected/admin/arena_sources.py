@@ -16,6 +16,36 @@ from ....services.arena_auth import invalidate_source_token_cache
 
 router = APIRouter(prefix="/admin/arena-sources")
 
+def _get_owned_source_or_404(
+    session: Session, source_id: int, user: User
+) -> ArenaSource:
+    """Load an arena source that belongs to the calling user, or raise 404.
+
+    Logs a warning when an admin attempts to access a source they do not own;
+    the response stays 404 so existence of another user's source is not
+    disclosed to the caller.
+    """
+    source = session.get(ArenaSource, source_id)
+    if source is None:
+        logger.info(
+            "Arena source not found (user_id=%s, source_id=%s)", user.id, source_id
+        )
+    elif source.user_id != user.id:
+        logger.warning(
+            "Admin user_id=%s attempted to access arena source %s owned by user_id=%s",
+            user.id, source_id, source.user_id,
+        )
+    if source is None or source.user_id != user.id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "code": "arena_source_not_found",
+                "message": "Arena source not found.",
+            },
+        )
+    return source
+
+
 def _activate_exclusively(session: Session, source: ArenaSource) -> None:
     """Enable this source and disable all others of the same user — only one can be active at a time."""
     for other in session.exec(
@@ -80,13 +110,7 @@ async def get_arena_source(
 
     Requires: Admin role + CSRF token + Origin validation
     """
-    source = session.get(ArenaSource, source_id)
-    if not source or source.user_id != user.id:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Arena source with id {source_id} not found"
-        )
-    return source
+    return _get_owned_source_or_404(session, source_id, user)
 
 
 @router.put("/{source_id}", response_model=ArenaSourceOut)
@@ -102,12 +126,7 @@ async def update_arena_source(
 
     Requires: Admin role + CSRF token + Origin validation
     """
-    source = session.get(ArenaSource, source_id)
-    if not source or source.user_id != user.id:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Arena source with id {source_id} not found"
-        )
+    source = _get_owned_source_or_404(session, source_id, user)
 
     invalidate_source_token_cache(source_id)
 
@@ -140,12 +159,8 @@ async def delete_arena_source(
 
     Requires: Admin role + CSRF token + Origin validation
     """
-    source = session.get(ArenaSource, source_id)
-    if not source or source.user_id != user.id:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Arena source with id {source_id} not found"
-        )
+    source = _get_owned_source_or_404(session, source_id, user)
+    logger.info("Deleting arena source %s (user_id=%s)", source_id, user.id)
 
     invalidate_source_token_cache(source_id)
     session.delete(source)
@@ -165,12 +180,7 @@ async def test_arena_source(
 
     Requires: Admin role + CSRF token + Origin validation
     """
-    source = session.get(ArenaSource, source_id)
-    if not source or source.user_id != user.id:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Arena source with id {source_id} not found"
-        )
+    source = _get_owned_source_or_404(session, source_id, user)
 
     try:
         response = await ArenaGateway(source).fetch_data("sport-event/", source=source)
@@ -201,12 +211,7 @@ async def toggle_arena_source(
 
     Requires: Admin role + CSRF token + Origin validation
     """
-    source = session.get(ArenaSource, source_id)
-    if not source or source.user_id != user.id:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Arena source with id {source_id} not found"
-        )
+    source = _get_owned_source_or_404(session, source_id, user)
 
     if source.is_enabled:
         source.is_enabled = False

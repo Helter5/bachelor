@@ -507,7 +507,7 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
               }, {})
           ).map(([eventName, fights]) => (
             <div key={eventName}>
-              <FightGroupHeader isDarkMode={isDarkMode} eventName={eventName} weightCategory={fights[0].weight_category} />
+              <FightGroupHeader isDarkMode={isDarkMode} eventName={eventName} weightCategory={fights[0]?.weight_category ?? ''} />
               <div className="space-y-1">
                 {fights.map((fight) => (
                   <FightItem key={fight.fight_id} isDarkMode={isDarkMode} fight={fight} />

@@ -128,6 +128,7 @@ export function DrawTab({
     const updated: Record<number, CategoryDraw> = {}
     results.forEach((res, i) => {
       const wc = weightCategories[i]
+      if (!wc) return
       if (res.status === "fulfilled") {
         updated[wc.id] = { wc, result: res.value.result, loading: false, error: res.value.error }
       } else {

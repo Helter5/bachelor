@@ -68,7 +68,7 @@ export function ResultsTab({
       const l = name.toLowerCase()
       if (l.includes('qualif')) return 1
       const g = l.match(/([a-z])\s*\|\s*round\s+(\d+)/)
-      if (g) return 2 + (parseInt(g[2]) - 1) * 0.1 + (g[1].charCodeAt(0) - 97) * 0.01
+      if (g && g[1] && g[2]) return 2 + (parseInt(g[2]) - 1) * 0.1 + (g[1].charCodeAt(0) - 97) * 0.01
       if (l.includes('1/16') || l.includes('round of 16')) return 8
       if (l.includes('1/8') || l.includes('round of 8')) return 9
       if (l.includes('1/4') || l.includes('quarter')) return 10
@@ -83,8 +83,9 @@ export function ResultsTab({
     }
 
     const roundGroups = validFights.reduce((acc, fight) => {
-      if (!acc[fight.roundFriendlyName]) acc[fight.roundFriendlyName] = []
-      acc[fight.roundFriendlyName].push(fight)
+      const bucket = acc[fight.roundFriendlyName] ?? []
+      bucket.push(fight)
+      acc[fight.roundFriendlyName] = bucket
       return acc
     }, {} as Record<string, FightResult[]>)
 

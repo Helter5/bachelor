@@ -1,7 +1,8 @@
 """Seeded bracket generation with penalty-based placement."""
+from collections import defaultdict
 from fastapi import HTTPException, status
 from sqlmodel import Session, select
-from sqlalchemy import select as sa_select
+from sqlalchemy import select as sa_select, or_
 from typing import Optional
 import math
 import logging
@@ -56,8 +57,13 @@ class DrawService:
         wc = self.session.get(WeightCategory, weight_category_id)
         wc_name = f"{wc.max_weight} kg" if wc else str(weight_category_id)
 
+        person_ids = [a["person_id"] for a in athletes]
+        # Two batched prefetches replace what used to be N + N*M individual queries.
+        score_cache = self._prefetch_score_fights(person_ids, wc.max_weight if wc else None)
+        pair_cache = self._prefetch_pair_fights(person_ids)
+
         for a in athletes:
-            a["score"] = self._compute_seed_score(a["person_id"], wc.max_weight if wc else None, last_n)
+            a["score"] = self._compute_seed_score(score_cache.get(a["person_id"], []), last_n)
         athletes.sort(key=lambda x: x["score"], reverse=True)
         for i, a in enumerate(athletes):
             a["seed"] = i + 1
@@ -77,13 +83,13 @@ class DrawService:
         unseeded = [a for a in athletes if a["seed"] > len(seed_positions)]
         empty_slots = [i for i in range(bracket_size) if i not in placed and slots[i] is None]
 
-        self._place_with_penalty_opt(slots, unseeded, empty_slots, last_n)
+        self._place_with_penalty_opt(slots, unseeded, empty_slots, last_n, pair_cache)
 
         bracket = []
         for i in range(bracket_size // 2):
             a = slots[i * 2]
             b = slots[i * 2 + 1]
-            penalty, reasons = self._compute_pair_penalty(a, b, last_n) if (a and b) else (0, [])
+            penalty, reasons = self._compute_pair_penalty(a, b, last_n, pair_cache) if (a and b) else (0, [])
             bracket.append({
                 "match_number": i + 1,
                 "athlete_a": self._format_athlete(a),
@@ -127,8 +133,10 @@ class DrawService:
         ).all()
 
         result = []
+        skipped_without_person = 0
         for athlete, person, team in rows:
             if not person:
+                skipped_without_person += 1
                 continue
             result.append({
                 "athlete_id": athlete.id,
@@ -138,13 +146,31 @@ class DrawService:
                 "team_id": athlete.team_id,
                 "team_name": team.name if team else None,
             })
+        if skipped_without_person:
+            logger.warning(
+                "Draw _get_athletes: skipped %d athlete(s) without a linked Person record "
+                "(event_id=%s, weight_category_id=%s)",
+                skipped_without_person, event_id, weight_category_id,
+            )
         return result
 
-    def _compute_seed_score(self, person_id: int, max_weight: Optional[int], last_n: int) -> float:
-        """Score an athlete from wins in recent tournaments at the same weight."""
+    def _prefetch_score_fights(
+        self, person_ids: list[int], max_weight: Optional[int]
+    ) -> dict[int, list[dict]]:
+        """
+        Batch-fetch every fight involving any of the seeded persons at this weight.
+
+        Returns ``{person_id: [fight_row, ...]}`` so per-athlete score computation
+        becomes pure Python with no further DB roundtrips.
+        """
+        if not person_ids:
+            return {}
+
         a1 = Athlete.__table__.alias("a1")
+        a2 = Athlete.__table__.alias("a2")
         p1 = Person.__table__.alias("p1")
-        wc = WeightCategory.__table__
+        p2 = Person.__table__.alias("p2")
+        wc_t = WeightCategory.__table__
 
         stmt = (
             sa_select(
@@ -153,66 +179,111 @@ class DrawService:
                 Fight.fighter_one_id,
                 Fight.fighter_two_id,
                 SportEvent.start_date,
+                p1.c.id.label("p1_id"),
+                p2.c.id.label("p2_id"),
             )
             .join(SportEvent.__table__, SportEvent.id == Fight.sport_event_id)
-            .join(wc, wc.c.id == Fight.weight_category_id)
+            .join(wc_t, wc_t.c.id == Fight.weight_category_id)
             .join(a1, a1.c.id == Fight.fighter_one_id)
+            .join(a2, a2.c.id == Fight.fighter_two_id)
             .join(p1, p1.c.id == a1.c.person_id)
-            .where(p1.c.id == person_id)
+            .join(p2, p2.c.id == a2.c.person_id)
+            .where(or_(p1.c.id.in_(person_ids), p2.c.id.in_(person_ids)))
         )
         if max_weight is not None:
-            stmt = stmt.where(wc.c.max_weight == max_weight)
+            stmt = stmt.where(wc_t.c.max_weight == max_weight)
 
         rows = self.session.exec(stmt).all()  # type: ignore
-        if not rows:
-            a2 = Athlete.__table__.alias("a2")
-            p2 = Person.__table__.alias("p2")
-            stmt2 = (
-                sa_select(
-                    Fight.sport_event_id,
-                    Fight.winner_id,
-                    Fight.fighter_one_id,
-                    Fight.fighter_two_id,
-                    SportEvent.start_date,
-                )
-                .join(SportEvent.__table__, SportEvent.id == Fight.sport_event_id)
-                .join(wc, wc.c.id == Fight.weight_category_id)
-                .join(a2, a2.c.id == Fight.fighter_two_id)
-                .join(p2, p2.c.id == a2.c.person_id)
-                .where(p2.c.id == person_id)
-            )
-            if max_weight is not None:
-                stmt2 = stmt2.where(wc.c.max_weight == max_weight)
-            rows = self.session.exec(stmt2).all()  # type: ignore
-
-        if not rows:
-            return 0.0
-
-        from collections import defaultdict
-        event_fights: dict[int, list] = defaultdict(list)
-        event_dates: dict[int, str] = {}
+        ids = set(person_ids)
+        by_person: dict[int, list[dict]] = defaultdict(list)
         for r in rows:
             row = dict(r._mapping) if hasattr(r, "_mapping") else r._asdict()
+            if row["p1_id"] in ids:
+                by_person[row["p1_id"]].append(row)
+            if row["p2_id"] in ids:
+                by_person[row["p2_id"]].append(row)
+        return by_person
+
+    def _prefetch_pair_fights(
+        self, person_ids: list[int]
+    ) -> dict[frozenset[int], list[dict]]:
+        """
+        Batch-fetch every fight where both sides come from the seeded set.
+
+        Returns ``{frozenset({p1, p2}): [fight_row, ...]}`` so penalty lookup
+        during placement is O(1).
+        """
+        if len(person_ids) < 2:
+            return {}
+
+        a1 = Athlete.__table__.alias("a1")
+        a2 = Athlete.__table__.alias("a2")
+        p1 = Person.__table__.alias("p1")
+        p2 = Person.__table__.alias("p2")
+
+        stmt = (
+            sa_select(
+                Fight.id,
+                SportEvent.start_date,
+                p1.c.id.label("p1_id"),
+                p2.c.id.label("p2_id"),
+            )
+            .join(SportEvent.__table__, SportEvent.id == Fight.sport_event_id)
+            .join(a1, a1.c.id == Fight.fighter_one_id)
+            .join(a2, a2.c.id == Fight.fighter_two_id)
+            .join(p1, p1.c.id == a1.c.person_id)
+            .join(p2, p2.c.id == a2.c.person_id)
+            .where(p1.c.id.in_(person_ids))
+            .where(p2.c.id.in_(person_ids))
+            .order_by(SportEvent.__table__.c.start_date.desc())
+        )
+
+        rows = self.session.exec(stmt).all()  # type: ignore
+        by_pair: dict[frozenset[int], list[dict]] = defaultdict(list)
+        for r in rows:
+            row = dict(r._mapping) if hasattr(r, "_mapping") else r._asdict()
+            key = frozenset((row["p1_id"], row["p2_id"]))
+            if len(key) == 2:  # skip self-fights, defensive
+                by_pair[key].append(row)
+        return by_pair
+
+    def _compute_seed_score(self, fights: list[dict], last_n: int) -> float:
+        """Score an athlete from wins across recent tournaments. Pure function."""
+        if not fights:
+            return 0.0
+
+        event_fights: dict[int, list[dict]] = defaultdict(list)
+        event_dates: dict[int, str] = {}
+        for row in fights:
             eid = row["sport_event_id"]
             event_fights[eid].append(row)
-            event_dates[eid] = row["start_date"] or ""
+            event_dates[eid] = row.get("start_date") or ""
 
-        sorted_events = sorted(event_dates.keys(), key=lambda e: event_dates[e], reverse=True)[:last_n]
+        sorted_events = sorted(
+            event_dates.keys(), key=lambda e: event_dates[e], reverse=True
+        )[:last_n]
 
         score = 0.0
         for i, eid in enumerate(sorted_events):
-            fights = event_fights[eid]
             wins = 0
-            for f in fights:
-                row = dict(f._mapping) if hasattr(f, "_mapping") else f
-                if row.get("winner_id") == row.get("fighter_one_id") or row.get("winner_id") == row.get("fighter_two_id"):
+            for f in event_fights[eid]:
+                # Preserved from previous implementation: counts the event as a
+                # scoring tournament whenever the winner is one of the two
+                # fighters listed on the fight row.
+                if f.get("winner_id") in (f.get("fighter_one_id"), f.get("fighter_two_id")):
                     wins += 1
             weight = RECENCY_WEIGHTS[i] if i < len(RECENCY_WEIGHTS) else 0.1
             score += wins * 20 * weight
 
         return score
 
-    def _compute_pair_penalty(self, a: Optional[dict], b: Optional[dict], last_n: int) -> tuple[int, list[str]]:
+    def _compute_pair_penalty(
+        self,
+        a: Optional[dict],
+        b: Optional[dict],
+        last_n: int,
+        pair_cache: dict[frozenset[int], list[dict]],
+    ) -> tuple[int, list[str]]:
         if not a or not b:
             return 0, []
         penalty = 0
@@ -222,7 +293,7 @@ class DrawService:
             penalty += SAME_TEAM_PENALTY
             reasons.append(f"Rovnaký tím ({a['team_name']}): +{SAME_TEAM_PENALTY}")
 
-        total, recent = self._count_fights_between(a["person_id"], b["person_id"], last_n)
+        total, recent = self._count_fights_between(a["person_id"], b["person_id"], last_n, pair_cache)
         if total > 0:
             p = total * FIGHT_HISTORY_PENALTY
             penalty += p
@@ -234,45 +305,29 @@ class DrawService:
 
         return penalty, reasons
 
-    def _count_fights_between(self, person1_id: int, person2_id: int, last_n: int) -> tuple[int, int]:
-        """Return total mutual fights and fights within the recent tournament window."""
-        a1 = Athlete.__table__.alias("a1")
-        a2 = Athlete.__table__.alias("a2")
-        p1 = Person.__table__.alias("p1")
-        p2 = Person.__table__.alias("p2")
-
-        stmt = (
-            sa_select(Fight.id, SportEvent.start_date)
-            .join(SportEvent.__table__, SportEvent.id == Fight.sport_event_id)
-            .join(a1, a1.c.id == Fight.fighter_one_id)
-            .join(a2, a2.c.id == Fight.fighter_two_id)
-            .join(p1, p1.c.id == a1.c.person_id)
-            .join(p2, p2.c.id == a2.c.person_id)
-            .where(
-                (
-                    (p1.c.id == person1_id) & (p2.c.id == person2_id)
-                ) | (
-                    (p1.c.id == person2_id) & (p2.c.id == person1_id)
-                )
-            )
-            .order_by(SportEvent.__table__.c.start_date.desc())
-        )
-
-        rows = self.session.exec(stmt).all()  # type: ignore
+    def _count_fights_between(
+        self,
+        person1_id: int,
+        person2_id: int,
+        last_n: int,
+        pair_cache: dict[frozenset[int], list[dict]],
+    ) -> tuple[int, int]:
+        """Total mutual fights and fights within the recent tournament window."""
+        rows = pair_cache.get(frozenset((person1_id, person2_id)))
         if not rows:
             return 0, 0
 
         total = len(rows)
 
-        seen_events: set = set()
+        # Group by distinct start_date (event_id is not available here without
+        # an extra column; date is a stable enough key inside the loop).
+        seen_dates: set = set()
         recent = 0
-        for r in rows:
-            row = dict(r._mapping) if hasattr(r, "_mapping") else r._asdict()
-            # event_id is not selected here, so start_date is the best available grouping key.
-            date = row.get("start_date", "")
-            if len(seen_events) < last_n or date in seen_events:
-                seen_events.add(date)
-                if len(seen_events) <= last_n:
+        for row in rows:
+            date = row.get("start_date") or ""
+            if len(seen_dates) < last_n or date in seen_dates:
+                seen_dates.add(date)
+                if len(seen_dates) <= last_n:
                     recent += 1
 
         return total, recent
@@ -283,6 +338,7 @@ class DrawService:
         unseeded: list[dict],
         empty_slots: list[int],
         last_n: int,
+        pair_cache: dict[frozenset[int], list[dict]],
     ) -> None:
         """Greedily assign unseeded athletes to slots, minimizing first-round penalty."""
         remaining_athletes = list(unseeded)
@@ -297,7 +353,7 @@ class DrawService:
                 for si, slot_idx in enumerate(remaining_slots):
                     pair_slot = slot_idx ^ 1
                     opponent = slots[pair_slot]
-                    p, _ = self._compute_pair_penalty(athlete, opponent, last_n)
+                    p, _ = self._compute_pair_penalty(athlete, opponent, last_n, pair_cache)
                     if p < best_penalty:
                         best_penalty = p
                         best_athlete_idx = ai
