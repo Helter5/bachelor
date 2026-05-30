@@ -77,7 +77,10 @@
     "select": "Select",
     "selected": "Selected",
     "chooseOneOption": "Choose one option",
-    "selectTournament": "Select tournament..."
+    "selectTournament": "Select tournament...",
+    "delegate": "Delegate",
+    "matchChairman": "MC",
+    "referee": "Referee"
   },
   "auth": {
     "login": "Log in",
@@ -532,8 +535,12 @@
     "back": "Back",
     "subtitle": "{{fights}} {{fightLabel}} in {{tournaments}} {{tournamentLabel}}",
     "fightsOne": "fight",
+    "fightsFew": "fights",
+    "fightsMany": "fights",
     "fightsOther": "fights",
     "tournamentsOne": "tournament",
+    "tournamentsFew": "tournaments",
+    "tournamentsMany": "tournaments",
     "tournamentsOther": "tournaments",
     "cards": {
       "fights": "Fights",
