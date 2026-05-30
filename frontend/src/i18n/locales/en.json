@@ -853,6 +853,8 @@
     "admin_sync_failed": "Admin sync failed. See server logs for details.",
     "export_resource_not_found": "The data for this export does not exist.",
     "export_generation_failed": "Export generation failed. Please try again.",
-    "fetch_results_failed": "Could not load fight results."
+    "fetch_results_failed": "Could not load fight results.",
+    "avatar_invalid_type": "Only image files (JPEG, PNG, GIF, WebP) are allowed.",
+    "avatar_too_large": "Avatar file size must not exceed 5 MB."
   }
 }

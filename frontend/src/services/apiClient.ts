@@ -24,6 +24,7 @@ interface RequestOptions {
   headers?: Record<string, string>
   params?: Record<string, string | number>
   requireAuth?: boolean
+  signal?: AbortSignal
 }
 
 class ApiClient {
@@ -166,6 +167,7 @@ class ApiClient {
       headers,
       body: data ? JSON.stringify(data) : undefined,
       credentials: 'include',
+      signal: options.signal,
     })
 
     if (!response.ok) {

@@ -858,6 +858,8 @@
     "admin_sync_failed": "Admin synchronizácia zlyhala. Detaily v serverových logoch.",
     "export_resource_not_found": "Dáta pre tento export neexistujú.",
     "export_generation_failed": "Generovanie exportu zlyhalo. Skús to znova.",
-    "fetch_results_failed": "Nepodarilo sa načítať výsledky zápasov."
+    "fetch_results_failed": "Nepodarilo sa načítať výsledky zápasov.",
+    "avatar_invalid_type": "Povolené sú iba obrázky (JPEG, PNG, GIF, WebP).",
+    "avatar_too_large": "Avatar nesmie presiahnuť 5 MB."
   }
 }

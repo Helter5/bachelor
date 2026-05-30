@@ -26,13 +26,22 @@ export interface RankingEntry {
   breakdown: RankingBreakdown[]
 }
 
+function isAbortError(err: unknown): boolean {
+  return err instanceof DOMException && err.name === "AbortError"
+}
+
 export function useRankingCategories() {
   const [categories, setCategories] = useState<string[]>([])
 
   useEffect(() => {
-    apiClient.get<string[]>(API_ENDPOINTS.RANKING_CATEGORIES)
+    const controller = new AbortController()
+    apiClient
+      .get<string[]>(API_ENDPOINTS.RANKING_CATEGORIES, { signal: controller.signal })
       .then(data => setCategories(data || []))
-      .catch(() => setCategories([]))
+      .catch(err => {
+        if (!isAbortError(err)) setCategories([])
+      })
+    return () => controller.abort()
   }, [])
 
   return categories
@@ -44,11 +53,20 @@ export function useRankingData(category: string, lastN: number, dateFrom?: strin
 
   useEffect(() => {
     if (!category) return
+    const controller = new AbortController()
     setLoading(true)
-    apiClient.get<RankingEntry[]>(API_ENDPOINTS.RANKINGS(category, lastN, dateFrom || undefined))
+    apiClient
+      .get<RankingEntry[]>(API_ENDPOINTS.RANKINGS(category, lastN, dateFrom || undefined), {
+        signal: controller.signal,
+      })
       .then(d => setData(d || []))
-      .catch(() => setData([]))
-      .finally(() => setLoading(false))
+      .catch(err => {
+        if (!isAbortError(err)) setData([])
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false)
+      })
+    return () => controller.abort()
   }, [category, lastN, dateFrom])
 
   return { data, loading }

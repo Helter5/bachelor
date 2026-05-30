@@ -8,12 +8,23 @@ interface SportEvent {
   name: string
 }
 
+function isAbortError(err: unknown): boolean {
+  return err instanceof DOMException && err.name === "AbortError"
+}
+
 export function useEvents() {
   const [events, setEvents] = useState<SportEvent[]>([])
   useEffect(() => {
-    apiClient.get<{ items: SportEvent[] }>(API_ENDPOINTS.SPORT_EVENT_DATABASE)
+    const controller = new AbortController()
+    apiClient
+      .get<{ items: SportEvent[] }>(API_ENDPOINTS.SPORT_EVENT_DATABASE, {
+        signal: controller.signal,
+      })
       .then(data => setEvents(data?.items || []))
-      .catch(() => setEvents([]))
+      .catch(err => {
+        if (!isAbortError(err)) setEvents([])
+      })
+    return () => controller.abort()
   }, [])
   return events
 }

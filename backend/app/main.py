@@ -6,6 +6,7 @@ import httpx
 from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -64,6 +65,16 @@ def _cors_origins() -> list[str]:
     if s.allowed_origins:
         return [o.strip() for o in s.allowed_origins.split(",") if o.strip()]
     return [s.frontend_url]
+
+
+def _trusted_hosts() -> list[str]:
+    raw = (_settings.allowed_hosts or "*").strip()
+    return [h.strip() for h in raw.split(",") if h.strip()] or ["*"]
+
+
+# TrustedHostMiddleware must be added BEFORE CORSMiddleware so the Host check
+# runs first. Defaults to ["*"] for local dev; set ALLOWED_HOSTS in production.
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=_trusted_hosts())
 
 app.add_middleware(
     CORSMiddleware,

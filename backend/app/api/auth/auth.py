@@ -161,6 +161,7 @@ async def login(
 
 
 @router.post("/refresh", response_model=TokenResponse)
+@limiter.limit("30/minute")
 async def refresh(
     response: Response,
     request: Request,
@@ -239,7 +240,8 @@ async def get_me(user: User = Depends(require_user)):
 
 
 @router.get("/verify-email/{token}")
-async def verify_email(token: str, session: Session = Depends(get_session)):
+@limiter.limit("10/minute")
+async def verify_email(request: Request, token: str, session: Session = Depends(get_session)):
     user_id = verify_email_verification_token(token, session)
     if not user_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired verification token")
@@ -258,7 +260,8 @@ async def verify_email(token: str, session: Session = Depends(get_session)):
 
 
 @router.post("/resend-verification")
-async def resend_verification_email(request_data: EmailRequest, session: Session = Depends(get_session)):
+@limiter.limit("3/minute")
+async def resend_verification_email(request: Request, request_data: EmailRequest, session: Session = Depends(get_session)):
     user = session.exec(select(User).where(User.email == request_data.email)).first()
 
     # Don't reveal whether email exists (prevent enumeration)
@@ -302,7 +305,8 @@ async def forgot_password(request: Request, request_data: EmailRequest, session:
 
 
 @router.get("/reset-password/{token}")
-async def verify_reset_token(token: str, session: Session = Depends(get_session)):
+@limiter.limit("10/minute")
+async def verify_reset_token(request: Request, token: str, session: Session = Depends(get_session)):
     """Validate a password reset token without consuming it."""
     user_id = verify_password_reset_token(token, session, consume=False)
     if not user_id:
@@ -311,7 +315,8 @@ async def verify_reset_token(token: str, session: Session = Depends(get_session)
 
 
 @router.post("/reset-password")
-async def reset_password(request_data: SetPasswordRequest, session: Session = Depends(get_session)):
+@limiter.limit("5/minute")
+async def reset_password(request: Request, request_data: SetPasswordRequest, session: Session = Depends(get_session)):
     """Set a new password using a valid reset token."""
     user_id = verify_password_reset_token(request_data.token, session, consume=True)
     if not user_id:
@@ -330,10 +335,11 @@ async def reset_password(request_data: SetPasswordRequest, session: Session = De
 
 
 @router.post("/google", response_model=TokenResponse)
+@limiter.limit("10/minute")
 async def google_login(
+    request: Request,
     request_data: GoogleLoginRequest,
     response: Response,
-    request: Request,
     session: Session = Depends(get_session)
 ):
     """Login/register via Google OAuth2. Creates account if user doesn't exist."""

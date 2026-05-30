@@ -29,6 +29,10 @@ export interface EventStatistics {
   team_performance: TeamPerformance[]
 }
 
+function isAbortError(err: unknown): boolean {
+  return err instanceof DOMException && err.name === "AbortError"
+}
+
 export function useEventStatistics(eventId: number | null) {
   const [stats, setStats] = useState<EventStatistics | null>(null)
   const [loading, setLoading] = useState(false)
@@ -38,11 +42,18 @@ export function useEventStatistics(eventId: number | null) {
       setStats(null)
       return
     }
+    const controller = new AbortController()
     setLoading(true)
-    apiClient.get<EventStatistics>(API_ENDPOINTS.EVENT_STATISTICS(eventId))
+    apiClient
+      .get<EventStatistics>(API_ENDPOINTS.EVENT_STATISTICS(eventId), { signal: controller.signal })
       .then(data => setStats(data))
-      .catch(() => setStats(null))
-      .finally(() => setLoading(false))
+      .catch(err => {
+        if (!isAbortError(err)) setStats(null)
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false)
+      })
+    return () => controller.abort()
   }, [eventId])
 
   return { stats, loading }

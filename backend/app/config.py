@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     smtp_from_name: str = "Wrestling Federation"
     frontend_url: str = "http://localhost:5173"
     allowed_origins: str = ""
+    # Comma-separated list of hostnames that TrustedHostMiddleware will accept
+    # in the ``Host`` header. ``*`` disables the check (default for local dev).
+    allowed_hosts: str = "*"
 
     google_client_id: str = ""
     google_client_secret: str = ""

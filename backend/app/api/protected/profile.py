@@ -49,10 +49,7 @@ class LoginHistoryOut(BaseModel):
 
 
 @router.get("/me", response_model=UserOut)
-async def get_my_profile(
-    user: User = Depends(require_user),
-    session: Session = Depends(get_session)
-):
+async def get_my_profile(user: User = Depends(require_user)):
     return user
 
 
@@ -130,14 +127,20 @@ async def upload_avatar(
     if file.content_type not in allowed_types:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only image files (JPEG, PNG, GIF, WebP) are allowed"
+            detail={
+                "code": "avatar_invalid_type",
+                "message": "Only image files (JPEG, PNG, GIF, WebP) are allowed.",
+            },
         )
 
     contents = await file.read()
     if len(contents) > 5 * 1024 * 1024:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="File size must not exceed 5MB"
+            detail={
+                "code": "avatar_too_large",
+                "message": "Avatar file size must not exceed 5 MB.",
+            },
         )
 
     if user.avatar_url:
