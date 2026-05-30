@@ -2,6 +2,7 @@
 Athletes API Routes
 Thin controller layer - delegates to AthleteService
 """
+import logging
 from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import Dict, Any, Optional
 from sqlmodel import Session
@@ -9,6 +10,7 @@ from sqlmodel import Session
 from ..database import get_session
 from ..services.athlete_service import AthleteService
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/athlete")
 
 
@@ -32,10 +34,16 @@ async def get_athletes(
     """
     try:
         return await service.get_athletes_from_arena(sport_event_id)
-    except Exception as e:
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("Failed to fetch athletes for event %s from Arena", sport_event_id)
         raise HTTPException(
-            status_code=500,
-            detail=f"Failed to fetch athletes for event {sport_event_id}: {str(e)}"
+            status_code=502,
+            detail={
+                "code": "fetch_athletes_arena_failed",
+                "message": "Unable to fetch athletes from Arena API",
+            },
         )
 
 
@@ -55,10 +63,14 @@ async def get_all_athletes_from_database(
             "count": len(athletes_with_data),
             "athletes": athletes_with_data
         }
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to fetch all athletes from database")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to fetch all athletes from database: {str(e)}"
+            detail={
+                "code": "fetch_all_athletes_db_failed",
+                "message": "Unable to fetch athletes from database",
+            },
         )
 
 
@@ -95,10 +107,14 @@ async def get_athletes_from_database(
                 for athlete in athletes_with_teams
             ]
         }
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to fetch athletes from database for event %s", sport_event_id)
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to fetch athletes from database: {str(e)}"
+            detail={
+                "code": "fetch_athletes_db_failed",
+                "message": "Unable to fetch athletes from database",
+            },
         )
 
 
@@ -119,10 +135,14 @@ async def sync_athletes(
         return await service.sync_athletes_for_event(sport_event_id)
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to sync athletes for event %s", sport_event_id)
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to sync athletes: {str(e)}"
+            detail={
+                "code": "sync_athletes_failed",
+                "message": "Unable to sync athletes from Arena API",
+            },
         )
 
 
@@ -176,5 +196,12 @@ async def generate_athletes_list_pdf(event_id: int, session: Session = Depends(g
         )
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate PDF: {str(e)}")
+    except Exception:
+        logger.exception("Failed to generate athletes PDF for event %s", event_id)
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "code": "athletes_pdf_failed",
+                "message": "Unable to generate athletes PDF",
+            },
+        )

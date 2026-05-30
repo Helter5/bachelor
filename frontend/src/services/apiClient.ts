@@ -4,16 +4,19 @@ import { clearAuthSessionHint } from '@/services/authSession'
 export class ApiError extends Error {
   status: number
   statusText: string
+  code?: string
 
   constructor(
     status: number,
     statusText: string,
-    message: string
+    message: string,
+    code?: string
   ) {
     super(message)
     this.name = 'ApiError'
     this.status = status
     this.statusText = statusText
+    this.code = code
   }
 }
 
@@ -104,6 +107,26 @@ class ApiClient {
     return result
   }
 
+  private async parseErrorResponse(response: Response): Promise<ApiError> {
+    const errorText = await response.text().catch(() => 'Unknown error')
+    let errorMessage = errorText || `HTTP ${response.status}: ${response.statusText}`
+    let errorCode: string | undefined
+    try {
+      const parsed = JSON.parse(errorText)
+      const detail = parsed?.detail
+      if (typeof detail === 'string') {
+        errorMessage = detail
+      } else if (detail && typeof detail === 'object') {
+        if (typeof detail.code === 'string') errorCode = detail.code
+        if (typeof detail.message === 'string') errorMessage = detail.message
+      } else if (typeof parsed?.message === 'string') {
+        errorMessage = parsed.message
+        if (typeof parsed?.code === 'string') errorCode = parsed.code
+      }
+    } catch { /* not JSON */ }
+    return new ApiError(response.status, response.statusText, errorMessage, errorCode)
+  }
+
   private async doRefresh(): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseUrl}${API_ENDPOINTS.AUTH_REFRESH}`, {
@@ -157,13 +180,7 @@ class ApiClient {
 
       }
 
-      const errorText = await response.text().catch(() => 'Unknown error')
-      let errorMessage = errorText || `HTTP ${response.status}: ${response.statusText}`
-      try {
-        const parsed = JSON.parse(errorText)
-        if (typeof parsed?.detail === 'string') errorMessage = parsed.detail
-      } catch { /* not JSON */ }
-      throw new ApiError(response.status, response.statusText, errorMessage)
+      throw await this.parseErrorResponse(response)
     }
 
     const contentType = response.headers.get('content-type')
@@ -234,13 +251,7 @@ class ApiClient {
         window.location.href = '/'
       }
 
-      const errorText = await response.text().catch(() => 'Unknown error')
-      let errorMessage = errorText || `HTTP ${response.status}: ${response.statusText}`
-      try {
-        const parsed = JSON.parse(errorText)
-        if (typeof parsed?.detail === 'string') errorMessage = parsed.detail
-      } catch { /* not JSON */ }
-      throw new ApiError(response.status, response.statusText, errorMessage)
+      throw await this.parseErrorResponse(response)
     }
 
     return response.blob()
@@ -274,12 +285,7 @@ class ApiClient {
       }
 
       if (!response.ok) {
-        const errorText = await response.text().catch(() => 'Unknown error')
-        throw new ApiError(
-          response.status,
-          response.statusText,
-          errorText || `HTTP ${response.status}: ${response.statusText}`
-        )
+        throw await this.parseErrorResponse(response)
       }
     }
 

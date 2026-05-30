@@ -2,6 +2,7 @@
 Teams API Routes
 Thin controller layer - delegates to TeamService
 """
+import logging
 from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import Dict, Any
 from sqlmodel import Session
@@ -9,6 +10,7 @@ from sqlmodel import Session
 from ..database import get_session
 from ..services.team_service import TeamService
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/team")
 
 
@@ -32,10 +34,16 @@ async def get_teams(
     """
     try:
         return await service.get_teams_from_arena(sport_event_id)
-    except Exception as e:
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("Failed to fetch teams for event %s from Arena", sport_event_id)
         raise HTTPException(
-            status_code=500,
-            detail=f"Failed to fetch teams for event {sport_event_id}: {str(e)}"
+            status_code=502,
+            detail={
+                "code": "fetch_teams_arena_failed",
+                "message": "Unable to fetch teams from Arena API",
+            },
         )
 
 
@@ -67,10 +75,14 @@ async def get_teams_from_database(
             }
             for team in teams
         ]
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to fetch teams from database for event %s", sport_event_id)
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to fetch teams from database: {str(e)}"
+            detail={
+                "code": "fetch_teams_db_failed",
+                "message": "Unable to fetch teams from database",
+            },
         )
 
 
@@ -91,10 +103,14 @@ async def sync_teams(
         return await service.sync_teams_for_event(sport_event_id)
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to sync teams for event %s", sport_event_id)
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to sync teams: {str(e)}"
+            detail={
+                "code": "sync_teams_failed",
+                "message": "Unable to sync teams from Arena API",
+            },
         )
 
 
@@ -138,5 +154,12 @@ async def generate_teams_list_pdf(event_id: int, session: Session = Depends(get_
         )
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate PDF: {str(e)}")
+    except Exception:
+        logger.exception("Failed to generate teams PDF for event %s", event_id)
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "code": "teams_pdf_failed",
+                "message": "Unable to generate teams PDF",
+            },
+        )

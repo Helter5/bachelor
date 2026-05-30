@@ -1,4 +1,5 @@
 """Seeded bracket generation with penalty-based placement."""
+from fastapi import HTTPException, status
 from sqlmodel import Session, select
 from sqlalchemy import select as sa_select
 from typing import Optional
@@ -44,7 +45,13 @@ class DrawService:
         """
         athletes = self._get_athletes(event_id, weight_category_id)
         if not athletes:
-            return {"error": "Žiadni atléti v tejto váhovej kategórii"}
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail={
+                    "code": "no_athletes_in_category",
+                    "message": "No athletes in this weight category",
+                },
+            )
 
         wc = self.session.get(WeightCategory, weight_category_id)
         wc_name = f"{wc.max_weight} kg" if wc else str(weight_category_id)

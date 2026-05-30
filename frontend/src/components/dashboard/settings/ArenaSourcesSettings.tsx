@@ -164,7 +164,7 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
         targetAddressSpace: "loopback",
       } as RequestInit & { targetAddressSpace?: "loopback" })
 
-      const result = await response.json().catch(() => null) as { success?: boolean; message?: string; detail?: string; events_count?: number } | null
+      const result = await response.json().catch(() => null) as { success?: boolean; code?: string; message?: string; detail?: string; events_count?: number } | null
 
       if (!response.ok) {
         if (response.status === 404) {
@@ -173,12 +173,21 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
         throw new Error(result?.detail || result?.message || `${response.status} ${response.statusText}`)
       }
 
+      const resolveMessage = () => {
+        if (result?.code) {
+          const key = `apiErrors.${result.code}`
+          const translated = t(key)
+          if (translated !== key) return translated
+        }
+        return result?.message
+      }
+
       setToast({
         show: true,
         variant: result?.success === false ? "error" : "success",
         title: result?.success === false ? t("arenaSources.testFailed") : t("arenaSources.testSuccess"),
         message: result?.success === false
-          ? result?.message
+          ? resolveMessage()
           : t("arenaSources.testEventsCount", { count: result?.events_count ?? 0 }),
       })
     } catch (err) {

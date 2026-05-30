@@ -1,7 +1,10 @@
 """Protected Admin API - arena sources management (requires admin role)"""
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 from typing import List
+
+logger = logging.getLogger(__name__)
 
 from ....database import get_session
 from ....domain.entities.user import User
@@ -177,10 +180,12 @@ async def test_arena_source(
             "message": "Successfully connected to Arena instance",
             "events_count": response.get("events", {}).get("totalCount", 0)
         }
-    except Exception as e:
+    except Exception:
+        logger.exception("Arena source connection test failed for source %s", source.id)
         return {
             "success": False,
-            "message": f"Failed to connect: {str(e)}"
+            "code": "arena_connection_failed",
+            "message": "Unable to connect to Arena instance. Check credentials and base URL."
         }
 
 

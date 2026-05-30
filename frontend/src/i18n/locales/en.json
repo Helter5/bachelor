@@ -820,5 +820,20 @@
   },
   "searchInput": {
     "defaultPlaceholder": "Search..."
+  },
+  "apiErrors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Cannot reach the server. Check your connection.",
+    "no_athletes_in_category": "No athletes assigned to this weight category. Add athletes or sync the event first.",
+    "fetch_teams_arena_failed": "Could not load teams from the Arena API. Check the Arena source configuration.",
+    "fetch_teams_db_failed": "Could not load teams from the database.",
+    "sync_teams_failed": "Could not sync teams from the Arena API. Try again later.",
+    "teams_pdf_failed": "Could not generate the teams PDF.",
+    "fetch_athletes_arena_failed": "Could not load athletes from the Arena API. Check the Arena source configuration.",
+    "fetch_all_athletes_db_failed": "Could not load athletes from the database.",
+    "fetch_athletes_db_failed": "Could not load athletes for this event.",
+    "sync_athletes_failed": "Could not sync athletes from the Arena API. Try again later.",
+    "athletes_pdf_failed": "Could not generate the athletes PDF.",
+    "arena_connection_failed": "Could not connect to the Arena instance. Verify credentials and the base URL."
   }
 }

@@ -1,6 +1,7 @@
 import { useMemo, useState, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
+import { translateApiError } from "@/services/apiErrorTranslator"
 import { API_ENDPOINTS } from "@/config/api"
 import type { Team, WeightCategory } from "../types"
 import { Select } from "../../../ui/Select"
@@ -34,7 +35,11 @@ interface DrawResult {
   total_penalty: number
   seeding: DrawAthlete[]
   bracket: DrawMatch[]
-  error?: string
+}
+
+interface DrawAttempt {
+  result: DrawResult | null
+  error: string | null
 }
 
 interface CategoryDraw {
@@ -97,11 +102,12 @@ export function DrawTab({
     return map
   }, [teams])
 
-  const generateForCategory = async (wc: WeightCategory, n: number): Promise<DrawResult | null> => {
+  const generateForCategory = async (wc: WeightCategory, n: number): Promise<DrawAttempt> => {
     try {
-      return await apiClient.get<DrawResult>(API_ENDPOINTS.DRAW(eventId, wc.id, n))
-    } catch {
-      return null
+      const result = await apiClient.get<DrawResult>(API_ENDPOINTS.DRAW(eventId, wc.id, n))
+      return { result, error: null }
+    } catch (err) {
+      return { result: null, error: translateApiError(err, t, 'draw.failed') }
     }
   }
 
@@ -122,8 +128,8 @@ export function DrawTab({
     const updated: Record<number, CategoryDraw> = {}
     results.forEach((res, i) => {
       const wc = weightCategories[i]
-      if (res.status === "fulfilled" && res.value) {
-        updated[wc.id] = { wc, result: res.value, loading: false, error: res.value.error ?? null }
+      if (res.status === "fulfilled") {
+        updated[wc.id] = { wc, result: res.value.result, loading: false, error: res.value.error }
       } else {
         updated[wc.id] = { wc, result: null, loading: false, error: t("draw.failed") }
       }

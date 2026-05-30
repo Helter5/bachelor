@@ -825,5 +825,20 @@
   },
   "searchInput": {
     "defaultPlaceholder": "Hľadať..."
+  },
+  "apiErrors": {
+    "generic": "Niečo sa pokazilo. Skús to znova.",
+    "network": "Server je nedostupný. Skontroluj pripojenie.",
+    "no_athletes_in_category": "V tejto váhovej kategórii nie sú žiadni atléti. Najprv pridaj alebo synchronizuj atlétov.",
+    "fetch_teams_arena_failed": "Nepodarilo sa načítať tímy z Arena API. Skontroluj konfiguráciu Arena zdroja.",
+    "fetch_teams_db_failed": "Nepodarilo sa načítať tímy z databázy.",
+    "sync_teams_failed": "Synchronizácia tímov z Arena API zlyhala. Skús to neskôr.",
+    "teams_pdf_failed": "Nepodarilo sa vygenerovať PDF tímov.",
+    "fetch_athletes_arena_failed": "Nepodarilo sa načítať atlétov z Arena API. Skontroluj konfiguráciu Arena zdroja.",
+    "fetch_all_athletes_db_failed": "Nepodarilo sa načítať atlétov z databázy.",
+    "fetch_athletes_db_failed": "Nepodarilo sa načítať atlétov pre tento event.",
+    "sync_athletes_failed": "Synchronizácia atlétov z Arena API zlyhala. Skús to neskôr.",
+    "athletes_pdf_failed": "Nepodarilo sa vygenerovať PDF atlétov.",
+    "arena_connection_failed": "Nepodarilo sa pripojiť k Arena inštancii. Skontroluj prihlasovacie údaje a base URL."
   }
 }
