@@ -143,6 +143,10 @@ services:
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       SEND_EMAILS: "false"
       RATE_LIMIT_ENABLED: "false"
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-*}
+      # CI uses a short fixed JWT secret (ci-test-secret-key). Skip the
+      # production-grade length/placeholder validation in the test image.
+      ALLOW_INSECURE_JWT_SECRET: "1"
       SYNC_LOG_MAX_ENTRIES: ${SYNC_LOG_MAX_ENTRIES:-10}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
