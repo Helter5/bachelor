@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, type Dispatch, type SetStateAction } from "react"
+import { devError } from "@/utils/devLogger"
 import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
@@ -92,7 +93,7 @@ export function useTournamentData(
         const data = await request()
         onSuccess(data)
       } catch (error) {
-        console.error(`Error ${context}:`, error)
+        devError(`Error ${context}:`, error)
         if (setError && errorKey) setError(t(errorKey))
         onError?.()
       } finally {

@@ -1,5 +1,13 @@
 from functools import lru_cache
+import os
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+# Placeholder strings that ship in .env.example. The app refuses to start when
+# the secret still contains any of these — guards against accidental deploy
+# with the template value.
+_JWT_SECRET_PLACEHOLDERS = ("change-this", "your-secret", "your-jwt-secret")
 
 
 class Settings(BaseSettings):
@@ -46,6 +54,30 @@ class Settings(BaseSettings):
 
     google_client_id: str = ""
     google_client_secret: str = ""
+
+    @field_validator("jwt_secret_key")
+    @classmethod
+    def _jwt_secret_must_be_real(cls, value: str) -> str:
+        """Reject placeholder secrets and anything shorter than 32 chars.
+
+        The test environment is allowed to use a short, fixed secret via
+        ``ALLOW_INSECURE_JWT_SECRET=1`` so pytest fixtures don't need a real
+        random secret.
+        """
+        if os.environ.get("ALLOW_INSECURE_JWT_SECRET") == "1":
+            return value
+        if len(value) < 32:
+            raise ValueError(
+                "JWT_SECRET_KEY must be at least 32 characters long. "
+                "Generate one with: openssl rand -hex 32"
+            )
+        lowered = value.lower()
+        if any(token in lowered for token in _JWT_SECRET_PLACEHOLDERS):
+            raise ValueError(
+                "JWT_SECRET_KEY still contains the .env.example placeholder. "
+                "Replace it with a real secret before deploying."
+            )
+        return value
 
     @property
     def database_url(self) -> str:

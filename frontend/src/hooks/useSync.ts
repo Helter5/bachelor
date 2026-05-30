@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { devError } from "@/utils/devLogger"
 import { useTranslation } from 'react-i18next'
 import { ApiError, apiClient } from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/config/api'
@@ -190,7 +191,7 @@ export function useSync(currentUserName?: string) {
       const formattedDate = formatSyncTimestamp()
       completeSync(formattedDate)
     } catch (error) {
-      console.error('Sync error:', error)
+      devError('Sync error:', error)
       const errorMessage = getSyncErrorMessage(error)
 
       clearTimers()

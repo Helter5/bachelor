@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { devError } from "@/utils/devLogger"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
 
@@ -43,7 +44,7 @@ export function useTournaments() {
         setEvents(allEvents)
         setError(null)
       } catch (err) {
-        console.error('Error fetching events:', err)
+        devError('Error fetching events:', err)
         setError(err instanceof Error ? err.message : 'Failed to load tournaments')
         setEvents([])
       } finally {

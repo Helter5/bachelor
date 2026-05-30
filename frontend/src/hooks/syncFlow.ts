@@ -1,4 +1,5 @@
 import { apiClient, ApiError } from '@/services/apiClient'
+import { devError } from "@/utils/devLogger"
 import { API_ENDPOINTS, LOCAL_SYNC_AGENT_URL } from '@/config/api'
 
 export interface SyncResult {
@@ -99,7 +100,7 @@ export async function retryWithBackoff<T>(
       }
 
       if (attempt === maxAttempts) {
-        console.error(`${context} failed after ${maxAttempts} attempts:`, error)
+        devError(`${context} failed after ${maxAttempts} attempts:`, error)
         throw error
       }
 

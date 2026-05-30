@@ -22,6 +22,6 @@ class Team(TeamBase, table=True):
         UniqueConstraint("sport_event_id", "name", name="uq_team_event_name"),
     )
 
-    sport_event_id: int = Field(foreign_key="sport_events.id")
+    sport_event_id: int = Field(foreign_key="sport_events.id", index=True)
     sync_timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

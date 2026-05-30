@@ -1,4 +1,5 @@
 import { useState, useRef } from "react"
+import { devError } from "@/utils/devLogger"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -67,7 +68,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
       onLogin();
     } catch (error) {
-      console.error("Login error:", error)
+      devError("Login error:", error)
       if (error instanceof ApiError && error.status === 401) {
         showToast("error", t("landing.toasts.invalidCredentials"))
       } else if (error instanceof ApiError && error.status === 403) {
@@ -100,7 +101,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
       setShowResendVerification(false)
       setResendEmail("")
     } catch (error) {
-      console.error("Resend verification error:", error)
+      devError("Resend verification error:", error)
       showToast("error", t("landing.toasts.error"), t("landing.toasts.sendError"))
     }
   };
@@ -123,7 +124,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
       setShowForgotPassword(false)
       setForgotPasswordEmail("")
     } catch (error) {
-      console.error("Forgot password error:", error)
+      devError("Forgot password error:", error)
       showToast("error", t("landing.toasts.error"), t("landing.toasts.sendRequestError"))
     }
   };
@@ -146,7 +147,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
       onLogin();
     } catch (error) {
-      console.error("Google login error:", error)
+      devError("Google login error:", error)
       if (error instanceof ApiError) {
         showToast("error", t("landing.toasts.googleLoginError"), error.message)
       } else {
@@ -201,7 +202,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
         confirmPassword: ""
       })
     } catch (error) {
-      console.error("Registration error:", error)
+      devError("Registration error:", error)
       if (error instanceof ApiError) {
         const errorMessage = error.message
         if (errorMessage.includes("Username")) {

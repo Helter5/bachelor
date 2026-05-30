@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from "react"
+import { devError } from "@/utils/devLogger"
 import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
@@ -234,7 +235,7 @@ export function TournamentsList({ isDarkMode, onSelectTournament }: TournamentsL
         setEvents(data.items || [])
         setError(null)
       } catch (err) {
-        console.error('Error fetching events:', err)
+        devError('Error fetching events:', err)
         setError(err instanceof Error ? err.message : 'Failed to load tournaments')
         setEvents([])
       } finally {

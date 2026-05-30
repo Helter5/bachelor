@@ -1,27 +1,30 @@
 # Backend Dockerfile
 FROM python:3.12-slim
 
-# Set working directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# System dependencies (build toolchain for psycopg2, curl for healthcheck,
+# DejaVu fonts for PDF export).
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     curl \
     fonts-dejavu \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better caching
+# Install Python dependencies first so they cache independently from app code.
 COPY requirements.txt .
-
-# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copy application source and prepare a writable uploads directory.
 COPY . .
+RUN mkdir -p /app/uploads
 
-# Expose port
+# Run as an unprivileged user. The uploads volume is mounted into /app/uploads
+# so it needs to be writable by this user.
+RUN groupadd --system app && useradd --system --gid app --no-create-home app \
+    && chown -R app:app /app
+USER app
+
 EXPOSE 8000
 
-# Run the application
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]

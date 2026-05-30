@@ -22,8 +22,8 @@ class WeightCategory(WeightCategoryBase, table=True):
         UniqueConstraint("sport_event_id", "max_weight", "discipline_id", name="uq_wc_event_weight_discipline"),
     )
 
-    discipline_id: Optional[int] = Field(default=None, foreign_key="disciplines.id")
-    sport_event_id: Optional[int] = Field(default=None, foreign_key="sport_events.id")
+    discipline_id: Optional[int] = Field(default=None, foreign_key="disciplines.id", index=True)
+    sport_event_id: Optional[int] = Field(default=None, foreign_key="sport_events.id", index=True)
     sync_timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     @property

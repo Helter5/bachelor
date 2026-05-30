@@ -13,9 +13,9 @@ class Referee(SQLModel, table=True):
     )
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    sport_event_id: int = Field(foreign_key="sport_events.id")
-    person_id: Optional[int] = Field(default=None, foreign_key="persons.id")
-    team_id: Optional[int] = Field(default=None, foreign_key="teams.id")
+    sport_event_id: int = Field(foreign_key="sport_events.id", index=True)
+    person_id: Optional[int] = Field(default=None, foreign_key="persons.id", index=True)
+    team_id: Optional[int] = Field(default=None, foreign_key="teams.id", index=True)
 
     number: Optional[int] = None
     referee_level: Optional[str] = Field(default=None, max_length=100)

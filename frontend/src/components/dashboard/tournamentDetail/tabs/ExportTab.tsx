@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { devError } from "@/utils/devLogger"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS, API_BASE_URL } from "@/config/api"
 import { useTranslation } from "react-i18next"
@@ -144,7 +145,7 @@ export function ExportTab({
           description={t("tournamentDetail.export.teamsDesc", { count: teams.length })}
           format="PDF"
           onPreview={() => window.open(API_BASE_URL + API_ENDPOINTS.TEAM_SHOW(tournamentUuid), '_blank')}
-          onDownload={() => downloadBlob(API_ENDPOINTS.TEAM_PRINT(tournamentUuid), `timy-${tournamentUuid}.pdf`).catch(e => console.error(e))}
+          onDownload={() => downloadBlob(API_ENDPOINTS.TEAM_PRINT(tournamentUuid), `timy-${tournamentUuid}.pdf`).catch(e => devError(e))}
           downloadLabel={t("tournamentDetail.export.downloadPdf")}
         />
 
@@ -160,7 +161,7 @@ export function ExportTab({
           description={t("tournamentDetail.export.athletesDesc", { count: athletes.length })}
           format="PDF"
           onPreview={() => window.open(API_BASE_URL + API_ENDPOINTS.ATHLETE_SHOW(tournamentUuid), '_blank')}
-          onDownload={() => downloadBlob(API_ENDPOINTS.ATHLETE_PRINT(tournamentUuid), `atleti-${tournamentUuid}.pdf`).catch(e => console.error(e))}
+          onDownload={() => downloadBlob(API_ENDPOINTS.ATHLETE_PRINT(tournamentUuid), `atleti-${tournamentUuid}.pdf`).catch(e => devError(e))}
           downloadLabel={t("tournamentDetail.export.downloadPdf")}
         />
 
@@ -220,7 +221,7 @@ export function ExportTab({
             </div>
           }
           onPreview={() => window.open(API_BASE_URL + API_ENDPOINTS.EVENT_EXPORT_MEDAL_STANDINGS(tournamentUuid) + `?by=${medalStandingsBy}`, '_blank')}
-          onDownload={() => downloadBlob(API_ENDPOINTS.EVENT_EXPORT_MEDAL_STANDINGS(tournamentUuid) + `?by=${medalStandingsBy}`, `medal-standings-${tournamentUuid}.pdf`).catch(e => console.error(e))}
+          onDownload={() => downloadBlob(API_ENDPOINTS.EVENT_EXPORT_MEDAL_STANDINGS(tournamentUuid) + `?by=${medalStandingsBy}`, `medal-standings-${tournamentUuid}.pdf`).catch(e => devError(e))}
           downloadLabel={t("tournamentDetail.export.downloadPdf")}
         />
 
@@ -236,7 +237,7 @@ export function ExportTab({
           description={t("tournamentDetail.export.resultsSummaryDesc")}
           format="PDF"
           onPreview={() => window.open(API_BASE_URL + API_ENDPOINTS.EVENT_EXPORT_RESULTS_SUMMARY(tournamentUuid), '_blank')}
-          onDownload={() => downloadBlob(API_ENDPOINTS.EVENT_EXPORT_RESULTS_SUMMARY(tournamentUuid), `results-summary-${tournamentUuid}.pdf`).catch(e => console.error(e))}
+          onDownload={() => downloadBlob(API_ENDPOINTS.EVENT_EXPORT_RESULTS_SUMMARY(tournamentUuid), `results-summary-${tournamentUuid}.pdf`).catch(e => devError(e))}
           downloadLabel={t("tournamentDetail.export.downloadPdf")}
         />
 
@@ -251,7 +252,7 @@ export function ExportTab({
           title={t("tournamentDetail.export.statisticsTitle")}
           description={t("tournamentDetail.export.statisticsDesc")}
           format="XLSX"
-          onDownload={() => downloadBlob(API_ENDPOINTS.EVENT_EXPORT_STATISTICS(tournamentUuid), `statistics-${tournamentUuid}.xlsx`).catch(e => console.error(e))}
+          onDownload={() => downloadBlob(API_ENDPOINTS.EVENT_EXPORT_STATISTICS(tournamentUuid), `statistics-${tournamentUuid}.xlsx`).catch(e => devError(e))}
           downloadLabel={t("tournamentDetail.export.downloadExcel")}
         />
       </div>

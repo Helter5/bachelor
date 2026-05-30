@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, type ReactNode } from 'react'
+import { devError } from "@/utils/devLogger"
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/config/api'
@@ -49,7 +50,7 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
       const data = await apiClient.get<SyncLog[]>(`${API_ENDPOINTS.SYNC_LOGS}?limit=10`)
       setLogs(data)
     } catch (err) {
-      console.error('Error loading sync logs:', err)
+      devError('Error loading sync logs:', err)
       setError(t('syncLogs.loadError'))
     } finally {
       setLoading(false)
@@ -65,7 +66,7 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
       const data = await apiClient.get<SyncLog>(API_ENDPOINTS.SYNC_LOG_DETAIL(logId))
       setSelectedLog(data)
     } catch (err) {
-      console.error('Error loading log detail:', err)
+      devError('Error loading log detail:', err)
       setError(t('syncLogs.detailLoadError'))
     }
   }

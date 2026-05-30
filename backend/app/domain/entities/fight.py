@@ -16,7 +16,7 @@ class FightBase(SQLModel):
     tp_two: Optional[int] = None
     cp_one: Optional[int] = None
     cp_two: Optional[int] = None
-    victory_type: Optional[str] = Field(default=None, foreign_key="victory_types.code")
+    victory_type: Optional[str] = Field(default=None, foreign_key="victory_types.code", index=True)
     duration: Optional[int] = None
     round_name: Optional[str] = Field(default=None, max_length=100)
     fight_number: Optional[int] = None
@@ -26,9 +26,12 @@ class Fight(FightBase, table=True):
     """Fight model - synced from Arena API"""
     __tablename__ = "fights"
 
-    sport_event_id: int = Field(foreign_key="sport_events.id")
-    weight_category_id: Optional[int] = Field(default=None, foreign_key="weight_categories.id")
-    fighter_one_id: Optional[int] = Field(default=None, foreign_key="athletes.id")
-    fighter_two_id: Optional[int] = Field(default=None, foreign_key="athletes.id")
-    winner_id: Optional[int] = Field(default=None, foreign_key="athletes.id")
+    # All FK columns are indexed: every JOIN against fights hits one of them
+    # (event-scoped queries, head-to-head lookups, draw seeding, results page).
+    # Postgres does not auto-create indexes for foreign keys.
+    sport_event_id: int = Field(foreign_key="sport_events.id", index=True)
+    weight_category_id: Optional[int] = Field(default=None, foreign_key="weight_categories.id", index=True)
+    fighter_one_id: Optional[int] = Field(default=None, foreign_key="athletes.id", index=True)
+    fighter_two_id: Optional[int] = Field(default=None, foreign_key="athletes.id", index=True)
+    winner_id: Optional[int] = Field(default=None, foreign_key="athletes.id", index=True)
     sync_timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

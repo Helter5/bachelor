@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
+import { devError } from "@/utils/devLogger"
 import { LandingPage } from "@/components/LandingPage"
 import { Dashboard } from "@/components/Dashboard"
 import { VerifyEmail } from "@/components/VerifyEmail"
@@ -51,7 +52,7 @@ function App() {
         sessionStorage.removeItem("csrf_token");
         clearAuthSessionHint();
       } else {
-        console.error("Error fetching user data:", error);
+        devError("Error fetching user data:", error);
       }
       setIsLoggedIn(false);
     } finally {
@@ -102,7 +103,7 @@ function App() {
     try {
       await apiClient.post(API_ENDPOINTS.AUTH_LOGOUT, {});
     } catch (error) {
-      console.error("Logout error:", error);
+      devError("Logout error:", error);
     } finally {
       sessionStorage.removeItem("csrf_token");
       clearAuthSessionHint();

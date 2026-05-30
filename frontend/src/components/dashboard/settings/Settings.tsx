@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { devError } from "@/utils/devLogger"
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/config/api'
@@ -47,7 +48,7 @@ export function Settings({ isDarkMode, toggleDarkMode, onUserDataChange }: Setti
       const data = await apiClient.get<ApiUserDto>(API_ENDPOINTS.PROFILE_ME)
       setUser(mapApiUserDto(data))
     } catch (err) {
-      console.error('Error loading user:', err)
+      devError('Error loading user:', err)
     }
   }, [])
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
+import { devError } from "@/utils/devLogger"
 import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS } from "@/config/api"
@@ -156,7 +157,7 @@ export function TournamentDetail({
           }),
         )
       } catch (error) {
-        console.error("Error loading team athletes:", error)
+        devError("Error loading team athletes:", error)
       } finally {
         setLoadingTeamAthletes(false)
       }

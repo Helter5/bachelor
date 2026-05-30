@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react"
+import { devError } from "@/utils/devLogger"
 import { useTranslation } from "react-i18next"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -37,7 +38,7 @@ export function VerifyEmail({ token, onBackToLogin }: VerifyEmailProps) {
         setStatus("success")
         setMessage(response.message)
       } catch (error) {
-        console.error("Verification error:", error)
+        devError("Verification error:", error)
         setStatus("error")
         if (error instanceof ApiError) {
           setMessage(error.message || t("verifyEmail.invalidToken"))

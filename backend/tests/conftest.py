@@ -5,6 +5,7 @@ Run inside Docker: docker compose exec wf-api pytest
 import os
 os.environ["SEND_EMAILS"] = "false"  # Disable email sending during tests
 os.environ["RATE_LIMIT_ENABLED"] = "false"  # Disable rate limiting during tests
+os.environ["ALLOW_INSECURE_JWT_SECRET"] = "1"  # Tests use the dev placeholder
 
 from app.config import get_settings
 get_settings.cache_clear()

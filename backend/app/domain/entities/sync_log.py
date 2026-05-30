@@ -6,7 +6,7 @@ from sqlmodel import SQLModel, Field, Column, JSON
 
 class SyncLogBase(SQLModel):
     id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: int = Field(foreign_key="users.id")
+    user_id: int = Field(foreign_key="users.id", index=True)
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     finished_at: Optional[datetime] = None
     status: str = Field(default="in_progress", max_length=20)

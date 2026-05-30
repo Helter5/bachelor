@@ -57,6 +57,9 @@ services:
       SYNC_LOG_MAX_ENTRIES: ${SYNC_LOG_MAX_ENTRIES:-10}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-*}
+      # Skip the production-grade JWT_SECRET_KEY validation for local dev.
+      ALLOW_INSECURE_JWT_SECRET: "1"
       PYTHONDONTWRITEBYTECODE: "1"
     ports:
       - "${APP_PORT:-8000}:8000"
