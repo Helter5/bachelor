@@ -59,6 +59,7 @@ export function CalendarTopBar({
           >
             &lt;
           </button>
+          <span className={`inline-flex h-2.5 w-2.5 rounded-full ${isDarkMode ? 'bg-sky-400' : 'bg-sky-500'}`} aria-hidden="true" />
           <button
             onClick={onNextMonth}
             className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-base font-semibold transition-colors ${isDarkMode ? 'text-gray-300 hover:bg-white/10 hover:text-white' : 'text-gray-700 hover:bg-slate-100 hover:text-gray-900'}`}
