@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from sqlmodel import Session, select
 
 from ..config import get_settings
+from ..core.http import extract_http_detail
 from ..core.security import ALGORITHM
 from ..domain import SportEventBase
 from ..domain.entities.athlete import Athlete
@@ -131,8 +132,7 @@ class LocalSyncService:
                 **totals,
             }
         except HTTPException as exc:
-            error_msg = exc.detail if isinstance(exc.detail, str) else exc.detail.get("message", str(exc.detail))
-            self.sync_admin.fail_sync_log(sync_log, start_time=start_time, error_message=error_msg)
+            self.sync_admin.fail_sync_log(sync_log, start_time=start_time, error_message=extract_http_detail(exc))
             raise
         except Exception as exc:
             self.session.rollback()

@@ -19,6 +19,7 @@ from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
 import httpx
+from fastapi import HTTPException
 
 
 _client: httpx.AsyncClient | None = None
@@ -44,6 +45,17 @@ async def http_client_ctx() -> AsyncIterator[httpx.AsyncClient]:
         return
     async with httpx.AsyncClient(timeout=30.0) as client:
         yield client
+
+
+def extract_http_detail(exc: HTTPException) -> str:
+    """Return a plain-string message from an HTTPException whose detail may be
+    either a bare string or a dict with a ``message`` key."""
+    detail = exc.detail
+    if isinstance(detail, str):
+        return detail
+    if isinstance(detail, dict):
+        return detail.get("message", str(detail))
+    return str(detail)
 
 
 def get_http_client() -> httpx.AsyncClient:

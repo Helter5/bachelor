@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 from ....database import get_session
 from ....domain.entities.user import User
 from ....core.dependencies import require_admin, validate_csrf_and_origin
+from ....core.http import extract_http_detail
 from ....services.athlete_service import AthleteService
 from ....services.admin_sync_service import AdminSyncService
 from ....services.local_sync_service import arena_event_to_base
@@ -115,8 +116,7 @@ async def sync_events(
 
             return result
         except HTTPException as exc:
-            error_msg = exc.detail if isinstance(exc.detail, str) else exc.detail.get("message", str(exc.detail))
-            sync_admin.fail_sync_log(sync_log, start_time=start_time, error_message=error_msg)
+            sync_admin.fail_sync_log(sync_log, start_time=start_time, error_message=extract_http_detail(exc))
             raise
         except Exception as e:
             sync_admin.fail_sync_log(sync_log, start_time=start_time, error_message=str(e))

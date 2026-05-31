@@ -20,6 +20,7 @@ from .api.public.weight_categories import router as weight_categories_router
 from .config import get_settings as _get_settings
 from .core.dependencies import require_user, require_admin
 from .core.http import set_http_client
+from .core.paths import UPLOADS_ROOT
 from .database import create_db_and_tables
 
 
@@ -84,9 +85,8 @@ app.add_middleware(
     allow_headers=["Content-Type", "X-CSRF-Token", "Authorization"],
 )
 
-_UPLOADS_DIR = os.path.realpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "uploads"))
-os.makedirs(_UPLOADS_DIR, exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=_UPLOADS_DIR), name="uploads")
+os.makedirs(UPLOADS_ROOT, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=UPLOADS_ROOT), name="uploads")
 
 app.include_router(auth_router, prefix="/api/v1")
 
