@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { apiClient } from "@/services/apiClient"
 import { API_ENDPOINTS, LOCAL_SYNC_AGENT_URL } from "@/config/api"
+import { isRawArenaConnectionError } from "@/hooks/syncFlow"
 import { Toast } from "../../ui/Toast"
 import { ErrorAlert } from "../../ui/ErrorAlert"
 
@@ -181,7 +182,9 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
           if (translated !== key) return translated
         }
         if (typeof detail === "object" && detail !== null && detail.message) return detail.message
-        if (typeof detail === "string" && detail.trim()) return detail
+        if (typeof detail === "string" && detail.trim()) {
+          return isRawArenaConnectionError(detail) ? t("apiErrors.arena_token_network_failed") : detail
+        }
         return result?.message
       }
 
@@ -215,7 +218,9 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
     } catch (err) {
       const message = err instanceof TypeError
         ? t("arenaSources.localAgentUnavailable")
-        : err instanceof Error && err.message ? err.message : String(err)
+        : err instanceof Error && err.message
+          ? (isRawArenaConnectionError(err.message) ? t("apiErrors.arena_token_network_failed") : err.message)
+          : String(err)
       setToast({
         show: true,
         variant: "error",

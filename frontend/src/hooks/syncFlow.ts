@@ -82,6 +82,15 @@ export function formatSyncTimestamp(now = new Date()) {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
 }
 
+export function isRawArenaConnectionError(message: string) {
+  return (
+    message.includes('Arena token request failed') ||
+    message.includes('/oauth/v2/token') ||
+    message.includes('client_secret=') ||
+    message.includes('api_key=')
+  )
+}
+
 export async function retryWithBackoff<T>(
   fn: () => Promise<T>,
   context: string,
@@ -196,6 +205,11 @@ export async function runLocalAgentSync({ onStarted }: RunSyncOptions = {}) {
       if (!code && typeof parsed?.code === 'string') code = parsed.code
     } catch {
       // Keep the plain response text when the local agent returns non-JSON.
+    }
+
+    if (!code && isRawArenaConnectionError(message)) {
+      code = 'arena_token_network_failed'
+      message = 'IS Arena is not reachable or is not running.'
     }
 
     throw new ApiError(response.status, response.statusText, message, code)

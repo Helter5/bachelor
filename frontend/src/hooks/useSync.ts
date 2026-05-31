@@ -10,6 +10,7 @@ import {
   runBrowserSync,
   runLocalAgentSync,
   shouldUseLocalAgentSync,
+  isRawArenaConnectionError,
 } from './syncFlow'
 
 interface SyncState {
@@ -125,6 +126,9 @@ export function useSync(currentUserName?: string) {
       }
 
       if (error.message?.trim()) {
+        if (isRawArenaConnectionError(error.message)) {
+          return t('apiErrors.arena_token_network_failed')
+        }
         return error.message
       }
     }
@@ -134,6 +138,9 @@ export function useSync(currentUserName?: string) {
     }
 
     if (error instanceof Error && error.message?.trim()) {
+      if (isRawArenaConnectionError(error.message)) {
+        return t('apiErrors.arena_token_network_failed')
+      }
       return error.message
     }
 

@@ -849,7 +849,7 @@
     "arena_unexpected": "Unexpected error while contacting the Arena API.",
     "arena_credentials_missing": "Arena source has no credentials configured. Set client_id, client_secret and api_key in Settings → Arena Sources.",
     "arena_token_invalid_response": "Arena returned an invalid token response.",
-    "arena_token_network_failed": "IS Arena is not reachable or is not running. Check the host, port and whether the Arena instance is up.",
+    "arena_token_network_failed": "The external IS Arena system is not running or is not reachable. Check the host, port and whether the Arena instance is up.",
     "arena_token_rejected": "Arena rejected the credentials. Verify client_id, client_secret and api_key.",
     "arena_token_unexpected": "Unexpected error while obtaining the Arena access token.",
     "sport_event_not_found": "Sport event not found.",
