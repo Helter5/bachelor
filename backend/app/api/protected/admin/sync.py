@@ -1,6 +1,7 @@
 """Protected Admin API - sync management (requires admin role)"""
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Header, Request
+from pydantic import BaseModel
 from sqlmodel import Session
 from typing import Optional
 from datetime import datetime, timezone
@@ -21,12 +22,35 @@ from ....services.fight_service import FightService
 from ....services.victory_type_service import VictoryTypeService
 from ....services.referee_service import RefereeService
 
-router = APIRouter(prefix="/admin/sync")
+router = APIRouter(prefix="/admin/sync", tags=["admin-sync"])
+
+
+class EventsSyncOut(BaseModel):
+    message: str
+    count: int
+    idempotency_key: str
+    sync_log_id: int
+
+
+class EventSyncOut(BaseModel):
+    message: str
+    event_id: int
+    count: int = 0
+    created: int = 0
+    updated: int = 0
+    idempotency_key: Optional[str] = None
+    skipped: Optional[bool] = None
+
+
+class VictoryTypesSyncOut(BaseModel):
+    message: str
+    created: int
+    updated: int
 
 # In-memory sync locks/cache are safe only for a single backend process.
 # Multi-worker or multi-instance deployments need Redis or PostgreSQL advisory locks.
 
-@router.post("/events")
+@router.post("/events", response_model=EventsSyncOut)
 async def sync_events(
     background_tasks: BackgroundTasks,
     request: Request,
@@ -131,7 +155,7 @@ async def sync_events(
             )
 
 
-@router.post("/teams/{event_id}")
+@router.post("/teams/{event_id}", response_model=EventSyncOut)
 async def sync_teams(
     event_id: int,
     _: None = Depends(validate_csrf_and_origin),
@@ -166,7 +190,7 @@ async def sync_teams(
     )
 
 
-@router.post("/athletes/{event_id}")
+@router.post("/athletes/{event_id}", response_model=EventSyncOut)
 async def sync_athletes(
     event_id: int,
     _: None = Depends(validate_csrf_and_origin),
@@ -201,7 +225,7 @@ async def sync_athletes(
     )
 
 
-@router.post("/categories/{event_id}")
+@router.post("/categories/{event_id}", response_model=EventSyncOut)
 async def sync_categories(
     event_id: int,
     _: None = Depends(validate_csrf_and_origin),
@@ -236,7 +260,7 @@ async def sync_categories(
     )
 
 
-@router.post("/victory-types/{sport_id}")
+@router.post("/victory-types/{sport_id}", response_model=VictoryTypesSyncOut)
 async def sync_victory_types(
     sport_id: str,
     _: None = Depends(validate_csrf_and_origin),
@@ -254,7 +278,7 @@ async def sync_victory_types(
     }
 
 
-@router.post("/fights/{event_id}")
+@router.post("/fights/{event_id}", response_model=EventSyncOut)
 async def sync_fights(
     event_id: int,
     _: None = Depends(validate_csrf_and_origin),
@@ -289,7 +313,7 @@ async def sync_fights(
     )
 
 
-@router.post("/referees/{event_id}")
+@router.post("/referees/{event_id}", response_model=EventSyncOut)
 async def sync_referees(
     event_id: int,
     _: None = Depends(validate_csrf_and_origin),

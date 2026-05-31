@@ -28,6 +28,15 @@ class TokenResponse(BaseModel):
     expires_in: int
 
 
+class MessageOut(BaseModel):
+    message: str
+
+
+class AvatarOut(BaseModel):
+    avatar_url: str
+    message: str
+
+
 
 class SportEventOut(BaseModel):
     """Sport event response data."""

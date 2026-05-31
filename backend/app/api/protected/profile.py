@@ -11,13 +11,15 @@ from datetime import datetime, timezone
 from ...database import get_session
 from ...domain.entities.user import User
 from ...domain.entities.login_history import LoginHistory
-from ...domain.schemas.responses import UserOut
+from ...domain.schemas.responses import AvatarOut, MessageOut, UserOut
 from ...core.dependencies import require_user, validate_csrf_and_origin
 from ...core.paths import AVATARS_DIR
 from ...core.security import hash_password, verify_password
 from ...services.session_service import SessionService
 
-router = APIRouter(prefix="/profile")
+router = APIRouter(prefix="/profile", tags=["profile"])
+
+_MAX_AVATAR_BYTES = 5 * 1024 * 1024
 
 
 class UpdateProfileRequest(BaseModel):
@@ -87,7 +89,7 @@ async def update_my_profile(
     return user
 
 
-@router.post("/change-password")
+@router.post("/change-password", response_model=MessageOut)
 async def change_password(
     password_data: ChangePasswordRequest,
     _: None = Depends(validate_csrf_and_origin),
@@ -112,7 +114,7 @@ async def change_password(
     return {"message": "Password changed successfully. All other sessions have been logged out."}
 
 
-@router.post("/upload-avatar")
+@router.post("/upload-avatar", response_model=AvatarOut)
 async def upload_avatar(
     file: UploadFile = File(...),
     _: None = Depends(validate_csrf_and_origin),
@@ -129,7 +131,6 @@ async def upload_avatar(
             },
         )
 
-    _MAX_AVATAR_BYTES = 5 * 1024 * 1024
     contents = await file.read(_MAX_AVATAR_BYTES + 1)
     if len(contents) > _MAX_AVATAR_BYTES:
         raise HTTPException(
@@ -170,7 +171,7 @@ async def upload_avatar(
     return {"avatar_url": avatar_url, "message": "Avatar uploaded successfully"}
 
 
-@router.delete("/avatar")
+@router.delete("/avatar", response_model=MessageOut)
 async def delete_avatar(
     _: None = Depends(validate_csrf_and_origin),
     user: User = Depends(require_user),
@@ -212,7 +213,7 @@ async def get_active_sessions(
     ]
 
 
-@router.delete("/sessions/{session_id}")
+@router.delete("/sessions/{session_id}", response_model=MessageOut)
 async def revoke_session(
     session_id: int,
     _: None = Depends(validate_csrf_and_origin),
@@ -229,7 +230,7 @@ async def revoke_session(
     return {"message": "Session revoked successfully"}
 
 
-@router.post("/sessions/revoke-all")
+@router.post("/sessions/revoke-all", response_model=MessageOut)
 async def revoke_all_sessions(
     _: None = Depends(validate_csrf_and_origin),
     user: User = Depends(require_user),
