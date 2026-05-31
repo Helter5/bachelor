@@ -84,8 +84,9 @@ app.add_middleware(
     allow_headers=["Content-Type", "X-CSRF-Token", "Authorization"],
 )
 
-os.makedirs("uploads", exist_ok=True)
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+_UPLOADS_DIR = os.path.realpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "uploads"))
+os.makedirs(_UPLOADS_DIR, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=_UPLOADS_DIR), name="uploads")
 
 app.include_router(auth_router, prefix="/api/v1")
 

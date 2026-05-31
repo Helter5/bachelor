@@ -115,7 +115,7 @@ async def sync_events(
 
             return result
         except HTTPException as exc:
-            error_msg = exc.detail if isinstance(exc.detail, str) else str(exc.detail)
+            error_msg = exc.detail if isinstance(exc.detail, str) else exc.detail.get("message", str(exc.detail))
             sync_admin.fail_sync_log(sync_log, start_time=start_time, error_message=error_msg)
             raise
         except Exception as e:
