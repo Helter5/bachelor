@@ -1026,6 +1026,18 @@ CREATE UNIQUE INDEX ix_users_email ON public.users USING btree (email);
 
 CREATE UNIQUE INDEX ix_users_username ON public.users USING btree (username);
 
+--
+-- Name: ix_fights_sport_event_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_fights_sport_event_id ON public.fights USING btree (sport_event_id);
+
+--
+-- Name: ix_fights_weight_category_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_fights_weight_category_id ON public.fights USING btree (weight_category_id);
+
 
 --
 -- Name: arena_sources arena_sources_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
