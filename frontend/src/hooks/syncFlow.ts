@@ -286,7 +286,7 @@ export async function runBrowserSync({ onStarted }: RunSyncOptions = {}) {
         }
       )
     } catch (error) {
-      console.warn('Could not update sync log stats:', error)
+      devWarn('Could not update sync log stats:', error)
     }
   }
 
