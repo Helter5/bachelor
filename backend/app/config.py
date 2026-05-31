@@ -51,6 +51,10 @@ class Settings(BaseSettings):
     # Comma-separated list of hostnames that TrustedHostMiddleware will accept
     # in the ``Host`` header. ``*`` disables the check (default for local dev).
     allowed_hosts: str = "*"
+    # Comma-separated list of trusted reverse-proxy IPs. Only when the direct
+    # connecting IP matches one of these will X-Forwarded-For / X-Real-IP be
+    # trusted for client IP resolution. Empty = never trust proxy headers.
+    trusted_proxies: str = ""
 
     google_client_id: str = ""
     google_client_secret: str = ""

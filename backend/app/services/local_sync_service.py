@@ -4,6 +4,7 @@ from typing import Any, Optional
 
 from fastapi import HTTPException, status
 from jose import JWTError, jwt
+from pydantic import BaseModel
 from sqlmodel import Session, select
 
 from ..config import get_settings
@@ -29,6 +30,35 @@ SERVER_PROGRESS_START = 50
 SERVER_PROGRESS_END = 99
 
 
+class LocalSyncPayload(BaseModel):
+    events: list[dict[str, Any]]
+    event_payloads: dict[str, Any] = {}
+
+
+_ARENA_EVENT_FIELD_MAP: dict[str, str] = {
+    "startDate": "start_date",
+    "endDate": "end_date",
+    "addressLocality": "address_locality",
+    "isIndividualEvent": "is_individual_event",
+    "isTeamEvent": "is_team_event",
+    "isBeachWrestlingTournament": "is_beach_wrestling",
+    "tournamentType": "tournament_type",
+    "eventType": "event_type",
+    "isSyncEnabled": "is_sync_enabled",
+    "countryIsoCode": "country_iso_code",
+}
+
+
+def arena_event_to_base(event_data: dict[str, Any]) -> "SportEventBase":
+    """Convert a camelCase Arena event dict to a SportEventBase, dropping the Arena UUID."""
+    data = dict(event_data)
+    data.pop("id", None)
+    for arena_key, db_key in _ARENA_EVENT_FIELD_MAP.items():
+        if arena_key in data:
+            data[db_key] = data.pop(arena_key)
+    return SportEventBase(**data)
+
+
 class LocalSyncService:
     """Coordinates local-agent upload tokens, progress, and DB import stages."""
 
@@ -37,7 +67,7 @@ class LocalSyncService:
         self.sync_admin = AdminSyncService(session)
 
     def start_sync(self, *, user: User, ip_address: Optional[str]) -> dict[str, Any]:
-        self.sync_admin.ensure_sync_run_access(None, allow_start_new=True)
+        self.sync_admin.ensure_sync_run_access(None)
         source = self.sync_admin.get_active_arena_source(user.id)
         if not all([source.client_id, source.client_secret, source.api_key]):
             raise HTTPException(
@@ -77,7 +107,7 @@ class LocalSyncService:
         user_id = int(token_payload["sub"])
         sync_log_id = int(token_payload["sync_log_id"])
 
-        self.sync_admin.ensure_sync_run_access(sync_log_id, allow_start_new=False)
+        self.sync_admin.ensure_sync_run_access(sync_log_id)
         sync_log = self.session.get(SyncLog, sync_log_id)
         if not sync_log or sync_log.user_id != user_id:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Local sync run not found")
@@ -357,24 +387,7 @@ class LocalSyncService:
 
     @staticmethod
     def _event_payload_to_base(event_data: dict[str, Any]) -> SportEventBase:
-        data = dict(event_data)
-        data.pop("id", None)
-        field_map = {
-            "startDate": "start_date",
-            "endDate": "end_date",
-            "addressLocality": "address_locality",
-            "isIndividualEvent": "is_individual_event",
-            "isTeamEvent": "is_team_event",
-            "isBeachWrestlingTournament": "is_beach_wrestling",
-            "tournamentType": "tournament_type",
-            "eventType": "event_type",
-            "isSyncEnabled": "is_sync_enabled",
-            "countryIsoCode": "country_iso_code",
-        }
-        for arena_key, db_key in field_map.items():
-            if arena_key in data:
-                data[db_key] = data.pop(arena_key)
-        return SportEventBase(**data)
+        return arena_event_to_base(event_data)
 
     def _team_uuid_map(self, event_db_id: int, teams_payload: list[dict[str, Any]]) -> dict[str, int]:
         db_teams = self.session.exec(select(Team).where(Team.sport_event_id == event_db_id)).all()

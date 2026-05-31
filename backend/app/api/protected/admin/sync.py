@@ -11,7 +11,8 @@ from ....database import get_session
 from ....domain.entities.user import User
 from ....core.dependencies import require_admin, validate_csrf_and_origin
 from ....services.athlete_service import AthleteService
-from ....services.admin_sync_service import AdminSyncService, _sync_locks  # noqa: F401
+from ....services.admin_sync_service import AdminSyncService
+from ....services.local_sync_service import arena_event_to_base
 from ....services.team_service import TeamService
 from ....services.sport_event_service import SportEventService
 from ....services.weight_category_service import WeightCategoryService
@@ -35,7 +36,7 @@ async def sync_events(
     sync_orchestrated: Optional[str] = Header(None, alias="X-Sync-Orchestrated")
 ):
     sync_admin = AdminSyncService(session)
-    sync_admin.ensure_sync_run_access(None, allow_start_new=True)
+    sync_admin.ensure_sync_run_access(None)
 
     if not idempotency_key:
         idempotency_key = f"sync_events_{datetime.now(timezone.utc).isoformat()}"
@@ -61,7 +62,6 @@ async def sync_events(
         start_time = datetime.now(timezone.utc)
 
         try:
-            from ....domain import SportEventBase
             source = sync_admin.get_active_arena_source(user.id)
 
             arena_data = await service.get_all_from_arena_source(source)
@@ -72,30 +72,7 @@ async def sync_events(
             events_updated_total = 0
 
             for event_data in events_list:
-                if 'id' in event_data:
-                    event_data.pop('id')
-                if 'startDate' in event_data:
-                    event_data['start_date'] = event_data['startDate']
-                if 'endDate' in event_data:
-                    event_data['end_date'] = event_data['endDate']
-                if 'addressLocality' in event_data:
-                    event_data['address_locality'] = event_data['addressLocality']
-                if 'isIndividualEvent' in event_data:
-                    event_data['is_individual_event'] = event_data['isIndividualEvent']
-                if 'isTeamEvent' in event_data:
-                    event_data['is_team_event'] = event_data['isTeamEvent']
-                if 'isBeachWrestlingTournament' in event_data:
-                    event_data['is_beach_wrestling'] = event_data['isBeachWrestlingTournament']
-                if 'tournamentType' in event_data:
-                    event_data['tournament_type'] = event_data['tournamentType']
-                if 'eventType' in event_data:
-                    event_data['event_type'] = event_data['eventType']
-                if 'isSyncEnabled' in event_data:
-                    event_data['is_sync_enabled'] = event_data['isSyncEnabled']
-                if 'countryIsoCode' in event_data:
-                    event_data['country_iso_code'] = event_data['countryIsoCode']
-
-                event_base = SportEventBase(**event_data)
+                event_base = arena_event_to_base(event_data)
                 sync_result = await service.sync_event(event_base)
                 total_synced_events.append(sync_result)
 

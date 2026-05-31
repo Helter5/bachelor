@@ -179,7 +179,7 @@ class ApiClient {
         sessionStorage.removeItem('csrf_token')
         clearAuthSessionHint()
         window.location.href = '/'
-
+        return new Promise<T>(() => {})
       }
 
       throw await this.parseErrorResponse(response)
@@ -251,6 +251,7 @@ class ApiClient {
         sessionStorage.removeItem('csrf_token')
         clearAuthSessionHint()
         window.location.href = '/'
+        return new Promise<Blob>(() => {})
       }
 
       throw await this.parseErrorResponse(response)
@@ -283,6 +284,7 @@ class ApiClient {
           sessionStorage.removeItem('csrf_token')
           clearAuthSessionHint()
           window.location.href = '/'
+          return new Promise<T>(() => {})
         }
       }
 

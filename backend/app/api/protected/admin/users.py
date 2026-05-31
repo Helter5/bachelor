@@ -1,5 +1,6 @@
 """Protected Admin API - user management (requires admin role)"""
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlmodel import Session, select
 from typing import Optional
 from ....constants import UserRole
@@ -10,6 +11,14 @@ from ....domain.schemas.responses import UserOut
 from ....core.dependencies import require_admin, validate_csrf_and_origin
 
 router = APIRouter(prefix="/admin/users")
+
+
+class RoleUpdate(BaseModel):
+    role: str
+
+
+class StatusUpdate(BaseModel):
+    is_active: bool
 
 
 @router.get("", response_model=list[UserOut])
@@ -67,23 +76,23 @@ async def get_user(
     return UserOut.model_validate(user)
 
 
-@router.patch("/{user_id}/role")
+@router.patch("/{user_id}/role", response_model=UserOut)
 async def update_user_role(
     user_id: int,
-    role: str,
+    body: RoleUpdate,
     _: None = Depends(validate_csrf_and_origin),
     admin: User = Depends(require_admin),
     session: Session = Depends(get_session)
 ):
     """
     Update user role (admin only)
-    
+
     Body:
     - **role**: New role (admin/user)
-    
-    Requires: Admin role + Bearer token
+
+    Requires: Admin role + CSRF token + Origin validation
     """
-    if role not in UserRole.ALL:
+    if body.role not in UserRole.ALL:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Role must be 'admin' or 'user'"
@@ -97,7 +106,7 @@ async def update_user_role(
             detail=f"User with id {user_id} not found"
         )
     
-    user.role = role
+    user.role = body.role
     session.add(user)
     session.commit()
     session.refresh(user)
@@ -105,31 +114,31 @@ async def update_user_role(
     return UserOut.model_validate(user)
 
 
-@router.patch("/{user_id}/status")
+@router.patch("/{user_id}/status", response_model=UserOut)
 async def toggle_user_status(
     user_id: int,
-    is_active: bool,
+    body: StatusUpdate,
     _: None = Depends(validate_csrf_and_origin),
     admin: User = Depends(require_admin),
     session: Session = Depends(get_session)
 ):
     """
     Activate/deactivate user (admin only)
-    
+
     Body:
     - **is_active**: Active status (true/false)
-    
-    Requires: Admin role + Bearer token
+
+    Requires: Admin role + CSRF token + Origin validation
     """
     user = session.get(User, user_id)
-    
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User with id {user_id} not found"
         )
-    
-    user.is_active = is_active
+
+    user.is_active = body.is_active
     session.add(user)
     session.commit()
     session.refresh(user)

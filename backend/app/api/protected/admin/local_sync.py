@@ -8,7 +8,7 @@ from ....core.dependencies import require_admin, validate_csrf_and_origin
 from ....core.security import get_client_ip
 from ....database import get_session
 from ....domain.entities.user import User
-from ....services.local_sync_service import LocalSyncService
+from ....services.local_sync_service import LocalSyncService, LocalSyncPayload
 
 router = APIRouter(prefix="/admin/local-sync")
 
@@ -29,12 +29,12 @@ async def start_local_sync(
 
 @router.post("/run", response_model=dict)
 async def run_local_sync_upload(
-    payload: dict[str, Any],
+    payload: LocalSyncPayload,
     authorization: Optional[str] = Header(None),
     session: Session = Depends(get_session),
 ):
     """Receive a full Arena data bundle from the local agent and sync it into the DB."""
-    return await LocalSyncService(session).run_upload(payload, authorization)
+    return await LocalSyncService(session).run_upload(payload.model_dump(), authorization)
 
 
 @router.patch("/progress", response_model=dict)

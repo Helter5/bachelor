@@ -14,15 +14,22 @@ from ..config import get_settings
 settings = get_settings()
 
 
+def _trusted_proxy_ips() -> frozenset[str]:
+    raw = settings.trusted_proxies
+    return frozenset(ip.strip() for ip in raw.split(",") if ip.strip())
+
+
 def get_client_ip(request: Request) -> Optional[str]:
-    """Extract real client IP from request, respecting proxy headers."""
-    forwarded_for = request.headers.get("X-Forwarded-For")
-    if forwarded_for:
-        return forwarded_for.split(",")[0].strip()
-    real_ip = request.headers.get("X-Real-IP")
-    if real_ip:
-        return real_ip.strip()
-    return request.client.host if request.client else None
+    """Extract real client IP, trusting proxy headers only from configured trusted proxies."""
+    connecting_ip = request.client.host if request.client else None
+    if connecting_ip and connecting_ip in _trusted_proxy_ips():
+        forwarded_for = request.headers.get("X-Forwarded-For")
+        if forwarded_for:
+            return forwarded_for.split(",")[0].strip()
+        real_ip = request.headers.get("X-Real-IP")
+        if real_ip:
+            return real_ip.strip()
+    return connecting_ip
 
 
 ALGORITHM = settings.jwt_algorithm
@@ -99,7 +106,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         return False
 
 
-def create_access_token(user_id: int, role: str, session_id: int = None) -> tuple[str, datetime]:
+def create_access_token(user_id: int, role: str, session_id: Optional[int] = None) -> tuple[str, datetime]:
     """
     Create a short-lived JWT access token.
 

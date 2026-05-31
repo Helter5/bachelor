@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from urllib.parse import urlencode
 import httpx
 from fastapi import HTTPException
 
@@ -42,7 +41,9 @@ async def get_access_token_for_source(source) -> str:
             },
         )
 
-    params = {
+    # Credentials sent in request body (form-encoded), not URL query string,
+    # so they do not appear in server/proxy access logs.
+    token_body = {
         "grant_type": "https://arena.uww.io/grants/api_key",
         "client_id": client_id,
         "client_secret": client_secret,
@@ -51,10 +52,9 @@ async def get_access_token_for_source(source) -> str:
 
     try:
         logger.info(f"Requesting new access token from Arena source {source_id} ({source.host}:{source.port})")
-        full_url = f"{token_url}?{urlencode(params)}"
 
         async with http_client_ctx() as client:
-            response = await client.post(full_url, timeout=30.0)
+            response = await client.post(token_url, data=token_body, timeout=30.0)
         response.raise_for_status()
         token_data = response.json()
 

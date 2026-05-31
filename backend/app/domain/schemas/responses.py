@@ -195,6 +195,13 @@ class WeightCategoryOut(BaseModel):
 
 
 
+class PersonRefOut(BaseModel):
+    """Minimal person reference (id + display name + country) used in opponent/candidate lists."""
+    id: int
+    full_name: str
+    country_iso_code: Optional[str] = None
+
+
 class PersonOut(BaseModel):
     """Person response data for the master wrestler identity."""
     model_config = ConfigDict(from_attributes=True)

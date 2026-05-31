@@ -3,39 +3,39 @@
 @source inline("text-emerald-300 text-emerald-400 text-emerald-600 text-emerald-700 bg-emerald-100 bg-emerald-500/15 bg-emerald-500/20 bg-yellow-500/10 bg-yellow-50 bg-orange-500/20 text-orange-400 bg-green-500/15");
 
 @theme {
-  --color-background: 0 0% 100%;
-  --color-foreground: 222.2 47% 11%;
-  --color-card: 0 0% 100%;
-  --color-card-foreground: 222.2 47% 11%;
-  --color-popover: 0 0% 100%;
-  --color-popover-foreground: 222.2 47% 11%;
-  --color-primary: 221 83% 53%;
-  --color-primary-foreground: 0 0% 100%;
-  --color-secondary: 210 40% 96.1%;
-  --color-secondary-foreground: 222.2 47% 11%;
-  --color-muted: 210 40% 96.1%;
-  --color-muted-foreground: 215.4 16.3% 46.9%;
-  --color-accent: 210 40% 96.1%;
-  --color-accent-foreground: 222.2 47% 11%;
-  --color-destructive: 0 84.2% 60.2%;
-  --color-destructive-foreground: 0 0% 100%;
-  --color-border: 214.3 31.8% 91.4%;
-  --color-input: 214.3 31.8% 91.4%;
-  --color-ring: 221 83% 53%;
+  --color-background: hsl(0 0% 100%);
+  --color-foreground: hsl(222.2 47% 11%);
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(222.2 47% 11%);
+  --color-popover: hsl(0 0% 100%);
+  --color-popover-foreground: hsl(222.2 47% 11%);
+  --color-primary: hsl(221 83% 53%);
+  --color-primary-foreground: hsl(0 0% 100%);
+  --color-secondary: hsl(210 40% 96.1%);
+  --color-secondary-foreground: hsl(222.2 47% 11%);
+  --color-muted: hsl(210 40% 96.1%);
+  --color-muted-foreground: hsl(215.4 16.3% 46.9%);
+  --color-accent: hsl(210 40% 96.1%);
+  --color-accent-foreground: hsl(222.2 47% 11%);
+  --color-destructive: hsl(0 84.2% 60.2%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+  --color-border: hsl(214.3 31.8% 91.4%);
+  --color-input: hsl(214.3 31.8% 91.4%);
+  --color-ring: hsl(221 83% 53%);
   --radius: 0.5rem;
 }
 
 * {
-  border-color: hsl(var(--color-border));
+  border-color: var(--color-border);
 }
 
 .dark * {
-  --color-border: 215 20% 20%;
+  --color-border: hsl(215 20% 20%);
 }
 
 body {
-  background-color: hsl(var(--color-background));
-  color: hsl(var(--color-foreground));
+  background-color: var(--color-background);
+  color: var(--color-foreground);
 }
 
 /* Hide browser-native calendar icon so we can render a consistent custom one. */

@@ -1,5 +1,5 @@
 import { apiClient, ApiError } from '@/services/apiClient'
-import { devError } from "@/utils/devLogger"
+import { devError, devWarn } from "@/utils/devLogger"
 import { API_ENDPOINTS, LOCAL_SYNC_AGENT_URL } from '@/config/api'
 
 export interface SyncResult {
@@ -104,7 +104,7 @@ export async function retryWithBackoff<T>(
         throw error
       }
 
-      console.warn(`${context} failed (attempt ${attempt}/${maxAttempts}), retrying...`)
+      devWarn(`${context} failed (attempt ${attempt}/${maxAttempts}), retrying...`)
       await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * attempt))
     }
   }

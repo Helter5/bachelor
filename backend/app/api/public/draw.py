@@ -8,7 +8,7 @@ from ...services.draw_service import DrawService
 router = APIRouter(prefix="/draw")
 
 
-@router.get("/{event_id}/{weight_category_id}")
+@router.get("/{event_id}/{weight_category_id}", response_model=dict)
 def generate_draw(
     event_id: int,
     weight_category_id: int,

@@ -91,8 +91,6 @@ class AdminSyncService:
     def ensure_sync_run_access(
         self,
         sync_log_id: Optional[int],
-        *,
-        allow_start_new: bool,
     ) -> Optional[SyncLog]:
         """
         Enforce a single global sync run.
@@ -101,7 +99,7 @@ class AdminSyncService:
         """
         active_log = self.get_active_sync_log()
         if not active_log:
-            return None if allow_start_new else None
+            return None
 
         if sync_log_id is not None and active_log.id == sync_log_id:
             return active_log
@@ -261,7 +259,7 @@ class AdminSyncService:
         if cached_result:
             return cached_result
 
-        self.ensure_sync_run_access(sync_log_id, allow_start_new=False)
+        self.ensure_sync_run_access(sync_log_id)
 
         lock = self.get_lock(f"{lock_prefix}_{event_id}")
         self.ensure_lock_available(lock, lock_conflict_detail)

@@ -1,6 +1,6 @@
 """Protected Admin API - sync logs (requires admin role)"""
 from datetime import datetime, timezone
-from typing import Dict, Any
+from typing import Dict, Any, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
@@ -34,7 +34,7 @@ class SyncLogStatsPatch(BaseModel):
     fights_updated: int | None = None
     referees_created: int | None = None
     referees_updated: int | None = None
-    status: str | None = None
+    status: Literal["in_progress", "success", "failed"] | None = None
     error_message: str | None = None
     details: Dict[str, Any] | None = None
 

@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 def get_results(event_id: int, session: Session = Depends(get_session)):
     """Get fight results for an event from the local database."""
     try:
-        logger.info(f"Fetching results from DB for event: {event_id}")
+        logger.info("Fetching results from DB for event: %s", event_id)
 
         rows = session.execute(text("""
             SELECT
@@ -95,7 +95,7 @@ def get_results(event_id: int, session: Session = Depends(get_session)):
                 "roundScores": [],
             })
 
-        logger.info(f"Returned {len(results)} results from DB for event {event_id}")
+        logger.info("Returned %s results from DB for event %s", len(results), event_id)
         return results
 
     except Exception:

@@ -99,12 +99,6 @@ async def change_password(
             detail="Current password is incorrect"
         )
 
-    if len(password_data.new_password) < 6:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="New password must be at least 6 characters long"
-        )
-
     user.password_hash = hash_password(password_data.new_password)
     user.updated_at = datetime.now(timezone.utc)
 
@@ -133,8 +127,9 @@ async def upload_avatar(
             },
         )
 
-    contents = await file.read()
-    if len(contents) > 5 * 1024 * 1024:
+    _MAX_AVATAR_BYTES = 5 * 1024 * 1024
+    contents = await file.read(_MAX_AVATAR_BYTES + 1)
+    if len(contents) > _MAX_AVATAR_BYTES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={

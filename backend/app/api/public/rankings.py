@@ -9,13 +9,13 @@ from ...services.ranking_service import RankingService
 router = APIRouter(prefix="/rankings")
 
 
-@router.get("/categories")
+@router.get("/categories", response_model=list[str])
 def get_ranking_categories(session: Session = Depends(get_session)):
     """Get available weight categories that have fight data."""
     return RankingService(session).get_available_weight_categories()
 
 
-@router.get("")
+@router.get("", response_model=list[dict])
 def get_ranking(
     weight_category: str = Query(..., description="Weight category name"),
     last_n: int = Query(3, ge=1, le=10, description="Number of most recent tournaments to consider"),

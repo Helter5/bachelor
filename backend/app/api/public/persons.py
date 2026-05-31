@@ -4,7 +4,7 @@ from sqlmodel import Session
 from typing import Optional
 
 from ...database import get_session
-from ...domain.schemas.responses import PersonOut
+from ...domain.schemas.responses import PersonOut, PersonRefOut
 from ...services.person_service import PersonService
 
 router = APIRouter(prefix="/persons")
@@ -21,7 +21,7 @@ def list_persons(
     return PersonService(session).list_persons(name=name, country=country, skip=skip, limit=limit)
 
 
-@router.get("/compare")
+@router.get("/compare", response_model=dict)
 def compare_persons(
     person1_id: int = Query(...),
     person2_id: int = Query(...),
@@ -37,21 +37,21 @@ def compare_persons(
     )
 
 
-@router.get("/{person_id}/opponents")
+@router.get("/{person_id}/opponents", response_model=list[PersonRefOut])
 def get_person_opponents(person_id: int, session: Session = Depends(get_session)):
     return PersonService(session).get_person_opponents(person_id)
 
 
-@router.get("/{person_id}/common-opponent-candidates")
+@router.get("/{person_id}/common-opponent-candidates", response_model=list[PersonRefOut])
 def get_common_opponent_candidates(person_id: int, session: Session = Depends(get_session)):
     return PersonService(session).get_common_opponent_candidates(person_id)
 
 
-@router.get("/{person_id}")
+@router.get("/{person_id}", response_model=dict)
 def get_person_detail(person_id: int, session: Session = Depends(get_session)):
     return PersonService(session).get_person_detail(person_id)
 
 
-@router.get("/{person_id}/fights")
+@router.get("/{person_id}/fights", response_model=dict)
 def get_person_fights(person_id: int, session: Session = Depends(get_session)):
     return PersonService(session).get_person_fights(person_id)

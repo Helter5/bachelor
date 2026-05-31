@@ -41,7 +41,7 @@ class BaseService(Generic[ModelType]):
         return False
 
     @staticmethod
-    def has_changes(existing, new_data: dict, exclude_fields: set = None) -> bool:
+    def has_changes(existing, new_data: dict, exclude_fields: Optional[set[str]] = None) -> bool:
         """Return true when persisted values differ from incoming sync data."""
         exclude = exclude_fields or set()
         for key, new_value in new_data.items():
