@@ -59,7 +59,7 @@ async def get_access_token_for_source(source) -> str:
         token_data = response.json()
 
         if "access_token" not in token_data:
-            logger.error(f"Token response missing access_token field for source {source_id}")
+            logger.error("Token response missing access_token field for source %s", source_id)
             raise HTTPException(
                 status_code=502,
                 detail={
