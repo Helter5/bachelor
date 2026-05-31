@@ -1,15 +1,16 @@
 """Protected Admin API - sync management (requires admin role)"""
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Header, Request
-from pydantic import BaseModel
-from sqlmodel import Session
-from typing import Optional
 from datetime import datetime, timezone
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Header, Request
+from sqlmodel import Session
 
 logger = logging.getLogger(__name__)
 
 from ....database import get_session
 from ....domain.entities.user import User
+from ....domain.schemas.responses import EventsSyncOut, EventSyncOut, VictoryTypesSyncOut
 from ....core.dependencies import require_admin, validate_csrf_and_origin
 from ....core.http import extract_http_detail
 from ....services.athlete_service import AthleteService
@@ -23,29 +24,6 @@ from ....services.victory_type_service import VictoryTypeService
 from ....services.referee_service import RefereeService
 
 router = APIRouter(prefix="/admin/sync", tags=["admin-sync"])
-
-
-class EventsSyncOut(BaseModel):
-    message: str
-    count: int
-    idempotency_key: str
-    sync_log_id: int
-
-
-class EventSyncOut(BaseModel):
-    message: str
-    event_id: int
-    count: int = 0
-    created: int = 0
-    updated: int = 0
-    idempotency_key: Optional[str] = None
-    skipped: Optional[bool] = None
-
-
-class VictoryTypesSyncOut(BaseModel):
-    message: str
-    created: int
-    updated: int
 
 # In-memory sync locks/cache are safe only for a single backend process.
 # Multi-worker or multi-instance deployments need Redis or PostgreSQL advisory locks.

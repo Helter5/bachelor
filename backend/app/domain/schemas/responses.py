@@ -37,6 +37,29 @@ class AvatarOut(BaseModel):
     message: str
 
 
+class EventsSyncOut(BaseModel):
+    message: str
+    count: int
+    idempotency_key: str
+    sync_log_id: int
+
+
+class EventSyncOut(BaseModel):
+    message: str
+    event_id: int
+    count: int = 0
+    created: int = 0
+    updated: int = 0
+    idempotency_key: Optional[str] = None
+    skipped: Optional[bool] = None
+
+
+class VictoryTypesSyncOut(BaseModel):
+    message: str
+    created: int
+    updated: int
+
+
 
 class SportEventOut(BaseModel):
     """Sport event response data."""
