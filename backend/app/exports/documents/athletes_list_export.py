@@ -27,6 +27,9 @@ def generate_athletes_list_pdf(event_name: str, athletes: List[Dict[str, Any]]) 
         leftMargin=0.75 * inch,
         rightMargin=0.75 * inch,
     )
+    doc.title = "Wrestling Federation Export"
+    doc.author = "Wrestling Federation"
+    doc.subject = "Zoznam atlétov"
     font_manager._register_fonts()
 
     elements = build_export_header(event_name, "Zoznam atlétov")
