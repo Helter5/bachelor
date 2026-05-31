@@ -126,6 +126,10 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
     )
   }
 
+  const getLogUserLabel = (log: SyncLog) => {
+    return log.username || log.user_full_name || t('syncLogs.unknownUser')
+  }
+
   const DetailField = ({ label, value }: { label: string; value: ReactNode }) => (
     <div>
       <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -210,7 +214,7 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
                       {formatDate(log.started_at)}
                     </td>
                     <td className={`py-2 px-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                      {log.user_full_name || log.username || t('syncLogs.unknownUser')}
+                      {getLogUserLabel(log)}
                     </td>
                     <td className="py-2 px-3">
                       <span className={`px-2 py-1 rounded text-xs ${getStatusColor(log.status)}`}>
@@ -260,7 +264,7 @@ export function SyncLogs({ isDarkMode }: SyncLogsProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <DetailField
                   label={t('syncLogs.detailUser')}
-                  value={<>{selectedLog.user_full_name || selectedLog.username || t('syncLogs.unknownUser')} {selectedLog.ip_address && `(${selectedLog.ip_address})`}</>}
+                  value={<>{getLogUserLabel(selectedLog)} {selectedLog.ip_address && `(${selectedLog.ip_address})`}</>}
                 />
                 <DetailField
                   label={t('syncLogs.detailSource')}
