@@ -179,7 +179,26 @@ export async function runLocalAgentSync({ onStarted }: RunSyncOptions = {}) {
 
   if (!response.ok) {
     const text = await response.text().catch(() => '')
-    throw new Error(text || `Local sync agent failed: ${response.status} ${response.statusText}`)
+    let message = text || `Local sync agent failed: ${response.status} ${response.statusText}`
+    let code: string | undefined
+
+    try {
+      const parsed = JSON.parse(text)
+      const detail = parsed?.detail
+      if (typeof detail === 'object' && detail !== null) {
+        if (typeof detail.code === 'string') code = detail.code
+        if (typeof detail.message === 'string') message = detail.message
+      } else if (typeof detail === 'string') {
+        message = detail
+      } else if (typeof parsed?.message === 'string') {
+        message = parsed.message
+      }
+      if (!code && typeof parsed?.code === 'string') code = parsed.code
+    } catch {
+      // Keep the plain response text when the local agent returns non-JSON.
+    }
+
+    throw new ApiError(response.status, response.statusText, message, code)
   }
 
   return { syncLogId: localSync.sync_log_id }

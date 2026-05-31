@@ -118,6 +118,12 @@ export function useSync(currentUserName?: string) {
         return t('dashboard.syncErrors.alreadyRunning')
       }
 
+      if (error.code) {
+        const key = `apiErrors.${error.code}`
+        const translated = t(key)
+        if (translated !== key) return translated
+      }
+
       if (error.message?.trim()) {
         return error.message
       }

@@ -849,7 +849,7 @@
     "arena_unexpected": "Neočakávaná chyba pri komunikácii s Arena API.",
     "arena_credentials_missing": "Arena zdroj nemá nakonfigurované prihlasovacie údaje. Nastav client_id, client_secret a api_key v Settings → Arena Zdroje.",
     "arena_token_invalid_response": "Arena vrátila neplatnú token odpoveď.",
-    "arena_token_network_failed": "Arena autentifikačný endpoint je nedostupný. Skontroluj host a port.",
+    "arena_token_network_failed": "IS Arena nie je dostupný alebo nie je spustený. Skontroluj host, port a či beží Arena inštancia.",
     "arena_token_rejected": "Arena odmietla prihlasovacie údaje. Skontroluj client_id, client_secret a api_key.",
     "arena_token_unexpected": "Neočakávaná chyba pri získavaní Arena access tokenu.",
     "sport_event_not_found": "Športová udalosť nebola nájdená.",

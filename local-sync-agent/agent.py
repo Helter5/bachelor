@@ -4,7 +4,6 @@ Runs on the event organizer's computer, reads the local UWW Arena instance,
 and uploads the data bundle to the deployed BP backend.
 """
 from typing import Any
-from urllib.parse import urlencode
 import logging
 import os
 
@@ -50,6 +49,16 @@ AGENT_PROGRESS_START = 2
 AGENT_PROGRESS_END = 50
 
 
+def arena_error(status_code: int, code: str, message: str) -> HTTPException:
+    return HTTPException(
+        status_code=status_code,
+        detail={
+            "code": code,
+            "message": message,
+        },
+    )
+
+
 def arena_base_url(source: ArenaSource) -> str:
     host = os.getenv("BP_ARENA_HOST_OVERRIDE") or source.host
     host = host.replace("http://", "").replace("https://", "").strip("/")
@@ -63,21 +72,28 @@ async def get_arena_token(client: httpx.AsyncClient, source: ArenaSource) -> str
         "client_secret": source.client_secret,
         "api_key": source.api_key,
     }
-    url = f"{arena_base_url(source)}/oauth/v2/token?{urlencode(params)}"
+    url = f"{arena_base_url(source)}/oauth/v2/token"
     try:
-        response = await client.post(url)
+        response = await client.post(url, params=params)
         response.raise_for_status()
     except httpx.HTTPStatusError as exc:
-        raise HTTPException(
-            status_code=502,
-            detail=f"Arena token request failed: {exc.response.status_code} {exc.response.text[:500]}",
+        code = "arena_token_rejected" if exc.response.status_code in {400, 401, 403} else "arena_token_unexpected"
+        raise arena_error(
+            502,
+            code,
+            "Arena authentication failed. Verify the configured credentials.",
         ) from exc
     except httpx.RequestError as exc:
-        raise HTTPException(status_code=502, detail=f"Arena token request failed at {url}: {type(exc).__name__}: {exc}") from exc
+        logger.warning("Arena token endpoint is unreachable: %s: %s", type(exc).__name__, exc)
+        raise arena_error(
+            503,
+            "arena_token_network_failed",
+            "IS Arena is not reachable. Verify that the Arena instance is running and that host and port are correct.",
+        ) from exc
     data = response.json()
     token = data.get("access_token")
     if not token:
-        raise HTTPException(status_code=502, detail="Arena token response did not include access_token")
+        raise arena_error(502, "arena_token_invalid_response", "Arena token response did not include access_token.")
     return token
 
 

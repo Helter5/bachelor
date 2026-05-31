@@ -164,21 +164,43 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
         targetAddressSpace: "loopback",
       } as RequestInit & { targetAddressSpace?: "loopback" })
 
-      const result = await response.json().catch(() => null) as { success?: boolean; code?: string; message?: string; detail?: string; events_count?: number } | null
+      const result = await response.json().catch(() => null) as {
+        success?: boolean
+        code?: string
+        message?: string
+        detail?: string | { code?: string; message?: string }
+        events_count?: number
+      } | null
+
+      const resolveAgentMessage = () => {
+        const detail = result?.detail
+        const code = result?.code || (typeof detail === "object" && detail !== null ? detail.code : undefined)
+        if (code) {
+          const key = `apiErrors.${code}`
+          const translated = t(key)
+          if (translated !== key) return translated
+        }
+        if (typeof detail === "object" && detail !== null && detail.message) return detail.message
+        if (typeof detail === "string" && detail.trim()) return detail
+        return result?.message
+      }
 
       if (!response.ok) {
         if (response.status === 404) {
           throw new Error(t("arenaSources.localAgentOutdated"))
         }
-        throw new Error(result?.detail || result?.message || `${response.status} ${response.statusText}`)
+        throw new Error(resolveAgentMessage() || `${response.status} ${response.statusText}`)
       }
 
       const resolveMessage = () => {
-        if (result?.code) {
-          const key = `apiErrors.${result.code}`
+        const detail = result?.detail
+        const code = result?.code || (typeof detail === "object" && detail !== null ? detail.code : undefined)
+        if (code) {
+          const key = `apiErrors.${code}`
           const translated = t(key)
           if (translated !== key) return translated
         }
+        if (typeof detail === "object" && detail !== null && detail.message) return detail.message
         return result?.message
       }
 
