@@ -222,7 +222,6 @@ export function CalendarSection({ isDarkMode }: CalendarSectionProps) {
               onPrevMonth={() => goToMonth(-1)}
               onNextMonth={() => goToMonth(1)}
               onJumpToToday={() => selectDate(today)}
-              viewMode={viewMode}
               setViewMode={setViewMode}
               viewToggleClass={viewToggleClass}
             />
