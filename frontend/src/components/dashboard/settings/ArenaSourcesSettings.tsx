@@ -173,7 +173,7 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
         events_count?: number
       } | null
 
-      const resolveAgentMessage = () => {
+      const resolveLocalAgentMessage = (sanitize: boolean) => {
         const detail = result?.detail
         const code = result?.code || (typeof detail === "object" && detail !== null ? detail.code : undefined)
         if (code) {
@@ -183,7 +183,7 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
         }
         if (typeof detail === "object" && detail !== null && detail.message) return detail.message
         if (typeof detail === "string" && detail.trim()) {
-          return isRawArenaConnectionError(detail) ? t("apiErrors.arena_token_network_failed") : detail
+          return sanitize && isRawArenaConnectionError(detail) ? t("apiErrors.arena_token_network_failed") : detail
         }
         return result?.message
       }
@@ -192,19 +192,7 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
         if (response.status === 404) {
           throw new Error(t("arenaSources.localAgentOutdated"))
         }
-        throw new Error(resolveAgentMessage() || `${response.status} ${response.statusText}`)
-      }
-
-      const resolveMessage = () => {
-        const detail = result?.detail
-        const code = result?.code || (typeof detail === "object" && detail !== null ? detail.code : undefined)
-        if (code) {
-          const key = `apiErrors.${code}`
-          const translated = t(key)
-          if (translated !== key) return translated
-        }
-        if (typeof detail === "object" && detail !== null && detail.message) return detail.message
-        return result?.message
+        throw new Error(resolveLocalAgentMessage(true) || `${response.status} ${response.statusText}`)
       }
 
       setToast({
@@ -212,7 +200,7 @@ export function ArenaSourcesSettings({ isDarkMode }: ArenaSourcesSettingsProps) 
         variant: result?.success === false ? "error" : "success",
         title: result?.success === false ? t("arenaSources.testFailed") : t("arenaSources.testSuccess"),
         message: result?.success === false
-          ? resolveMessage()
+          ? resolveLocalAgentMessage(false)
           : t("arenaSources.testEventsCount", { count: result?.events_count ?? 0 }),
       })
     } catch (err) {
