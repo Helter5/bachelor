@@ -17,6 +17,19 @@ interface SettingsProps {
 
 type TabType = 'profile' | 'appearance' | 'arena-sources' | 'security'
 
+const SETTINGS_SECTION_ALIASES: Record<string, TabType> = {
+  profile: 'profile',
+  appearance: 'appearance',
+  sources: 'arena-sources',
+  'arena-sources': 'arena-sources',
+  security: 'security',
+}
+
+function parseSettingsSection(): TabType {
+  const section = new URLSearchParams(window.location.search).get('section')?.trim().toLowerCase()
+  return section ? SETTINGS_SECTION_ALIASES[section] ?? 'profile' : 'profile'
+}
+
 const IconUser = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -40,7 +53,7 @@ const IconShield = () => (
 
 export function Settings({ isDarkMode, toggleDarkMode, onUserDataChange }: SettingsProps) {
   const { t } = useTranslation()
-  const [activeTab, setActiveTab] = useState<TabType>('profile')
+  const [activeTab, setActiveTab] = useState<TabType>(() => parseSettingsSection())
   const [user, setUser] = useState<AppUser | null>(null)
 
   const loadUser = useCallback(async () => {
@@ -55,6 +68,16 @@ export function Settings({ isDarkMode, toggleDarkMode, onUserDataChange }: Setti
   useEffect(() => {
     loadUser()
   }, [loadUser])
+
+  useEffect(() => {
+    const syncTabFromUrl = () => setActiveTab(parseSettingsSection())
+    window.addEventListener('popstate', syncTabFromUrl)
+    window.addEventListener('app:navigate', syncTabFromUrl)
+    return () => {
+      window.removeEventListener('popstate', syncTabFromUrl)
+      window.removeEventListener('app:navigate', syncTabFromUrl)
+    }
+  }, [])
 
   const handleUserUpdated = useCallback((updatedUser: AppUser) => {
     setUser((prev) => ({
@@ -74,6 +97,22 @@ export function Settings({ isDarkMode, toggleDarkMode, onUserDataChange }: Setti
     { id: 'security' as TabType, label: t("settings.tabs.security"), icon: <IconShield />, adminOnly: false },
   ].filter(tab => !tab.adminOnly || isAdmin)
 
+  useEffect(() => {
+    if (user === null) return
+    if (!tabs.some(tab => tab.id === activeTab)) {
+      setActiveTab('profile')
+    }
+  }, [activeTab, tabs, user])
+
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab)
+    const params = new URLSearchParams(window.location.search)
+    params.set('section', tab === 'arena-sources' ? 'sources' : tab)
+    const nextUrl = `${window.location.pathname}?${params.toString()}`
+    window.history.pushState({}, '', nextUrl)
+    window.dispatchEvent(new Event('app:navigate'))
+  }
+
   return (
     <div className="max-w-6xl mx-auto">
       <h2 className={`text-2xl md:text-3xl font-bold mb-6 md:mb-8 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -88,7 +127,7 @@ export function Settings({ isDarkMode, toggleDarkMode, onUserDataChange }: Setti
               return (
                 <li key={tab.id}>
                   <button
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => handleTabChange(tab.id)}
                     className={`w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
                       active
                         ? isDarkMode
