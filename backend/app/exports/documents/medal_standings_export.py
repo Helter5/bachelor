@@ -155,7 +155,6 @@ class MedalStandingsExport(BasePDFExport):
             d = medal_standings[key]
             d['total'] = d['gold'] + d['silver'] + d['bronze']
 
-        # Remove athletes with no medals
         medal_standings = {k: v for k, v in medal_standings.items() if v['total'] > 0}
 
         return medal_standings

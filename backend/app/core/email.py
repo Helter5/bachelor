@@ -235,5 +235,4 @@ Prihlásiť sa môžeš na: {settings.frontend_url}
         return self.send_email(to_email, subject, html_content, text_content)
 
 
-# Singleton instance
 email_service = EmailService()

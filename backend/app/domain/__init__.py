@@ -1,6 +1,5 @@
 """Domain layer - business entities and schemas"""
 from .entities import (
-    # Entities
     User,
     SportEvent,
     Team,
@@ -11,7 +10,6 @@ from .entities import (
     Person,
     VictoryType,
     Discipline,
-    # Base classes
     UserBase,
     SportEventBase,
     TeamBase,
@@ -31,7 +29,6 @@ from .schemas import (
 )
 
 __all__ = [
-    # Entities
     "User",
     "SportEvent",
     "Team",
@@ -42,7 +39,6 @@ __all__ = [
     "Person",
     "VictoryType",
     "Discipline",
-    # Base classes
     "UserBase",
     "SportEventBase",
     "TeamBase",
@@ -50,7 +46,6 @@ __all__ = [
     "WeightCategoryBase",
     "FightBase",
     "PersonBase",
-    # Schemas
     "UserCreate",
     "UserPublic",
     "UserLogin",

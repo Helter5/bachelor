@@ -68,10 +68,6 @@ class DetailedStatisticsExport(BaseExcelExport):
         self._create_results_sheet()
         self._create_statistics_sheet()
 
-    # ------------------------------------------------------------------
-    # Sheet: Prehľad
-    # ------------------------------------------------------------------
-
     def _create_overview_sheet(self) -> None:
         ws = self.workbook.active
         ws.title = "Prehľad"
@@ -102,10 +98,6 @@ class DetailedStatisticsExport(BaseExcelExport):
 
         builder.set_column_widths([28, 40])
 
-    # ------------------------------------------------------------------
-    # Sheet: Tímy
-    # ------------------------------------------------------------------
-
     def _create_teams_sheet(self) -> None:
         ws = self.workbook.create_sheet("Tímy")
         teams = self.metadata['teams']
@@ -125,10 +117,6 @@ class DetailedStatisticsExport(BaseExcelExport):
             .with_data(data_rows) \
             .with_column_widths([8, 10, 32, 12, 22]) \
             .build_to_sheet(ws)
-
-    # ------------------------------------------------------------------
-    # Sheet: Atleti
-    # ------------------------------------------------------------------
 
     def _create_athletes_sheet(self) -> None:
         ws = self.workbook.create_sheet("Atleti")
@@ -160,10 +148,6 @@ class DetailedStatisticsExport(BaseExcelExport):
             .with_column_widths([8, 32, 28, 20, 12]) \
             .build_to_sheet(ws)
 
-    # ------------------------------------------------------------------
-    # Sheet: Kategórie
-    # ------------------------------------------------------------------
-
     def _create_categories_sheet(self) -> None:
         ws = self.workbook.create_sheet("Kategórie")
         weight_categories = self.metadata['weight_categories']
@@ -184,10 +168,6 @@ class DetailedStatisticsExport(BaseExcelExport):
             .with_data(data_rows) \
             .with_column_widths([8, 20, 14, 14, 12, 12, 14]) \
             .build_to_sheet(ws)
-
-    # ------------------------------------------------------------------
-    # Sheet: Výsledky
-    # ------------------------------------------------------------------
 
     def _create_results_sheet(self) -> None:
         ws = self.workbook.create_sheet("Výsledky")
@@ -241,10 +221,6 @@ class DetailedStatisticsExport(BaseExcelExport):
             .with_column_widths([10, 16, 14, 28, 28, 28, 20, 6, 6, 6, 6, 8]) \
             .build_to_sheet(ws)
 
-    # ------------------------------------------------------------------
-    # Sheet: Štatistiky
-    # ------------------------------------------------------------------
-
     def _create_statistics_sheet(self) -> None:
         ws = self.workbook.create_sheet("Štatistiky")
         fights = self.metadata['fights']
@@ -255,7 +231,6 @@ class DetailedStatisticsExport(BaseExcelExport):
 
         builder = ExcelSheetBuilder(ws)
 
-        # Victory type distribution
         builder.add_title_row("TYPY VÍŤAZSTIEV", font_size=13, bold=True)
         builder.skip_rows(1)
         vt_counts = Counter(f.victory_type for f in fights if f.victory_type)
@@ -271,7 +246,6 @@ class DetailedStatisticsExport(BaseExcelExport):
         builder.set_column_widths([30, 10, 10, 14])
         builder.skip_rows(2)
 
-        # Top performers
         builder.add_title_row("TOP PERFORMERI (podľa víťazstiev)", font_size=13, bold=True)
         builder.skip_rows(1)
 
@@ -305,7 +279,6 @@ class DetailedStatisticsExport(BaseExcelExport):
             ])
         builder.skip_rows(2)
 
-        # Team performance
         builder.add_title_row("VÝKONNOSŤ TÍMOV", font_size=13, bold=True)
         builder.skip_rows(1)
 

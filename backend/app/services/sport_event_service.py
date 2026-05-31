@@ -191,7 +191,6 @@ class SportEventService(BaseService[SportEvent]):
         Returns:
             Filtered start list data with only useful information
         """
-        # Fetch full data from Arena API
         data = await fetch_arena_data(f"sport-event/get/{event_id}/start-list")
         
         sport_event = data.get("sportEvent", {})

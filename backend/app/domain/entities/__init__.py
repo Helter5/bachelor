@@ -13,7 +13,6 @@ from .victory_type import VictoryType
 from .discipline import Discipline
 from .referee import Referee
 __all__ = [
-    # Main entities
     "User",
     "UserBase",
     "SportEvent",

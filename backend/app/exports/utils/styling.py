@@ -12,24 +12,19 @@ from .font_manager import font_manager
 class ColorPalette:
     """Color definitions for consistent styling"""
 
-    # Dark colors
     DARK_GRAY = colors.HexColor('#1f2937')
     MEDIUM_GRAY = colors.HexColor('#6b7280')
     LIGHT_GRAY = colors.HexColor('#f3f4f6')
     VERY_LIGHT_GRAY = colors.HexColor('#f9fafb')
 
-    # Brand colors
     PRIMARY_BLUE = colors.HexColor('#3b82f6')
 
-    # Medal colors
     GOLD = colors.HexColor('#fef3c7')
     SILVER = colors.HexColor('#e5e7eb')
     BRONZE = colors.HexColor('#fed7aa')
 
-    # Chart colors
     CHART_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32', '#4A90E2', '#50C878']
 
-    # Basic colors
     WHITE = colors.white
     WHITESMOKE = colors.whitesmoke
     GREY = colors.grey
@@ -215,7 +210,6 @@ class DimensionHelper:
         return [total_width * (ratio / total_ratio) * inch for ratio in ratios]
 
 
-# Global instances
 pdf_style = PDFStyleFactory()
 excel_style = ExcelStyleFactory()
 dimensions = DimensionHelper()

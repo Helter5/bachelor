@@ -142,5 +142,4 @@ class DataFormatter:
         self.number = NumberFormatter()
 
 
-# Global formatter instance
 formatter = DataFormatter()

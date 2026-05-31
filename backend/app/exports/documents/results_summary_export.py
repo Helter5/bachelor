@@ -83,11 +83,9 @@ class ResultsSummaryExport(BasePDFExport):
         fights = self.metadata['fights']
         person_map = self.metadata['person_map']
 
-        # Main title
         elements.extend(build_export_header(event.name or "Sport Event", "Súhrnné výsledky"))
         elements.append(PDFSpacerBuilder.create(0.05))
 
-        # Event info
         locality = formatter.text.clean_locality(event.address_locality)
         info_data = [
             ['Miesto:', locality],
@@ -106,7 +104,6 @@ class ResultsSummaryExport(BasePDFExport):
         elements.append(info_table)
         elements.append(PDFSpacerBuilder.create(0.3))
 
-        # Statistics box
         stats_title = PDFTitleBuilder("Štatistiky turnaja", width=6.5) \
             .with_size(12) \
             .with_color(ColorPalette.WHITE) \
@@ -127,7 +124,6 @@ class ResultsSummaryExport(BasePDFExport):
         elements.append(stats_box)
         elements.append(PDFSpacerBuilder.create(0.4))
 
-        # Winners by category
         winners_title = PDFTitleBuilder("Víťazi podľa kategórií", width=6.5) \
             .with_size(14) \
             .with_alignment('LEFT') \
@@ -142,7 +138,6 @@ class ResultsSummaryExport(BasePDFExport):
             no_results = PDFTableBuilder([["Žiadne výsledky k dispozícii"]], col_widths=[6.5]).build()
             elements.append(no_results)
 
-        # Footer
         elements.append(PDFSpacerBuilder.create(0.4))
         footer = PDFFooterBuilder(width=6.5).build()
         elements.append(footer)
@@ -159,7 +154,6 @@ class ResultsSummaryExport(BasePDFExport):
         """Build winners table"""
         winners_data = [['Kategória', 'Víťaz', 'Krajina']]
 
-        # Group athletes by weight category
         category_athletes = {}
         for athlete in athletes:
             if athlete.weight_category_id and athlete.is_competing:
