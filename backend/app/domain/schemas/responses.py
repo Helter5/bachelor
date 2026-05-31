@@ -198,7 +198,7 @@ class WeightCategoryOut(BaseModel):
 class PersonRefOut(BaseModel):
     """Minimal person reference (id + display name + country) used in opponent/candidate lists."""
     id: int
-    full_name: str
+    full_name: Optional[str] = None
     country_iso_code: Optional[str] = None
 
 

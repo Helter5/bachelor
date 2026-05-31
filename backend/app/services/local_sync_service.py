@@ -131,7 +131,8 @@ class LocalSyncService:
                 **totals,
             }
         except HTTPException as exc:
-            self.sync_admin.fail_sync_log(sync_log, start_time=start_time, error_message=str(exc.detail))
+            error_msg = exc.detail if isinstance(exc.detail, str) else exc.detail.get("message", str(exc.detail))
+            self.sync_admin.fail_sync_log(sync_log, start_time=start_time, error_message=error_msg)
             raise
         except Exception as exc:
             self.session.rollback()
@@ -458,6 +459,6 @@ class LocalSyncService:
                 wc_data.get("audienceId"),
             )
             local_id = db_lookup.get(key)
-            if local_id:
+            if local_id is not None:
                 result[arena_uuid] = local_id
         return result

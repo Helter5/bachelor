@@ -18,6 +18,11 @@ from ...services.session_service import SessionService
 
 router = APIRouter(prefix="/profile")
 
+# Anchored to this file so path resolution is CWD-independent
+_UPLOAD_ROOT = os.path.realpath(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "uploads", "avatars")
+)
+
 
 class UpdateProfileRequest(BaseModel):
     first_name: Optional[str] = None
@@ -140,12 +145,11 @@ async def upload_avatar(
         )
 
     if user.avatar_url:
-        old_path = os.path.realpath(user.avatar_url.lstrip("/"))
-        upload_root = os.path.realpath("uploads/avatars")
-        if old_path.startswith(upload_root) and os.path.exists(old_path):
+        old_path = os.path.join(_UPLOAD_ROOT, os.path.basename(user.avatar_url))
+        if os.path.exists(old_path):
             await asyncio.to_thread(os.remove, old_path)
 
-    upload_dir = "uploads/avatars"
+    upload_dir = _UPLOAD_ROOT
     await asyncio.to_thread(os.makedirs, upload_dir, exist_ok=True)
 
     # Derive extension from validated content_type — never trust filename
@@ -177,9 +181,8 @@ async def delete_avatar(
     session: Session = Depends(get_session)
 ):
     if user.avatar_url:
-        file_path = os.path.realpath(user.avatar_url.lstrip("/"))
-        upload_root = os.path.realpath("uploads/avatars")
-        if file_path.startswith(upload_root) and os.path.exists(file_path):
+        file_path = os.path.join(_UPLOAD_ROOT, os.path.basename(user.avatar_url))
+        if os.path.exists(file_path):
             await asyncio.to_thread(os.remove, file_path)
 
         user.avatar_url = None
