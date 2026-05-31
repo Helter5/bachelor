@@ -3,6 +3,7 @@ from fastapi import APIRouter, Cookie, Depends, HTTPException, status, UploadFil
 from sqlmodel import Session, select
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, List
+import asyncio
 import os
 import uuid
 from datetime import datetime, timezone
@@ -142,10 +143,10 @@ async def upload_avatar(
         old_path = os.path.realpath(user.avatar_url.lstrip("/"))
         upload_root = os.path.realpath("uploads/avatars")
         if old_path.startswith(upload_root) and os.path.exists(old_path):
-            os.remove(old_path)
+            await asyncio.to_thread(os.remove, old_path)
 
     upload_dir = "uploads/avatars"
-    os.makedirs(upload_dir, exist_ok=True)
+    await asyncio.to_thread(os.makedirs, upload_dir, exist_ok=True)
 
     # Derive extension from validated content_type — never trust filename
     ext_map = {"image/jpeg": "jpg", "image/png": "png", "image/gif": "gif", "image/webp": "webp"}
@@ -153,8 +154,11 @@ async def upload_avatar(
     unique_filename = f"{user.id}_{uuid.uuid4()}.{file_extension}"
     file_path = os.path.join(upload_dir, unique_filename)
 
-    with open(file_path, "wb") as f:
-        f.write(contents)
+    def _write(path: str, data: bytes) -> None:
+        with open(path, "wb") as f:
+            f.write(data)
+
+    await asyncio.to_thread(_write, file_path, contents)
 
     avatar_url = f"/uploads/avatars/{unique_filename}"
     user.avatar_url = avatar_url
@@ -176,7 +180,7 @@ async def delete_avatar(
         file_path = os.path.realpath(user.avatar_url.lstrip("/"))
         upload_root = os.path.realpath("uploads/avatars")
         if file_path.startswith(upload_root) and os.path.exists(file_path):
-            os.remove(file_path)
+            await asyncio.to_thread(os.remove, file_path)
 
         user.avatar_url = None
         user.updated_at = datetime.now(timezone.utc)

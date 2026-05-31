@@ -1,11 +1,10 @@
 """Protected Admin API - sync logs (requires admin role)"""
 from datetime import datetime, timezone
-from typing import Dict, Any, Literal
+from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlmodel import Session, select, col
-from typing import List
 
 from ....database import get_session
 from ....domain.entities.user import User
@@ -36,10 +35,10 @@ class SyncLogStatsPatch(BaseModel):
     referees_updated: int | None = None
     status: Literal["in_progress", "success", "failed"] | None = None
     error_message: str | None = None
-    details: Dict[str, Any] | None = None
+    details: dict[str, Any] | None = None
 
 
-@router.get("", response_model=List[SyncLogOut])
+@router.get("", response_model=list[SyncLogOut])
 async def get_sync_logs(
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),

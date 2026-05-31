@@ -23,7 +23,7 @@ async def get_access_token_for_source(source) -> str:
         cache = _source_token_cache[source_id]
         if cache["access_token"] and cache["expires_at"]:
             if datetime.now().timestamp() < cache["expires_at"]:
-                logger.debug(f"Using cached access token for source {source_id}")
+                logger.debug("Using cached access token for source %s", source_id)
                 return cache["access_token"]
 
     token_url = f"http://{source.host}:{source.port}/oauth/v2/token"
@@ -51,7 +51,7 @@ async def get_access_token_for_source(source) -> str:
     }
 
     try:
-        logger.info(f"Requesting new access token from Arena source {source_id} ({source.host}:{source.port})")
+        logger.info("Requesting new access token from Arena source %s (%s:%s)", source_id, source.host, source.port)
 
         async with http_client_ctx() as client:
             response = await client.post(token_url, data=token_body, timeout=30.0)
@@ -76,7 +76,7 @@ async def get_access_token_for_source(source) -> str:
             "expires_at": datetime.now().timestamp() + expires_in - 60
         }
 
-        logger.info(f"Access token obtained for source {source_id}, expires in {expires_in}s")
+        logger.info("Access token obtained for source %s, expires in %ss", source_id, expires_in)
         return access_token
 
     except httpx.RequestError:

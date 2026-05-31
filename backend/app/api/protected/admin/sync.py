@@ -114,6 +114,8 @@ async def sync_events(
             sync_admin.cache_result(idempotency_key, result)
 
             return result
+        except HTTPException:
+            raise
         except Exception as e:
             sync_admin.fail_sync_log(sync_log, start_time=start_time, error_message=str(e))
             logger.exception("Admin sport-event sync failed (idempotency_key=%s)", idempotency_key)

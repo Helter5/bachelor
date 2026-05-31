@@ -83,7 +83,7 @@ class BaseService(Generic[ModelType]):
                     },
                 )
 
-            logger.info(f"Syncing {entity_label} for event: {event.name}")
+            logger.info("Syncing %s for event: %s", entity_label, event.name)
 
             result = await do_sync(sport_event_uuid, event.id)
 
@@ -99,8 +99,8 @@ class BaseService(Generic[ModelType]):
 
             self.session.commit()
             logger.info(
-                f"{entity_label.capitalize()} for {event.name}: "
-                f"{result['created']} created, {result['updated']} updated"
+                "%s for %s: %s created, %s updated",
+                entity_label.capitalize(), event.name, result["created"], result["updated"],
             )
             return {
                 "success": True,
