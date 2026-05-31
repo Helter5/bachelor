@@ -364,7 +364,7 @@ def test_admin_post_blocked_without_csrf():
 
 def test_sync_locked_returns_409():
     """Ak synchronizácia práve prebieha, druhý pokus musí vrátiť 409."""
-    from app.api.protected.admin.sync import _sync_locks
+    from app.services.admin_sync_service import _sync_locks
 
     class _LockedMock:
         def locked(self):
