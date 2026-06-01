@@ -1,4 +1,8 @@
+import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
+import { devError } from "@/utils/devLogger"
+import { apiClient } from "@/services/apiClient"
+import { API_ENDPOINTS } from "@/config/api"
 import { Sidebar } from "./dashboard/layout/Sidebar"
 import { SyncConfirmModal } from "./dashboard/sync/SyncConfirmModal"
 import { Toast } from "./ui/Toast"
@@ -91,6 +95,7 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
     state: dashboardState,
     setActiveSection,
     selectTournament,
+    setSelectedTournamentDetails,
     clearTournamentSelection,
     selectPerson,
     clearPersonSelection,
@@ -98,6 +103,37 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
     closeMobileMenu,
     toggleDetailsMobile,
   } = useDashboardState(isAdmin)
+
+  useEffect(() => {
+    const tournamentId = dashboardState.selectedTournamentId
+    if (
+      dashboardState.activeSection !== 'tournaments' ||
+      !tournamentId ||
+      dashboardState.selectedTournament?.id === tournamentId
+    ) {
+      return
+    }
+
+    let cancelled = false
+    apiClient.get<{ id: number; name: string; start_date: string; end_date?: string }>(
+      API_ENDPOINTS.SPORT_EVENT_DETAILS(String(tournamentId))
+    )
+      .then((tournament) => {
+        if (!cancelled) setSelectedTournamentDetails(tournament)
+      })
+      .catch((error) => {
+        devError('Error loading tournament from URL:', error)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [
+    dashboardState.activeSection,
+    dashboardState.selectedTournament?.id,
+    dashboardState.selectedTournamentId,
+    setSelectedTournamentDetails,
+  ])
 
   return (
     <div className={`flex h-screen ${isDarkMode ? 'bg-[#0f172a]' : 'bg-gray-50'}`}>
@@ -171,14 +207,14 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
                   personId={dashboardState.selectedPerson.id}
                   onBack={clearPersonSelection}
                 />
-              ) : dashboardState.selectedTournament ? (
+              ) : dashboardState.selectedTournament || dashboardState.selectedTournamentId ? (
                 <TournamentDetail
                   isDarkMode={isDarkMode}
-                  tournamentId={dashboardState.selectedTournament.id}
-                  tournamentUuid={String(dashboardState.selectedTournament.id)}
-                  tournamentName={dashboardState.selectedTournament.name}
-                  tournamentStartDate={dashboardState.selectedTournament.start_date}
-                  tournamentEndDate={dashboardState.selectedTournament.end_date}
+                  tournamentId={dashboardState.selectedTournament?.id ?? dashboardState.selectedTournamentId!}
+                  tournamentUuid={String(dashboardState.selectedTournament?.id ?? dashboardState.selectedTournamentId)}
+                  tournamentName={dashboardState.selectedTournament?.name ?? ''}
+                  tournamentStartDate={dashboardState.selectedTournament?.start_date ?? ''}
+                  tournamentEndDate={dashboardState.selectedTournament?.end_date}
                   onBack={clearTournamentSelection}
                   onSelectPerson={(id, name) => selectPerson({ id, name })}
                 />

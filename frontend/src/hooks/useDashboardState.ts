@@ -23,6 +23,7 @@ interface DashboardState {
   activeSection: string
   isMobileMenuOpen: boolean
   showDetailsMobile: boolean
+  selectedTournamentId: number | null
   selectedTournament: TournamentDetail | null
   selectedPerson: SelectedPerson | null
 }
@@ -111,7 +112,7 @@ function parseLocationState() {
 
 export function useDashboardState(isAdmin = false) {
   const [state, setState] = useState<DashboardState>(() => {
-    const { section, personId } = parseLocationState()
+    const { section, personId, tournamentId } = parseLocationState()
     const safeSection = !isAdmin && ADMIN_ONLY_SECTIONS.has(section) ? 'home' : section
     if (safeSection !== section) {
       window.history.replaceState({}, '', buildPath(safeSection))
@@ -120,6 +121,7 @@ export function useDashboardState(isAdmin = false) {
       activeSection: safeSection,
       isMobileMenuOpen: false,
       showDetailsMobile: false,
+      selectedTournamentId: tournamentId,
       selectedTournament: null,
       selectedPerson: personId ? { id: personId, name: '' } : null
     }
@@ -137,6 +139,7 @@ export function useDashboardState(isAdmin = false) {
       setState(prev => ({
         ...prev,
         activeSection: safeSection,
+        selectedTournamentId: tournamentId,
         selectedTournament: tournamentId && prev.selectedTournament?.id === tournamentId ? prev.selectedTournament : null,
         selectedPerson: personId ? { id: personId, name: '' } : null
       }))
@@ -150,19 +153,29 @@ export function useDashboardState(isAdmin = false) {
     window.history.pushState({}, '', buildPath(section))
     window.dispatchEvent(new CustomEvent('app:navigate', { detail: { section } }))
 
-    setState(prev => ({ ...prev, activeSection: section, selectedTournament: null, selectedPerson: null }))
+    setState(prev => ({ ...prev, activeSection: section, selectedTournamentId: null, selectedTournament: null, selectedPerson: null }))
   }, [])
 
   const selectTournament = useCallback((tournament: TournamentDetail) => {
     window.history.pushState({}, '', `${buildPath('tournaments')}/${tournament.id}`)
 
-    setState(prev => ({ ...prev, activeSection: 'tournaments', selectedTournament: tournament, selectedPerson: null }))
+    setState(prev => ({ ...prev, activeSection: 'tournaments', selectedTournamentId: tournament.id, selectedTournament: tournament, selectedPerson: null }))
+  }, [])
+
+  const setSelectedTournamentDetails = useCallback((tournament: TournamentDetail) => {
+    setState(prev => ({
+      ...prev,
+      activeSection: 'tournaments',
+      selectedTournamentId: tournament.id,
+      selectedTournament: tournament,
+      selectedPerson: null,
+    }))
   }, [])
 
   const clearTournamentSelection = useCallback(() => {
     window.history.pushState({}, '', buildPath('tournaments'))
 
-    setState(prev => ({ ...prev, selectedTournament: null }))
+    setState(prev => ({ ...prev, selectedTournamentId: null, selectedTournament: null }))
   }, [])
 
   const selectPerson = useCallback((person: SelectedPerson) => {
@@ -205,6 +218,7 @@ export function useDashboardState(isAdmin = false) {
     state,
     setActiveSection,
     selectTournament,
+    setSelectedTournamentDetails,
     clearTournamentSelection,
     selectPerson,
     clearPersonSelection,
