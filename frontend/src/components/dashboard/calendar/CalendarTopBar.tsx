@@ -56,7 +56,7 @@ export function CalendarTopBar({
           <button
             onClick={onPrevPeriod}
             className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-base font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ${isDarkMode ? 'text-gray-300 hover:bg-white/10 hover:text-white' : 'text-gray-700 hover:bg-slate-100 hover:text-gray-900'}`}
-            aria-label={t('calendar.previousMonth')}
+            aria-label={t(viewMode === 'week' ? 'calendar.previousWeek' : viewMode === 'day' ? 'calendar.previousDay' : 'calendar.previousMonth')}
           >
             &lt;
           </button>
@@ -64,7 +64,7 @@ export function CalendarTopBar({
           <button
             onClick={onNextPeriod}
             className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-base font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ${isDarkMode ? 'text-gray-300 hover:bg-white/10 hover:text-white' : 'text-gray-700 hover:bg-slate-100 hover:text-gray-900'}`}
-            aria-label={t('calendar.nextMonth')}
+            aria-label={t(viewMode === 'week' ? 'calendar.nextWeek' : viewMode === 'day' ? 'calendar.nextDay' : 'calendar.nextMonth')}
           >
             &gt;
           </button>

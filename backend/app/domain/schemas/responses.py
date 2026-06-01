@@ -60,7 +60,6 @@ class VictoryTypesSyncOut(BaseModel):
     updated: int
 
 
-
 class SportEventOut(BaseModel):
     """Sport event response data."""
     model_config = ConfigDict(from_attributes=True)
