@@ -25,17 +25,48 @@ export function CalendarSection({ isDarkMode }: CalendarSectionProps) {
 
   const dateKey = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 
+  const parseCalendarDate = (value?: string) => {
+    if (!value) return null
+    const [datePart] = value.split('T')
+    if (!datePart) return null
+    const parts = datePart.split('-').map(Number)
+    if (parts.length !== 3 || parts.some(Number.isNaN)) return null
+    const [year, month, day] = parts as [number, number, number]
+    return new Date(year, month - 1, day)
+  }
+
+  const eachDateInRange = (start: Date, end: Date) => {
+    const dates: Date[] = []
+    const cursor = new Date(start.getFullYear(), start.getMonth(), start.getDate())
+    const last = end.getTime() >= start.getTime()
+      ? new Date(end.getFullYear(), end.getMonth(), end.getDate())
+      : new Date(start.getFullYear(), start.getMonth(), start.getDate())
+
+    while (cursor.getTime() <= last.getTime()) {
+      dates.push(new Date(cursor))
+      cursor.setDate(cursor.getDate() + 1)
+    }
+
+    return dates
+  }
+
   const monthFormatter = useMemo(() => new Intl.DateTimeFormat(i18n.language, { month: 'long' }), [i18n.language])
   const fullDateFormatter = useMemo(() => new Intl.DateTimeFormat(i18n.language, { dateStyle: 'full' }), [i18n.language])
   const weekdayFormatter = useMemo(() => new Intl.DateTimeFormat(i18n.language, { weekday: 'short' }), [i18n.language])
 
   const validEvents = useMemo<CalendarEvent[]>(() => {
     return events
-      .map(event => ({
-        ...event,
-        date: new Date(event.start_date),
-      }))
-      .filter(event => !Number.isNaN(event.date.getTime()))
+      .map(event => {
+        const start = parseCalendarDate(event.start_date)
+        if (!start) return null
+        const end = parseCalendarDate(event.end_date) ?? start
+        return {
+          ...event,
+          date: start,
+          endDate: end.getTime() >= start.getTime() ? end : start,
+        }
+      })
+      .filter((event): event is CalendarEvent => event !== null)
       .sort((a, b) => a.date.getTime() - b.date.getTime())
   }, [events])
 
@@ -105,10 +136,12 @@ export function CalendarSection({ isDarkMode }: CalendarSectionProps) {
   const eventMap = useMemo(() => {
     const map = new Map<string, typeof validEvents>()
     filteredEvents.forEach(event => {
-      const key = dateKey(event.date)
-      const list = map.get(key) || []
-      list.push(event)
-      map.set(key, list)
+      eachDateInRange(event.date, event.endDate).forEach(date => {
+        const key = dateKey(date)
+        const list = map.get(key) || []
+        list.push(event)
+        map.set(key, list)
+      })
     })
     return map
   }, [filteredEvents])
@@ -122,7 +155,11 @@ export function CalendarSection({ isDarkMode }: CalendarSectionProps) {
   }, [calendarStart])
 
   const selectedDayEvents = eventMap.get(dateKey(selectedDate)) || []
-  const visibleMonthEvents = filteredEvents.filter(event => event.date.getFullYear() === visibleMonth.getFullYear() && event.date.getMonth() === visibleMonth.getMonth())
+  const visibleMonthEvents = filteredEvents.filter(event => {
+    const monthStart = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), 1)
+    const monthEnd = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 0)
+    return event.date.getTime() <= monthEnd.getTime() && event.endDate.getTime() >= monthStart.getTime()
+  })
 
   const weekdayLabels = useMemo(() => {
     const monday = new Date(2024, 0, 1)
