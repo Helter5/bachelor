@@ -123,7 +123,8 @@ JWT_REFRESH_TOKEN_EXPIRE_DAYS=30
 FRONTEND_URL=https://yourdomain.com
 ALLOWED_ORIGINS=https://yourdomain.com
 # Hostnames TrustedHostMiddleware accepts — use * only for local dev
-ALLOWED_HOSTS=yourdomain.com
+# Always include localhost so the Docker healthcheck can reach /health
+ALLOWED_HOSTS=yourdomain.com,localhost
 
 # Email (SMTP)
 SMTP_HOST=smtp.gmail.com
