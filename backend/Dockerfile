@@ -1,7 +1,7 @@
 # Backend Dockerfile
 FROM python:3.12-slim
 
-WORKDIR /app
+WORKDIR /appo
 
 # System dependencies (build toolchain for psycopg2, curl for healthcheck,
 # DejaVu fonts for PDF export).
