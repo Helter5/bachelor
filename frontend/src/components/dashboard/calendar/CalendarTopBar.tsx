@@ -6,11 +6,12 @@ interface CalendarTopBarProps {
   t: TFunction
   searchQuery: string
   setSearchQuery: (value: string) => void
-  monthLabel: string
-  onPrevMonth: () => void
-  onNextMonth: () => void
+  periodLabel: string
+  onPrevPeriod: () => void
+  onNextPeriod: () => void
   onJumpToToday: () => void
-  setViewMode: (mode: CalendarViewMode) => void
+  viewMode: CalendarViewMode
+  onViewModeChange: (mode: CalendarViewMode) => void
   viewToggleClass: (mode: CalendarViewMode) => string
 }
 
@@ -19,11 +20,12 @@ export function CalendarTopBar({
   t,
   searchQuery,
   setSearchQuery,
-  monthLabel,
-  onPrevMonth,
-  onNextMonth,
+  periodLabel,
+  onPrevPeriod,
+  onNextPeriod,
   onJumpToToday,
-  setViewMode,
+  viewMode,
+  onViewModeChange,
   viewToggleClass,
 }: CalendarTopBarProps) {
   return (
@@ -52,7 +54,7 @@ export function CalendarTopBar({
       <div className="flex flex-wrap items-center gap-1 mb-1">
         <div className="inline-flex items-center justify-center gap-1 shrink-0">
           <button
-            onClick={onPrevMonth}
+            onClick={onPrevPeriod}
             className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-base font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ${isDarkMode ? 'text-gray-300 hover:bg-white/10 hover:text-white' : 'text-gray-700 hover:bg-slate-100 hover:text-gray-900'}`}
             aria-label={t('calendar.previousMonth')}
           >
@@ -60,7 +62,7 @@ export function CalendarTopBar({
           </button>
           <span className={`inline-flex h-2.5 w-2.5 rounded-full ${isDarkMode ? 'bg-sky-400' : 'bg-sky-500'}`} aria-hidden="true" />
           <button
-            onClick={onNextMonth}
+            onClick={onNextPeriod}
             className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-base font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ${isDarkMode ? 'text-gray-300 hover:bg-white/10 hover:text-white' : 'text-gray-700 hover:bg-slate-100 hover:text-gray-900'}`}
             aria-label={t('calendar.nextMonth')}
           >
@@ -80,17 +82,17 @@ export function CalendarTopBar({
         </div>
 
         <h3 className={`ml-2 text-lg font-semibold whitespace-nowrap shrink-0 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-          {monthLabel}
+          {periodLabel}
         </h3>
 
         <div className={`inline-flex items-center gap-1 rounded-full p-1 shrink-0 ml-auto ${isDarkMode ? 'bg-white/5 border border-white/10' : 'bg-slate-100 border border-slate-200'}`}>
-          <button onClick={() => setViewMode('month')} className={viewToggleClass('month')}>
+          <button aria-pressed={viewMode === 'month'} onClick={() => onViewModeChange('month')} className={viewToggleClass('month')}>
             {t('calendar.monthView')}
           </button>
-          <button onClick={() => setViewMode('week')} className={viewToggleClass('week')}>
+          <button aria-pressed={viewMode === 'week'} onClick={() => onViewModeChange('week')} className={viewToggleClass('week')}>
             {t('calendar.weekView')}
           </button>
-          <button onClick={() => setViewMode('day')} className={viewToggleClass('day')}>
+          <button aria-pressed={viewMode === 'day'} onClick={() => onViewModeChange('day')} className={viewToggleClass('day')}>
             {t('calendar.dayView')}
           </button>
         </div>

@@ -51,6 +51,7 @@ export function CalendarSection({ isDarkMode }: CalendarSectionProps) {
   }
 
   const monthFormatter = useMemo(() => new Intl.DateTimeFormat(i18n.language, { month: 'long' }), [i18n.language])
+  const shortDateFormatter = useMemo(() => new Intl.DateTimeFormat(i18n.language, { day: 'numeric', month: 'short', year: 'numeric' }), [i18n.language])
   const fullDateFormatter = useMemo(() => new Intl.DateTimeFormat(i18n.language, { dateStyle: 'full' }), [i18n.language])
   const weekdayFormatter = useMemo(() => new Intl.DateTimeFormat(i18n.language, { weekday: 'short' }), [i18n.language])
 
@@ -174,6 +175,12 @@ export function CalendarSection({ isDarkMode }: CalendarSectionProps) {
     setVisibleMonth(current => addMonths(current, delta))
   }
 
+  const addDays = (date: Date, delta: number) => {
+    const next = new Date(date)
+    next.setDate(next.getDate() + delta)
+    return next
+  }
+
   const selectDate = (date: Date) => {
     setVisibleMonth(new Date(date.getFullYear(), date.getMonth(), 1))
     setSelectedDate(new Date(date.getFullYear(), date.getMonth(), date.getDate()))
@@ -196,6 +203,8 @@ export function CalendarSection({ isDarkMode }: CalendarSectionProps) {
     })
   }, [weekStart])
 
+  const weekEnd = useMemo(() => addDays(weekStart, 6), [weekStart])
+
   const dayEvents = eventMap.get(dateKey(selectedDate)) || []
 
   const isToday = (date: Date) => dateKey(date) === dateKey(today)
@@ -208,6 +217,41 @@ export function CalendarSection({ isDarkMode }: CalendarSectionProps) {
     const month = monthFormatter.format(date)
     const monthTitleCase = month.charAt(0).toLocaleUpperCase(i18n.language) + month.slice(1)
     return `${monthTitleCase}, ${date.getFullYear()}`
+  }
+
+  const capitalizeLabel = (value: string) => {
+    return value.length > 0
+      ? value.charAt(0).toLocaleUpperCase(i18n.language) + value.slice(1)
+      : value
+  }
+
+  const formatPeriodLabel = () => {
+    if (viewMode === 'month') {
+      return formatMonthYear(visibleMonth)
+    }
+
+    if (viewMode === 'week') {
+      return `${t('calendar.weekView')}: ${shortDateFormatter.format(weekStart)} - ${shortDateFormatter.format(weekEnd)}`
+    }
+
+    return capitalizeLabel(fullDateFormatter.format(selectedDate))
+  }
+
+  const goToPeriod = (delta: number) => {
+    if (viewMode === 'month') {
+      goToMonth(delta)
+      return
+    }
+
+    const nextDate = addDays(selectedDate, viewMode === 'week' ? delta * 7 : delta)
+    selectDate(nextDate)
+  }
+
+  const handleViewModeChange = (mode: CalendarViewMode) => {
+    if (mode !== 'month' && !isInVisibleMonth(selectedDate)) {
+      setSelectedDate(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), 1))
+    }
+    setViewMode(mode)
   }
 
   const renderEventDots = (eventsForDay: CalendarEvent[]) => (
@@ -255,11 +299,12 @@ export function CalendarSection({ isDarkMode }: CalendarSectionProps) {
               t={t}
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
-              monthLabel={formatMonthYear(visibleMonth)}
-              onPrevMonth={() => goToMonth(-1)}
-              onNextMonth={() => goToMonth(1)}
+              periodLabel={formatPeriodLabel()}
+              onPrevPeriod={() => goToPeriod(-1)}
+              onNextPeriod={() => goToPeriod(1)}
               onJumpToToday={() => selectDate(today)}
-              setViewMode={setViewMode}
+              viewMode={viewMode}
+              onViewModeChange={handleViewModeChange}
               viewToggleClass={viewToggleClass}
             />
 
