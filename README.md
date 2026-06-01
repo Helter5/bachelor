@@ -94,24 +94,38 @@ docker compose -f docker-compose.prod.yml up -d --build
 
 ## .env reference
 
+Copy `.env.example` to `.env` and fill in your values. All keys:
+
 ```env
 # Database
 DATABASE_NAME=wrestling
 DATABASE_USER=wrestling
 DATABASE_PASSWORD=change_me
 DATABASE_HOST=wf-db
-DATABASE_PORT=5432
+DATABASE_ECHO=false
 
-# JWT — generate a strong random secret
+# Arena API
+ARENA_API_FORMAT=json
+
+# Application
+APP_DEBUG=false
+RATE_LIMIT_ENABLED=true
+SEND_EMAILS=true
+COOKIE_SECURE=true
+
+# JWT — generate with: openssl rand -hex 32
 JWT_SECRET_KEY=change_me_to_random_string
+JWT_ALGORITHM=HS256
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+JWT_REFRESH_TOKEN_EXPIRE_DAYS=30
 
 # Frontend URL (used in emails and CORS)
 FRONTEND_URL=https://yourdomain.com
 ALLOWED_ORIGINS=https://yourdomain.com
-VITE_API_URL=https://yourdomain.com/api
+# Hostnames TrustedHostMiddleware accepts — use * only for local dev
+ALLOWED_HOSTS=yourdomain.com
 
-# Email (SMTP) — optional, set SEND_EMAILS=false to disable
-SEND_EMAILS=true
+# Email (SMTP)
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your@email.com
@@ -119,11 +133,12 @@ SMTP_PASSWORD=your_app_password
 SMTP_FROM_EMAIL=your@email.com
 SMTP_FROM_NAME=Wrestling Federation
 
-# Google OAuth — optional
+# Google OAuth
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 
-# Sync agent URL shown in the frontend
+# Frontend build args (docker-compose passes these at build time)
+VITE_API_URL=https://yourdomain.com/api
 VITE_LOCAL_SYNC_AGENT_URL=http://127.0.0.1:8765
 VITE_SYNC_MODE=
 ```
