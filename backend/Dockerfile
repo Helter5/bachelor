@@ -22,8 +22,11 @@ RUN mkdir -p /app/uploads
 # Run as an unprivileged user. The uploads volume is mounted into /app/uploads
 # so it needs to be writable by this user.
 RUN groupadd --system app && useradd --system --gid app --no-create-home app \
-    && chown -R app:app /app
+    && mkdir -p /home/app/.config/matplotlib \
+    && chown -R app:app /app /home/app
 USER app
+
+ENV MPLCONFIGDIR=/home/app/.config/matplotlib
 
 EXPOSE 8000
 
