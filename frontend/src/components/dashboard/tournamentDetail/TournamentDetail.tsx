@@ -165,6 +165,23 @@ export function TournamentDetail({
     [tournamentId],
   )
 
+  const syncTeamFromUrl = useCallback(() => {
+    const params = new URLSearchParams(window.location.search)
+    const teamId = params.get("team")
+    if (activeTab !== "teams" || !teamId || teams.length === 0) {
+      if (!teamId) {
+        setSelectedTeam(null)
+        setTeamAthletes([])
+      }
+      return
+    }
+
+    const team = teams.find((t) => t.id === Number(teamId))
+    if (team && selectedTeam?.id !== team.id.toString()) {
+      void openTeamDetailWithoutHistory({ id: team.id.toString(), name: team.name })
+    }
+  }, [activeTab, teams, selectedTeam?.id, openTeamDetailWithoutHistory])
+
   const openTeamDetail = useCallback(
     async (team: { id: string; name: string }) => {
       const params = new URLSearchParams(window.location.search)
@@ -206,6 +223,25 @@ export function TournamentDetail({
     setSelectedWeightCategoryForResults(null)
   }, [pushCurrentPathWithQuery])
 
+  const syncResultsWeightCategoryFromUrl = useCallback(() => {
+    const params = new URLSearchParams(window.location.search)
+    const wcId = params.get("results_wc")
+    if (activeTab !== "results" || !wcId || weightCategories.length === 0) {
+      if (!wcId) setSelectedWeightCategoryForResults(null)
+      return
+    }
+
+    const wc = weightCategories.find((item) => item.id === Number(wcId))
+    if (wc && selectedWeightCategoryForResults?.id !== wc.id) {
+      setSelectedWeightCategoryForResults({
+        id: wc.id,
+        name: wc.name,
+        sport_name: wc.sport_name,
+        audience_name: wc.audience_name,
+      })
+    }
+  }, [activeTab, weightCategories, selectedWeightCategoryForResults?.id])
+
 
   const getWeightCategoryStatus = useCallback(
     (wc: { is_completed?: boolean; is_started?: boolean }): "completed" | "ongoing" | "waiting" => {
@@ -225,28 +261,37 @@ export function TournamentDetail({
   useEffect(() => {
     const handlePopState = () => {
       const params = new URLSearchParams(window.location.search)
-      const teamId = params.get("team")
       const tab = getTabFromUrl()
       setActiveTab(tab)
-      if (teamId && teams.length > 0) {
-        const team = teams.find((t) => t.id === parseInt(teamId))
-        if (team) openTeamDetailWithoutHistory({ id: team.id.toString(), name: team.name })
-      } else {
+      if (!params.get("team")) {
         setSelectedTeam(null)
         setTeamAthletes([])
+      }
+      if (!params.get("results_wc")) {
+        setSelectedWeightCategoryForResults(null)
       }
     }
     window.addEventListener("popstate", handlePopState)
     return () => window.removeEventListener("popstate", handlePopState)
-  }, [teams, openTeamDetailWithoutHistory, getTabFromUrl])
+  }, [getTabFromUrl])
 
   useEffect(() => {
     const tab = getTabFromUrl()
     setActiveTab(tab)
     if (window.location.pathname !== getTabPath(tab)) {
-      window.history.replaceState({}, "", getTabPath(tab))
+      const params = new URLSearchParams(window.location.search)
+      const query = params.toString()
+      window.history.replaceState({}, "", query ? `${getTabPath(tab)}?${query}` : getTabPath(tab))
     }
   }, [tournamentId, getTabFromUrl, getTabPath])
+
+  useEffect(() => {
+    syncTeamFromUrl()
+  }, [syncTeamFromUrl])
+
+  useEffect(() => {
+    syncResultsWeightCategoryFromUrl()
+  }, [syncResultsWeightCategoryFromUrl])
 
 
   const tabs = TABS_ORDER.map((id) => ({ id, label: t(`tournamentDetail.tabs.${id}`) }))

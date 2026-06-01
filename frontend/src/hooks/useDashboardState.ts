@@ -168,7 +168,6 @@ export function useDashboardState(isAdmin = false) {
       activeSection: 'tournaments',
       selectedTournamentId: tournament.id,
       selectedTournament: tournament,
-      selectedPerson: null,
     }))
   }, [])
 

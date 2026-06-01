@@ -38,9 +38,31 @@ export function ResultsTab({
   getWeightCategoryStatus,
 }: ResultsTabProps) {
   const { t } = useTranslation()
-  const [selectedSportType, setSelectedSportType] = useState<string | null>(null)
+  const [selectedSportType, setSelectedSportType] = useState<string | null>(() => {
+    return new URLSearchParams(window.location.search).get('results_sport')
+  })
   const [sportTypePage, setSportTypePage] = useState(1)
   const [wcPage, setWcPage] = useState(1)
+
+  const setSportTypeInUrl = (sportType: string | null) => {
+    const params = new URLSearchParams(window.location.search)
+    if (sportType) {
+      params.set('results_sport', sportType)
+    } else {
+      params.delete('results_sport')
+    }
+    const query = params.toString()
+    window.history.pushState({}, '', query ? `${window.location.pathname}?${query}` : window.location.pathname)
+    setSelectedSportType(sportType)
+  }
+
+  useEffect(() => {
+    const syncSportTypeFromUrl = () => {
+      setSelectedSportType(new URLSearchParams(window.location.search).get('results_sport'))
+    }
+    window.addEventListener('popstate', syncSportTypeFromUrl)
+    return () => window.removeEventListener('popstate', syncSportTypeFromUrl)
+  }, [])
 
   const normalizeTeamName = (name: string) =>
     name
@@ -101,7 +123,7 @@ export function ResultsTab({
         <DetailHeader
           isDarkMode={isDarkMode}
           onBack={() => {
-            setSelectedSportType(`${selectedWeightCategoryForResults.sport_name} • ${selectedWeightCategoryForResults.audience_name}`)
+            setSportTypeInUrl(`${selectedWeightCategoryForResults.sport_name} • ${selectedWeightCategoryForResults.audience_name}`)
             closeWeightCategoryResultsDetail()
           }}
           title={selectedWeightCategoryForResults.name}
@@ -133,7 +155,7 @@ export function ResultsTab({
       <div>
         <DetailHeader
           isDarkMode={isDarkMode}
-          onBack={() => setSelectedSportType(null)}
+          onBack={() => setSportTypeInUrl(null)}
           title={selectedSportType}
         />
         <WeightCategoryGrid
@@ -212,7 +234,7 @@ export function ResultsTab({
                       : t('tournamentDetail.statusWaiting'),
                   variant: allDone ? 'success' : anyDone ? 'info' : 'neutral',
                 }}
-                onClick={() => setSelectedSportType(key)}
+                onClick={() => setSportTypeInUrl(key)}
               />
             )
           })}
