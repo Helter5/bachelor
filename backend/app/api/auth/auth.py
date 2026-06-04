@@ -27,7 +27,7 @@ from ...core.security import (
     REFRESH_TOKEN_EXPIRE_DAYS,
 )
 from ...core.email import email_service
-from ...core.oauth import verify_google_token, generate_username_from_email
+from ...core.oauth import verify_google_access_token, verify_google_token, generate_username_from_email
 from ...core.dependencies import require_user
 from ...config import get_settings
 from ...domain.entities.login_history import LoginHistory
@@ -343,7 +343,13 @@ async def google_login(
     session: Session = Depends(get_session)
 ):
     """Login/register via Google OAuth2. Creates account if user doesn't exist."""
-    user_info = await verify_google_token(request_data.credential)
+    if request_data.credential:
+        user_info = await verify_google_token(request_data.credential)
+    elif request_data.access_token:
+        user_info = await verify_google_access_token(request_data.access_token)
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Missing Google token")
+
     if not user_info:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Google token")
 

@@ -1,5 +1,6 @@
 """User schemas (DTOs) for API requests/responses"""
 from datetime import datetime
+from typing import Optional
 from sqlmodel import SQLModel, Field
 from pydantic import EmailStr
 from ..entities.user import UserBase
@@ -32,7 +33,8 @@ class EmailRequest(SQLModel):
 
 class GoogleLoginRequest(SQLModel):
     """Schema for Google OAuth2 login"""
-    credential: str
+    credential: Optional[str] = None
+    access_token: Optional[str] = None
 
 
 class SetPasswordRequest(SQLModel):
