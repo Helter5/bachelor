@@ -97,7 +97,7 @@ function StatsCategoryCard({ isDarkMode, onClick, color, icon, title, descriptio
       onClick={onClick}
       className={`group relative overflow-hidden rounded-xl p-6 text-left transition-all hover:scale-[1.02] ${
         isDarkMode
-          ? 'bg-[#1e293b] hover:bg-[#334155] shadow-lg hover:shadow-2xl'
+          ? 'bg-dark-surface hover:bg-dark-raised shadow-lg hover:shadow-2xl'
           : 'bg-white hover:shadow-xl border border-gray-200 shadow-lg'
       }`}
     >

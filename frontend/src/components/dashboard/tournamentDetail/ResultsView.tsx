@@ -128,7 +128,7 @@ export function ResultsView({ isDarkMode, sortedRounds, teamCountryByName }: Res
     return {
       headerBorder: isDarkMode ? 'border-white/10 hover:border-white/20' : 'border-gray-200 hover:border-gray-300',
       headerText: isDarkMode ? 'text-white' : 'text-gray-900',
-      card: isDarkMode ? 'border-white/[0.1] bg-[#0f172a]/50' : 'border-gray-200 bg-white',
+      card: isDarkMode ? 'border-white/[0.1] bg-dark-bg/50' : 'border-gray-200 bg-white',
     }
   }
 

@@ -40,7 +40,7 @@ export function NumberInput({
       )}
       <div className={`relative inline-flex items-center w-32 rounded-lg border ${
         isDarkMode
-          ? 'bg-[#0f172a] border-gray-600'
+          ? 'bg-dark-bg border-gray-600'
           : 'bg-white border-gray-300'
       }`}>
         <input

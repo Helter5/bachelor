@@ -1,12 +1,11 @@
-import { useState, useRef } from "react"
+import { useState } from "react"
 import { devError } from "@/utils/devLogger"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Toast } from "@/components/ui/Toast"
-import { GoogleLogin } from '@react-oauth/google'
-import type { CredentialResponse } from '@react-oauth/google'
+import { useGoogleLogin } from '@react-oauth/google'
 import { apiClient, ApiError } from "@/services/apiClient"
 import { setAuthSessionHint } from "@/services/authSession"
 import { API_ENDPOINTS } from "@/config/api"
@@ -23,7 +22,6 @@ export function LandingPage({ onLogin }: LandingPageProps) {
   const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [resendEmail, setResendEmail] = useState("")
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("")
-  const googleButtonRef = useRef<HTMLDivElement>(null)
   const [formData, setFormData] = useState({
     username: "",
     firstName: "",
@@ -129,36 +127,30 @@ export function LandingPage({ onLogin }: LandingPageProps) {
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
-    if (!credentialResponse.credential) {
-      showToast("error", t("landing.toasts.googleLoginError"), t("landing.toasts.serverError"))
-      return
-    }
-
-    try {
-      const data = await apiClient.post<{ csrf_token: string; token_type: string }>(
-        API_ENDPOINTS.AUTH_GOOGLE,
-        { credential: credentialResponse.credential },
-        { requireAuth: false }
-      )
-
-      sessionStorage.setItem("csrf_token", data.csrf_token)
-      setAuthSessionHint()
-
-      onLogin();
-    } catch (error) {
-      devError("Google login error:", error)
-      if (error instanceof ApiError) {
-        showToast("error", t("landing.toasts.googleLoginError"), error.message)
-      } else {
-        showToast("error", t("landing.toasts.googleLoginError"), t("landing.toasts.serverError"))
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        const data = await apiClient.post<{ csrf_token: string; token_type: string }>(
+          API_ENDPOINTS.AUTH_GOOGLE,
+          { access_token: tokenResponse.access_token },
+          { requireAuth: false }
+        )
+        sessionStorage.setItem("csrf_token", data.csrf_token)
+        setAuthSessionHint()
+        onLogin()
+      } catch (error) {
+        devError("Google login error:", error)
+        if (error instanceof ApiError) {
+          showToast("error", t("landing.toasts.googleLoginError"), error.message)
+        } else {
+          showToast("error", t("landing.toasts.googleLoginError"), t("landing.toasts.serverError"))
+        }
       }
-    }
-  };
-
-  const handleGoogleError = () => {
-    showToast("error", t("landing.toasts.loginError"), t("landing.toasts.googleLoginFailed"))
-  };
+    },
+    onError: () => {
+      showToast("error", t("landing.toasts.loginError"), t("landing.toasts.googleLoginFailed"))
+    },
+  })
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -240,7 +232,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f172a]">
+    <div className="min-h-screen bg-dark-bg">
       <Toast
         show={toast.show}
         variant={toast.variant}
@@ -250,7 +242,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
         onClose={() => setToast(prev => ({ ...prev, show: false }))}
       />
       <div className="flex min-h-screen">
-        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#1e293b] to-[#0f172a] p-12 flex-col justify-between relative overflow-hidden">
+        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-dark-surface to-dark-bg p-12 flex-col justify-between relative overflow-hidden">
           <div className="absolute -top-20 -right-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
           <div className="absolute top-1/2 -left-32 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl" />
           <div className="absolute -bottom-20 right-20 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl" />
@@ -317,7 +309,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
           </div>
         </div>
 
-        <div className="flex-1 flex items-center justify-center p-8 bg-[#0f172a] relative overflow-hidden">
+        <div className="flex-1 flex items-center justify-center p-8 bg-dark-bg relative overflow-hidden">
           <div className="absolute top-20 -left-20 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl" />
           <div className="absolute bottom-20 -right-20 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl" />
 
@@ -334,7 +326,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
             <div className="relative rounded-xl p-[1px]">
             <div className="login-glow-border absolute inset-0 rounded-xl" />
             <div className="login-glow-border absolute inset-[-5px] rounded-xl blur-[10px] opacity-50" />
-            <Card className="border-0 rounded-xl bg-[#1e293b]/80 backdrop-blur-xl shadow-2xl relative overflow-hidden">
+            <Card className="border-0 rounded-xl bg-dark-surface/80 backdrop-blur-xl shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
 
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-transparent rounded-bl-full" />
@@ -360,7 +352,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                         id="forgot-email"
                         type="email"
                         placeholder="vas.email@example.com"
-                        className="h-11 bg-[#0f172a] border-transparent text-white placeholder:text-gray-500 focus:border-blue-500"
+                        className="h-11 bg-dark-bg border-transparent text-white placeholder:text-gray-500 focus:border-blue-500"
                         value={forgotPasswordEmail}
                         onChange={(e) => setForgotPasswordEmail(e.target.value)}
                       />
@@ -399,7 +391,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                         id="resend-email"
                         type="email"
                         placeholder="vas.email@example.com"
-                        className="h-11 bg-[#0f172a] border-transparent text-white placeholder:text-gray-500 focus:border-blue-500"
+                        className="h-11 bg-dark-bg border-transparent text-white placeholder:text-gray-500 focus:border-blue-500"
                         value={resendEmail}
                         onChange={(e) => setResendEmail(e.target.value)}
                       />
@@ -423,10 +415,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                   <div className="space-y-5">
                     <button
                       type="button"
-                      onClick={() => {
-                        const btn = googleButtonRef.current?.querySelector('div[role="button"]') as HTMLElement;
-                        btn?.click();
-                      }}
+                      onClick={() => googleLogin()}
                       className="w-full h-11 bg-white/10 hover:bg-white/15 text-white font-medium rounded-lg flex items-center justify-center gap-3 transition-colors"
                     >
                       <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -443,7 +432,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                         <div className="w-full border-t border-white/10"></div>
                       </div>
                       <div className="relative flex justify-center">
-                        <span className="bg-[#1e293b] px-4 text-xs text-gray-500 uppercase tracking-wider">{t("landing.or")}</span>
+                        <span className="bg-dark-surface px-4 text-xs text-gray-500 uppercase tracking-wider">{t("landing.or")}</span>
                       </div>
                     </div>
 
@@ -456,7 +445,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                           id="username"
                           type="text"
                           placeholder="uzivatelske_meno"
-                          className={`h-11 bg-[#0f172a] border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.loginUsername ? 'border-red-500' : ''}`}
+                          className={`h-11 bg-dark-bg border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.loginUsername ? 'border-red-500' : ''}`}
                           value={loginData.username}
                           onChange={(e) => {
                             setLoginData(prev => ({ ...prev, username: e.target.value }))
@@ -487,7 +476,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                           id="password"
                           type="password"
                           placeholder="••••••••"
-                          className={`h-11 bg-[#0f172a] border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.loginPassword ? 'border-red-500' : ''}`}
+                          className={`h-11 bg-dark-bg border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.loginPassword ? 'border-red-500' : ''}`}
                           value={loginData.password}
                           onChange={(e) => {
                             setLoginData(prev => ({ ...prev, password: e.target.value }))
@@ -506,14 +495,6 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                       </Button>
                     </form>
 
-                    <div ref={googleButtonRef} className="hidden">
-                      <GoogleLogin
-                        onSuccess={(credentialResponse) => {
-                          void handleGoogleSuccess(credentialResponse)
-                        }}
-                        onError={handleGoogleError}
-                      />
-                    </div>
                   </div>
                 ) : (
                   <form onSubmit={handleRegisterSubmit} className="space-y-4">
@@ -525,7 +506,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                         id="username"
                         type="text"
                         placeholder="pouzivatel123"
-                        className={`h-11 bg-[#0f172a] border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.username ? 'border-red-500' : ''}`}
+                        className={`h-11 bg-dark-bg border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.username ? 'border-red-500' : ''}`}
                         value={formData.username}
                         onChange={(e) => handleInputChange('username', e.target.value)}
                         onBlur={() => handleRegisterBlur('username')}
@@ -544,7 +525,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                           id="firstName"
                           type="text"
                           placeholder="Ján"
-                          className={`h-11 bg-[#0f172a] border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.firstName ? 'border-red-500' : ''}`}
+                          className={`h-11 bg-dark-bg border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.firstName ? 'border-red-500' : ''}`}
                           value={formData.firstName}
                           onChange={(e) => handleInputChange('firstName', e.target.value)}
                           onBlur={() => handleRegisterBlur('firstName')}
@@ -562,7 +543,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                           id="lastName"
                           type="text"
                           placeholder="Novák"
-                          className={`h-11 bg-[#0f172a] border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.lastName ? 'border-red-500' : ''}`}
+                          className={`h-11 bg-dark-bg border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.lastName ? 'border-red-500' : ''}`}
                           value={formData.lastName}
                           onChange={(e) => handleInputChange('lastName', e.target.value)}
                           onBlur={() => handleRegisterBlur('lastName')}
@@ -581,7 +562,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                         id="reg-email"
                         type="email"
                         placeholder="vas.email@example.com"
-                        className={`h-11 bg-[#0f172a] border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.email ? 'border-red-500' : ''}`}
+                        className={`h-11 bg-dark-bg border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.email ? 'border-red-500' : ''}`}
                         value={formData.email}
                         onChange={(e) => handleInputChange('email', e.target.value)}
                         onBlur={() => handleRegisterBlur('email')}
@@ -599,7 +580,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                         id="reg-password"
                         type="password"
                         placeholder="••••••••"
-                        className={`h-11 bg-[#0f172a] border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.password ? 'border-red-500' : ''}`}
+                        className={`h-11 bg-dark-bg border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.password ? 'border-red-500' : ''}`}
                         value={formData.password}
                         onChange={(e) => handleInputChange('password', e.target.value)}
                         onBlur={() => handleRegisterBlur('password')}
@@ -617,7 +598,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                         id="confirmPassword"
                         type="password"
                         placeholder="••••••••"
-                        className={`h-11 bg-[#0f172a] border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.confirmPassword ? 'border-red-500' : ''}`}
+                        className={`h-11 bg-dark-bg border-transparent text-white placeholder:text-gray-500 focus:border-blue-500 ${errors.confirmPassword ? 'border-red-500' : ''}`}
                         value={formData.confirmPassword}
                         onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                         onBlur={() => handleRegisterBlur('confirmPassword')}

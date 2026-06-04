@@ -52,9 +52,9 @@ export function VerifyEmail({ token, onBackToLogin }: VerifyEmailProps) {
   }, [token, t])
 
   return (
-    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-8">
+    <div className="min-h-screen bg-dark-bg flex items-center justify-center p-8">
       <div className="w-full max-w-md">
-        <Card className="border-white/10 bg-[#1e293b]/80 backdrop-blur-xl shadow-2xl shadow-blue-500/10">
+        <Card className="border-white/10 bg-dark-surface/80 backdrop-blur-xl shadow-2xl shadow-blue-500/10">
           <CardContent className="pt-8 pb-8">
             {status === "loading" && (
               <div className="text-center">

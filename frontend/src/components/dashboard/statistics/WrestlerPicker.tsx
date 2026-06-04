@@ -43,7 +43,7 @@ export function WrestlerPicker({
   const label = t("comparison.wrestler", { number: wrestler })
 
   const panelClass = isDarkMode
-    ? "bg-[#0f172a]/95 border-white/10 shadow-[0_24px_70px_rgba(15,23,42,0.45)]"
+    ? "bg-dark-bg/95 border-white/10 shadow-[0_24px_70px_rgba(15,23,42,0.45)]"
     : "bg-white/95 border-gray-200 shadow-[0_24px_70px_rgba(15,23,42,0.08)]"
 
   const filteredOptions = filteredPersons.slice(0, 15).map((person) => ({
@@ -113,7 +113,7 @@ export function WrestlerPicker({
               placeholder={t("comparison.searchPlaceholder")}
               className={`w-full rounded-2xl border py-3 pl-10 pr-10 text-sm outline-none transition-all ${
                 isDarkMode
-                  ? 'border-white/10 bg-[#0f172a] text-white placeholder-gray-500 shadow-[0_18px_50px_rgba(15,23,42,0.35)] focus:border-purple-400'
+                  ? 'border-white/10 bg-dark-bg text-white placeholder-gray-500 shadow-[0_18px_50px_rgba(15,23,42,0.35)] focus:border-purple-400'
                   : 'border-gray-200 bg-white text-gray-900 placeholder-gray-400 shadow-[0_18px_50px_rgba(15,23,42,0.08)] focus:border-purple-300'
               }`}
             />
@@ -155,7 +155,7 @@ export function WrestlerPicker({
 
       {!selected && mode === "browse" && (
         <div>
-          <div className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-sm ${isDarkMode ? 'border-white/10 bg-[#0f172a]/70 text-gray-300 shadow-[0_18px_50px_rgba(15,23,42,0.25)]' : 'border-gray-200 bg-white text-gray-600 shadow-[0_18px_50px_rgba(15,23,42,0.08)]'}`}>
+          <div className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-sm ${isDarkMode ? 'border-white/10 bg-dark-bg/70 text-gray-300 shadow-[0_18px_50px_rgba(15,23,42,0.25)]' : 'border-gray-200 bg-white text-gray-600 shadow-[0_18px_50px_rgba(15,23,42,0.08)]'}`}>
             <span className="truncate">{t("comparison.selectFromList")}</span>
             <button
               onClick={(e) => { e.stopPropagation(); onModeChange("search") }}
@@ -197,7 +197,7 @@ export function WrestlerPicker({
         <div
           className={`flex w-full cursor-pointer items-center justify-between rounded-2xl border px-4 py-3 text-sm transition-all ${
             isDarkMode
-              ? 'border-white/10 bg-[#0f172a]/70 text-gray-400 shadow-[0_18px_50px_rgba(15,23,42,0.25)] hover:border-purple-400/30 hover:text-gray-200'
+              ? 'border-white/10 bg-dark-bg/70 text-gray-400 shadow-[0_18px_50px_rgba(15,23,42,0.25)] hover:border-purple-400/30 hover:text-gray-200'
               : 'border-gray-200 bg-white text-gray-400 shadow-[0_18px_50px_rgba(15,23,42,0.06)] hover:border-purple-300 hover:text-gray-600'
           }`}
           onClick={() => onModeChange("browse")}

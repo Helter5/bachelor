@@ -25,7 +25,7 @@ interface ArenaSourcesSettingsProps {
 
 function SectionCard({ isDarkMode, children }: { isDarkMode: boolean; children: React.ReactNode }) {
   return (
-    <div className={`rounded-2xl p-6 ${isDarkMode ? 'bg-[#0f172a]/60 border border-white/8' : 'bg-white border border-gray-200 shadow-sm'}`}>
+    <div className={`rounded-2xl p-6 ${isDarkMode ? 'bg-dark-bg/60 border border-white/8' : 'bg-white border border-gray-200 shadow-sm'}`}>
       {children}
     </div>
   )

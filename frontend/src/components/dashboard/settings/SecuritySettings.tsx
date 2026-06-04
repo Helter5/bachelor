@@ -28,7 +28,7 @@ interface SecuritySettingsProps {
 
 function SectionCard({ isDarkMode, children }: { isDarkMode: boolean; children: React.ReactNode }) {
   return (
-    <div className={`rounded-2xl p-6 ${isDarkMode ? 'bg-[#0f172a]/60 border border-white/8' : 'bg-white border border-gray-200 shadow-sm'}`}>
+    <div className={`rounded-2xl p-6 ${isDarkMode ? 'bg-dark-bg/60 border border-white/8' : 'bg-white border border-gray-200 shadow-sm'}`}>
       {children}
     </div>
   )
@@ -92,8 +92,8 @@ export function SecuritySettings({ isDarkMode }: SecuritySettingsProps) {
   // when a new success message arrives.
   useEffect(() => {
     if (!success) return
-    const t = setTimeout(() => setSuccess(null), 3000)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => setSuccess(null), 3000)
+    return () => clearTimeout(timer)
   }, [success])
 
   const handleRevokeSession = async (sessionId: number) => {

@@ -61,7 +61,7 @@ function SortToggleButton({
       className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${
         active
           ? isDarkMode ? 'bg-blue-500 text-white' : 'bg-blue-600 text-white'
-          : isDarkMode ? 'bg-[#0f172a]/50 text-gray-400 hover:text-gray-200' : 'bg-white text-gray-600 hover:bg-gray-50'
+          : isDarkMode ? 'bg-dark-bg/50 text-gray-400 hover:text-gray-200' : 'bg-white text-gray-600 hover:bg-gray-50'
       }`}
     >
       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -105,7 +105,7 @@ function TournamentsToolbar({
   ]
 
   return (
-    <div className={`rounded-lg overflow-hidden ${isDarkMode ? 'bg-[#1e293b] shadow-lg' : 'bg-white border border-gray-200'}`}>
+    <div className={`rounded-lg overflow-hidden ${isDarkMode ? 'bg-dark-surface shadow-lg' : 'bg-white border border-gray-200'}`}>
       <div className={`px-4 py-3 border-b ${isDarkMode ? 'border-white/5' : 'border-gray-200'}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

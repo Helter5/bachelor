@@ -42,7 +42,7 @@ function ExportCard({
   return (
     <div className={`rounded-xl overflow-hidden transition-all flex flex-col ${
       isDarkMode
-        ? 'bg-[#0f172a] border border-white/[0.06] hover:border-white/10'
+        ? 'bg-dark-bg border border-white/[0.06] hover:border-white/10'
         : 'bg-white border border-gray-200 hover:border-gray-300 hover:shadow-md'
     }`}>
       <div className="p-5 flex items-start gap-4 flex-1">

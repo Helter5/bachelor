@@ -74,7 +74,7 @@ function RankingTableRow({ isDarkMode, entry, onSelectPerson }: RankingTableRowP
       </tr>
       {expanded && (
         <tr>
-          <td colSpan={7} className={`px-4 pb-4 ${isDarkMode ? 'bg-[#0f172a]/50' : 'bg-gray-50'}`}>
+          <td colSpan={7} className={`px-4 pb-4 ${isDarkMode ? 'bg-dark-bg/50' : 'bg-gray-50'}`}>
             <div className="pt-2">
               <h4 className={`text-xs font-semibold uppercase tracking-wider mb-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                 {t("ranking.breakdown")}
@@ -138,7 +138,7 @@ function RankingMethodologyModal({ isDarkMode, t, onClose }: { isDarkMode: boole
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-      <div className={`relative max-w-lg w-full rounded-2xl p-6 shadow-2xl max-h-[80vh] overflow-y-auto ${isDarkMode ? 'bg-[#1e293b] border border-white/10' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
+      <div className={`relative max-w-lg w-full rounded-2xl p-6 shadow-2xl max-h-[80vh] overflow-y-auto ${isDarkMode ? 'bg-dark-surface border border-white/10' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
             {t("ranking.methodology.title")}
@@ -322,7 +322,7 @@ export function RankingView({ isDarkMode, onSelectPerson, onBack }: RankingViewP
                   'pr-8 '
                 } ${
                   isDarkMode
-                    ? 'bg-[#0f172a] text-white border-white/10 focus:border-purple-500'
+                    ? 'bg-dark-bg text-white border-white/10 focus:border-purple-500'
                     : 'bg-white text-gray-900 border-gray-300 focus:border-purple-500'
                 } focus:outline-none`}
               />

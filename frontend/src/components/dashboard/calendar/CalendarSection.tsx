@@ -259,7 +259,7 @@ export function CalendarSection({ isDarkMode }: CalendarSectionProps) {
       {eventsForDay.map((event, index) => (
         <span
           key={event.id}
-          className={`h-2.5 w-2.5 rounded-full ring-2 ${isDarkMode ? 'ring-[#111827]' : 'ring-white'} ${eventColors[index % eventColors.length]}`}
+          className={`h-2.5 w-2.5 rounded-full ring-2 ${isDarkMode ? 'ring-dark-deep' : 'ring-white'} ${eventColors[index % eventColors.length]}`}
           title={event.name}
         />
       ))}
@@ -280,7 +280,7 @@ export function CalendarSection({ isDarkMode }: CalendarSectionProps) {
   return (
     <div className="my-6 space-y-6">
       {loading && (
-        <div className={`rounded-2xl p-5 ${isDarkMode ? 'bg-[#1e293b] text-gray-300 border border-white/10' : 'bg-white border border-gray-200 text-gray-600'}`}>
+        <div className={`rounded-2xl p-5 ${isDarkMode ? 'bg-dark-surface text-gray-300 border border-white/10' : 'bg-white border border-gray-200 text-gray-600'}`}>
           {t('common.loading')}
         </div>
       )}
@@ -293,7 +293,7 @@ export function CalendarSection({ isDarkMode }: CalendarSectionProps) {
 
       {!loading && !error && (
         <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
-          <section className={`xl:col-span-3 rounded-[28px] p-5 md:p-6 shadow-[0_20px_60px_-32px_rgba(15,23,42,0.35)] ${isDarkMode ? 'bg-[#111827] border border-white/10' : 'bg-white border border-gray-200'}`}>
+          <section className={`xl:col-span-3 rounded-[28px] p-5 md:p-6 shadow-[0_20px_60px_-32px_rgba(15,23,42,0.35)] ${isDarkMode ? 'bg-dark-deep border border-white/10' : 'bg-white border border-gray-200'}`}>
             <CalendarTopBar
               isDarkMode={isDarkMode}
               t={t}

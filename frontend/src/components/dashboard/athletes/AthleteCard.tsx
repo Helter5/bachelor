@@ -43,7 +43,7 @@ export function AthleteCard({
       onClick={onClick}
       className={`rounded-lg transition-all hover:scale-[1.02] cursor-pointer overflow-hidden ${
         isDarkMode
-          ? 'bg-[#0f172a] hover:bg-[#1e3a5f] shadow-lg hover:shadow-2xl'
+          ? 'bg-dark-bg hover:bg-dark-accent shadow-lg hover:shadow-2xl'
           : 'bg-white hover:shadow-xl border border-gray-200 shadow-sm'
       }`}
     >

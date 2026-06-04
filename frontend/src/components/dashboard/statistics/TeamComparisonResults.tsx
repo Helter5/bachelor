@@ -82,7 +82,7 @@ function FinishBreakdown({
   const types = Array.from(new Set([...Object.keys(team1Map), ...Object.keys(team2Map)])).sort()
 
   return (
-    <div className={`rounded-xl overflow-hidden ${isDarkMode ? "bg-[#0f172a]/80 border border-white/5" : "bg-gray-50 border border-gray-200"}`}>
+    <div className={`rounded-xl overflow-hidden ${isDarkMode ? "bg-dark-bg/80 border border-white/5" : "bg-gray-50 border border-gray-200"}`}>
       <div className={`px-6 py-4 border-b ${isDarkMode ? "border-white/5" : "border-gray-200"}`}>
         <h3 className={`text-sm font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>{title}</h3>
       </div>
@@ -123,7 +123,7 @@ export function TeamComparisonResults({ isDarkMode, team1, team2 }: TeamComparis
 
   return (
     <div className="mt-8">
-      <div className={`rounded-xl overflow-hidden ${isDarkMode ? "bg-[#0f172a]/80 border border-white/5" : "bg-gray-50 border border-gray-200"}`}>
+      <div className={`rounded-xl overflow-hidden ${isDarkMode ? "bg-dark-bg/80 border border-white/5" : "bg-gray-50 border border-gray-200"}`}>
         <div className="flex items-center">
           <TeamNameBlock isDarkMode={isDarkMode} team={team1} align="right" />
           <div className={`w-40 text-center py-4 font-black text-sm ${isDarkMode ? "text-gray-500" : "text-gray-400"} uppercase tracking-widest`}>

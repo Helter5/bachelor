@@ -46,7 +46,7 @@ export function Card({
       onClick={onClick}
       className={`rounded-lg p-3 transition-all ${isClickable ? 'cursor-pointer' : ''} ${
         isDarkMode
-          ? 'bg-[#0f172a]/50 hover:bg-[#1e293b] shadow-md hover:shadow-xl backdrop-blur-sm'
+          ? 'bg-dark-bg/50 hover:bg-dark-surface shadow-md hover:shadow-xl backdrop-blur-sm'
           : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
       }`}
     >

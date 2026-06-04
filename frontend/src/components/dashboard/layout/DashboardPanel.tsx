@@ -14,7 +14,7 @@ export function DashboardPanel({
   padding = "p-8",
 }: DashboardPanelProps) {
   return (
-    <div className={`rounded-xl ${padding} ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-lg ${className}`}>
+    <div className={`rounded-xl ${padding} ${isDarkMode ? "bg-dark-surface" : "bg-white border border-gray-200"} shadow-lg ${className}`}>
       {children}
     </div>
   )

@@ -411,7 +411,7 @@ export function ComparisonView({ isDarkMode, onSelectPerson, onBack }: Compariso
               onClick={reset}
               className={`px-6 py-2.5 rounded-lg font-medium transition-all ${
                 isDarkMode
-                  ? 'bg-[#0f172a]/50 text-gray-300 hover:bg-[#0f172a] border border-white/10'
+                  ? 'bg-dark-bg/50 text-gray-300 hover:bg-dark-bg border border-white/10'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
               }`}
             >

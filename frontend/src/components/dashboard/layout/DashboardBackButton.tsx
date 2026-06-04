@@ -10,7 +10,7 @@ export function DashboardBackButton({ isDarkMode, label, onClick }: DashboardBac
       onClick={onClick}
       className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
         isDarkMode
-          ? "bg-[#1e293b] hover:bg-[#334155] text-gray-300 hover:text-white"
+          ? "bg-dark-surface hover:bg-dark-raised text-gray-300 hover:text-white"
           : "bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900"
       }`}
     >

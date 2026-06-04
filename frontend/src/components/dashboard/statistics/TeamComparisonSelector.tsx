@@ -29,7 +29,7 @@ export function TeamSelector({
   ], [teams, excludeName, t])
 
   return (
-    <div className={`rounded-xl p-5 ${isDarkMode ? "bg-[#0f172a]/60 border border-white/5" : "bg-gray-50 border border-gray-200"}`}>
+    <div className={`rounded-xl p-5 ${isDarkMode ? "bg-dark-bg/60 border border-white/5" : "bg-gray-50 border border-gray-200"}`}>
       <p className={`text-xs font-semibold uppercase tracking-wider mb-3 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
         {label}
       </p>

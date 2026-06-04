@@ -66,7 +66,7 @@ export function CalendarGridViews({
         ) : (
           <div className="space-y-3">
             {dayEvents.map((event, index) => (
-              <div key={event.id} className={`rounded-2xl p-4 border ${isDarkMode ? 'bg-[#0f172a] border-white/5' : 'bg-white border-gray-100'}`}>
+              <div key={event.id} className={`rounded-2xl p-4 border ${isDarkMode ? 'bg-dark-bg border-white/5' : 'bg-white border-gray-100'}`}>
                 <div className="flex items-start gap-3">
                   <span className={`mt-1 h-2.5 w-2.5 rounded-full ${index % 4 === 0 ? 'bg-sky-500' : index % 4 === 1 ? 'bg-emerald-500' : index % 4 === 2 ? 'bg-violet-500' : 'bg-rose-500'}`} />
                   <div className="min-w-0 flex-1">

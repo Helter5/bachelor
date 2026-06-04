@@ -307,7 +307,7 @@ export function TournamentDetail({
         onTabChange={handleTabChange}
       />
 
-      <div className={`rounded-lg p-6 ${isDarkMode ? "bg-[#1e293b] shadow-lg" : "bg-white border border-gray-200"}`}>
+      <div className={`rounded-lg p-6 ${isDarkMode ? "bg-dark-surface shadow-lg" : "bg-white border border-gray-200"}`}>
         {activeTab === "teams" && (
           <TeamsTab
             isDarkMode={isDarkMode}

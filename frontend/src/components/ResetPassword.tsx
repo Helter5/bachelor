@@ -76,9 +76,9 @@ export function ResetPassword({ token, onBackToLogin }: ResetPasswordProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-8">
+    <div className="min-h-screen bg-dark-bg flex items-center justify-center p-8">
       <div className="w-full max-w-md">
-        <Card className="border-white/10 bg-[#1e293b]/80 backdrop-blur-xl shadow-2xl shadow-blue-500/10">
+        <Card className="border-white/10 bg-dark-surface/80 backdrop-blur-xl shadow-2xl shadow-blue-500/10">
           <CardContent className="pt-8 pb-8">
             {status === "loading" && (
               <div className="text-center">
@@ -100,7 +100,7 @@ export function ResetPassword({ token, onBackToLogin }: ResetPasswordProps) {
                       onChange={e => setNewPassword(e.target.value)}
                       required
                       minLength={6}
-                      className="w-full px-3 py-2 bg-[#0f172a] border border-white/10 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-dark-bg border border-white/10 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div>
@@ -111,7 +111,7 @@ export function ResetPassword({ token, onBackToLogin }: ResetPasswordProps) {
                       onChange={e => setConfirmPassword(e.target.value)}
                       required
                       minLength={6}
-                      className="w-full px-3 py-2 bg-[#0f172a] border border-white/10 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-dark-bg border border-white/10 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   {message && <p className="text-red-400 text-sm">{message}</p>}

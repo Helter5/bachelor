@@ -103,7 +103,7 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
       )}
 
       {!loading && !error && persons.length === 0 && (
-        <div className={`rounded-xl p-12 text-center ${isDarkMode ? 'bg-[#1e293b]' : 'bg-white border border-gray-200'}`}>
+        <div className={`rounded-xl p-12 text-center ${isDarkMode ? 'bg-dark-surface' : 'bg-white border border-gray-200'}`}>
           <svg className={`mx-auto h-12 w-12 mb-4 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
@@ -116,7 +116,7 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
 
       {!loading && !error && persons.length > 0 && (
         <>
-          <div className={`rounded-lg overflow-hidden ${isDarkMode ? 'bg-[#1e293b] shadow-lg' : 'bg-white border border-gray-200'}`}>
+          <div className={`rounded-lg overflow-hidden ${isDarkMode ? 'bg-dark-surface shadow-lg' : 'bg-white border border-gray-200'}`}>
             <div className="p-4">
               <div className="flex items-end gap-3 flex-wrap">
                 <div>
@@ -196,7 +196,7 @@ export function AthletesList({ isDarkMode, onSelectPerson }: AthletesListProps) 
                 onClick={() => { setShowAll(false); setCurrentPage(1) }}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   isDarkMode
-                    ? 'bg-[#1e293b] text-gray-300 hover:text-white border border-gray-600'
+                    ? 'bg-dark-surface text-gray-300 hover:text-white border border-gray-600'
                     : 'bg-white text-gray-600 hover:text-gray-900 border border-gray-300'
                 }`}
               >

@@ -62,7 +62,7 @@ const LOSS_COLOR = "#ef4444"
 
 function SectionCard({ isDarkMode, className = "", children }: { isDarkMode: boolean; className?: string; children: ReactNode }) {
   return (
-    <div className={`rounded-xl p-6 ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm ${className}`}>
+    <div className={`rounded-xl p-6 ${isDarkMode ? "bg-dark-surface" : "bg-white border border-gray-200"} shadow-sm ${className}`}>
       {children}
     </div>
   )
@@ -70,7 +70,7 @@ function SectionCard({ isDarkMode, className = "", children }: { isDarkMode: boo
 
 function SummaryCard({ isDarkMode, label, value, color }: { isDarkMode: boolean; label: string; value: ReactNode; color: string }) {
   return (
-    <div className={`rounded-xl p-4 text-center ${isDarkMode ? "bg-[#1e293b]" : "bg-white border border-gray-200"} shadow-sm`}>
+    <div className={`rounded-xl p-4 text-center ${isDarkMode ? "bg-dark-surface" : "bg-white border border-gray-200"} shadow-sm`}>
       <p className={`text-xs font-medium mb-1 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>{label}</p>
       <p className={`text-xl font-bold ${color}`}>{value}</p>
     </div>
@@ -279,7 +279,7 @@ export function WrestlerProfile({ isDarkMode, personId, onBack }: WrestlerProfil
   if (error || !person || !fightsData || !stats) {
     return (
       <div className="space-y-4">
-        <button onClick={onBack} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${isDarkMode ? "bg-[#1e293b] hover:bg-[#334155] text-gray-300" : "bg-gray-100 hover:bg-gray-200 text-gray-700"}`}>
+        <button onClick={onBack} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${isDarkMode ? "bg-dark-surface hover:bg-dark-raised text-gray-300" : "bg-gray-100 hover:bg-gray-200 text-gray-700"}`}>
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           {t("wrestlerProfile.back")}
         </button>

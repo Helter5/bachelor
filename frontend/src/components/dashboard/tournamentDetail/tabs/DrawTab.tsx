@@ -83,7 +83,7 @@ export function DrawTab({
 
   const text = isDarkMode ? 'text-white' : 'text-gray-900'
   const sub = isDarkMode ? 'text-gray-400' : 'text-gray-500'
-  const card = isDarkMode ? 'bg-[#0f172a] border border-white/5' : 'bg-gray-50 border border-gray-200'
+  const card = isDarkMode ? 'bg-dark-bg border border-white/5' : 'bg-gray-50 border border-gray-200'
   const hasEventAthletes = athletesCount > 0
   const generationDisabled = generatingAll || weightCategoriesLoading || athletesLoading || !weightCategories.length || !hasEventAthletes
   const teamsByName = useMemo(() => {
@@ -179,7 +179,7 @@ export function DrawTab({
         <button
           onClick={toggleInfo}
           className={`w-full flex items-center justify-between px-4 py-3 text-sm transition-colors ${
-            isDarkMode ? 'bg-[#1e293b] hover:bg-white/5' : 'bg-gray-50 hover:bg-gray-100'
+            isDarkMode ? 'bg-dark-surface hover:bg-white/5' : 'bg-gray-50 hover:bg-gray-100'
           }`}
         >
           <div className="flex items-center gap-2">
@@ -194,7 +194,7 @@ export function DrawTab({
         </button>
 
         {infoExpanded && (
-          <div className={`px-4 py-3 border-t ${isDarkMode ? 'bg-[#0f172a] border-white/5' : 'bg-white border-gray-100'}`}>
+          <div className={`px-4 py-3 border-t ${isDarkMode ? 'bg-dark-bg border-white/5' : 'bg-white border-gray-100'}`}>
             <p className={`text-sm ${sub} mb-4`}>{t("draw.howItWorksDesc")}</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {(
@@ -263,7 +263,7 @@ export function DrawTab({
               <button
                 onClick={() => setExpandedId(isExpanded ? null : wc.id)}
                 className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
-                  isDarkMode ? 'bg-[#1e293b] hover:bg-white/5' : 'bg-white hover:bg-gray-50'
+                  isDarkMode ? 'bg-dark-surface hover:bg-white/5' : 'bg-white hover:bg-gray-50'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -286,7 +286,7 @@ export function DrawTab({
               </button>
 
               {isExpanded && entry?.result && !entry.error && (
-                <div className={`px-4 pb-4 pt-2 ${isDarkMode ? 'bg-[#1e293b]' : 'bg-white'}`}>
+                <div className={`px-4 pb-4 pt-2 ${isDarkMode ? 'bg-dark-surface' : 'bg-white'}`}>
                   <DrawContent result={entry.result} teamsByName={teamsByName} isDarkMode={isDarkMode} />
                 </div>
               )}

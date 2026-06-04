@@ -69,7 +69,7 @@ export function WeightCategoryGrid({
                     onClick={() => onSelect({ id: wc.id, name: wc.name, sport_name: wc.sport_name, audience_name: wc.audience_name })}
                     className={`rounded-xl p-4 cursor-pointer transition-all ${
                       isDarkMode
-                        ? 'bg-[#0f172a]/60 border border-white/[0.06] hover:border-white/10 hover:bg-[#1e293b]'
+                        ? 'bg-dark-bg/60 border border-white/[0.06] hover:border-white/10 hover:bg-dark-surface'
                         : 'bg-white border border-gray-200 hover:border-gray-300 hover:shadow-md'
                     }`}
                   >

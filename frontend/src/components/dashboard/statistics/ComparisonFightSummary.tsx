@@ -112,7 +112,7 @@ function WrestlerProfilePanel({
   const { t } = useTranslation()
 
   return (
-    <div className={`rounded-lg p-4 ${isDarkMode ? "bg-[#0f172a]/60 border border-white/5" : "bg-gray-50 border border-gray-200"}`}>
+    <div className={`rounded-lg p-4 ${isDarkMode ? "bg-dark-bg/60 border border-white/5" : "bg-gray-50 border border-gray-200"}`}>
       <div className={`mb-4 text-sm font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>
         {person.country && (
           <CountryFlag code={person.country} className="mr-1.5" style={{ fontSize: "0.9rem" }} flagOnly />
@@ -234,7 +234,7 @@ export function ComparisonFightSection({
   const { t } = useTranslation()
 
   return (
-    <div className={`rounded-xl p-6 ${isDarkMode ? "bg-[#0f172a]/80 border border-white/5" : "bg-gray-50 border border-gray-200"}`}>
+    <div className={`rounded-xl p-6 ${isDarkMode ? "bg-dark-bg/80 border border-white/5" : "bg-gray-50 border border-gray-200"}`}>
       <h3 className={`text-lg font-bold mb-6 text-center ${isDarkMode ? "text-white" : "text-gray-900"}`}>
         {t("comparison.headToHead")}
       </h3>

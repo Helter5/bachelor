@@ -7,11 +7,11 @@ interface RightSidebarProps {
 export function RightSidebar({ isDarkMode }: RightSidebarProps) {
   const { t } = useTranslation()
   return (
-    <aside className={`hidden xl:block xl:w-[600px] overflow-y-auto ${isDarkMode ? 'bg-[#1e293b] shadow-2xl shadow-black/30' : 'bg-white border-l border-gray-200'}`}>
+    <aside className={`hidden xl:block xl:w-[600px] overflow-y-auto ${isDarkMode ? 'bg-dark-surface shadow-2xl shadow-black/30' : 'bg-white border-l border-gray-200'}`}>
       <div className="p-8">
         <h3 className={`text-xl font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t("rightSidebar.title")}</h3>
 
-        <div className={`rounded-xl p-6 mb-6 ${isDarkMode ? 'bg-[#0f172a]/60 border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
+        <div className={`rounded-xl p-6 mb-6 ${isDarkMode ? 'bg-dark-bg/60 border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
           <div className="flex items-center gap-3 mb-4">
             <div className={`p-2.5 rounded-lg ${isDarkMode ? 'bg-orange-500/20' : 'bg-orange-100'}`}>
               <svg className="w-6 h-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -52,7 +52,7 @@ export function RightSidebar({ isDarkMode }: RightSidebarProps) {
           </a>
         </div>
 
-        <div className={`rounded-xl p-6 ${isDarkMode ? 'bg-[#0f172a]/60 border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
+        <div className={`rounded-xl p-6 ${isDarkMode ? 'bg-dark-bg/60 border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
           <h4 className={`font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t("rightSidebar.howItWorksTitle")}</h4>
           <div className="space-y-4">
             {[

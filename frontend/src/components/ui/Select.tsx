@@ -47,7 +47,7 @@ export function Select<T extends string | number = string>({
         onClick={() => setOpen((o) => !o)}
         className={`w-full h-10 flex items-center justify-between gap-2 px-3 rounded-xl text-sm border transition-colors ${
           isDarkMode
-            ? "bg-[#0f172a]/85 text-white border-white/10 hover:border-sky-400/35"
+            ? "bg-dark-bg/85 text-white border-white/10 hover:border-sky-400/35"
             : "bg-white text-gray-900 border-gray-300 hover:border-sky-300"
         } ${open ? (isDarkMode ? "border-sky-400/50" : "border-sky-400") : ""}`}
       >

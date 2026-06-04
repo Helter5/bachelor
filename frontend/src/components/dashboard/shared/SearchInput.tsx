@@ -21,7 +21,7 @@ export function SearchInput({ isDarkMode, value, onChange, placeholder, classNam
         maxLength={100}
         className={`w-full px-3 py-2 pl-9 rounded-lg text-sm transition-all ${
           isDarkMode
-            ? 'bg-[#0f172a]/50 text-white focus:bg-[#0f172a] placeholder-gray-500 shadow-inner focus:ring-2 focus:ring-blue-500/30'
+            ? 'bg-dark-bg/50 text-white focus:bg-dark-bg placeholder-gray-500 shadow-inner focus:ring-2 focus:ring-blue-500/30'
             : 'bg-gray-50 text-gray-900 border border-gray-200 focus:border-blue-500 placeholder-gray-400 focus:ring-2 focus:ring-blue-500/20'
         } focus:outline-none`}
       />

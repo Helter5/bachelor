@@ -19,7 +19,7 @@ export function TournamentCard({ event, isDarkMode, onSelect }: TournamentCardPr
       })}
       className={`rounded-lg transition-all hover:scale-[1.02] cursor-pointer overflow-hidden ${
         isDarkMode
-          ? 'bg-[#1e293b] hover:bg-[#334155] shadow-lg hover:shadow-2xl'
+          ? 'bg-dark-surface hover:bg-dark-raised shadow-lg hover:shadow-2xl'
           : 'bg-white hover:shadow-xl border border-gray-200 shadow-lg'
       }`}
     >

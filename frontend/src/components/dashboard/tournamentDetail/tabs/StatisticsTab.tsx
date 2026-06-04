@@ -52,7 +52,7 @@ export function StatisticsTab({
               { label: t('statistics.avgTp'), value: eventStats.avg_tp, color: "text-purple-500" },
               { label: t('statistics.avgCp'), value: eventStats.avg_cp, color: "text-yellow-500" },
             ].map((card) => (
-              <div key={card.label} className={`rounded-xl p-4 text-center ${isDarkMode ? 'bg-[#0f172a]/50' : 'bg-gray-50 border border-gray-200'}`}>
+              <div key={card.label} className={`rounded-xl p-4 text-center ${isDarkMode ? 'bg-dark-bg/50' : 'bg-gray-50 border border-gray-200'}`}>
                 <p className={`text-xs font-medium mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{card.label}</p>
                 <p className={`text-2xl font-bold ${card.color}`}>{card.value}</p>
               </div>
@@ -60,7 +60,7 @@ export function StatisticsTab({
           </div>
 
           {Object.keys(eventStats.victory_type_distribution).length > 0 && (
-            <div className={`rounded-xl p-6 ${isDarkMode ? 'bg-[#0f172a]/50' : 'bg-gray-50 border border-gray-200'}`}>
+            <div className={`rounded-xl p-6 ${isDarkMode ? 'bg-dark-bg/50' : 'bg-gray-50 border border-gray-200'}`}>
               <h4 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t('statistics.victoryTypes')}</h4>
               <ResponsiveContainer width="100%" height={320}>
                 <PieChart>

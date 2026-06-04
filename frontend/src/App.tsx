@@ -39,7 +39,7 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState<AppUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState<"landing" | "verify" | "reset" | "dashboard">("landing");
+  const [currentPage, setCurrentPage] = useState<"landing" | "verify" | "reset">("landing");
 
   const fetchUserData = async () => {
     try {
@@ -90,7 +90,6 @@ function App() {
 
   const handleLogin = async () => {
     await fetchUserData();
-    setCurrentPage("dashboard");
   };
 
   const handleBackToLogin = () => {
@@ -120,7 +119,7 @@ function App() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
+      <div className="min-h-screen bg-dark-bg flex items-center justify-center">
         <div className="text-white">Načítavam...</div>
       </div>
     );

@@ -13,7 +13,7 @@ export function CommonOpponentCard({ isDarkMode, opp, person1Name, person2Name }
   const { t } = useTranslation()
 
   return (
-    <div className={`rounded-lg p-5 ${isDarkMode ? "bg-[#0f172a]/60 border border-white/5" : "bg-gray-50 border border-gray-200"}`}>
+    <div className={`rounded-lg p-5 ${isDarkMode ? "bg-dark-bg/60 border border-white/5" : "bg-gray-50 border border-gray-200"}`}>
       <div className={`text-sm font-bold mb-4 flex items-center gap-1.5 ${isDarkMode ? "text-white" : "text-gray-900"}`}>
         vs
         {opp.opponent.country && (

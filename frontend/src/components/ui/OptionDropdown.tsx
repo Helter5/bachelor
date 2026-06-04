@@ -41,7 +41,7 @@ export function OptionDropdown<T extends string | number = string>({
     <div className={className}>
       <div
         className={`overflow-hidden rounded-2xl border backdrop-blur-md shadow-[0_24px_60px_rgba(15,23,42,0.22)] ${
-          isDarkMode ? "bg-[#0f172a]/95 border-white/10" : "bg-white/95 border-gray-200"
+          isDarkMode ? "bg-dark-bg/95 border-white/10" : "bg-white/95 border-gray-200"
         } ${panelClassName}`}
       >
         {(headerTitle || headerSubtitle || rightHeader) && (

@@ -114,7 +114,7 @@ export function Sidebar({
       flex flex-col w-72
       transform transition-all duration-300 ease-in-out
       ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      ${isDarkMode ? 'bg-[#1e293b] shadow-2xl shadow-black/30' : 'bg-white border-r border-gray-200'}
+      ${isDarkMode ? 'bg-dark-surface shadow-2xl shadow-black/30' : 'bg-white border-r border-gray-200'}
     `}>
       <div className={`p-6 ${isDarkMode ? 'border-b border-white/5' : 'border-b border-gray-200'}`}>
         <h1 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Wrestling Federation</h1>

@@ -47,7 +47,7 @@ export function Pagination({ isDarkMode, currentPage, totalItems, itemsPerPage, 
         }`
 
   return (
-    <div className={`flex items-center justify-center gap-0.5 py-3 px-4 rounded-lg ${isDarkMode ? 'bg-[#1e293b]' : 'bg-white border border-gray-200'}`}>
+    <div className={`flex items-center justify-center gap-0.5 py-3 px-4 rounded-lg ${isDarkMode ? 'bg-dark-surface' : 'bg-white border border-gray-200'}`}>
       <button onClick={() => onPageChange(1)} disabled={currentPage === 1} title={t("pagination.firstPage")} className={navBtn(currentPage === 1)}>«</button>
       <button onClick={() => onPageChange(Math.max(1, currentPage - 1))} disabled={currentPage === 1} title={t("pagination.prevPage")} className={navBtn(currentPage === 1)}>‹</button>
 

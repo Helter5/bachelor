@@ -36,8 +36,8 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.props.fallback) return this.props.fallback
 
     return (
-      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center px-6">
-        <div className="max-w-md w-full bg-[#1e293b] border border-white/10 rounded-xl p-6 text-white">
+      <div className="min-h-screen bg-dark-bg flex items-center justify-center px-6">
+        <div className="max-w-md w-full bg-dark-surface border border-white/10 rounded-xl p-6 text-white">
           <h1 className="text-xl font-semibold mb-3">Something went wrong</h1>
           <p className="text-sm text-gray-300 mb-4">
             An unexpected error occurred. The page can be reloaded, or you can return to the home screen.

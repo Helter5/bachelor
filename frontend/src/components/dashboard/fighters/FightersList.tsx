@@ -32,7 +32,7 @@ function SortButton({
       className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
         active
           ? isDarkMode ? "bg-blue-500 text-white" : "bg-blue-600 text-white"
-          : isDarkMode ? "bg-[#0f172a] text-gray-300 hover:bg-white/5" : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+          : isDarkMode ? "bg-dark-bg text-gray-300 hover:bg-white/5" : "bg-gray-50 text-gray-700 hover:bg-gray-100"
       }`}
     >
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -159,7 +159,7 @@ export function FightersList({ isDarkMode }: FightersListProps) {
         </p>
       </div>
 
-      <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-[#1e293b]' : 'bg-white'}`}>
+      <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-dark-surface' : 'bg-white'}`}>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="md:col-span-2">
             <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -236,7 +236,7 @@ export function FightersList({ isDarkMode }: FightersListProps) {
                 key={athlete.id}
                 className={`p-4 rounded-lg transition-all hover:scale-[1.01] cursor-pointer ${
                   isDarkMode
-                    ? 'bg-[#1e293b] hover:bg-[#334155]'
+                    ? 'bg-dark-surface hover:bg-dark-raised'
                     : 'bg-white hover:bg-gray-50'
                 }`}
               >

@@ -58,7 +58,7 @@ function SyncProgressWidget({
         style={{ background: ringBackground }}
       >
         <div className={`grid h-10 w-10 place-items-center rounded-full ${
-          isDarkMode ? 'bg-[#0f172a] text-blue-100' : 'bg-white text-blue-700'
+          isDarkMode ? 'bg-dark-bg text-blue-100' : 'bg-white text-blue-700'
         }`}>
           <span className="text-[11px] font-semibold">{progress}%</span>
         </div>
@@ -136,7 +136,7 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
   ])
 
   return (
-    <div className={`flex h-screen ${isDarkMode ? 'bg-[#0f172a]' : 'bg-gray-50'}`}>
+    <div className={`flex h-screen ${isDarkMode ? 'bg-dark-bg' : 'bg-gray-50'}`}>
       <SyncConfirmModal
         isOpen={syncState.showConfirm}
         onConfirm={confirmSync}
@@ -159,7 +159,7 @@ export function Dashboard({ onLogout, userData, onUserDataChange }: DashboardPro
         onClose={dismissError}
       />
 
-      <div className={`lg:hidden fixed top-0 left-0 right-0 z-50 ${isDarkMode ? 'bg-[#1e293b] shadow-lg shadow-black/20' : 'bg-white border-b border-gray-200'}`}>
+      <div className={`lg:hidden fixed top-0 left-0 right-0 z-50 ${isDarkMode ? 'bg-dark-surface shadow-lg shadow-black/20' : 'bg-white border-b border-gray-200'}`}>
         <div className="flex items-center justify-between p-4">
           <h1 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Wrestling Federation</h1>
           <button

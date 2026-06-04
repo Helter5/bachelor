@@ -39,7 +39,7 @@ export function CalendarSidebar({
   })()
 
   return (
-    <aside className={`xl:col-span-2 rounded-[28px] p-5 md:p-6 shadow-[0_20px_60px_-32px_rgba(15,23,42,0.35)] ${isDarkMode ? 'bg-[#111827] border border-white/10' : 'bg-white border border-gray-200'}`}>
+    <aside className={`xl:col-span-2 rounded-[28px] p-5 md:p-6 shadow-[0_20px_60px_-32px_rgba(15,23,42,0.35)] ${isDarkMode ? 'bg-dark-deep border border-white/10' : 'bg-white border border-gray-200'}`}>
       <h3 className={`text-lg md:text-xl font-semibold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
         {formattedFullDateLabel}
       </h3>
