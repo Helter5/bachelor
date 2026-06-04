@@ -117,6 +117,16 @@ class ApiClient {
       const detail = parsed?.detail
       if (typeof detail === 'string') {
         errorMessage = detail
+      } else if (Array.isArray(detail)) {
+        const validationMessage = detail
+          .map((item) => {
+            if (item && typeof item === 'object' && 'msg' in item && typeof item.msg === 'string') {
+              return item.msg
+            }
+            return undefined
+          })
+          .find(Boolean)
+        errorMessage = validationMessage || 'Invalid request data'
       } else if (detail && typeof detail === 'object') {
         if (typeof detail.code === 'string') errorCode = detail.code
         if (typeof detail.message === 'string') errorMessage = detail.message
