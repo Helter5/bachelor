@@ -60,9 +60,9 @@ jobs:
           FRONTEND_URL=http://localhost:5173
           ARENA_HOST=arena-host
           ARENA_PORT=8080
-          ARENA_CLIENT_ID=${{ secrets.ARENA_CLIENT_ID }}
-          ARENA_CLIENT_SECRET=${{ secrets.ARENA_CLIENT_SECRET }}
-          ARENA_API_KEY=${{ secrets.ARENA_API_KEY }}
+          ARENA_CLIENT_ID=d1532eae14baf3ff798b6c7be8a8355f
+          ARENA_CLIENT_SECRET=2356194b47bbcb3b8d2b6e5dc06831a60e1f8248d68b7ab4b2b549d181ec0075920b1883c81caa941c00648ebafac3d23dc56e6fdaa5919b000140503d670486
+          ARENA_API_KEY=THxmuUTEdYHoLEGM8Y9xYTrCyFiPQvFFRp48KZXn3oQvevVdoH
           ENVFILE
           sed -i 's/^[[:space:]]*//' .env
 
@@ -135,9 +135,9 @@ jobs:
           FRONTEND_URL=http://localhost:5173
           ARENA_HOST=arena-host
           ARENA_PORT=8080
-          ARENA_CLIENT_ID=${{ secrets.ARENA_CLIENT_ID }}
-          ARENA_CLIENT_SECRET=${{ secrets.ARENA_CLIENT_SECRET }}
-          ARENA_API_KEY=${{ secrets.ARENA_API_KEY }}
+          ARENA_CLIENT_ID=d1532eae14baf3ff798b6c7be8a8355f
+          ARENA_CLIENT_SECRET=2356194b47bbcb3b8d2b6e5dc06831a60e1f8248d68b7ab4b2b549d181ec0075920b1883c81caa941c00648ebafac3d23dc56e6fdaa5919b000140503d670486
+          ARENA_API_KEY=THxmuUTEdYHoLEGM8Y9xYTrCyFiPQvFFRp48KZXn3oQvevVdoH
           ENVFILE
           sed -i 's/^[[:space:]]*//' .env
 
