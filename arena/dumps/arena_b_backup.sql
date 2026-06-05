@@ -1046,8 +1046,6 @@ CREATE TABLE `local_client` (
 
 LOCK TABLES `local_client` WRITE;
 /*!40000 ALTER TABLE `local_client` DISABLE KEYS */;
-INSERT INTO `local_client` VALUES
-('3k56w7frs84kkc4o4kowwskwgccoc8c','g.kanocz2@gmail.com','Gabriel Kanocz','FEI STU','1.6.2','1.6.2',NULL,0,'2026-03-07 13:38:01','2026-03-07 18:17:10',1);
 /*!40000 ALTER TABLE `local_client` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2400,10 +2398,7 @@ CREATE TABLE `user` (
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
 INSERT INTO `user` VALUES
-(1,'superadmin','superadmin','it@uww.org','it@uww.org',1,NULL,'$2y$13$5sd64fmens84ssgco4ck4OlueJWzFDHpGIRRHT21pl8gFETmuwz.m',NULL,NULL,NULL,'a:1:{i:0;s:16:\"ROLE_SUPER_ADMIN\";}','Super Admin','United World Wrestling','7zhCzJw6yFF2qmDTXinqnHL9Kgur7P',NULL),
-(2,'scoreboard','scoreboard','arena.scoreboard@uww.io','arena.scoreboard@uww.io',1,NULL,'$2y$13$doIfnldu8FVYmO0OQpN1.ux9t1IbQpBSZtoFcopZYb8IXUbGWVze.',NULL,NULL,NULL,'a:1:{i:0;s:15:\"ROLE_SCOREBOARD\";}','Scoreboard','United World Wrestling','7U4YiGrWoFwp2VsHwzbQvZC2vWXp2e',NULL),
-(3,'public','public','arena.public@uww.io','arena.public@uww.io',1,'puCVUSOACLA1XH0gpiymupKLQdAJjPJt3ZPPkZbofkY','$2y$13$IYOq37Ul.CVs.1TjQDbkM.HtVfdE0W7a7vjQBprLaoewP525tKX6C',NULL,NULL,NULL,'a:1:{i:0;s:11:\"ROLE_PUBLIC\";}','Public User','United World Wrestling','67GNCCB6Q8h47QYnQyo1MdzTvqj7Hw7DMsQi2UVjfebRWiVGNt',NULL),
-(10,'admin','admin','g.kanocz2@gmail.com','g.kanocz2@gmail.com',1,NULL,'$2y$13$orGaiKDpF/agzqwXTV6rSuHL/IK26aN0NXa5eFgJ3itRcsKhDKAUm','2026-04-19 11:39:37',NULL,NULL,'a:1:{i:0;s:10:\"ROLE_ADMIN\";}','Gabriel Kanocz','FEI STU','2TsgJLB2CkgPRiQwLTR7bZUtBTxHUarX3Asic5Y2nP3DUj8riD',NULL);
+(11,"admin","admin","admin@local","admin@local",1,NULL,"$2y$13$FH/HANtxDahPH7ldBHoSRu2t2Q2BhJ78PAqm0S4wnvB1PzzoJh0SC","2026-06-01 11:10:41",NULL,NULL,"a:1:{i:0;s:16:\"ROLE_SUPER_ADMIN\";}","Administrator",NULL,"THxmuUTEdYHoLEGM8Y9xYTrCyFiPQvFFRp48KZXn3oQvevVdoH",NULL);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
