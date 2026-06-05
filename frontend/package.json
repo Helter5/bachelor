@@ -19,6 +19,7 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-i18next": "^17.0.2",
+    "react-is": "^19.2.7",
     "recharts": "^3.7.0"
   },
   "devDependencies": {
