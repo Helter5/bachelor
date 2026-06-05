@@ -31,6 +31,11 @@ class EmailRequest(SQLModel):
     email: EmailStr
 
 
+class VerificationResendRequest(SQLModel):
+    """Schema for resending verification by email or username."""
+    email: str = Field(min_length=1, max_length=255)
+
+
 class GoogleLoginRequest(SQLModel):
     """Schema for Google OAuth2 login"""
     credential: Optional[str] = None

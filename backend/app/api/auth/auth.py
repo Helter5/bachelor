@@ -6,7 +6,14 @@ from ...constants import UserRole
 
 from ...database import get_session
 from ...domain.entities.user import User
-from ...domain.schemas.user_schema import UserCreate, UserLogin, EmailRequest, GoogleLoginRequest, SetPasswordRequest
+from ...domain.schemas.user_schema import (
+    UserCreate,
+    UserLogin,
+    EmailRequest,
+    VerificationResendRequest,
+    GoogleLoginRequest,
+    SetPasswordRequest,
+)
 from ...domain.schemas.responses import UserOut, TokenResponse
 from ...core.security import (
     hash_password,
@@ -261,8 +268,15 @@ async def verify_email(request: Request, token: str, session: Session = Depends(
 
 @router.post("/resend-verification")
 @limiter.limit("3/minute")
-async def resend_verification_email(request: Request, request_data: EmailRequest, session: Session = Depends(get_session)):
-    user = session.exec(select(User).where(User.email == request_data.email)).first()
+async def resend_verification_email(
+    request: Request,
+    request_data: VerificationResendRequest,
+    session: Session = Depends(get_session)
+):
+    identifier = request_data.email.strip()
+    user = session.exec(
+        select(User).where((User.email == identifier) | (User.username == identifier))
+    ).first()
 
     # Don't reveal whether email exists (prevent enumeration)
     if not user:

@@ -134,7 +134,7 @@
     "emailLabel": "E-mail",
     "sendLink": "Odoslať odkaz",
     "resendVerificationTitle": "E-mail nie je overený",
-    "resendVerificationSubtitle": "Zadajte svoj e-mail a odošleme vám nový verifikačný odkaz",
+    "resendVerificationSubtitle": "Kliknutím odošlete nový verifikačný odkaz na e-mail použitý pri registrácii.",
     "sendVerificationEmail": "Odoslať verifikačný email",
     "toasts": {
       "fillAllFields": "Vyplňte všetky polia",
@@ -142,6 +142,7 @@
       "emailNotVerified": "E-mail nie je overený",
       "emailNotVerifiedMsg": "Odošlite si nový overovací e-mail.",
       "loginError": "Chyba prihlásenia",
+      "tryLoginAgain": "Skúste sa prihlásiť znova.",
       "serverError": "Nastala chyba pri pripájaní na server",
       "enterValidEmail": "Zadajte platný e-mail",
       "emailSent": "E-mail odoslaný!",

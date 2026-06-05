@@ -134,7 +134,7 @@
     "emailLabel": "E-mail",
     "sendLink": "Send link",
     "resendVerificationTitle": "Email not verified",
-    "resendVerificationSubtitle": "Enter your email and we'll send you a new verification link",
+    "resendVerificationSubtitle": "Click the button to send a new verification link to the email used during registration.",
     "sendVerificationEmail": "Send verification email",
     "toasts": {
       "fillAllFields": "Please fill in all fields",
@@ -142,6 +142,7 @@
       "emailNotVerified": "Email not verified",
       "emailNotVerifiedMsg": "Please send yourself a new verification email.",
       "loginError": "Login error",
+      "tryLoginAgain": "Please try logging in again.",
       "serverError": "An error occurred while connecting to the server",
       "enterValidEmail": "Please enter a valid email",
       "emailSent": "Email sent!",

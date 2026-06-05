@@ -84,8 +84,9 @@ export function LandingPage({ onLogin }: LandingPageProps) {
   const handleResendVerification = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!resendEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(resendEmail)) {
-      showToast("warning", t("landing.toasts.enterValidEmail"))
+    if (!resendEmail) {
+      setShowResendVerification(false)
+      showToast("warning", t("landing.toasts.loginError"), t("landing.toasts.tryLoginAgain"))
       return
     }
 
@@ -378,19 +379,6 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                       </div>
                       <h3 className="text-lg font-semibold text-white mb-1">{t("landing.resendVerificationTitle")}</h3>
                       <p className="text-sm text-gray-400">{t("landing.resendVerificationSubtitle")}</p>
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="resend-email" className="text-sm font-medium text-gray-300">
-                        {t("landing.emailLabel")}
-                      </label>
-                      <Input
-                        id="resend-email"
-                        type="email"
-                        placeholder="vas.email@example.com"
-                        className="h-11 bg-dark-bg border-transparent text-white placeholder:text-gray-500 focus:border-blue-500"
-                        value={resendEmail}
-                        onChange={(e) => setResendEmail(e.target.value)}
-                      />
                     </div>
                     <Button type="submit" className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white" size="lg">
                       {t("landing.sendVerificationEmail")}
