@@ -5128,6 +5128,8 @@ CREATE TABLE `local_client` (
 
 LOCK TABLES `local_client` WRITE;
 /*!40000 ALTER TABLE `local_client` DISABLE KEYS */;
+INSERT INTO `local_client` VALUES
+('4mwspuw0z5og8w0koc8skoskgowsc8s','admin@local','Administrator','UWW','1.6.3.1','1.6.3.1',NULL,0,'2026-04-13 16:12:08','2026-04-20 17:02:31',0);
 /*!40000 ALTER TABLE `local_client` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -9151,7 +9153,7 @@ CREATE TABLE `user` (
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
 INSERT INTO `user` VALUES
-(11,"admin","admin","admin@local","admin@local",1,NULL,"$2y$13$FH/HANtxDahPH7ldBHoSRu2t2Q2BhJ78PAqm0S4wnvB1PzzoJh0SC","2026-06-01 11:10:41",NULL,NULL,"a:1:{i:0;s:16:\"ROLE_SUPER_ADMIN\";}","Administrator",NULL,"THxmuUTEdYHoLEGM8Y9xYTrCyFiPQvFFRp48KZXn3oQvevVdoH",NULL);
+(11,'admin','admin','admin@local','admin@local',1,NULL,'$2y$13$FH/HANtxDahPH7ldBHoSRu2t2Q2BhJ78PAqm0S4wnvB1PzzoJh0SC','2026-06-01 11:10:41',NULL,NULL,'a:1:{i:0;s:10:\"ROLE_ADMIN\";}','Administrator',NULL,'THxmuUTEdYHoLEGM8Y9xYTrCyFiPQvFFRp48KZXn3oQvevVdoH',NULL);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
